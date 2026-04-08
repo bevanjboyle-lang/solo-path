@@ -23,36 +23,48 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user) throw new Error("User not authenticated");
+
+    const { session_id } = await req.json();
+    if (!session_id) throw new Error("Missing session_id");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
 
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+
+    if (session.payment_status !== "paid") {
+      return new Response(JSON.stringify({ paid: false }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price: "price_1TJzZE0PR8c2G6smceiedM9X",
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/results`,
-      metadata: {
-        user_id: user.id,
-      },
-    });
+    // Verify the session belongs to this user
+    if (session.metadata?.user_id !== user.id) {
+      throw new Error("Session does not belong to this user");
+    }
 
-    return new Response(JSON.stringify({ url: session.url }), {
+    // Record payment using service role key to bypass RLS
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    await supabaseAdmin.from("payments").upsert(
+      {
+        user_id: user.id,
+        stripe_customer_id: session.customer as string,
+        stripe_session_id: session.id,
+        amount: session.amount_total ?? 0,
+        currency: session.currency ?? "gbp",
+        status: "paid",
+      },
+      { onConflict: "stripe_session_id" }
+    );
+
+    return new Response(JSON.stringify({ paid: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
