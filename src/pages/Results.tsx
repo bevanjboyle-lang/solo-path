@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck } from "lucide-react";
+import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const lockedSections = [
   { label: "Full business model options", icon: Briefcase },
@@ -13,6 +14,7 @@ const lockedSections = [
 ];
 
 export default function Results() {
+  const { signOut } = useAuth();
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [paid, setPaid] = useState(false);
@@ -57,8 +59,12 @@ export default function Results() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
+        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
           <span className="text-base font-semibold tracking-tight">Solo</span>
+          <button onClick={() => signOut()} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <LogOut className="h-3.5 w-3.5" />
+            Sign out
+          </button>
         </div>
       </nav>
 
