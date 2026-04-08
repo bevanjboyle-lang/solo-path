@@ -14,7 +14,7 @@ const slideVariants = {
 
 export default function Questionnaire() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
