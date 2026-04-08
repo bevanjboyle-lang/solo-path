@@ -1,9 +1,15 @@
-import { motion } from "framer-motion";
-import { CheckCircle } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { CheckCircle, Loader2 } from "lucide-react";
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => navigate("/results?from=payment"), 2000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -25,15 +31,9 @@ export default function PaymentSuccess() {
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">Payment successful</h1>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Your full Solo Plan B report is now unlocked. Thank you for your purchase.
+            Redirecting to your full report...
           </p>
-          <button
-            onClick={() => navigate("/results")}
-            className="mt-4 inline-flex items-center rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
-            style={{ background: "var(--gradient-cta)" }}
-          >
-            View your report →
-          </button>
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </motion.div>
       </div>
     </div>
