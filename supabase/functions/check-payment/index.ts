@@ -12,19 +12,26 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
+
+    // Use service role to bypass RLS for payment check
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Verify the user first using anon client
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
     if (!user) throw new Error("User not authenticated");
 
-    const { data: payment } = await supabaseClient
+    const { data: payment } = await supabaseAdmin
       .from("payments")
       .select("id")
       .eq("user_id", user.id)
