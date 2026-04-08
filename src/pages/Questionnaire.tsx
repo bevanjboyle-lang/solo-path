@@ -1,8 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { questions, Question } from "@/data/questions";
 import { ArrowLeft, Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const slideVariants = {
   enter: (dir: number) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
@@ -12,19 +14,60 @@ const slideVariants = {
 
 export default function Questionnaire() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
+  const saveTimeout = useRef<ReturnType<typeof setTimeout>>();
+
+  // Load saved answers on mount
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("questionnaire_responses")
+      .select("answers")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.answers && typeof data.answers === "object" && !Array.isArray(data.answers)) {
+          const saved: Record<number, string | string[]> = {};
+          for (const [k, v] of Object.entries(data.answers as Record<string, unknown>)) {
+            saved[Number(k)] = v as string | string[];
+          }
+          setAnswers(saved);
+        }
+      });
+  }, [user]);
+
+  // Debounced save
+  const saveAnswers = useCallback(
+    (updated: Record<number, string | string[]>, completed = false) => {
+      if (!user) return;
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+      saveTimeout.current = setTimeout(async () => {
+        await supabase
+          .from("questionnaire_responses")
+          .upsert(
+            { user_id: user.id, answers: updated as any, completed },
+            { onConflict: "user_id" }
+          );
+      }, 500);
+    },
+    [user]
+  );
 
   const q = questions[current];
   const total = questions.length;
   const progress = ((current + 1) / total) * 100;
-
   const answer = answers[q.id];
 
   const setAnswer = useCallback(
-    (val: string | string[]) => setAnswers((prev) => ({ ...prev, [q.id]: val })),
-    [q.id]
+    (val: string | string[]) => {
+      const updated = { ...answers, [q.id]: val };
+      setAnswers(updated);
+      saveAnswers(updated);
+    },
+    [q.id, answers, saveAnswers]
   );
 
   const canContinue =
@@ -35,7 +78,19 @@ export default function Questionnaire() {
   const next = () => {
     if (!canContinue) return;
     if (current === total - 1) {
-      navigate("/processing");
+      // Final save with completed flag
+      saveAnswers(answers, true);
+      if (saveTimeout.current) clearTimeout(saveTimeout.current);
+      // Immediate save before navigating
+      if (user) {
+        supabase
+          .from("questionnaire_responses")
+          .upsert(
+            { user_id: user.id, answers: answers as any, completed: true },
+            { onConflict: "user_id" }
+          )
+          .then(() => navigate("/processing"));
+      }
       return;
     }
     setDirection(1);
@@ -92,7 +147,6 @@ export default function Questionnaire() {
               {q.type === "multi" && q.maxSelect && (
                 <p className="mt-2 text-sm text-muted-foreground">Select up to {q.maxSelect}</p>
               )}
-
               <div className="mt-8">
                 <QuestionInput question={q} value={answer} onChange={setAnswer} />
               </div>
