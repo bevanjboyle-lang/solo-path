@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Questionnaire from "./pages/Questionnaire";
 import Processing from "./pages/Processing";
 import Results from "./pages/Results";
+import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
