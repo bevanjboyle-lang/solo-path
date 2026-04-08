@@ -11,6 +11,12 @@ const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+const ARCHETYPES = [{"id":"ARCH_RISK","name":"Risk / Audit / Compliance","core_identity":"Brings structured risk thinking, control frameworks, and regulatory knowledge to organisations that need to manage uncertainty, meet obligations, and satisfy auditors or regulators. Often holds the institutional memory of what can go wrong and why.","capabilities":["Risk identification, assessment, and heat-mapping","Control design, implementation, and testing","Regulatory interpretation and application (FCA, GDPR, SOX, Basel, ISO)","Internal audit methodology: planning, fieldwork, report writing","Three lines of defence framework design and implementation","Compliance monitoring and management reporting","Policy and procedure documentation","Board and audit committee reporting on risk and compliance matters","Root cause analysis of control failures","Regulatory inspection preparation"],"monetisable_translations":["Help regulated SMEs build credible compliance frameworks they couldn't afford in-house","Prepare businesses for regulatory scrutiny, auditor visits, or accreditation processes","Reduce the cost and anxiety of external audit for growing businesses","Help firms understand and respond to regulatory change without hiring a full-time specialist","Provide independent assurance on whether an organisation's controls and risks are being managed adequately"],"pricing_power":"medium-high","time_to_revenue_bias":"fast"},{"id":"ARCH_FIN","name":"Finance & Commercial","core_identity":"Understands business performance, financial decision-making, and commercial logic at depth. Can translate complex financial data into useful management insight. Speaks the language of owners, boards, and investors.","capabilities":["Financial modelling, scenario analysis, and sensitivity testing","Management reporting design and delivery","Cashflow forecasting and working capital management","Budgeting and rolling forecast process design","Business case development and investment appraisal","Pricing and margin analysis","Financial due diligence for M&A transactions","KPI framework design and dashboard development","Board and investor communication on financial performance","Banking relationship management and covenant monitoring"],"monetisable_translations":["Give SME owners the financial clarity they need to make confident decisions","Provide fractional CFO capability that growing businesses can't yet afford full-time","Help businesses understand their unit economics and improve profitability","Support fundraising, M&A, or growth planning with credible financial work","Build the forecasting and management reporting infrastructure that enables the business to scale"],"pricing_power":"high","time_to_revenue_bias":"fast"},{"id":"ARCH_CONS","name":"Generalist Consultant","core_identity":"Brings broad analytical, problem-structuring, and communication capabilities across industries. Comfortable with ambiguity. Skilled at framing problems, structuring thinking, and influencing senior stakeholders.","capabilities":["Structured problem decomposition and hypothesis-driven analysis","Stakeholder management and executive communication","Strategy and business case development","Operating model design and organisational diagnosis","Facilitation of workshops and leadership sessions","Benchmarking, market analysis, and competitive intelligence","Presentation and narrative construction for senior audiences","Project and workstream management","Client relationship management and account development"],"monetisable_translations":["Strategy and growth advisory for owner-managed or mid-market businesses","Independent sounding board and analytical rigour for senior leaders who lack trusted challenge","Specialist in a narrow problem type","Interim programme or change leadership for organisations without internal capability","Diagnostic and improvement advisory for businesses at strategic inflection points"],"pricing_power":"medium-high (conditional on clear niche)","time_to_revenue_bias":"medium"},{"id":"ARCH_PMO","name":"Delivery / PMO / Transformation","core_identity":"Brings discipline to how organisations run change, manage programmes, and deliver outcomes. Understands the gap between strategy and execution and knows how to close it.","capabilities":["Programme and project governance framework design","Portfolio management and investment prioritisation","Benefits realisation planning and tracking","Risk and issue identification, escalation, and management","Stakeholder reporting and programme communications","Dependency mapping and critical path analysis","Change readiness assessment and planning","Resource and capacity planning","Agile and waterfall delivery methodology","Vendor and third-party management in programme contexts"],"monetisable_translations":["Give mid-market businesses the programme discipline to actually deliver their strategic initiatives","Rescue troubled programmes that are at risk of failure or already failing","Provide independent assurance on major investments to boards and audit committees","Help organisations build the internal capability to run change without permanent external dependency","Fractional PMO: provide the governance infrastructure for complex change at a fraction of the cost"],"pricing_power":"medium","time_to_revenue_bias":"fast to medium"},{"id":"ARCH_OPS","name":"Operations / Process","core_identity":"Understands how work actually flows through an organisation. Can identify inefficiency, redesign processes, and help businesses operate more reliably at lower cost.","capabilities":["Process mapping and analysis","Lean and Six Sigma methodology","Root cause analysis and problem-solving","Standard operating procedure design and documentation","Performance measurement, KPI design, and operational dashboards","Operational technology selection and implementation oversight","Continuous improvement programme design and facilitation","AI and automation tool identification and workflow integration"],"monetisable_translations":["Help growing SMEs replace informal processes with scalable, documented operating models","Reduce operational waste and cost in businesses that have grown faster than their processes","Help businesses implement AI and automation tools into their real workflows","Build operational infrastructure for scale ahead of growth, investment, or acquisition"],"pricing_power":"medium","time_to_revenue_bias":"fast (project) to medium (retainer)"}];
+
+const MAPPING = [{"archetype":"ARCH_FIN","model":"BM_FCFO","capability_fit":5,"credibility_gap":2,"speed_to_revenue":4,"sales_complexity":3,"income_potential":5,"recurrence":5,"avoid":false},{"archetype":"ARCH_FIN","model":"BM_CWC","capability_fit":5,"credibility_gap":1,"speed_to_revenue":5,"sales_complexity":2,"income_potential":3,"recurrence":3,"avoid":false},{"archetype":"ARCH_FIN","model":"BM_FPA","capability_fit":5,"credibility_gap":2,"speed_to_revenue":3,"sales_complexity":3,"income_potential":4,"recurrence":5,"avoid":false},{"archetype":"ARCH_FIN","model":"BM_PRICE","capability_fit":4,"credibility_gap":3,"speed_to_revenue":3,"sales_complexity":4,"income_potential":4,"recurrence":2,"avoid":false},{"archetype":"ARCH_FIN","model":"BM_FDD","capability_fit":5,"credibility_gap":3,"speed_to_revenue":4,"sales_complexity":4,"income_potential":5,"recurrence":3,"avoid":false},{"archetype":"ARCH_FIN","model":"BM_ARS","capability_fit":3,"credibility_gap":3,"speed_to_revenue":3,"sales_complexity":3,"income_potential":3,"recurrence":3,"avoid":false},{"archetype":"ARCH_FIN","model":"BM_CAAS","capability_fit":1,"credibility_gap":5,"speed_to_revenue":2,"sales_complexity":4,"income_potential":3,"recurrence":5,"avoid":true},{"archetype":"ARCH_FIN","model":"BM_STRAT","capability_fit":3,"credibility_gap":4,"speed_to_revenue":2,"sales_complexity":5,"income_potential":4,"recurrence":5,"avoid":false},{"archetype":"ARCH_FIN","model":"BM_OPEFF","capability_fit":3,"credibility_gap":3,"speed_to_revenue":3,"sales_complexity":3,"income_potential":3,"recurrence":2,"avoid":false},{"archetype":"ARCH_RISK","model":"BM_CAAS","capability_fit":5,"credibility_gap":2,"speed_to_revenue":4,"sales_complexity":3,"income_potential":4,"recurrence":5,"avoid":false},{"archetype":"ARCH_RISK","model":"BM_ARS","capability_fit":5,"credibility_gap":1,"speed_to_revenue":4,"sales_complexity":2,"income_potential":3,"recurrence":4,"avoid":false},{"archetype":"ARCH_RISK","model":"BM_RISK","capability_fit":5,"credibility_gap":2,"speed_to_revenue":3,"sales_complexity":3,"income_potential":4,"recurrence":3,"avoid":false},{"archetype":"ARCH_RISK","model":"BM_IACS","capability_fit":5,"credibility_gap":2,"speed_to_revenue":3,"sales_complexity":3,"income_potential":4,"recurrence":5,"avoid":false},{"archetype":"ARCH_RISK","model":"BM_REGCH","capability_fit":5,"credibility_gap":2,"speed_to_revenue":4,"sales_complexity":3,"income_potential":4,"recurrence":3,"avoid":false},{"archetype":"ARCH_RISK","model":"BM_PASS","capability_fit":3,"credibility_gap":3,"speed_to_revenue":3,"sales_complexity":4,"income_potential":3,"recurrence":3,"avoid":false},{"archetype":"ARCH_RISK","model":"BM_FCFO","capability_fit":1,"credibility_gap":5,"speed_to_revenue":2,"sales_complexity":4,"income_potential":4,"recurrence":4,"avoid":true},{"archetype":"ARCH_RISK","model":"BM_FDD","capability_fit":2,"credibility_gap":5,"speed_to_revenue":2,"sales_complexity":5,"income_potential":4,"recurrence":2,"avoid":true},{"archetype":"ARCH_CONS","model":"BM_STRAT","capability_fit":5,"credibility_gap":3,"speed_to_revenue":2,"sales_complexity":5,"income_potential":5,"recurrence":5,"avoid":false},{"archetype":"ARCH_CONS","model":"BM_CHANGE","capability_fit":4,"credibility_gap":2,"speed_to_revenue":3,"sales_complexity":3,"income_potential":3,"recurrence":3,"avoid":false},{"archetype":"ARCH_CONS","model":"BM_PREC","capability_fit":4,"credibility_gap":3,"speed_to_revenue":4,"sales_complexity":3,"income_potential":5,"recurrence":2,"avoid":false},{"archetype":"ARCH_CONS","model":"BM_DXADV","capability_fit":4,"credibility_gap":3,"speed_to_revenue":3,"sales_complexity":4,"income_potential":4,"recurrence":3,"avoid":false},{"archetype":"ARCH_CONS","model":"BM_PASS","capability_fit":4,"credibility_gap":3,"speed_to_revenue":3,"sales_complexity":4,"income_potential":3,"recurrence":3,"avoid":false},{"archetype":"ARCH_CONS","model":"BM_PRICE","capability_fit":3,"credibility_gap":4,"speed_to_revenue":3,"sales_complexity":4,"income_potential":4,"recurrence":2,"avoid":false},{"archetype":"ARCH_CONS","model":"BM_CAAS","capability_fit":1,"credibility_gap":5,"speed_to_revenue":2,"sales_complexity":4,"income_potential":3,"recurrence":5,"avoid":true},{"archetype":"ARCH_CONS","model":"BM_CWC","capability_fit":1,"credibility_gap":5,"speed_to_revenue":2,"sales_complexity":4,"income_potential":3,"recurrence":2,"avoid":true},{"archetype":"ARCH_PMO","model":"BM_PMOAS","capability_fit":5,"credibility_gap":2,"speed_to_revenue":4,"sales_complexity":3,"income_potential":4,"recurrence":5,"avoid":false},{"archetype":"ARCH_PMO","model":"BM_PREC","capability_fit":5,"credibility_gap":2,"speed_to_revenue":5,"sales_complexity":3,"income_potential":5,"recurrence":2,"avoid":false},{"archetype":"ARCH_PMO","model":"BM_PASS","capability_fit":5,"credibility_gap":2,"speed_to_revenue":3,"sales_complexity":3,"income_potential":3,"recurrence":3,"avoid":false},{"archetype":"ARCH_PMO","model":"BM_DXADV","capability_fit":4,"credibility_gap":2,"speed_to_revenue":3,"sales_complexity":4,"income_potential":4,"recurrence":3,"avoid":false},{"archetype":"ARCH_PMO","model":"BM_CHANGE","capability_fit":4,"credibility_gap":2,"speed_to_revenue":3,"sales_complexity":3,"income_potential":3,"recurrence":3,"avoid":false},{"archetype":"ARCH_PMO","model":"BM_AIWF","capability_fit":3,"credibility_gap":3,"speed_to_revenue":3,"sales_complexity":3,"income_potential":3,"recurrence":3,"avoid":false},{"archetype":"ARCH_PMO","model":"BM_FCFO","capability_fit":1,"credibility_gap":5,"speed_to_revenue":1,"sales_complexity":5,"income_potential":4,"recurrence":4,"avoid":true},{"archetype":"ARCH_PMO","model":"BM_CAAS","capability_fit":1,"credibility_gap":5,"speed_to_revenue":1,"sales_complexity":5,"income_potential":3,"recurrence":4,"avoid":true},{"archetype":"ARCH_OPS","model":"BM_PROCIM","capability_fit":5,"credibility_gap":2,"speed_to_revenue":4,"sales_complexity":3,"income_potential":3,"recurrence":4,"avoid":false},{"archetype":"ARCH_OPS","model":"BM_AIWF","capability_fit":4,"credibility_gap":1,"speed_to_revenue":5,"sales_complexity":2,"income_potential":3,"recurrence":4,"avoid":false},{"archetype":"ARCH_OPS","model":"BM_OPEFF","capability_fit":5,"credibility_gap":2,"speed_to_revenue":3,"sales_complexity":3,"income_potential":4,"recurrence":2,"avoid":false},{"archetype":"ARCH_OPS","model":"BM_BSYS","capability_fit":4,"credibility_gap":2,"speed_to_revenue":3,"sales_complexity":3,"income_potential":3,"recurrence":2,"avoid":false},{"archetype":"ARCH_OPS","model":"BM_PMOAS","capability_fit":3,"credibility_gap":3,"speed_to_revenue":3,"sales_complexity":3,"income_potential":3,"recurrence":4,"avoid":false},{"archetype":"ARCH_OPS","model":"BM_FCFO","capability_fit":1,"credibility_gap":5,"speed_to_revenue":1,"sales_complexity":5,"income_potential":4,"recurrence":4,"avoid":true},{"archetype":"ARCH_OPS","model":"BM_CAAS","capability_fit":1,"credibility_gap":5,"speed_to_revenue":1,"sales_complexity":5,"income_potential":3,"recurrence":4,"avoid":true},{"archetype":"ARCH_OPS","model":"BM_FDD","capability_fit":1,"credibility_gap":5,"speed_to_revenue":1,"sales_complexity":5,"income_potential":4,"recurrence":2,"avoid":true}];
+
+const BUSINESS_MODELS: any[] = [];
+
 async function chatCompletion(
   systemPrompt: string,
   userPrompt: string,
@@ -78,21 +84,6 @@ async function chatCompletionText(
   return data.choices[0].message.content;
 }
 
-async function fetchKnowledgeBank(supabase: any) {
-  const bucket = "knowledge-bank";
-  const files = ["archetypes.json", "business_models.json", "mapping_table.json"];
-  const results: Record<string, any> = {};
-
-  for (const file of files) {
-    const { data } = supabase.storage.from(bucket).getPublicUrl(file);
-    const res = await fetch(data.publicUrl);
-    if (!res.ok) throw new Error(`Failed to fetch ${file}`);
-    results[file.replace(".json", "")] = await res.json();
-  }
-
-  return results;
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -113,16 +104,16 @@ serve(async (req) => {
   const userClient = createClient(SUPABASE_URL, anonKey, {
     global: { headers: { Authorization: authHeader } },
   });
-  const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(
-    authHeader.replace("Bearer ", "")
-  );
-  if (claimsError || !claimsData?.claims) {
+  const { data: { user }, error: userError } = await userClient.auth.getUser();
+  if (userError || !user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-  const userId = claimsData.claims.sub as string;
+  const userId = user.id;
+
+  let reportId: string | null = null;
 
   try {
     const { answers } = await req.json();
@@ -136,10 +127,7 @@ serve(async (req) => {
       .single();
 
     if (insertErr) throw insertErr;
-    const reportId = report.id;
-
-    // Fetch knowledge bank
-    const kb = await fetchKnowledgeBank(adminClient);
+    reportId = report.id;
 
     // Format answers
     const formattedAnswers = JSON.stringify({
@@ -159,7 +147,18 @@ serve(async (req) => {
     });
 
     // ─── PROMPT 1: Core Report ───
-    const p1System = `You are the intelligence engine for Solo, a product helping mid-career professionals find a realistic Plan B. Analyse the user's background and produce structured solo business recommendations. You operate from a curated library of archetypes and business models — use the injected knowledge bank data.
+    const p1System = `You are the intelligence engine for Solo, a product helping mid-career professionals find a realistic Plan B. Analyse the user's background and produce structured solo business recommendations.
+
+You have access to the following data:
+
+ARCHETYPES (classify the user into one of these):
+${JSON.stringify(ARCHETYPES)}
+
+BUSINESS MODELS (score and recommend from these):
+${JSON.stringify(BUSINESS_MODELS)}
+
+MAPPING TABLE (use these scores for archetype-model combinations):
+${JSON.stringify(MAPPING)}
 
 Steps:
 1. Classify primary archetype and optional secondary with confidence score 0–1.
@@ -178,13 +177,7 @@ Steps:
   "first_steps": [string, string, string, string, string]
 }`;
 
-    const p1User = `KNOWLEDGE BANK:
-Archetypes: ${JSON.stringify(kb.archetypes)}
-Business Models: ${JSON.stringify(kb.business_models)}
-Mapping Table: ${JSON.stringify(kb.mapping_table)}
-
-USER ANSWERS:
-${formattedAnswers}`;
+    const p1User = `USER ANSWERS:\n${formattedAnswers}`;
 
     console.log("Running Prompt 1...");
     const p1Result = await chatCompletion(p1System, p1User, 0.4, 3000);
@@ -234,11 +227,7 @@ Return JSON:
   }
 }`;
 
-    const p3User = `RECOMMENDED MODEL & REPORT:
-${JSON.stringify(finalReport)}
-
-Q11 (Network): ${answers["11"]}
-Q12 (Employment): ${answers["12"]}`;
+    const p3User = `RECOMMENDED MODEL & REPORT:\n${JSON.stringify(finalReport)}\n\nQ11 (Network): ${answers["11"]}\nQ12 (Employment): ${answers["12"]}`;
 
     const p4System = `You are Solo's market research analyst. Produce a Local Market Feasibility Snapshot. You do not have live data — label all figures as indicative.
 
@@ -295,6 +284,17 @@ Location: ${answers["13"] || "UK"}`;
     );
   } catch (err) {
     console.error("generate-report error:", err);
+
+    // Update report status to error if we have a reportId
+    if (reportId) {
+      await adminClient
+        .from("reports")
+        .update({
+          status: "error",
+          error: err instanceof Error ? err.message : "Unknown error",
+        })
+        .eq("id", reportId);
+    }
 
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
