@@ -327,7 +327,7 @@ function OptionCard({ option, isRecommended }: { option: any; isRecommended: boo
     <div className={`rounded-lg border p-5 space-y-3 ${isRecommended ? "border-primary/30 bg-primary/5" : "border-border bg-surface"}`}>
       <div className="flex items-center justify-between">
         <h4 className="font-medium text-foreground">
-          Option {option.label}: {option.model_name}
+          Option {option.label}: {option.model_name?.startsWith("BM_") ? option.model_name.replace(/^BM_/, "").replace(/_/g, " ") : option.model_name}
         </h4>
         <div className="flex items-center gap-2">
           {isRecommended && (
