@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
@@ -23,34 +22,17 @@ serve(async (req) => {
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user) throw new Error("User not authenticated");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
+    const { data: payment } = await supabaseClient
+      .from("payments")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("status", "paid")
+      .limit(1)
+      .maybeSingle();
 
-    // Check if user has a completed payment for our product
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    if (customers.data.length === 0) {
-      return new Response(JSON.stringify({ paid: false }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    const customerId = customers.data[0].id;
-
-    // Check for completed checkout sessions
-    const sessions = await stripe.checkout.sessions.list({
-      customer: customerId,
-      limit: 100,
-    });
-
-    const hasPaid = sessions.data.some(
-      (s) => s.payment_status === "paid" && s.mode === "payment"
-    );
-
-    return new Response(JSON.stringify({ paid: hasPaid }), {
+    return new Response(JSON.stringify({ paid: !!payment }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
