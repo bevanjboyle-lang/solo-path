@@ -74,6 +74,42 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          activation_plan: Json | null
+          answers: Json
+          core_report: Json | null
+          created_at: string
+          error: string | null
+          id: string
+          market_snapshot: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          activation_plan?: Json | null
+          answers?: Json
+          core_report?: Json | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          market_snapshot?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          activation_plan?: Json | null
+          answers?: Json
+          core_report?: Json | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          market_snapshot?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

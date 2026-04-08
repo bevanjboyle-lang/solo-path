@@ -1,0 +1,25 @@
+{
+  "background_to_archetype_weight": {
+    "Risk, Audit or Compliance": {"strategic-advisor": 3, "technical-authority": 4, "operational-specialist": 1, "trusted-generalist": 1},
+    "Finance or Commercial": {"strategic-advisor": 3, "technical-authority": 3, "operational-specialist": 1, "trusted-generalist": 2},
+    "Strategy or Management Consulting": {"strategic-advisor": 4, "technical-authority": 1, "operational-specialist": 2, "trusted-generalist": 3},
+    "Programme, Delivery or PMO": {"strategic-advisor": 1, "technical-authority": 1, "operational-specialist": 4, "trusted-generalist": 3},
+    "Operations or Process Improvement": {"strategic-advisor": 1, "technical-authority": 2, "operational-specialist": 4, "trusted-generalist": 2}
+  },
+  "seniority_to_archetype_boost": {
+    "Partner / VP / C-Suite": {"strategic-advisor": 3, "technical-authority": 2},
+    "Director": {"strategic-advisor": 2, "technical-authority": 2, "operational-specialist": 1},
+    "Senior Manager": {"operational-specialist": 2, "trusted-generalist": 2},
+    "Manager": {"operational-specialist": 1, "trusted-generalist": 3},
+    "Other": {"trusted-generalist": 2}
+  },
+  "urgency_signals": [
+    "I've already been made redundant or am in notice",
+    "I'm worried my role may be affected by AI or automation"
+  ],
+  "low_selling_confidence_signals": [
+    "Not comfortable — I'd rather let my work speak for itself",
+    "Very uncomfortable — the idea of selling myself feels difficult"
+  ],
+  "high_experience_threshold_years": "13–20 years"
+}
