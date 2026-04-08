@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { questions, Question } from "@/data/questions";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -118,6 +118,9 @@ export default function Questionnaire() {
           <span className="text-xs text-muted-foreground">
             Question {current + 1} of {total}
           </span>
+          <button onClick={() => signOut()} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
         </div>
         {/* Progress */}
         <div className="h-0.5 bg-border/50">
