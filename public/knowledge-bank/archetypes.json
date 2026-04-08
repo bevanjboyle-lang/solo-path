@@ -1,0 +1,46 @@
+[
+  {
+    "id": "strategic-advisor",
+    "name": "The Strategic Advisor",
+    "summary": "A senior professional whose experience in governance, risk, strategy or senior stakeholder engagement positions them for high-value independent advisory work. They sell judgement, not labour.",
+    "signals": {
+      "background": ["Risk, Audit or Compliance", "Strategy or Management Consulting", "Finance or Commercial"],
+      "seniority": ["Director", "Partner / VP / C-Suite"],
+      "work_done": ["Advised boards or senior leadership", "Managed compliance or regulatory risk", "Delivered consulting or advisory engagements"],
+      "reputation": ["Well-known and respected in my specialism", "Solid reputation within my organisation"]
+    }
+  },
+  {
+    "id": "operational-specialist",
+    "name": "The Operational Specialist",
+    "summary": "A hands-on professional who has built, fixed or improved systems, processes and teams. They sell execution capability and operational expertise — organisations hire them to get things done.",
+    "signals": {
+      "background": ["Programme, Delivery or PMO", "Operations or Process Improvement"],
+      "seniority": ["Senior Manager", "Manager", "Director"],
+      "work_done": ["Led or governed transformation programmes", "Designed or improved business processes", "Built or led teams through change"],
+      "reputation": ["Solid reputation within my organisation", "Respected but not widely known outside"]
+    }
+  },
+  {
+    "id": "technical-authority",
+    "name": "The Technical Authority",
+    "summary": "A deep specialist with recognised expertise in a regulated or technical domain. They sell credibility and specialist knowledge — clients pay for certainty in complex areas.",
+    "signals": {
+      "background": ["Risk, Audit or Compliance", "Finance or Commercial"],
+      "seniority": ["Senior Manager", "Director", "Partner / VP / C-Suite"],
+      "work_done": ["Managed external audits or assurance reviews", "Managed compliance or regulatory risk", "Built or improved financial models and forecasts"],
+      "reputation": ["Well-known and respected in my specialism"]
+    }
+  },
+  {
+    "id": "trusted-generalist",
+    "name": "The Trusted Generalist",
+    "summary": "A versatile professional with broad commercial experience across sectors. They sell adaptability and commercial common sense — useful when organisations need a safe pair of hands.",
+    "signals": {
+      "background": ["Strategy or Management Consulting", "Programme, Delivery or PMO", "Finance or Commercial"],
+      "seniority": ["Senior Manager", "Manager"],
+      "work_done": ["Built or led teams through change", "Led or governed transformation programmes", "Delivered consulting or advisory engagements"],
+      "reputation": ["Respected but not widely known outside", "Still building my reputation"]
+    }
+  }
+]
