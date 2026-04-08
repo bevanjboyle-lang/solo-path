@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,20 +19,41 @@ export default function Results() {
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [paid, setPaid] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  const checkPayment = useCallback(async () => {
+    try {
+      const { data } = await supabase.functions.invoke("check-payment");
+      return data?.paid === true;
+    } catch {
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
-    const checkPayment = async () => {
-      try {
-        const { data } = await supabase.functions.invoke("check-payment");
-        if (data?.paid) setPaid(true);
-      } catch (err) {
-        console.error("Check payment error:", err);
-      } finally {
-        setChecking(false);
+    let cancelled = false;
+    const fromPayment = searchParams.get("from") === "payment";
+
+    const poll = async () => {
+      const maxAttempts = fromPayment ? 15 : 1;
+      for (let i = 0; i < maxAttempts; i++) {
+        if (cancelled) return;
+        const isPaid = await checkPayment();
+        if (isPaid) {
+          setPaid(true);
+          setChecking(false);
+          return;
+        }
+        if (i < maxAttempts - 1) {
+          await new Promise((r) => setTimeout(r, 2000));
+        }
       }
+      if (!cancelled) setChecking(false);
     };
-    checkPayment();
-  }, []);
+
+    poll();
+    return () => { cancelled = true; };
+  }, [checkPayment, searchParams]);
 
   const handlePayment = async () => {
     setLoading(true);
