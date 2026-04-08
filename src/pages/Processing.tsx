@@ -1,6 +1,14 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 export default function Processing() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setTimeout(() => navigate("/results"), 3000);
+    return () => clearTimeout(timer);
+  }, [navigate]);
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
       {/* Spinner */}
