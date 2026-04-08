@@ -66,7 +66,7 @@ export default function Landing() {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             <button
-              onClick={() => navigate("/questionnaire")}
+              onClick={() => navigate("/auth")}
               className="mt-10 inline-flex items-center rounded-lg px-8 py-3.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
               style={{ background: "var(--gradient-cta)" }}
             >
