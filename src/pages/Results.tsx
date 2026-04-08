@@ -14,6 +14,7 @@ const lockedSections = [
 ];
 
 export default function Results() {
+  const { signOut } = useAuth();
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [paid, setPaid] = useState(false);
