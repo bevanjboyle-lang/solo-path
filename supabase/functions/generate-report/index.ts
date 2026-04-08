@@ -165,12 +165,12 @@ Steps:
 2. Filter models where capability_fit is 2 or below, credibility_gap is 4 or above, or avoid is true.
 3. Score remaining models using: (2×capability_fit) + (2×speed_to_revenue) + (2×(6-credibility_gap)) + income_potential + recurrence - sales_complexity. Adjust +2 to fast-revenue models if user signals urgency, -1 to high-complexity models if user signals low selling confidence, +1 to high-income models if 10+ years experience.
 4. Select top 3 with different categories and sales motions — label Option A (safest/fastest), B (moderate), C (most ambitious).
-5. Return JSON with this exact structure:
+5. Return JSON with this exact structure. IMPORTANT: model_name MUST be the human-readable "name" field from BUSINESS_MODELS (e.g. "Process Improvement Consultant"), NEVER the "id" field (e.g. "BM_PROCIM").
 {
   "archetype": { "primary": string, "secondary": string|null, "confidence": number, "summary": string },
   "transferable_value": { "what_they_can_sell": string, "why_buyers_would_pay": string, "credibility_assets": [string, string, string] },
   "options": [
-    { "label": "A"|"B"|"C", "model_name": string, "positioning": string, "target_buyer": string, "what_they_are_buying": string, "pricing": { "model": string, "range_low_gbp": number, "range_high_gbp": number, "cadence": string }, "time_to_first_revenue": string, "difficulty_rating": "easy"|"moderate"|"hard", "why_this_works_for_them": string }
+    { "label": "A"|"B"|"C", "model_name": "<friendly name from BUSINESS_MODELS, e.g. Process Improvement Consultant>", "positioning": string, "target_buyer": string, "what_they_are_buying": string, "pricing": { "model": string, "range_low_gbp": number, "range_high_gbp": number, "cadence": string }, "time_to_first_revenue": string, "difficulty_rating": "easy"|"moderate"|"hard", "why_this_works_for_them": string }
   ],
   "recommendation": { "recommended_option": "A"|"B"|"C", "rationale": string, "key_condition": string },
   "reality_check": { "most_likely_failure_mode": string, "second_failure_mode": string, "what_they_will_find_hard": string, "honest_income_outlook": string },
