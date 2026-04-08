@@ -47,6 +47,9 @@ serve(async (req) => {
       mode: "payment",
       success_url: `${req.headers.get("origin")}/payment-success`,
       cancel_url: `${req.headers.get("origin")}/results`,
+      metadata: {
+        user_id: user.id,
+      },
     });
 
     return new Response(JSON.stringify({ url: session.url }), {
