@@ -21,9 +21,12 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
         {/* Logo */}
-        <Link to="/" className="text-base font-semibold tracking-tight text-foreground">
-          Solo
-        </Link>
+        <a href="/" className="flex items-center gap-2.5 no-underline">
+          <svg xmlns="http://www.w3.org/2000/svg" width="120" height="36" viewBox="0 0 160 48" aria-label="Solo">
+            <circle cx="9" cy="26" r="5" fill="#2ECDB0"/>
+            <text x="22" y="37" fontFamily="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" fontSize="34" fontWeight="600" letterSpacing="-1" fill="#F0F0F5">solo</text>
+          </svg>
+        </a>
 
         {/* Desktop links */}
         <div className="hidden items-center gap-6 md:flex">
@@ -57,8 +60,7 @@ export default function Navbar() {
           )}
           <Button
             size="sm"
-            className="rounded-lg text-sm font-medium text-primary-foreground"
-            style={{ background: "var(--gradient-cta)" }}
+            className="rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-[#1FAF97]"
             onClick={() => navigate("/auth")}
           >
             Take the test →
@@ -108,8 +110,7 @@ export default function Navbar() {
             )}
             <Button
               size="sm"
-              className="w-full rounded-lg text-sm font-medium text-primary-foreground"
-              style={{ background: "var(--gradient-cta)" }}
+              className="w-full rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-[#1FAF97]"
               onClick={() => { navigate("/auth"); setOpen(false); }}
             >
               Take the test →

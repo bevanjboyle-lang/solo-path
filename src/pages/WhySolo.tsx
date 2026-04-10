@@ -87,7 +87,7 @@ export default function WhySolo() {
             The Solo Manifesto
           </motion.span>
           <motion.h1
-            className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
+            className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
@@ -116,7 +116,7 @@ export default function WhySolo() {
             variants={fadeUp}
             custom={0}
           >
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               What's actually happening to white-collar work
             </h2>
           </motion.div>
@@ -146,7 +146,7 @@ export default function WhySolo() {
       <section className="border-t border-border/50 py-24">
         <div className="mx-auto max-w-5xl px-6">
           <motion.h2
-            className="mb-14 text-2xl font-semibold tracking-tight sm:text-3xl"
+            className="font-display mb-14 text-2xl font-semibold tracking-tight sm:text-3xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
@@ -184,7 +184,7 @@ export default function WhySolo() {
                   viewport={{ once: true, margin: "-60px" }}
                   custom={i}
                 >
-                  <span className="mb-1 block text-2xl font-bold text-primary">{s.value}</span>
+                  <span className="mb-1 block font-display text-2xl font-bold text-primary">{s.value}</span>
                   <p className="text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
                 </motion.div>
               ))}
@@ -197,7 +197,7 @@ export default function WhySolo() {
       <section className="border-t border-border/50 py-24">
         <div className="mx-auto max-w-5xl px-6">
           <motion.h2
-            className="mb-14 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
+            className="font-display mb-14 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
@@ -228,13 +228,10 @@ export default function WhySolo() {
       </section>
 
       {/* CTA */}
-      <section
-        className="py-24"
-        style={{ background: "var(--gradient-cta)" }}
-      >
+      <section className="bg-primary py-24">
         <div className="mx-auto max-w-2xl px-6 text-center">
           <motion.h2
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
+            className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -244,7 +241,7 @@ export default function WhySolo() {
             If this resonates, the test takes 8 minutes.
           </motion.h2>
           <motion.p
-            className="mt-4 text-base text-white/70"
+            className="mt-4 text-base text-primary-foreground/70"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -263,7 +260,7 @@ export default function WhySolo() {
           >
             <Button
               size="lg"
-              className="rounded-lg bg-white px-8 py-4 text-base font-medium text-primary hover:bg-white/90"
+              className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
               onClick={() => navigate("/auth")}
             >
               Take the test →

@@ -111,7 +111,7 @@ export default function HowItWorks() {
             The Process
           </motion.span>
           <motion.h1
-            className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
+            className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
@@ -147,7 +147,7 @@ export default function HowItWorks() {
                     {s.num}
                   </span>
                   <div>
-                    <h3 className="mb-2 text-lg font-semibold">{s.title}</h3>
+                    <h3 className="font-display mb-2 text-lg font-semibold">{s.title}</h3>
                     <p className="text-sm leading-[1.8] text-muted-foreground sm:text-base">{s.desc}</p>
                   </div>
                 </div>
@@ -164,7 +164,7 @@ export default function HowItWorks() {
       <section className="border-t border-border/50 py-24">
         <div className="mx-auto max-w-3xl px-6">
           <motion.h2
-            className="mb-12 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
+            className="font-display mb-12 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
@@ -210,7 +210,7 @@ export default function HowItWorks() {
       <section className="border-t border-border/50 py-24">
         <div className="mx-auto max-w-5xl px-6">
           <motion.h2
-            className="mb-14 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
+            className="font-display mb-14 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
@@ -241,13 +241,10 @@ export default function HowItWorks() {
       </section>
 
       {/* CTA */}
-      <section
-        className="py-24"
-        style={{ background: "var(--gradient-cta)" }}
-      >
+      <section className="bg-primary py-24">
         <div className="mx-auto max-w-2xl px-6 text-center">
           <motion.h2
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
+            className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -266,12 +263,12 @@ export default function HowItWorks() {
           >
             <Button
               size="lg"
-              className="rounded-lg bg-white px-8 py-4 text-base font-medium text-primary hover:bg-white/90"
+              className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
               onClick={() => navigate("/auth")}
             >
               Take the test — £9.99 →
             </Button>
-            <span className="text-xs text-white/60">
+            <span className="text-xs text-primary-foreground/60">
               Free preview included. Full report unlocked on payment. Saved to your account.
             </span>
           </motion.div>
