@@ -1,16 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { questions, Question } from "@/data/questions";
 import { ArrowLeft, Check, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-
-const slideVariants = {
-  enter: (dir: number) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir > 0 ? -80 : 80, opacity: 0 }),
-};
 
 export default function Questionnaire() {
   const navigate = useNavigate();
@@ -56,22 +50,27 @@ export default function Questionnaire() {
     [user]
   );
 
-  const q = questions[current];
+  const currentQuestion = questions[current] ?? questions[0]!;
+
   const total = questions.length;
   const progress = ((current + 1) / total) * 100;
-  const answer = answers[q.id];
+  const answer = answers[currentQuestion.id];
 
   const setAnswer = useCallback(
     (val: string | string[]) => {
-      const updated = { ...answers, [q.id]: val };
-      setAnswers(updated);
-      saveAnswers(updated);
+      const activeQuestion = questions[current] ?? questions[0]!;
+
+      setAnswers((prev) => {
+        const updated = { ...prev, [activeQuestion.id]: val };
+        saveAnswers(updated);
+        return updated;
+      });
     },
-    [q.id, answers, saveAnswers]
+    [current, saveAnswers]
   );
 
   const canContinue =
-    q.type === "text"
+    currentQuestion.type === "text"
       ? typeof answer === "string" && answer.trim().length > 0
       : answer !== undefined && (Array.isArray(answer) ? answer.length > 0 : true);
 
@@ -136,25 +135,25 @@ export default function Questionnaire() {
       {/* Question area */}
       <div className="flex flex-1 items-center justify-center px-6 pt-20 pb-32">
         <div className="w-full max-w-xl">
-          <AnimatePresence mode="wait" custom={direction}>
-            <motion.div
-              key={`question-${current}`}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
-              <h2 className="text-xl font-semibold leading-snug sm:text-2xl">{q.text}</h2>
-              {q.type === "multi" && q.maxSelect && (
-                <p className="mt-2 text-sm text-muted-foreground">Select up to {q.maxSelect}</p>
-              )}
-              <div className="mt-8">
-                <QuestionInput key={`input-${current}`} question={q} value={answer} onChange={setAnswer} />
-              </div>
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            key={`question-${currentQuestion.id}`}
+            initial={{ x: direction > 0 ? 80 : -80, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <h2 className="text-xl font-semibold leading-snug sm:text-2xl">{currentQuestion.text}</h2>
+            {currentQuestion.type === "multi" && currentQuestion.maxSelect && (
+              <p className="mt-2 text-sm text-muted-foreground">Select up to {currentQuestion.maxSelect}</p>
+            )}
+            <div className="mt-8">
+              <QuestionInput
+                key={`input-${currentQuestion.id}`}
+                question={currentQuestion}
+                value={answer}
+                onChange={setAnswer}
+              />
+            </div>
+          </motion.div>
         </div>
       </div>
 
