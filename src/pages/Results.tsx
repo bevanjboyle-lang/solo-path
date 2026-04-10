@@ -464,3 +464,74 @@ function MarketSnapshotRenderer({ text }: { text: string }) {
     </div>
   );
 }
+
+function AIImpactSection({ data }: { data: any }) {
+  const riskColors: Record<string, string> = {
+    high: "bg-red-500/10 text-red-400 border-red-500/20",
+    "medium-high": "bg-orange-500/10 text-orange-400 border-orange-500/20",
+    medium: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    low: "bg-green-500/10 text-green-400 border-green-500/20",
+  };
+
+  const RiskBadge = ({ risk }: { risk: string }) => (
+    <Badge className={`text-[10px] px-2 py-0.5 border ${riskColors[risk] || riskColors.medium}`}>
+      {risk} risk
+    </Badge>
+  );
+
+  return (
+    <ReportSection title="Your AI Risk & Adaptation Plan" icon={Zap}>
+      <div className="space-y-6">
+        {/* Part 1 */}
+        {data.part_1 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider text-foreground">AI Displacement Risk for Your Archetype</p>
+              <RiskBadge risk={data.part_1.displacement_risk} />
+            </div>
+            {data.part_1.risk_horizon && (
+              <p className="text-[11px] text-muted-foreground/70">Risk horizon: {data.part_1.risk_horizon}</p>
+            )}
+            <p className="whitespace-pre-wrap">{data.part_1.content}</p>
+          </div>
+        )}
+
+        {/* Part 2 */}
+        {data.part_2 && (
+          <div className="space-y-2 border-t border-border/50 pt-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wider text-foreground">How Your Business Model Holds Up</p>
+              <RiskBadge risk={data.part_2.displacement_risk} />
+            </div>
+            <p className="whitespace-pre-wrap">{data.part_2.content}</p>
+          </div>
+        )}
+
+        {/* Part 3 */}
+        {data.part_3?.steps && data.part_3.steps.length > 0 && (
+          <div className="space-y-3 border-t border-border/50 pt-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-foreground">Your {data.part_3.steps.length}-Step AI Adaptation Plan</p>
+            <div className="space-y-2">
+              {data.part_3.steps.map((step: any, i: number) => (
+                <div key={i} className="rounded-lg border border-border bg-surface p-4 flex gap-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">{i + 1}</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-foreground">{step.action}</p>
+                      {step.priority && (
+                        <Badge className={`text-[10px] px-1.5 py-0 border ${riskColors[step.priority] || "bg-primary/10 text-primary border-primary/20"}`}>
+                          {step.priority}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{step.rationale}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </ReportSection>
+  );
+}
