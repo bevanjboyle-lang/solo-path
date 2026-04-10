@@ -12,7 +12,7 @@ const lockedSections = [
   { label: "Your Three Options", icon: Target },
   { label: "Our Recommendation", icon: Target },
   { label: "Reality Check", icon: ShieldCheck },
-  { label: "14-Day Activation Plan", icon: CalendarCheck },
+  { label: "30-Day Activation Plan", icon: CalendarCheck },
   { label: "Network Toolkit", icon: Users },
   { label: "Market Snapshot", icon: BarChart3 },
 ];
@@ -237,8 +237,8 @@ export default function Results() {
                 </ol>
               </ReportSection>
 
-              {/* Section 6: 14-Day Activation Plan */}
-              <ReportSection title="14-Day Activation Plan" icon={CalendarCheck}>
+              {/* Section 6: 30-Day Activation Plan */}
+              <ReportSection title="30-Day Activation Plan" icon={CalendarCheck}>
                 {ap?.activation_plan && (
                   <div className="space-y-4">
                     <p>{ap.activation_plan.summary}</p>

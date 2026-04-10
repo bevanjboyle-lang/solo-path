@@ -16,7 +16,7 @@ const features = [
   {
     icon: CalendarCheck,
     title: "Your activation plan",
-    desc: "A 14-day day-by-day action plan tailored to your network and availability.",
+    desc: "A 30-day day-by-day action plan tailored to your network and availability.",
   },
 ];
 
