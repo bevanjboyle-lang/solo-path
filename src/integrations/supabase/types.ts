@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      checkin_history: {
+        Row: {
+          checkin_date: string
+          created_at: string
+          day_number: number
+          exchanges: Json
+          id: string
+          narrative_addition: string | null
+          plan_updates: Json
+          replan_triggered: boolean
+          state: string
+          tracker_session_id: string
+          user_id: string
+        }
+        Insert: {
+          checkin_date: string
+          created_at?: string
+          day_number: number
+          exchanges?: Json
+          id?: string
+          narrative_addition?: string | null
+          plan_updates?: Json
+          replan_triggered?: boolean
+          state: string
+          tracker_session_id: string
+          user_id: string
+        }
+        Update: {
+          checkin_date?: string
+          created_at?: string
+          day_number?: number
+          exchanges?: Json
+          id?: string
+          narrative_addition?: string | null
+          plan_updates?: Json
+          replan_triggered?: boolean
+          state?: string
+          tracker_session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkin_history_tracker_session_id_fkey"
+            columns: ["tracker_session_id"]
+            isOneToOne: false
+            referencedRelation: "tracker_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -73,6 +123,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      replans: {
+        Row: {
+          created_at: string
+          id: string
+          replan_context: Json
+          replan_output: Json
+          replan_summary: string | null
+          tracker_session_id: string
+          triggered_day: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          replan_context: Json
+          replan_output: Json
+          replan_summary?: string | null
+          tracker_session_id: string
+          triggered_day: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          replan_context?: Json
+          replan_output?: Json
+          replan_summary?: string | null
+          tracker_session_id?: string
+          triggered_day?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "replans_tracker_session_id_fkey"
+            columns: ["tracker_session_id"]
+            isOneToOne: false
+            referencedRelation: "tracker_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reports: {
         Row: {
@@ -153,6 +244,65 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tracker_progress_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracker_sessions: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          current_day: number
+          id: string
+          last_checkin_date: string | null
+          original_plan: Json
+          plan_state: string
+          report_id: string
+          running_narrative: string
+          stripe_subscription_id: string | null
+          subscription_status: string | null
+          updated_at: string
+          user_id: string
+          working_plan: Json
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          current_day?: number
+          id?: string
+          last_checkin_date?: string | null
+          original_plan: Json
+          plan_state?: string
+          report_id: string
+          running_narrative?: string
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+          user_id: string
+          working_plan: Json
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          current_day?: number
+          id?: string
+          last_checkin_date?: string | null
+          original_plan?: Json
+          plan_state?: string
+          report_id?: string
+          running_narrative?: string
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+          user_id?: string
+          working_plan?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracker_sessions_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: false
             referencedRelation: "reports"
