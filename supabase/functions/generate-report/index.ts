@@ -240,7 +240,7 @@ Return JSON:
   }
 }`;
 
-    const p3User = `RECOMMENDED MODEL & REPORT:\n${JSON.stringify(finalReport)}\n\nQ11 (Network): ${answers["11"]}\nQ12 (Employment): ${answers["12"]}`;
+    const p3User = `RECOMMENDED MODEL & REPORT:\n${JSON.stringify(finalReport)}\n\nQ13 (Network): ${answers["13"]}\nQ14 (Employment): ${answers["14"]}`;
 
     const p4System = `You are Solo's market research analyst. Produce a Local Market Feasibility Snapshot. You do not have live data — label all figures as indicative.
 
@@ -262,7 +262,7 @@ Prepared as indicative research — not primary market data`;
     const p4User = `Recommended model: ${recommendedOption?.model_name || "Unknown"}
 Archetype: ${finalReport.archetype?.primary || "Unknown"}
 Pricing: £${recommendedOption?.pricing?.range_low_gbp || "?"} – £${recommendedOption?.pricing?.range_high_gbp || "?"} ${recommendedOption?.pricing?.cadence || ""}
-Location: ${answers["13"] || "UK"}`;
+Location: ${answers["15"] || "UK"}`;
 
     console.log("Running Prompts 3 & 4 in parallel...");
     const [p3Result, p4Result] = await Promise.all([
@@ -279,6 +279,7 @@ Location: ${answers["13"] || "UK"}`;
         core_report: finalReport,
         activation_plan: activationPlan,
         market_snapshot: p4Result,
+        hook_insight: hookInsight,
         status: "complete",
       })
       .eq("id", reportId);
