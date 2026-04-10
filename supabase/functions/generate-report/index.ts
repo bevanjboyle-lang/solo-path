@@ -273,13 +273,17 @@ Pricing: £${recommendedOption?.pricing?.range_low_gbp || "?"} – £${recommend
 Location: ${answers["15"] || "UK"}`;
 
     // ─── PROMPT 7: AI Impact & Adaptation ───
-    const archetypeId = finalReport.archetype?.primary || "";
+    const archetypeName = finalReport.archetype?.primary || "";
     const recommendedModelId = BUSINESS_MODELS.find(
       (m: any) => m.name === recommendedOption?.model_name
     )?.id || "";
-    const archAI = ARCHETYPES_AI_IMPACT[archetypeId]?.ai_impact || {};
+    // Look up archetype AI impact by name (report uses display names, not IDs)
+    const archEntry = Object.values(ARCHETYPES_AI_IMPACT).find(
+      (a: any) => a.archetype_name === archetypeName
+    );
+    const archAI = archEntry?.ai_impact || {};
     const modelAI = MODELS_AI_IMPACT[recommendedModelId]?.ai_impact || {};
-    const archName = ARCHETYPES_AI_IMPACT[archetypeId]?.archetype_name || archetypeId;
+    const archName = archetypeName;
 
     const p7System = `You are Solo's AI impact analyst. Your job is to write a clear, specific, commercially honest assessment of how AI will affect this user's career — both their current role and their recommended Plan B path.
 
