@@ -116,6 +116,50 @@ export type Database = {
         }
         Relationships: []
       }
+      tracker_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          day_index: number
+          id: string
+          phase_index: number
+          report_id: string
+          task_index: number
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          day_index: number
+          id?: string
+          phase_index: number
+          report_id: string
+          task_index: number
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          day_index?: number
+          id?: string
+          phase_index?: number
+          report_id?: string
+          task_index?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracker_progress_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
