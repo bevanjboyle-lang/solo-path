@@ -282,6 +282,24 @@ export default function Results() {
               {report?.ai_impact_section && (
                 <AIImpactSection data={report.ai_impact_section} />
               )}
+
+              {/* Start 30-day plan CTA */}
+              {ap?.activation_plan && (
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="rounded-xl border-2 border-primary/20 bg-card p-8 shadow-card text-center">
+                  <CalendarCheck className="h-8 w-8 text-primary mx-auto mb-3" strokeWidth={1.5} />
+                  <h3 className="text-lg font-semibold text-foreground">Ready to take action?</h3>
+                  <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+                    Turn your activation plan into daily tasks with check-ins, progress tracking, and adaptive replanning.
+                  </p>
+                  <button
+                    onClick={() => navigate(`/activate?report_id=${reportId}`)}
+                    className="mt-5 inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+                    style={{ background: "var(--gradient-cta)" }}
+                  >
+                    Start your 30-day plan →
+                  </button>
+                </motion.div>
+              )}
             </div>
           ) : (
             /* Paywall */

@@ -1,0 +1,302 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Loader2, LogOut, CalendarCheck, ChevronDown, CheckCircle2, Circle, ArrowRight, Lock, CreditCard } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Progress } from "@/components/ui/progress";
+
+interface TrackerSession {
+  id: string;
+  current_day: number;
+  plan_state: string;
+  subscription_status: string | null;
+  working_plan: any;
+  activated_at: string | null;
+  stripe_subscription_id: string | null;
+}
+
+export default function Tracker() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [session, setSession] = useState<TrackerSession | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
+  const [subscribing, setSubscribing] = useState(false);
+
+  // Handle return from Stripe
+  useEffect(() => {
+    const subscribed = searchParams.get("subscribed");
+    if (subscribed === "true") {
+      // Refresh session to pick up subscription status
+      loadSession();
+    }
+  }, [searchParams]);
+
+  const loadSession = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("tracker_sessions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!data) {
+      navigate("/", { replace: true });
+      return;
+    }
+    setSession(data as TrackerSession);
+
+    // Load completed tasks from tracker_progress
+    const { data: progress } = await supabase
+      .from("tracker_progress")
+      .select("phase_index, day_index, task_index")
+      .eq("user_id", user.id)
+      .eq("report_id", (data as any).report_id);
+
+    if (progress) {
+      const keys = new Set(progress.map((p) => `${p.phase_index}-${p.day_index}-${p.task_index}`));
+      setCompletedTasks(keys);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadSession();
+  }, [user]);
+
+  const toggleTask = async (phaseIdx: number, dayIdx: number, taskIdx: number) => {
+    if (!user || !session) return;
+    const key = `${phaseIdx}-${dayIdx}-${taskIdx}`;
+    const isCompleted = completedTasks.has(key);
+
+    if (isCompleted) {
+      await supabase
+        .from("tracker_progress")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("report_id", (session as any).report_id)
+        .eq("phase_index", phaseIdx)
+        .eq("day_index", dayIdx)
+        .eq("task_index", taskIdx);
+      setCompletedTasks((prev) => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
+    } else {
+      await supabase.from("tracker_progress").insert({
+        user_id: user.id,
+        report_id: (session as any).report_id,
+        phase_index: phaseIdx,
+        day_index: dayIdx,
+        task_index: taskIdx,
+      });
+      setCompletedTasks((prev) => new Set(prev).add(key));
+    }
+  };
+
+  const handleSubscribe = async () => {
+    if (!session) return;
+    setSubscribing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-subscription", {
+        body: { tracker_session_id: session.id },
+      });
+      if (error) throw error;
+      if (data?.checkout_url) {
+        window.location.href = data.checkout_url;
+      }
+    } catch (err) {
+      console.error("Subscription error:", err);
+    }
+    setSubscribing(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!session) return null;
+
+  const plan = session.working_plan;
+  const phases = plan?.activation_plan?.phases || plan?.phases || [];
+  const showPaywall = session.current_day > 30 && session.subscription_status !== "active";
+
+  // Calculate totals
+  let totalTasks = 0;
+  let completed = 0;
+  phases.forEach((phase: any, pi: number) => {
+    phase.days_detail?.forEach((day: any, di: number) => {
+      day.tasks?.forEach((_: any, ti: number) => {
+        totalTasks++;
+        if (completedTasks.has(`${pi}-${di}-${ti}`)) completed++;
+      });
+    });
+  });
+  const progressPct = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
+
+  const phaseLabels = ["Foundations", "Network Activation", "Outreach", "Consolidation"];
+  const phaseRanges = ["Days 1–7", "Days 8–16", "Days 17–25", "Days 26–30"];
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
+          <span className="text-base font-semibold tracking-tight">Solo</span>
+          <button onClick={() => signOut()} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <LogOut className="h-3.5 w-3.5" />
+            Sign out
+          </button>
+        </div>
+      </nav>
+
+      <div className="mx-auto max-w-3xl px-6 py-10">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Your Tracker</h1>
+              <p className="mt-1 text-sm text-muted-foreground">Day {session.current_day} of 30</p>
+            </div>
+            <button
+              onClick={() => navigate(`/checkin/${session.id}`)}
+              className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+              style={{ background: "var(--gradient-cta)" }}
+            >
+              <CalendarCheck className="h-4 w-4" />
+              Check in for today
+            </button>
+          </div>
+
+          {/* Overall progress */}
+          <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-card">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium text-foreground">Overall Progress</span>
+              <span className="text-sm font-semibold text-primary">{progressPct}%</span>
+            </div>
+            <Progress value={progressPct} className="h-2" />
+            <p className="mt-2 text-xs text-muted-foreground">{completed} of {totalTasks} tasks completed</p>
+          </div>
+
+          {/* Phase cards */}
+          <div className="mt-6 space-y-4">
+            {phases.map((phase: any, pi: number) => {
+              let phaseTotalTasks = 0;
+              let phaseCompleted = 0;
+              phase.days_detail?.forEach((day: any, di: number) => {
+                day.tasks?.forEach((_: any, ti: number) => {
+                  phaseTotalTasks++;
+                  if (completedTasks.has(`${pi}-${di}-${ti}`)) phaseCompleted++;
+                });
+              });
+              const phasePct = phaseTotalTasks > 0 ? Math.round((phaseCompleted / phaseTotalTasks) * 100) : 0;
+
+              return (
+                <Collapsible key={pi}>
+                  <CollapsibleTrigger className="flex w-full items-center justify-between rounded-xl border border-border bg-card p-5 text-left hover:bg-card/80 transition-colors group shadow-card">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-foreground">
+                          {phase.phase || phaseLabels[pi] || `Phase ${pi + 1}`}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {phase.days || phaseRanges[pi] || ""}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-2">
+                        <Progress value={phasePct} className="h-1.5 flex-1" />
+                        <span className="text-xs font-medium text-muted-foreground w-8">{phasePct}%</span>
+                      </div>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground ml-4 transition-transform group-data-[state=open]:rotate-180" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 space-y-2 pl-2">
+                    {phase.days_detail?.map((day: any, di: number) => (
+                      <div key={di} className="rounded-lg border border-border/50 bg-surface p-4">
+                        <p className="text-xs font-semibold text-foreground mb-2">{day.day}</p>
+                        <div className="space-y-2">
+                          {day.tasks?.map((task: any, ti: number) => {
+                            const key = `${pi}-${di}-${ti}`;
+                            const isDone = completedTasks.has(key);
+                            return (
+                              <button
+                                key={ti}
+                                onClick={() => toggleTask(pi, di, ti)}
+                                className="flex w-full items-start gap-3 text-left group"
+                              >
+                                {isDone ? (
+                                  <CheckCircle2 className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+                                ) : (
+                                  <Circle className="h-4 w-4 mt-0.5 text-muted-foreground/50 shrink-0 group-hover:text-muted-foreground" />
+                                )}
+                                <span className={`text-sm leading-snug ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                                  {typeof task === "string" ? task : task.task || task.description || JSON.stringify(task)}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
+          </div>
+
+          {/* Day-30 Paywall */}
+          {showPaywall && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8 rounded-xl border-2 border-primary/30 bg-card p-8 shadow-elevated text-center"
+            >
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                <Lock className="h-6 w-6 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold tracking-tight">
+                Your 30 days are up — keep the momentum going
+              </h2>
+              <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
+                Continue with monthly check-ins and plan updates for £12.99/month.
+                Cancel any time.
+              </p>
+              <div className="mt-6 flex flex-col items-center gap-3">
+                <button
+                  onClick={handleSubscribe}
+                  disabled={subscribing}
+                  className="inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+                  style={{ background: "var(--gradient-cta)" }}
+                >
+                  {subscribing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <CreditCard className="h-4 w-4" />
+                      Continue for £12.99/month
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => {}}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  View your plan summary
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
+    </div>
+  );
+}
