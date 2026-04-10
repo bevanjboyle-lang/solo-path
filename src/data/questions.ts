@@ -146,7 +146,7 @@ export const questions: Question[] = [
     placeholder: "e.g. I advised a startup on compliance frameworks for 6 months on a freelance basis...",
   },
   {
-    id: 11,
+    id: 13,
     text: "How would you describe your current professional network?",
     type: "single",
     options: [
@@ -157,7 +157,7 @@ export const questions: Question[] = [
     ],
   },
   {
-    id: 12,
+    id: 14,
     text: "What is your current employment situation?",
     type: "single",
     options: [
@@ -169,7 +169,7 @@ export const questions: Question[] = [
     ],
   },
   {
-    id: 13,
+    id: 15,
     text: "Where are you based?",
     type: "text",
     placeholder: "e.g. London, UK or Manchester, UK",
