@@ -81,6 +81,7 @@ export type Database = {
           core_report: Json | null
           created_at: string
           error: string | null
+          hook_insight: string | null
           id: string
           market_snapshot: string | null
           status: string
@@ -92,6 +93,7 @@ export type Database = {
           core_report?: Json | null
           created_at?: string
           error?: string | null
+          hook_insight?: string | null
           id?: string
           market_snapshot?: string | null
           status?: string
@@ -103,6 +105,7 @@ export type Database = {
           core_report?: Json | null
           created_at?: string
           error?: string | null
+          hook_insight?: string | null
           id?: string
           market_snapshot?: string | null
           status?: string
