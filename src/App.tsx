@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Questionnaire from "./pages/Questionnaire";
 import Processing from "./pages/Processing";
 import Results from "./pages/Results";
+import Teaser from "./pages/Teaser";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/questionnaire" element={<ProtectedRoute><Questionnaire /></ProtectedRoute>} />
             <Route path="/processing" element={<ProtectedRoute><Processing /></ProtectedRoute>} />
+            <Route path="/teaser" element={<ProtectedRoute><Teaser /></ProtectedRoute>} />
             <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
             <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
