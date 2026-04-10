@@ -135,13 +135,13 @@ export const questions: Question[] = [
   },
   {
     id: 11,
-    text: "What are the 2–3 most relevant types of client, organisation, or sector you have worked with most closely? What do you know about how they operate — what they struggle with, how they buy external help, or what matters to them?",
+    text: "Who are the 2-3 most relevant types of client, organisation, or sector you have worked with most closely? What do you know about how they operate - what they struggle with, how they buy external help, or what matters to them?",
     type: "text",
     placeholder: "e.g. Mid-size retail brands struggling with digital transformation, buying help through procurement...",
   },
   {
     id: 12,
-    text: "Have you ever done any independent work outside your main role — consulting, freelancing, advisory board roles, pro bono work, or any other independent contribution? If yes, describe it briefly.",
+    text: "Have you ever done any paid or unpaid independent work outside your main employment - consulting, freelancing, advisory board roles, pro bono work, or any other independent contribution? If yes, describe it briefly.",
     type: "text",
     placeholder: "e.g. I advised a startup on compliance frameworks for 6 months on a freelance basis...",
   },
