@@ -19,7 +19,7 @@ const fadeUp = {
 
 const reportFaqs = [
   {
-    q: "What do I actually get for £49?",
+    q: "What do I actually get for £9.99?",
     a: "A personalised 8-section report based on your 12-minute diagnostic. Covers: transferable skills ranked and explained, your three most viable alternative paths (with day rates, target clients, time-to-revenue estimates), market intelligence for your role and location, and a 90-day action plan with specific first steps. You own it permanently — no subscription required.",
   },
   {

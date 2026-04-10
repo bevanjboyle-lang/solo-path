@@ -64,7 +64,7 @@ const cards: PricingCard[] = [
     badge: "MOST POPULAR",
     badgeClass: "bg-primary/20 text-primary",
     title: "Your Plan B Report",
-    price: "£49",
+    price: "£9.99",
     subtitle: "One-time payment. Yours to keep.",
     highlighted: true,
     features: [
@@ -77,7 +77,7 @@ const cards: PricingCard[] = [
       { text: "Local market feasibility snapshot" },
       { text: "Saved to your account — return any time" },
     ],
-    cta: "Get your full report — £49 →",
+    cta: "Get your full report — £9.99 →",
     ctaVariant: "filled",
     href: "/auth",
   },
@@ -106,7 +106,7 @@ const cards: PricingCard[] = [
 const faqs = [
   {
     q: "Why isn't the full report free?",
-    a: "Building a high-quality, personalised Plan B report requires serious computation and curated logic. The £49 covers that and ensures we can keep improving the product.",
+    a: "Building a high-quality, personalised Plan B report requires serious computation and curated logic. The £9.99 covers that and ensures we can keep improving the product.",
   },
   {
     q: "What if I'm not satisfied with my report?",

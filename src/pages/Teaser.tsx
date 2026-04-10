@@ -115,7 +115,7 @@ export default function Teaser() {
             className="mt-10 inline-flex items-center rounded-lg px-8 py-3 text-base font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
             style={{ background: "var(--gradient-cta)" }}
           >
-            {payLoading ? "Loading..." : "Unlock your full report — £49"}
+            {payLoading ? "Loading..." : "Unlock your full report — £9.99"}
           </button>
         </motion.div>
       </div>
