@@ -223,7 +223,7 @@ Hard constraint: NEVER change a model_name value.`;
     const hookInsight = p2Json.hook_insight || null;
 
     // ─── PROMPTS 3 & 4 in parallel ───
-    const p3System = `You are Solo's activation specialist. Produce a 14-Day Activation Plan and Network Activation Toolkit for the recommended model.
+    const p3System = `You are Solo's activation specialist. Produce a 30-Day Activation Plan and Network Activation Toolkit for the recommended model.
 
 Pacing based on employment status:
 - Employed full-time: 1–1.5h weekday evenings, 3–4h weekend days
@@ -235,7 +235,7 @@ Network calibration:
 - Medium (30–100): moderate mix of warm and cold
 - Weak (under 30): conservative, rebuild relationships first
 
-Cover 4 phases: Foundations (Days 1–3), Network Activation (Days 4–7), Outreach (Days 8–11), Consolidation (Days 12–14).
+Cover 6 phases: Foundations (Days 1–5), Network Activation (Days 6–10), Outreach (Days 11–16), Build & Test (Days 17–22), Iteration (Days 23–27), Consolidation (Days 28–30).
 
 Return JSON:
 {
