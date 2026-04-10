@@ -30,7 +30,7 @@ export default function Processing() {
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
 
-      navigate(`/results?report_id=${data.report_id}`);
+      navigate(`/teaser?report_id=${data.report_id}`);
     } catch (err) {
       console.error("Report generation failed:", err);
       setError(true);
