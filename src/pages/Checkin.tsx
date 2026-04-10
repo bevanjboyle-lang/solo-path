@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, LogOut, Send, ArrowLeft, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrackerSession } from "@/hooks/useTrackerSession";
 
 interface Exchange {
   role: "assistant" | "user";
@@ -15,8 +16,8 @@ export default function Checkin() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { session, setSession, loading: sessionLoading } = useTrackerSession({ sessionId });
+
   const [sending, setSending] = useState(false);
   const [replanning, setReplanning] = useState(false);
   const [exchanges, setExchanges] = useState<Exchange[]>([]);
@@ -24,37 +25,27 @@ export default function Checkin() {
   const [complete, setComplete] = useState(false);
   const [exchangeCount, setExchangeCount] = useState(0);
   const [checkinState, setCheckinState] = useState("open");
+  const [openingDone, setOpeningDone] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [exchanges]);
 
-  // Load session and open check-in
+  // Trigger opening call once session is loaded
   useEffect(() => {
-    if (!sessionId || !user) return;
+    if (!session || !user || openingDone) return;
+    setOpeningDone(true);
     (async () => {
-      const { data } = await supabase
-        .from("tracker_sessions")
-        .select("*")
-        .eq("id", sessionId)
-        .single();
-
-      if (!data) {
-        navigate("/tracker", { replace: true });
-        return;
-      }
-      setSession(data);
-      // Trigger opening call
       try {
         const { data: result, error } = await supabase.functions.invoke("process-checkin", {
           body: {
             call_type: "opening",
-            tracker_session_id: sessionId,
+            tracker_session_id: session.id,
             user_id: user.id,
-            current_day: data.current_day,
-            working_plan: data.working_plan,
-            running_narrative: data.running_narrative,
+            current_day: session.current_day,
+            working_plan: session.working_plan,
+            running_narrative: session.running_narrative,
             exchange_count: 0,
           },
         });
@@ -66,12 +57,11 @@ export default function Checkin() {
         console.error("Opening check-in error:", err);
         setExchanges([{ role: "assistant", text: "Hi — let's check in on today's plan. How did it go?" }]);
       }
-      setLoading(false);
     })();
-  }, [sessionId, user]);
+  }, [session, user, openingDone]);
 
   const handleSend = async () => {
-    if (!input.trim() || sending || complete) return;
+    if (!input.trim() || sending || complete || !session || !user) return;
     const userMsg = input.trim();
     setInput("");
     setExchanges((prev) => [...prev, { role: "user", text: userMsg }]);
@@ -81,8 +71,8 @@ export default function Checkin() {
       const { data: result, error } = await supabase.functions.invoke("process-checkin", {
         body: {
           call_type: "follow_up",
-          tracker_session_id: sessionId,
-          user_id: user!.id,
+          tracker_session_id: session.id,
+          user_id: user.id,
           current_day: session.current_day,
           working_plan: session.working_plan,
           running_narrative: session.running_narrative,
@@ -102,7 +92,7 @@ export default function Checkin() {
         await supabase
           .from("tracker_sessions")
           .update({ working_plan: result.updated_working_plan || session.working_plan })
-          .eq("id", sessionId);
+          .eq("id", session.id);
       }
 
       // Save narrative
@@ -111,17 +101,16 @@ export default function Checkin() {
         await supabase
           .from("tracker_sessions")
           .update({ running_narrative: newNarrative })
-          .eq("id", sessionId);
-        setSession((s: any) => ({ ...s, running_narrative: newNarrative }));
+          .eq("id", session.id);
+        setSession((s) => s ? { ...s, running_narrative: newNarrative } : s);
       }
 
       if (result.check_in_complete) {
         setComplete(true);
-        // Save checkin history
         const today = new Date().toISOString().split("T")[0];
         await supabase.from("checkin_history").insert({
-          tracker_session_id: sessionId!,
-          user_id: user!.id,
+          tracker_session_id: session.id,
+          user_id: user.id,
           day_number: session.current_day,
           checkin_date: today,
           state: result.state || "closed",
@@ -131,23 +120,18 @@ export default function Checkin() {
           replan_triggered: result.replan_required || false,
         });
 
-        // Advance day
         await supabase
           .from("tracker_sessions")
-          .update({
-            current_day: session.current_day + 1,
-            last_checkin_date: today,
-          })
-          .eq("id", sessionId);
+          .update({ current_day: session.current_day + 1, last_checkin_date: today })
+          .eq("id", session.id);
 
-        // Handle replan
         if (result.replan_required) {
           setReplanning(true);
           try {
             const { data: replanResult } = await supabase.functions.invoke("trigger-replan", {
               body: {
-                tracker_session_id: sessionId,
-                user_id: user!.id,
+                tracker_session_id: session.id,
+                user_id: user.id,
                 current_day: session.current_day,
                 working_plan: session.working_plan,
                 running_narrative: session.running_narrative,
@@ -159,11 +143,11 @@ export default function Checkin() {
               await supabase
                 .from("tracker_sessions")
                 .update({ working_plan: newPlan })
-                .eq("id", sessionId);
+                .eq("id", session.id);
 
               await supabase.from("replans").insert({
-                tracker_session_id: sessionId!,
-                user_id: user!.id,
+                tracker_session_id: session.id,
+                user_id: user.id,
                 triggered_day: session.current_day,
                 replan_context: result.replan_context || {},
                 replan_output: replanResult,
@@ -186,12 +170,17 @@ export default function Checkin() {
     setSending(false);
   };
 
-  if (loading) {
+  if (sessionLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
+  }
+
+  if (!session) {
+    navigate("/tracker", { replace: true });
+    return null;
   }
 
   return (
@@ -202,7 +191,7 @@ export default function Checkin() {
             <button onClick={() => navigate("/tracker")} className="text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <span className="text-base font-semibold tracking-tight">Day {session?.current_day} Check-in</span>
+            <span className="text-base font-semibold tracking-tight">Day {session.current_day} Check-in</span>
           </div>
           <button onClick={() => signOut()} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <LogOut className="h-3.5 w-3.5" />
@@ -236,15 +225,9 @@ export default function Checkin() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
               <div className="flex items-center gap-2 rounded-xl bg-card border border-border px-4 py-3 text-sm text-muted-foreground">
                 {replanning ? (
-                  <>
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                    Rebuilding your plan…
-                  </>
+                  <><RefreshCw className="h-3.5 w-3.5 animate-spin" /> Rebuilding your plan…</>
                 ) : (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Thinking…
-                  </>
+                  <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Thinking…</>
                 )}
               </div>
             </motion.div>
