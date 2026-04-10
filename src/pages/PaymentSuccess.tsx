@@ -12,7 +12,8 @@ export default function PaymentSuccess() {
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
     if (!sessionId) {
-      navigate("/results");
+      const savedReportId = localStorage.getItem("solo_report_id");
+      navigate(savedReportId ? `/results?report_id=${savedReportId}&from=payment` : "/");
       return;
     }
 
@@ -23,7 +24,9 @@ export default function PaymentSuccess() {
         });
         if (fnError) throw fnError;
         if (data?.paid) {
-          setTimeout(() => navigate("/results?from=payment"), 1500);
+          const savedReportId = localStorage.getItem("solo_report_id");
+          const reportParam = savedReportId ? `report_id=${savedReportId}&` : "";
+          setTimeout(() => navigate(`/results?${reportParam}from=payment`), 1500);
         } else {
           setError(true);
         }

@@ -16,6 +16,8 @@ export default function Teaser() {
 
   useEffect(() => {
     if (!user || !reportId) return;
+    // Store report_id for post-payment redirect
+    localStorage.setItem("solo_report_id", reportId);
     supabase
       .from("reports")
       .select("hook_insight")
