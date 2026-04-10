@@ -15,6 +15,12 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import Activate from "./pages/Activate";
 import Tracker from "./pages/Tracker";
 import Checkin from "./pages/Checkin";
+import HowItWorks from "./pages/HowItWorks";
+import WhySolo from "./pages/WhySolo";
+import Pricing from "./pages/Pricing";
+import WhoItsFor from "./pages/WhoItsFor";
+import SampleReport from "./pages/SampleReport";
+import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +34,12 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/why-solo" element={<WhySolo />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/who-its-for" element={<WhoItsFor />} />
+            <Route path="/sample-report" element={<SampleReport />} />
+            <Route path="/faq" element={<FAQ />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/questionnaire" element={<ProtectedRoute><Questionnaire /></ProtectedRoute>} />
             <Route path="/processing" element={<ProtectedRoute><Processing /></ProtectedRoute>} />

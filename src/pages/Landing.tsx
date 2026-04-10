@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Target, Route, CalendarCheck } from "lucide-react";
+import Navbar from "@/components/Navbar";
 
 const features = [
   {
@@ -34,12 +35,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
-          <span className="text-base font-semibold tracking-tight">Solo</span>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero */}
       <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-14">
