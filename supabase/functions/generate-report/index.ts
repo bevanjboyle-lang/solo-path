@@ -141,9 +141,11 @@ serve(async (req) => {
       q8_motivation: answers["8"],
       q9_biz_dev_comfort: answers["9"],
       q10_model_preference: answers["10"],
-      q11_network: answers["11"],
-      q12_employment: answers["12"],
-      q13_location: answers["13"],
+      q11_client_sectors: answers["11"],
+      q12_independent_work: answers["12"],
+      q13_network: answers["13"],
+      q14_employment: answers["14"],
+      q15_location: answers["15"],
     });
 
     // ─── PROMPT 1: Core Report ───
