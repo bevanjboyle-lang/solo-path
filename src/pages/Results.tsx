@@ -78,7 +78,15 @@ export default function Results() {
           await new Promise((r) => setTimeout(r, 2000));
         }
       }
-      if (!cancelled) setChecking(false);
+      if (!cancelled) {
+        setChecking(false);
+        // Not paid — redirect to teaser or home
+        if (reportId) {
+          navigate(`/teaser?report_id=${reportId}`, { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+      }
     };
     poll();
     return () => { cancelled = true; };
