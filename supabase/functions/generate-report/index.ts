@@ -235,7 +235,7 @@ Network calibration:
 - Medium (30–100): moderate mix of warm and cold
 - Weak (under 30): conservative, rebuild relationships first
 
-Cover 6 phases: Foundations (Days 1–5), Network Activation (Days 6–10), Outreach (Days 11–16), Build & Test (Days 17–22), Iteration (Days 23–27), Consolidation (Days 28–30).
+Cover 4 phases: Foundations (Days 1–7), Network Activation (Days 8–16), Outreach (Days 17–25), Consolidation (Days 26–30).
 
 Return JSON:
 {
