@@ -138,7 +138,7 @@ export default function Questionnaire() {
         <div className="w-full max-w-xl">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
-              key={q.id}
+              key={`question-${current}`}
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -151,7 +151,7 @@ export default function Questionnaire() {
                 <p className="mt-2 text-sm text-muted-foreground">Select up to {q.maxSelect}</p>
               )}
               <div className="mt-8">
-                <QuestionInput question={q} value={answer} onChange={setAnswer} />
+                <QuestionInput key={`input-${current}`} question={q} value={answer} onChange={setAnswer} />
               </div>
             </motion.div>
           </AnimatePresence>
