@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,7 @@ interface ReportData {
 
 export default function Results() {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
   const [paid, setPaid] = useState(false);
@@ -77,7 +78,15 @@ export default function Results() {
           await new Promise((r) => setTimeout(r, 2000));
         }
       }
-      if (!cancelled) setChecking(false);
+      if (!cancelled) {
+        setChecking(false);
+        // Not paid — redirect to teaser or home
+        if (reportId) {
+          navigate(`/teaser?report_id=${reportId}`, { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
+      }
     };
     poll();
     return () => { cancelled = true; };
