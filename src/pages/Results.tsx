@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown } from "lucide-react";
+import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ interface ReportData {
   core_report: any;
   activation_plan: any;
   market_snapshot: string;
+  ai_impact_section: any;
 }
 
 export default function Results() {
@@ -43,7 +44,7 @@ export default function Results() {
     }
     supabase
       .from("reports")
-      .select("core_report, activation_plan, market_snapshot")
+      .select("core_report, activation_plan, market_snapshot, ai_impact_section")
       .eq("id", reportId)
       .single()
       .then(({ data }) => {
@@ -276,6 +277,11 @@ export default function Results() {
               <ReportSection title="Market Snapshot" icon={BarChart3}>
                 <MarketSnapshotRenderer text={report?.market_snapshot || ""} />
               </ReportSection>
+
+              {/* Section 9: AI Risk & Adaptation Plan */}
+              {report?.ai_impact_section && (
+                <AIImpactSection data={report.ai_impact_section} />
+              )}
             </div>
           ) : (
             /* Paywall */
