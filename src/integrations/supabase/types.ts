@@ -77,6 +77,7 @@ export type Database = {
       reports: {
         Row: {
           activation_plan: Json | null
+          ai_impact_section: Json | null
           answers: Json
           core_report: Json | null
           created_at: string
@@ -89,6 +90,7 @@ export type Database = {
         }
         Insert: {
           activation_plan?: Json | null
+          ai_impact_section?: Json | null
           answers?: Json
           core_report?: Json | null
           created_at?: string
@@ -101,6 +103,7 @@ export type Database = {
         }
         Update: {
           activation_plan?: Json | null
+          ai_impact_section?: Json | null
           answers?: Json
           core_report?: Json | null
           created_at?: string
