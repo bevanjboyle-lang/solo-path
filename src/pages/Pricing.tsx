@@ -141,7 +141,7 @@ export default function Pricing() {
       <section className="flex flex-col items-center justify-center px-6 pb-8 pt-32 sm:pt-36">
         <div className="mx-auto max-w-2xl text-center">
           <motion.h1
-            className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
+            className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -167,7 +167,7 @@ export default function Pricing() {
               key={card.title}
               className={`relative flex flex-col rounded-2xl border p-6 ${
                 card.highlighted
-                  ? "border-primary/60 shadow-[0_0_40px_-12px_hsl(220_70%_60%/0.25)]"
+                  ? "border-primary/60 shadow-[0_0_40px_-12px_hsl(166_63%_49%/0.25)]"
                   : "border-border/60 bg-card"
               }`}
               style={card.highlighted ? { background: "var(--gradient-subtle, hsl(228 12% 11%))" } : undefined}
@@ -182,9 +182,9 @@ export default function Pricing() {
                 {card.badge}
               </span>
 
-              <h3 className="text-base font-semibold">{card.title}</h3>
+              <h3 className="font-display text-base font-semibold">{card.title}</h3>
               <div className="mt-3 flex items-baseline gap-1">
-                <span className="text-3xl font-bold">{card.price}</span>
+                <span className="font-display text-3xl font-bold">{card.price}</span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{card.subtitle}</p>
 
@@ -208,10 +208,9 @@ export default function Pricing() {
               <Button
                 className={`mt-6 w-full rounded-lg text-sm font-medium ${
                   card.ctaVariant === "filled"
-                    ? "text-primary-foreground"
+                    ? "bg-primary text-primary-foreground hover:bg-[#1FAF97]"
                     : "border border-border/60 bg-transparent text-foreground hover:bg-accent"
                 }`}
-                style={card.ctaVariant === "filled" ? { background: "var(--gradient-cta)" } : undefined}
                 onClick={() => navigate(card.href)}
               >
                 {card.cta}
@@ -229,7 +228,7 @@ export default function Pricing() {
       <section className="border-t border-border/50 py-24">
         <div className="mx-auto max-w-2xl px-6">
           <motion.h2
-            className="mb-10 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
+            className="font-display mb-10 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
@@ -255,13 +254,10 @@ export default function Pricing() {
       </section>
 
       {/* CTA */}
-      <section
-        className="py-24"
-        style={{ background: "var(--gradient-cta)" }}
-      >
+      <section className="bg-primary py-24">
         <div className="mx-auto max-w-2xl px-6 text-center">
           <motion.h2
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
+            className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -280,7 +276,7 @@ export default function Pricing() {
           >
             <Button
               size="lg"
-              className="rounded-lg bg-white px-8 py-4 text-base font-medium text-primary hover:bg-white/90"
+              className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
               onClick={() => navigate("/auth")}
             >
               Take the test →

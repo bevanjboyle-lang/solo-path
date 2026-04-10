@@ -1,4 +1,4 @@
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Lock, ShieldCheck } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -53,8 +53,7 @@ function LockedOverlay({ label }: { label: string }) {
       <Lock className="h-6 w-6 text-muted-foreground/60" />
       <Button
         size="sm"
-        className="rounded-lg text-sm font-medium text-primary-foreground"
-        style={{ background: "var(--gradient-cta)" }}
+        className="rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-[#1FAF97]"
         onClick={() => navigate("/auth")}
       >
         {label}
@@ -82,7 +81,7 @@ export default function SampleReport() {
             Sample Report
           </motion.span>
           <motion.h1
-            className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
+            className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
@@ -114,7 +113,7 @@ export default function SampleReport() {
             <ShieldCheck className="h-4 w-4 text-primary" strokeWidth={1.5} />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">Profile Summary</span>
           </div>
-          <h3 className="mt-3 text-lg font-semibold">Sarah Chen</h3>
+          <h3 className="font-display mt-3 text-lg font-semibold">Sarah Chen</h3>
           <p className="text-sm text-muted-foreground">Risk Manager · Financial Services · Edinburgh</p>
           <p className="mt-1 text-sm text-muted-foreground">9 years at Big Four · Currently earning: £85k</p>
 
@@ -142,7 +141,7 @@ export default function SampleReport() {
           viewport={{ once: true }}
           custom={0}
         >
-          <h2 className="mb-6 text-xl font-semibold">Your Strongest Skills (Ranked)</h2>
+          <h2 className="font-display mb-6 text-xl font-semibold">Your Strongest Skills (Ranked)</h2>
           <div className="flex flex-col gap-3">
             {skills.map((s) => (
               <div
@@ -169,14 +168,14 @@ export default function SampleReport() {
           viewport={{ once: true }}
           custom={0}
         >
-          <h2 className="mb-6 text-xl font-semibold">Your Three Most Viable Paths</h2>
+          <h2 className="font-display mb-6 text-xl font-semibold">Your Three Most Viable Paths</h2>
 
           {/* Path 1 — full */}
           <div className="mb-4 rounded-2xl border border-primary/40 bg-card p-6 sm:p-8">
             <span className="mb-3 inline-block rounded-full bg-primary/20 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary">
               Path 1 — Best fit
             </span>
-            <h3 className="text-lg font-semibold">Independent Risk Consultant</h3>
+            <h3 className="font-display text-lg font-semibold">Independent Risk Consultant</h3>
 
             <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
               <div>
@@ -304,10 +303,10 @@ export default function SampleReport() {
       </div>
 
       {/* FINAL CTA */}
-      <section className="py-24" style={{ background: "var(--gradient-cta)" }}>
+      <section className="bg-primary py-24">
         <div className="mx-auto max-w-2xl px-6 text-center">
           <motion.h2
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
+            className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -317,7 +316,7 @@ export default function SampleReport() {
             Ready for your own report?
           </motion.h2>
           <motion.p
-            className="mt-4 text-base text-white/70"
+            className="mt-4 text-base text-primary-foreground/70"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -336,7 +335,7 @@ export default function SampleReport() {
           >
             <Button
               size="lg"
-              className="rounded-lg bg-white px-8 py-4 text-base font-medium text-primary hover:bg-white/90"
+              className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
               onClick={() => navigate("/auth")}
             >
               Take the test →

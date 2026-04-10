@@ -100,7 +100,7 @@ export default function Landing() {
           </motion.span>
 
           <motion.h1
-            className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+            className="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -127,8 +127,7 @@ export default function Landing() {
           >
             <Button
               size="lg"
-              className="rounded-lg px-8 py-4 text-base font-medium text-primary-foreground"
-              style={{ background: "var(--gradient-cta)" }}
+              className="rounded-lg bg-primary px-8 py-4 text-base font-medium text-primary-foreground hover:bg-[#1FAF97]"
               onClick={() => navigate("/auth")}
             >
               Take the test — £9.99 →
@@ -154,7 +153,7 @@ export default function Landing() {
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               The Problem
             </span>
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Most professionals have no credible Plan B
             </h2>
           </motion.div>
@@ -193,7 +192,7 @@ export default function Landing() {
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               How It Works
             </span>
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               From experience to income path in 8 minutes
             </h2>
           </motion.div>
@@ -230,8 +229,7 @@ export default function Landing() {
           >
             <Button
               size="lg"
-              className="rounded-lg px-8 py-4 text-sm font-medium text-primary-foreground"
-              style={{ background: "var(--gradient-cta)" }}
+              className="rounded-lg bg-primary px-8 py-4 text-sm font-medium text-primary-foreground hover:bg-[#1FAF97]"
               onClick={() => navigate("/auth")}
             >
               Take the test →
@@ -254,7 +252,7 @@ export default function Landing() {
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               What's In Your Report
             </span>
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Six sections. No fluff.
             </h2>
           </motion.div>
@@ -297,7 +295,7 @@ export default function Landing() {
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               Who Solo Is For
             </span>
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Built for a specific kind of professional
             </h2>
           </motion.div>
@@ -373,7 +371,7 @@ export default function Landing() {
             custom={0}
           >
             <Quote className="mx-auto mb-4 h-6 w-6 text-primary/40" strokeWidth={1.5} />
-            <p className="text-base leading-relaxed text-foreground/90 sm:text-lg">
+            <p className="font-display text-base leading-relaxed text-foreground/90 sm:text-lg">
               "I'd been meaning to think through my options for two years. Solo gave me a concrete answer in under 10 minutes. The activation plan alone was worth £9.99."
             </p>
             <footer className="mt-4 text-xs text-muted-foreground">
@@ -384,13 +382,10 @@ export default function Landing() {
       </section>
 
       {/* ── SECTION 7: FINAL CTA ── */}
-      <section
-        className="py-24"
-        style={{ background: "var(--gradient-cta)" }}
-      >
+      <section className="bg-primary py-24">
         <div className="mx-auto max-w-2xl px-6 text-center">
           <motion.h2
-            className="text-3xl font-bold tracking-tight text-white sm:text-4xl"
+            className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -400,7 +395,7 @@ export default function Landing() {
             Know your Plan B before you need it.
           </motion.h2>
           <motion.p
-            className="mt-4 text-base text-white/70"
+            className="mt-4 text-base text-primary-foreground/70"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -419,7 +414,7 @@ export default function Landing() {
           >
             <Button
               size="lg"
-              className="rounded-lg bg-white px-8 py-4 text-base font-medium text-primary hover:bg-white/90"
+              className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
               onClick={() => navigate("/auth")}
             >
               Take the test →

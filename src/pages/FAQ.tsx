@@ -72,7 +72,7 @@ export default function FAQ() {
       <section className="flex flex-col items-center justify-center px-6 pb-8 pt-32 sm:pt-36">
         <div className="mx-auto max-w-2xl text-center">
           <motion.h1
-            className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
+            className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -102,7 +102,7 @@ export default function FAQ() {
           variants={fadeUp}
           custom={0}
         >
-          <h2 className="mb-6 text-lg font-semibold">About the Report</h2>
+          <h2 className="font-display mb-6 text-lg font-semibold">About the Report</h2>
           <Accordion type="single" collapsible className="w-full">
             {reportFaqs.map((faq, i) => (
               <AccordionItem key={i} value={`report-${i}`} className="border-border/50">
@@ -125,7 +125,7 @@ export default function FAQ() {
           variants={fadeUp}
           custom={0}
         >
-          <h2 className="mb-6 text-lg font-semibold">About the Product</h2>
+          <h2 className="font-display mb-6 text-lg font-semibold">About the Product</h2>
           <Accordion type="single" collapsible className="w-full">
             {productFaqs.map((faq, i) => (
               <AccordionItem key={i} value={`product-${i}`} className="border-border/50">
@@ -144,7 +144,7 @@ export default function FAQ() {
       {/* FOOTER CTA */}
       <section className="border-t border-border/50 py-16">
         <div className="mx-auto max-w-2xl px-6 text-center">
-          <h3 className="text-lg font-semibold">Still have a question?</h3>
+          <h3 className="font-display text-lg font-semibold">Still have a question?</h3>
           <p className="mt-2 text-sm text-muted-foreground">
             Email us at{" "}
             <a href="mailto:hello@solopath.co" className="text-primary hover:text-primary/80">

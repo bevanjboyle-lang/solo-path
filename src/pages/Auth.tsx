@@ -57,7 +57,7 @@ export default function Auth() {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
                 <Mail className="h-5 w-5 text-primary" />
               </div>
-              <h1 className="mt-6 text-xl font-semibold">Check your email</h1>
+              <h1 className="font-display mt-6 text-xl font-semibold">Check your email</h1>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 We sent a magic link to <span className="font-medium text-foreground">{email}</span>. Click the link to sign in and start your questionnaire.
               </p>
@@ -70,7 +70,7 @@ export default function Auth() {
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-semibold tracking-tight">Sign in to continue</h1>
+              <h1 className="font-display text-2xl font-semibold tracking-tight">Sign in to continue</h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 Enter your email and we'll send you a magic link.
               </p>
@@ -98,8 +98,7 @@ export default function Auth() {
                 <button
                   type="submit"
                   disabled={submitting || !email}
-                  className="flex w-full items-center justify-center rounded-lg px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90"
-                  style={{ background: "var(--gradient-cta)" }}
+                  className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1FAF97]"
                 >
                   {submitting ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
