@@ -1,116 +1,44 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, LogOut, CalendarCheck, ChevronDown, CheckCircle2, Circle, ArrowRight, Lock, CreditCard } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Loader2, LogOut, CalendarCheck, ChevronDown, CheckCircle2, Circle, Lock, CreditCard } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTrackerSession } from "@/hooks/useTrackerSession";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
 
-interface TrackerSession {
-  id: string;
-  current_day: number;
-  plan_state: string;
-  subscription_status: string | null;
-  working_plan: any;
-  activated_at: string | null;
-  stripe_subscription_id: string | null;
-}
-
 export default function Tracker() {
-  const { user, signOut } = useAuth();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [session, setSession] = useState<TrackerSession | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [subscribing, setSubscribing] = useState(false);
+
+  const {
+    session,
+    loading,
+    completedTasks,
+    toggleTask,
+    subscribe,
+    refresh,
+    phases,
+    totalTasks,
+    completedCount,
+    progressPct,
+    showPaywall,
+  } = useTrackerSession();
 
   // Handle return from Stripe
   useEffect(() => {
-    const subscribed = searchParams.get("subscribed");
-    if (subscribed === "true") {
-      // Refresh session to pick up subscription status
-      loadSession();
+    if (searchParams.get("subscribed") === "true") {
+      refresh();
     }
   }, [searchParams]);
 
-  const loadSession = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from("tracker_sessions")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (!data) {
-      navigate("/", { replace: true });
-      return;
-    }
-    setSession(data as TrackerSession);
-
-    // Load completed tasks from tracker_progress
-    const { data: progress } = await supabase
-      .from("tracker_progress")
-      .select("phase_index, day_index, task_index")
-      .eq("user_id", user.id)
-      .eq("report_id", (data as any).report_id);
-
-    if (progress) {
-      const keys = new Set(progress.map((p) => `${p.phase_index}-${p.day_index}-${p.task_index}`));
-      setCompletedTasks(keys);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadSession();
-  }, [user]);
-
-  const toggleTask = async (phaseIdx: number, dayIdx: number, taskIdx: number) => {
-    if (!user || !session) return;
-    const key = `${phaseIdx}-${dayIdx}-${taskIdx}`;
-    const isCompleted = completedTasks.has(key);
-
-    if (isCompleted) {
-      await supabase
-        .from("tracker_progress")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("report_id", (session as any).report_id)
-        .eq("phase_index", phaseIdx)
-        .eq("day_index", dayIdx)
-        .eq("task_index", taskIdx);
-      setCompletedTasks((prev) => {
-        const next = new Set(prev);
-        next.delete(key);
-        return next;
-      });
-    } else {
-      await supabase.from("tracker_progress").insert({
-        user_id: user.id,
-        report_id: (session as any).report_id,
-        phase_index: phaseIdx,
-        day_index: dayIdx,
-        task_index: taskIdx,
-      });
-      setCompletedTasks((prev) => new Set(prev).add(key));
-    }
-  };
-
   const handleSubscribe = async () => {
-    if (!session) return;
     setSubscribing(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-subscription", {
-        body: { tracker_session_id: session.id },
-      });
-      if (error) throw error;
-      if (data?.checkout_url) {
-        window.location.href = data.checkout_url;
-      }
+      const url = await subscribe();
+      if (url) window.location.href = url;
     } catch (err) {
       console.error("Subscription error:", err);
     }
@@ -125,24 +53,10 @@ export default function Tracker() {
     );
   }
 
-  if (!session) return null;
-
-  const plan = session.working_plan;
-  const phases = plan?.activation_plan?.phases || plan?.phases || [];
-  const showPaywall = session.current_day > 30 && session.subscription_status !== "active";
-
-  // Calculate totals
-  let totalTasks = 0;
-  let completed = 0;
-  phases.forEach((phase: any, pi: number) => {
-    phase.days_detail?.forEach((day: any, di: number) => {
-      day.tasks?.forEach((_: any, ti: number) => {
-        totalTasks++;
-        if (completedTasks.has(`${pi}-${di}-${ti}`)) completed++;
-      });
-    });
-  });
-  const progressPct = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
+  if (!session) {
+    navigate("/", { replace: true });
+    return null;
+  }
 
   const phaseLabels = ["Foundations", "Network Activation", "Outreach", "Consolidation"];
   const phaseRanges = ["Days 1–7", "Days 8–16", "Days 17–25", "Days 26–30"];
@@ -184,7 +98,7 @@ export default function Tracker() {
               <span className="text-sm font-semibold text-primary">{progressPct}%</span>
             </div>
             <Progress value={progressPct} className="h-2" />
-            <p className="mt-2 text-xs text-muted-foreground">{completed} of {totalTasks} tasks completed</p>
+            <p className="mt-2 text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed</p>
           </div>
 
           {/* Phase cards */}
