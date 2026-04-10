@@ -12,6 +12,9 @@ import Processing from "./pages/Processing";
 import Results from "./pages/Results";
 import Teaser from "./pages/Teaser";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import Activate from "./pages/Activate";
+import Tracker from "./pages/Tracker";
+import Checkin from "./pages/Checkin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +34,9 @@ const App = () => (
             <Route path="/teaser" element={<ProtectedRoute><Teaser /></ProtectedRoute>} />
             <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
             <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+            <Route path="/activate" element={<ProtectedRoute><Activate /></ProtectedRoute>} />
+            <Route path="/tracker" element={<ProtectedRoute><Tracker /></ProtectedRoute>} />
+            <Route path="/checkin/:sessionId" element={<ProtectedRoute><Checkin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
