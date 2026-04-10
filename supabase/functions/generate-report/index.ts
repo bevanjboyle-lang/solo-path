@@ -194,14 +194,25 @@ Steps:
 5. Reality check honesty — archetype-specific failure modes, GBP figures in income outlook
 6. First steps quality — all 5 specific and tied to recommended model
 
-If all pass: return JSON with {"verdict":"pass","final_report":<original report>}.
-If any fail: revise only failing sections and return {"verdict":"revise","final_report":<revised report>}.
+Additionally, generate a "hook_insight" — a single punchy sentence of 8–12 words that captures the most commercially compelling insight about this user's independent potential. Use their industry experience (Q6), reputation (Q7), client/sector knowledge (Q11), and any independent work history (Q12) to craft this. It should read like a headline that would make the user want to see their full report.
+
+If all pass: return JSON with {"verdict":"pass","hook_insight":"<your 8-12 word insight>","final_report":<original report>}.
+If any fail: revise only failing sections and return {"verdict":"revise","hook_insight":"<your 8-12 word insight>","final_report":<revised report>}.
 Hard constraint: NEVER change a model_name value.`;
 
+    const p2UserData = {
+      report: p1Json,
+      q6_industries: answers["6"],
+      q7_reputation: answers["7"],
+      q11_client_sectors: answers["11"],
+      q12_independent_work: answers["12"],
+    };
+
     console.log("Running Prompt 2...");
-    const p2Result = await chatCompletion(p2System, JSON.stringify(p1Json), 0.3, 3000);
+    const p2Result = await chatCompletion(p2System, JSON.stringify(p2UserData), 0.3, 3000);
     const p2Json = JSON.parse(p2Result);
     const finalReport = p2Json.final_report;
+    const hookInsight = p2Json.hook_insight || null;
 
     // ─── PROMPTS 3 & 4 in parallel ───
     const p3System = `You are Solo's activation specialist. Produce a 14-Day Activation Plan and Network Activation Toolkit for the recommended model.
