@@ -38,7 +38,7 @@ const steps = [
   {
     num: "03",
     title: "You get a full Plan B report",
-    desc: "Your report includes six sections: your commercial profile interpretation, three ranked business options, a clear recommendation, a reality check, a 14-day activation plan tailored to your situation, and a local market snapshot for your location. It's saved to your account. You can return to it any time.",
+    desc: "Your report includes six sections: your commercial profile interpretation, three ranked business options, a clear recommendation, a reality check, a 30-day activation plan tailored to your situation, and a local market snapshot for your location. It's saved to your account. You can return to it any time.",
     detail: "The activation plan is paced to your employment status — different if you're currently employed vs. available full-time. The market snapshot is location-specific. Neither is generic.",
   },
 ];
@@ -50,7 +50,7 @@ const comparisonRows = [
   { label: "Specific first-client path", llm: false, coach: "sometimes", solo: true },
   { label: "Activation plan tailored to your situation", llm: false, coach: false, solo: true },
   { label: "Available at 11pm when you're anxious about your job", llm: true, coach: false, solo: true },
-  { label: "Under £10", llm: true, coach: false, solo: true },
+  { label: "Under £20", llm: true, coach: false, solo: true },
 ];
 
 const reportSections = [
@@ -76,7 +76,7 @@ const reportSections = [
   },
   {
     icon: CalendarCheck,
-    title: "14-day activation plan",
+    title: "30-day activation plan",
     desc: "A day-by-day action sequence tailored to your employment status and availability. Paced differently if you're employed full-time vs. available immediately.",
   },
   {
@@ -266,7 +266,7 @@ export default function HowItWorks() {
               className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
               onClick={() => navigate("/auth")}
             >
-              Take the test — £9.99 →
+              Take the test — £19.99 →
             </Button>
             <span className="text-xs text-primary-foreground/60">
               Free preview included. Full report unlocked on payment. Saved to your account.

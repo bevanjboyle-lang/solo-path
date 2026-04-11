@@ -248,7 +248,7 @@ export default function WhySolo() {
             variants={fadeUp}
             custom={1}
           >
-            You'll get a free preview immediately, and a full report — including your 14-day activation plan — for £9.99.
+            You'll get a free preview immediately, and a full report — including your 30-day activation plan — for £19.99.
           </motion.p>
           <motion.div
             className="mt-8"

@@ -59,7 +59,7 @@ const steps = [
   {
     num: "03",
     title: "Get your tailored Plan B report",
-    desc: "A full report with 3 business options, a clear recommendation, realistic income projections, a 14-day activation plan, and a local market snapshot.",
+    desc: "A full report with 3 business options, a clear recommendation, realistic income projections, a 30-day activation plan, and a local market snapshot.",
   },
 ];
 
@@ -68,7 +68,7 @@ const reportSections = [
   { icon: FileText, title: "Three business options", desc: "Ranked, realistic paths built from your background" },
   { icon: Star, title: "Our recommendation", desc: "One clear answer on which path makes most sense for you" },
   { icon: AlertTriangle, title: "Reality check", desc: "What's likely to go wrong, and why that matters" },
-  { icon: CalendarCheck, title: "14-day activation plan", desc: "A day-by-day action sequence tailored to your situation" },
+  { icon: CalendarCheck, title: "30-day activation plan", desc: "A day-by-day action sequence tailored to your situation" },
   { icon: MapPin, title: "Local market snapshot", desc: "Indicative demand and pricing data for your location" },
 ];
 
@@ -105,9 +105,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            Your career is solid.
-            <br />
-            <span className="text-foreground/80">Your Plan B probably isn't.</span>
+            If your career changed tomorrow, what would you do next?
           </motion.h1>
 
           <motion.p
@@ -116,7 +114,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Solo analyses your professional background and builds you a realistic, commercially grounded backup plan — tailored to what you actually know, not what sounds good.
+            Most people don't have a Plan B. Do you?
           </motion.p>
 
           <motion.div
@@ -130,7 +128,7 @@ export default function Landing() {
               className="rounded-lg bg-primary px-8 py-4 text-base font-medium text-primary-foreground hover:bg-[#1FAF97]"
               onClick={() => navigate("/auth")}
             >
-              Take the test — £9.99 →
+              Take the test — £19.99 →
             </Button>
             <span className="text-xs text-muted-foreground">
               Free preview included. 8 minutes. No account needed to start.
@@ -372,7 +370,7 @@ export default function Landing() {
           >
             <Quote className="mx-auto mb-4 h-6 w-6 text-primary/40" strokeWidth={1.5} />
             <p className="font-display text-base leading-relaxed text-foreground/90 sm:text-lg">
-              "I'd been meaning to think through my options for two years. Solo gave me a concrete answer in under 10 minutes. The activation plan alone was worth £9.99."
+              "I'd been meaning to think through my options for two years. Solo gave me a concrete answer in under 10 minutes. The activation plan alone was worth £19.99."
             </p>
             <footer className="mt-4 text-xs text-muted-foreground">
               — Risk Manager, Financial Services, London
@@ -402,7 +400,7 @@ export default function Landing() {
             variants={fadeUp}
             custom={1}
           >
-            8 minutes. £9.99. A report built from your actual experience.
+            8 minutes. £19.99. A report built from your actual experience.
           </motion.p>
           <motion.div
             className="mt-8"
