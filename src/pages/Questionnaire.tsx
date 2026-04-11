@@ -119,8 +119,10 @@ export default function Questionnaire() {
     }
   }, [user]);
 
-  const canContinue =
-    currentQuestion.type === "text"
+  const isRequired = currentQuestion.required !== false;
+  const canContinue = !isRequired
+    ? true
+    : currentQuestion.type === "text"
       ? typeof answer === "string" && answer.trim().length > 0
       : answer !== undefined && (Array.isArray(answer) ? answer.length > 0 : true);
 
@@ -246,7 +248,12 @@ export default function Questionnaire() {
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <h2 className="text-xl font-semibold leading-snug sm:text-2xl">{currentQuestion.text}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-semibold leading-snug sm:text-2xl">{currentQuestion.text}</h2>
+              {currentQuestion.required === false && (
+                <span className="shrink-0 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">Optional</span>
+              )}
+            </div>
               {currentQuestion.subtext && (
                 <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{currentQuestion.subtext}</p>
               )}

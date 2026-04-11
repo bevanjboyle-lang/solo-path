@@ -8,6 +8,7 @@ export interface Question {
   options?: string[];
   maxSelect?: number;
   placeholder?: string;
+  required?: boolean; // defaults to true if omitted
 }
 
 export const questions: Question[] = [
@@ -25,24 +26,27 @@ export const questions: Question[] = [
   },
   {
     id: 3,
-    text: "What is your primary sector?",
+    text: "What sector do you primarily work in?",
     type: "dropdown",
     options: [
-      "Financial Services",
+      "Financial Services & Banking",
       "Consulting & Professional Services",
-      "Technology",
-      "Public Sector & NHS",
-      "Industry & Manufacturing",
+      "Technology & Digital",
+      "Healthcare & Life Sciences",
+      "Legal & Compliance",
+      "Government & Public Sector",
+      "Manufacturing & Engineering",
       "Retail & Consumer",
       "Other",
     ],
   },
   {
     id: 30,
-    text: "Who do you work for?",
-    subtext: "If you'd prefer not to name your employer, describe the type of organisation — for example: 'Big 4 risk advisory practice', 'FTSE100 retail bank', 'NHS acute trust', 'mid-market PE-backed manufacturing business', 'boutique M&A advisory firm'.",
+    text: "Who is your current employer? (optional)",
+    subtext: "Name your employer or describe the type of organisation — for example: 'Big 4 risk advisory practice', 'FTSE100 retail bank', 'NHS acute trust'. This helps Solo calibrate recommendations but is not required.",
     type: "text",
-    placeholder: "e.g. Big 4 risk advisory practice",
+    placeholder: "e.g. HSBC, McKinsey, NHS Trust",
+    required: false,
   },
   {
     id: 4,
