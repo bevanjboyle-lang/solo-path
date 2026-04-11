@@ -70,7 +70,7 @@ serve(async (req) => {
         {
           price: plan_type === 'annual'
             ? (Deno.env.get("STRIPE_ANNUAL_PRICE_ID") || "price_ANNUAL_TODO")
-            : (Deno.env.get("STRIPE_MONTHLY_PRICE_ID") || "price_1TKb8R0PR8c2G6smT7N5l5zg"),
+            : (Deno.env.get("STRIPE_MONTHLY_PRICE_ID") || "price_1TL0r90PR8c2G6smxBdarC7B"),
           quantity: 1,
         },
       ],
