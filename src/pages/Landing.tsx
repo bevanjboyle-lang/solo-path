@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+
 import SoloLogo from "@/components/SoloLogo";
 import { motion } from "framer-motion";
 import {
@@ -79,13 +79,6 @@ const reportSections = [
   { icon: ClipboardList, title: "Outreach drafts", desc: "Ready-to-send email templates for your first 3 target contacts, written from your profile." },
 ];
 
-const roles = [
-  { title: "Risk, Audit & Compliance", desc: "Big Four managers, internal audit leads, compliance officers" },
-  { title: "Finance & Commercial", desc: "FP&A managers, finance business partners, commercial analysts" },
-  { title: "Programme & Transformation", desc: "PMO leads, change managers, programme directors" },
-  { title: "Operations & Process", desc: "Operations managers, process improvement leads, BAs" },
-  { title: "Generalist Consultant", desc: "Management consultants, interim managers, advisory professionals" },
-];
 
 export default function Landing() {
   const navigate = useNavigate();
