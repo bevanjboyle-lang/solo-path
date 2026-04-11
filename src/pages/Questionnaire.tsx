@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { questions, Question } from "@/data/questions";
-import { ArrowLeft, Check, LogOut } from "lucide-react";
+import { ArrowLeft, Check, LogOut, Upload, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -11,6 +11,9 @@ export default function Questionnaire() {
   const { user, signOut } = useAuth();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
+  const [showCvStep, setShowCvStep] = useState(true);
+  const [cvExtract, setCvExtract] = useState<any>(null);
+  const [cvUploading, setCvUploading] = useState(false);
   const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
   const saveTimeout = useRef<ReturnType<typeof setTimeout>>();
 
@@ -69,6 +72,53 @@ export default function Questionnaire() {
     [current, saveAnswers]
   );
 
+  
+  const handleCvUpload = useCallback(async (file: File) => {
+    if (!file) return;
+    setCvUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (user?.id) formData.append('user_id', user.id);
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/parse-cv`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+          body: formData,
+        }
+      );
+      const result = await response.json();
+      if (result.success && result.cv_extract) {
+        const ex = result.cv_extract;
+        setCvExtract(ex);
+        if (ex.confidence_score >= 50) {
+          const prefilled: Record<number, string | string[]> = {};
+          if (ex.current_job_title) prefilled[1] = ex.current_job_title;
+          if (ex.employer_org_type) prefilled[30] = ex.employer_org_type;
+          if (ex.type_of_work) prefilled[4] = ex.type_of_work;
+          if (ex.seniority_level) prefilled[5] = ex.seniority_level;
+          if (ex.sector_primary) prefilled[3] = ex.sector_primary;
+          if (ex.years_experience) {
+            const yrs = Number(ex.years_experience);
+            if (yrs >= 2 && yrs <= 4) prefilled[2] = '2–4 years';
+            else if (yrs >= 5 && yrs <= 7) prefilled[2] = '5–7 years';
+            else if (yrs >= 8 && yrs <= 12) prefilled[2] = '8–12 years';
+            else if (yrs >= 13 && yrs <= 18) prefilled[2] = '13–18 years';
+            else if (yrs >= 19) prefilled[2] = '19+ years';
+          }
+          setAnswers(prev => ({ ...prev, ...prefilled }));
+        }
+      }
+    } catch (err) {
+      console.error('CV parse error:', err);
+    } finally {
+      setCvUploading(false);
+      setShowCvStep(false);
+    }
+  }, [user]);
+
   const canContinue =
     currentQuestion.type === "text"
       ? typeof answer === "string" && answer.trim().length > 0
@@ -105,6 +155,61 @@ export default function Questionnaire() {
     setCurrent((c) => c - 1);
   };
 
+  // CV upload step — shown before questionnaire starts
+  if (showCvStep) {
+    return (
+      <div className="flex min-h-screen flex-col bg-background text-foreground items-center justify-center px-6">
+        <div className="w-full max-w-lg space-y-6 text-center">
+          <div className="space-y-2">
+            <h1 className="text-2xl font-semibold text-foreground">Before we start</h1>
+            <p className="text-muted-foreground">
+              Do you have a CV to hand? Uploading it lets us skip most of the basic questions — we'll read your work history directly and only ask the things a CV can't tell us.
+            </p>
+          </div>
+          <div className="rounded-xl border-2 border-dashed border-border bg-surface/50 p-8 space-y-4">
+            <div className="flex flex-col items-center gap-3">
+              {cvUploading ? (
+                <>
+                  <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                  <p className="text-sm text-muted-foreground">Reading your CV...</p>
+                </>
+              ) : (
+                <>
+                  <FileText className="h-10 w-10 text-muted-foreground/50" />
+                  <label className="cursor-pointer">
+                    <span className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+                      <Upload className="h-4 w-4" />
+                      Upload CV — PDF or Word
+                    </span>
+                    <input
+                      type="file"
+                      accept=".pdf,.docx,.doc"
+                      className="sr-only"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleCvUpload(file);
+                      }}
+                    />
+                  </label>
+                  <p className="text-xs text-muted-foreground">PDF or Word, up to 5MB</p>
+                </>
+              )}
+            </div>
+          </div>
+          {!cvUploading && (
+            <button
+              onClick={() => setShowCvStep(false)}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+            >
+              Continue without CV →
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Top bar */}
