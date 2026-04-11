@@ -103,10 +103,10 @@ export function useTrackerSession(options?: UseTrackerSessionOptions) {
     }
   }, [user, session, completedTasks]);
 
-  const subscribe = useCallback(async () => {
+  const subscribe = useCallback(async (plan: 'monthly' | 'annual' = 'monthly') => {
     if (!session) return null;
     const { data, error } = await supabase.functions.invoke("create-subscription", {
-      body: { tracker_session_id: session.id },
+      body: { tracker_session_id: session.id, plan_type: plan },
     });
     if (error) throw error;
     return data?.checkout_url as string | null;
