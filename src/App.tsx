@@ -27,6 +27,7 @@ import SubscriptionSuccess from "./pages/SubscriptionSuccess";
 import ManageSubscription from "./pages/ManageSubscription";
 import Modules from "./pages/Modules";
 import ModuleDetail from "./pages/ModuleDetail";
+import AskSolo from "./pages/AskSolo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
