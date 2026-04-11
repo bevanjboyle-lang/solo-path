@@ -44,7 +44,7 @@ const stages: Stage[] = [
     num: "01",
     label: "The starting point",
     headline: "You've built a career. You want a credible fallback.",
-    body: "You're capable, structured, and experienced — but you're not naturally entrepreneurial. You don't want generic "go freelance" advice. You want to know: if your current role became unstable, what specific income path could you build from your actual experience, and how quickly could you get there?",
+    body: "You're capable, structured, and experienced — but you're not naturally entrepreneurial. You don't want generic 'go freelance' advice. You want to know: if your current role became unstable, what specific income path could you build from your actual experience, and how quickly could you get there?",
     callout: "Solo is built for professionals who want commercial realism, not inspiration.",
     icon: Eye,
   },
