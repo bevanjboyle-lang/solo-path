@@ -236,7 +236,7 @@ export default function SampleReport() {
                 <span>First client: 8–12 weeks</span>
               </div>
             </div>
-            <LockedOverlay label="Unlock full report — £9.99" />
+            <LockedOverlay label="Unlock full report — £19.99" />
           </div>
 
           {/* Path 3 — locked */}
@@ -251,7 +251,7 @@ export default function SampleReport() {
                 <span>First client: 6–10 weeks</span>
               </div>
             </div>
-            <LockedOverlay label="Unlock full report — £9.99" />
+            <LockedOverlay label="Unlock full report — £19.99" />
           </div>
         </motion.div>
 
@@ -272,7 +272,7 @@ export default function SampleReport() {
               <li>• Three firms currently looking for exactly your profile</li>
             </ul>
           </div>
-          <LockedOverlay label="Unlock full report — £9.99" />
+          <LockedOverlay label="Unlock full report — £19.99" />
         </motion.div>
 
         {/* 90-DAY ACTION PLAN — locked */}
@@ -298,7 +298,7 @@ export default function SampleReport() {
               </div>
             </div>
           </div>
-          <LockedOverlay label="Get your personalised plan — £9.99" />
+          <LockedOverlay label="Get your personalised plan — £19.99" />
         </motion.div>
       </div>
 
@@ -323,7 +323,7 @@ export default function SampleReport() {
             variants={fadeUp}
             custom={1}
           >
-            Takes 12 minutes. Costs £9.99. Changes how you think about your options.
+            Takes 12 minutes. Costs £19.99. Changes how you think about your options.
           </motion.p>
           <motion.div
             className="mt-8"

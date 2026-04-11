@@ -368,7 +368,7 @@ function QuestionInput({
   if (question.type === "dropdown") {
     return (
       <select
-        value={answer as string || ""}
+        value={value as string || ""}
         onChange={(e) => onChange(e.target.value)}
         className="w-full rounded-lg border border-border bg-surface p-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
       >

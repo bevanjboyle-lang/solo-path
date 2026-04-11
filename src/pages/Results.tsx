@@ -319,7 +319,7 @@ export default function Results() {
                 ))}
               </div>
               <div className="mt-8 flex flex-col items-center gap-3 border-t border-border/50 pt-8 text-center">
-                <p className="text-lg font-semibold">Unlock your full report for Â£9.99</p>
+                <p className="text-lg font-semibold">Unlock your full report for £19.99</p>
                 <p className="text-sm text-muted-foreground">One-time payment. No subscription.</p>
                 <button
                   onClick={handlePayment}
