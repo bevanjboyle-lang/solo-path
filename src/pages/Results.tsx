@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import SoloLogo from "@/components/SoloLogo";
 
 const lockedSections = [
   { label: "Your Profile & Transferable Value", icon: Briefcase },

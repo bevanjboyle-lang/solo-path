@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle, Loader2, Copy, Check, ArrowRight, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import SoloLogo from "@/components/SoloLogo";
 
 interface OutreachDraft {
   format: string;

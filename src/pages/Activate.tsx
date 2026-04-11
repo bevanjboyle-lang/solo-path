@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Rocket, Loader2, LogOut, CalendarCheck, MessageSquare, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import SoloLogo from "@/components/SoloLogo";
 
 export default function Activate() {
   const { user, signOut } = useAuth();
