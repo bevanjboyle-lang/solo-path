@@ -36,7 +36,7 @@ serve(async (req) => {
       });
     }
 
-    const { tracker_session_id } = await req.json();
+    const { tracker_session_id, plan_type = 'monthly' } = await req.json();
     if (!tracker_session_id) {
       return new Response(JSON.stringify({ error: "tracker_session_id is required" }), {
         status: 400,
@@ -68,7 +68,9 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email!,
       line_items: [
         {
-          price: "price_1TKb8R0PR8c2G6smT7N5l5zg",
+          price: plan_type === 'annual'
+            ? (Deno.env.get("STRIPE_ANNUAL_PRICE_ID") || "price_ANNUAL_TODO")
+            : (Deno.env.get("STRIPE_MONTHLY_PRICE_ID") || "price_1TKb8R0PR8c2G6smT7N5l5zg"),
           quantity: 1,
         },
       ],
