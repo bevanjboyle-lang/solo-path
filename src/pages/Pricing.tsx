@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import SoloLogo from "@/components/SoloLogo";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -287,7 +288,7 @@ export default function Pricing() {
       {/* FOOTER */}
       <footer className="border-t border-border/50 py-8">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6">
-          <span className="text-xs font-medium tracking-tight text-muted-foreground">Solo</span>
+          <SoloLogo width={80} height={22} />
           <div className="flex gap-6 text-xs text-muted-foreground">
             <span className="cursor-pointer transition-colors hover:text-foreground">Privacy</span>
             <span className="cursor-pointer transition-colors hover:text-foreground">Terms</span>
