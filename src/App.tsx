@@ -22,6 +22,9 @@ import WhoItsFor from "./pages/WhoItsFor";
 import SampleReport from "./pages/SampleReport";
 import FAQ from "./pages/FAQ";
 import Dashboard from "./pages/Dashboard";
+import Subscribe from "./pages/Subscribe";
+import SubscriptionSuccess from "./pages/SubscriptionSuccess";
+import ManageSubscription from "./pages/ManageSubscription";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
