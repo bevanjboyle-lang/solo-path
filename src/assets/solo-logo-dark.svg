@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 48" width="168" height="48" role="img" aria-label="Solo">
+  <circle cx="29.12" cy="17.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
+  <circle cx="17.00" cy="10.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
+  <circle cx="4.88"  cy="17.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
+  <circle cx="4.88"  cy="31.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
+  <circle cx="17.00" cy="38.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
+  <circle cx="29.12" cy="31.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
+  <circle cx="25.50" cy="24.00" r="2.0" fill="#2ECDB0" opacity="0.55"/>
+  <circle cx="21.25" cy="16.64" r="2.0" fill="#2ECDB0" opacity="0.55"/>
+  <circle cx="12.75" cy="16.64" r="2.0" fill="#2ECDB0" opacity="0.55"/>
+  <circle cx="8.50"  cy="24.00" r="2.0" fill="#2ECDB0" opacity="0.55"/>
+  <circle cx="12.75" cy="31.36" r="2.0" fill="#2ECDB0" opacity="0.55"/>
+  <circle cx="21.25" cy="31.36" r="2.0" fill="#2ECDB0" opacity="0.55"/>
+  <circle cx="17.00" cy="24.00" r="4.0" fill="#2ECDB0"/>
+  <text x="36" y="37" font-family="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" font-size="34" font-weight="600" letter-spacing="-1" fill="#F0F0F5">solo</text>
+</svg>
