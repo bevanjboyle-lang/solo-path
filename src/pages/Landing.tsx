@@ -323,7 +323,7 @@ export default function Landing() {
 
       {/* ── SECTION 5: WHO IT'S FOR ── */}
       <section className="border-t border-border/50 py-24">
-        <div className="mx-auto max-w-5xl px-6">
+        <div className="mx-auto max-w-3xl px-6">
           <motion.div
             className="mb-6 text-center"
             initial="hidden"
@@ -336,53 +336,99 @@ export default function Landing() {
               Who Solo Is For
             </span>
             <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              Built for a specific kind of professional
+              Solo isn't for everyone.
             </h2>
           </motion.div>
 
           <motion.p
-            className="mx-auto mb-12 max-w-xl text-center text-sm leading-relaxed text-muted-foreground"
+            className="mx-auto mb-6 max-w-xl text-center text-sm leading-relaxed text-muted-foreground"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeUp}
-            custom={0}
+            custom={1}
           >
-            If you work in one of these roles and have 5+ years of experience, Solo is designed for you.
+            It's built for professionals with enough experience to have genuine commercial value outside an employer, but who've never needed to articulate what that is. If you're early-career, still finding your specialism, or completely happy with your job security, this probably isn't for you.
           </motion.p>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {roles.map((r, i) => (
-              <motion.div
-                key={r.title}
-                className="rounded-xl border border-border/60 bg-card p-5"
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-60px" }}
-                custom={i}
-              >
-                <h3 className="mb-1 text-sm font-semibold">{r.title}</h3>
-                <p className="text-sm text-muted-foreground">{r.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div
-            className="mt-8 text-center"
+          <motion.p
+            className="mx-auto mb-12 max-w-xl text-center text-base font-medium text-foreground/90"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeUp}
-            custom={0}
+            custom={2}
           >
-            <Link
-              to="/who-its-for"
-              className="text-sm text-primary transition-colors hover:text-primary/80"
-            >
-              Not sure if Solo is for you? →
-            </Link>
+            If your background sits somewhere in here, it is.
+          </motion.p>
+
+          <motion.div
+            className="mx-auto mb-10 flex max-w-2xl flex-wrap justify-center gap-2.5"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={fadeUp}
+            custom={3}
+          >
+            {[
+              { label: "Legal", accent: true, size: "lg" },
+              { label: "Finance", accent: false, size: "md" },
+              { label: "Compliance", accent: true, size: "md" },
+              { label: "Risk", accent: false, size: "lg" },
+              { label: "Marketing", accent: true, size: "md" },
+              { label: "HR", accent: false, size: "sm" },
+              { label: "Strategy", accent: true, size: "lg" },
+              { label: "Operations", accent: false, size: "md" },
+              { label: "Consulting", accent: true, size: "md" },
+              { label: "Commercial", accent: false, size: "sm" },
+              { label: "Procurement", accent: false, size: "md" },
+              { label: "Programme Management", accent: true, size: "lg" },
+              { label: "Communications", accent: false, size: "md" },
+              { label: "Accounting", accent: true, size: "sm" },
+              { label: "Tax", accent: false, size: "sm" },
+              { label: "Data", accent: true, size: "sm" },
+              { label: "Technology", accent: false, size: "md" },
+              { label: "Change Management", accent: true, size: "lg" },
+              { label: "Audit", accent: false, size: "sm" },
+              { label: "Business Development", accent: true, size: "md" },
+              { label: "Policy", accent: false, size: "sm" },
+              { label: "Research", accent: true, size: "sm" },
+              { label: "Governance", accent: false, size: "md" },
+              { label: "Investment", accent: true, size: "md" },
+              { label: "Insurance", accent: false, size: "sm" },
+              { label: "Transformation", accent: true, size: "lg" },
+              { label: "Sales", accent: false, size: "sm" },
+              { label: "PMO", accent: true, size: "sm" },
+              { label: "Advisory", accent: false, size: "md" },
+              { label: "Learning and Development", accent: true, size: "lg" },
+              { label: "Public Affairs", accent: false, size: "md" },
+              { label: "Corporate Affairs", accent: true, size: "md" },
+            ].map((tag) => (
+              <span
+                key={tag.label}
+                className={`inline-block rounded-full border px-4 py-1.5 font-medium ${
+                  tag.size === "lg" ? "text-sm" : tag.size === "md" ? "text-xs" : "text-[11px]"
+                } ${
+                  tag.accent
+                    ? "border-primary/30 bg-primary/10 text-primary"
+                    : "border-border/60 bg-card text-muted-foreground"
+                }`}
+              >
+                {tag.label}
+              </span>
+            ))}
           </motion.div>
+
+          <motion.p
+            className="text-center text-xs text-muted-foreground"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+            custom={4}
+          >
+            95 professional archetypes. 14 domains. 480 business models.
+          </motion.p>
         </div>
       </section>
 
