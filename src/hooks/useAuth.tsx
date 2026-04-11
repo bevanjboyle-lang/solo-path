@@ -21,21 +21,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up listener FIRST, then fetch session
+    // Restore session from storage FIRST, then set up listener
+    const restoreSession = async () => {
+      try {
+        const { data: { session: restoredSession } } = await supabase.auth.getSession();
+        setSession(restoredSession);
+      } catch (error) {
+        console.error("Error restoring session:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    restoreSession();
+
+    // Set up listener AFTER restore to handle future changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (_event, session) => {
         setSession(session);
-        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-          setLoading(false);
-        }
       }
     );
-
-    // Fallback: ensure loading becomes false even if onAuthStateChange doesn't fire
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
 
     return () => subscription.unsubscribe();
   }, []);
