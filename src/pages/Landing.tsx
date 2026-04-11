@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import IndustryRiskSection from "@/components/landing/IndustryRiskSection";
+import ExpertSaysSection from "@/components/landing/ExpertSaysSection";
+import WaitingRoomSection from "@/components/landing/WaitingRoomSection";
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
