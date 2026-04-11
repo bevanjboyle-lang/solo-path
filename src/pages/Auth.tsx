@@ -3,13 +3,13 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Mail, ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 export default function Auth() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,6 +20,7 @@ export default function Auth() {
         navigate("/questionnaire", { replace: true });
       }
     };
+
     checkSession();
   }, [navigate]);
 
@@ -31,25 +32,28 @@ export default function Auth() {
     setError("");
     setSubmitting(true);
 
-    const { error } = await supabase.auth.signInWithOtp({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      options: { emailRedirectTo: window.location.origin + "/questionnaire" },
+      password,
     });
 
     setSubmitting(false);
+
     if (error) {
       setError(error.message);
-    } else {
-      setSent(true);
+      return;
+    }
+
+    if (data.session) {
+      navigate("/questionnaire", { replace: true });
     }
   };
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      {/* Nav */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <nav className="fixed left-0 right-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-5xl items-center px-6">
-          <a href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <a href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
             Back
           </a>
@@ -63,63 +67,52 @@ export default function Auth() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {sent ? (
-            <div className="text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Mail className="h-5 w-5 text-primary" />
-              </div>
-              <h1 className="font-display mt-6 text-xl font-semibold">Check your email</h1>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                We sent a magic link to <span className="font-medium text-foreground">{email}</span>. Click the link to sign in and start your questionnaire.
-              </p>
-              <button
-                onClick={() => { setSent(false); setEmail(""); }}
-                className="mt-6 text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Use a different email
-              </button>
+          <h1 className="font-display text-2xl font-semibold tracking-tight">Sign in to continue</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Enter the email and password linked to your account.
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+            <div>
+              <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                Email address
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+              />
             </div>
-          ) : (
-            <>
-              <h1 className="font-display text-2xl font-semibold tracking-tight">Sign in to continue</h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Enter your email and we'll send you a magic link.
-              </p>
 
-              <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-                <div>
-                  <label htmlFor="email" className="block text-xs font-medium text-muted-foreground mb-1.5">
-                    Email address
-                  </label>
-                  <input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
-                  />
-                </div>
+            <div>
+              <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+              />
+            </div>
 
-                {error && (
-                  <p className="text-sm text-red-400">{error}</p>
-                )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
-                <button
-                  type="submit"
-                  disabled={submitting || !email}
-                  className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#1FAF97]"
-                >
-                  {submitting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Send magic link"
-                  )}
-                </button>
-              </form>
-            </>
-          )}
+            <button
+              type="submit"
+              disabled={submitting || !email || !password}
+              className="flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign in"}
+            </button>
+          </form>
         </motion.div>
       </div>
     </div>
