@@ -13,19 +13,19 @@ const articles = [
   {
     pub: "FORTUNE",
     headline: "A 'Great Recession for White-Collar Workers' Is Absolutely Possible",
-    desc: "Anthropic's internal research suggests AI could trigger unemployment levels not seen since the 1930s — concentrated in professional roles.",
+    desc: "Anthropic's internal research suggests AI could trigger unemployment levels not seen since the 1930s, concentrated in professional roles.",
     link: "https://fortune.com/2026/03/06/ai-job-losses-report-anthropic-research-great-recession-for-white-collar-workers/",
   },
   {
     pub: "CNBC",
-    headline: "AI Is Already Taking White-Collar Jobs — Economists Warn There's 'Much More in the Tank'",
-    desc: "Economists say we're in the early innings. The real displacement hasn't started yet — and the pace will accelerate sharply.",
+    headline: "AI Is Already Taking White-Collar Jobs. Economists Warn There's 'Much More in the Tank'",
+    desc: "Economists say we're in the early innings. The real displacement hasn't started yet, and the pace will accelerate sharply.",
     link: "https://www.cnbc.com/2025/10/22/ai-taking-white-collar-jobs-economists-warn-much-more-in-the-tank.html",
   },
   {
     pub: "FORTUNE",
     headline: "Microsoft's AI Chief Gives It 18 Months for All White-Collar Work to Be Automated",
-    desc: "Mustafa Suleyman's timeline is aggressive — but it reflects a growing consensus among AI leaders about the pace of change.",
+    desc: "Mustafa Suleyman's timeline is aggressive, but it reflects a growing consensus among AI leaders about the pace of change.",
     link: "https://fortune.com/2026/02/13/when-will-ai-kill-white-collar-office-jobs-18-months-microsoft-mustafa-suleyman/",
   },
   {
