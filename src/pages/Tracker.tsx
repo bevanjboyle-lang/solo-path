@@ -12,6 +12,7 @@ export default function Tracker() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [subscribing, setSubscribing] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('monthly');
 
   const {
     session,
@@ -34,10 +35,10 @@ export default function Tracker() {
     }
   }, [searchParams]);
 
-  const handleSubscribe = async () => {
+  const handleSubscribe = async (plan: 'monthly' | 'annual' = selectedPlan) => {
     setSubscribing(true);
     try {
-      const url = await subscribe();
+      const url = await subscribe(plan);
       if (url) window.location.href = url;
     } catch (err) {
       console.error("Subscription error:", err);
@@ -59,7 +60,7 @@ export default function Tracker() {
   }
 
   const phaseLabels = ["Foundations", "Network Activation", "Outreach", "Consolidation"];
-  const phaseRanges = ["Days 1–7", "Days 8–16", "Days 17–25", "Days 26–30"];
+  const phaseRanges = ["Days 1â7", "Days 8â16", "Days 17â25", "Days 26â30"];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -178,15 +179,33 @@ export default function Tracker() {
                 <Lock className="h-6 w-6 text-primary" />
               </div>
               <h2 className="text-xl font-semibold tracking-tight">
-                Your 30 days are up — keep the momentum going
+                Your 30 days are up â keep the momentum going
               </h2>
               <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
-                Continue with monthly check-ins and plan updates for £12.99/month.
-                Cancel any time.
+                Continue with guided check-ins, an adaptive plan, and the full Practical Guidance suite.
               </p>
-              <div className="mt-6 flex flex-col items-center gap-3">
+              <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center max-w-xs mx-auto">
                 <button
-                  onClick={handleSubscribe}
+                  onClick={() => setSelectedPlan('monthly')}
+                  className={`flex-1 rounded-lg border-2 p-4 text-left transition-all ${selectedPlan === 'monthly' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                >
+                  <div className="text-sm font-medium">Monthly</div>
+                  <div className="text-2xl font-bold mt-1">£19<span className="text-sm font-normal text-muted-foreground">/month</span></div>
+                  <div className="text-xs text-muted-foreground mt-1">Cancel any time</div>
+                </button>
+                <button
+                  onClick={() => setSelectedPlan('annual')}
+                  className={`flex-1 rounded-lg border-2 p-4 text-left relative transition-all ${selectedPlan === 'annual' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                >
+                  <div className="absolute -top-2.5 right-3 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">Save £79</div>
+                  <div className="text-sm font-medium">Annual</div>
+                  <div className="text-2xl font-bold mt-1">£149<span className="text-sm font-normal text-muted-foreground">/year</span></div>
+                  <div className="text-xs text-muted-foreground mt-1">£12.42/month</div>
+                </button>
+              </div>
+              <div className="mt-4 flex flex-col items-center gap-3">
+                <button
+                  onClick={() => handleSubscribe(selectedPlan)}
                   disabled={subscribing}
                   className="inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                   style={{ background: "var(--gradient-cta)" }}
@@ -196,7 +215,7 @@ export default function Tracker() {
                   ) : (
                     <>
                       <CreditCard className="h-4 w-4" />
-                      Continue for £12.99/month
+                      Continue — {selectedPlan === 'annual' ? '£149/year' : '£19/month'}
                     </>
                   )}
                 </button>
