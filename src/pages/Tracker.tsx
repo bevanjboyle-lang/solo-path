@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTrackerSession } from "@/hooks/useTrackerSession";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
+import SoloLogo from "@/components/SoloLogo";
 
 export default function Tracker() {
   const { signOut } = useAuth();
@@ -66,7 +67,7 @@ export default function Tracker() {
     <div className="min-h-screen bg-background text-foreground">
       <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
-          <span className="text-base font-semibold tracking-tight">Solo</span>
+          <SoloLogo width={100} height={28} />
           <button onClick={() => signOut()} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <LogOut className="h-3.5 w-3.5" />
             Sign out

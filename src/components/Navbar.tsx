@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import SoloLogo from "@/components/SoloLogo";
 
 const navLinks = [
   { label: "How it works", to: "/how-it-works" },
@@ -21,11 +22,8 @@ export default function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2.5 no-underline">
-          <svg xmlns="http://www.w3.org/2000/svg" width="120" height="36" viewBox="0 0 160 48" aria-label="Solo">
-            <circle cx="9" cy="26" r="5" fill="#2ECDB0"/>
-            <text x="22" y="37" fontFamily="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" fontSize="34" fontWeight="600" letterSpacing="-1" fill="#F0F0F5">solo</text>
-          </svg>
+        <a href="/" className="flex items-center no-underline">
+          <SoloLogo width={140} height={40} />
         </a>
 
         {/* Desktop links */}

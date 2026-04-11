@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { LogOut, Sparkles } from "lucide-react";
+import SoloLogo from "@/components/SoloLogo";
 
 export default function Teaser() {
   const [searchParams] = useSearchParams();
@@ -60,7 +61,7 @@ export default function Teaser() {
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-6">
-          <span className="text-sm font-medium text-foreground">Solo</span>
+          <SoloLogo width={100} height={28} />
           <button
             onClick={() => signOut()}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"

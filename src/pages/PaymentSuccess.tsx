@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { CheckCircle, Loader2, Copy, Check, ArrowRight, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import SoloLogo from "@/components/SoloLogo";
 
 interface OutreachDraft {
   format: string;
@@ -94,7 +95,7 @@ export default function PaymentSuccess() {
       <div className="min-h-screen bg-background text-foreground">
         <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
           <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
-            <span className="text-base font-semibold tracking-tight">Solo</span>
+            <SoloLogo width={100} height={28} />
           </div>
         </nav>
 
@@ -188,7 +189,7 @@ export default function PaymentSuccess() {
     <div className="min-h-screen bg-background text-foreground">
       <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
-          <span className="text-base font-semibold tracking-tight">Solo</span>
+          <SoloLogo width={100} height={28} />
         </div>
       </nav>
 
