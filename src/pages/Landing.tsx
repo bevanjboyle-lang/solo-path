@@ -121,12 +121,12 @@ export default function Landing() {
           </motion.h1>
 
           <motion.p
-            className="mx-auto mt-6 max-w-[540px] text-base leading-relaxed text-muted-foreground sm:text-lg"
+            className="mx-auto mt-6 max-w-[540px] text-lg leading-relaxed text-muted-foreground sm:text-xl"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Solo builds a specific, commercial fallback from your career — three ranked paths, one clear recommendation, and a 30-day plan to get moving. Scored against 95 archetypes and 480 real business models.
+            Solo builds you a specific plan for independent income — the paths, the clients, the first 30 days — based on your actual career. So if AI does come for your role, you already know what you're doing next.
           </motion.p>
 
           {/* ── Stat strip ── */}
