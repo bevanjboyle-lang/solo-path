@@ -117,7 +117,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            If your career changed tomorrow, what would you do next?
+            "I'll update my LinkedIn" isn't a Plan&nbsp;B.
           </motion.h1>
 
           <motion.p
@@ -126,8 +126,29 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Most people don't have a Plan B. Do you?
+            Solo builds a specific, commercial fallback from your career — three ranked paths, one clear recommendation, and a 30-day plan to get moving. Scored against 95 archetypes and 480 real business models.
           </motion.p>
+
+          {/* ── Stat strip ── */}
+          <motion.div
+            className="mx-auto mt-8 flex max-w-xl flex-col gap-4 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.22 }}
+          >
+            {[
+              "Most managers couldn't name a single person who'd pay them outside an employer.",
+              "The average professional spends 18 months thinking before acting.",
+              "Generic AI gives you ideas. Solo gives you your answer.",
+            ].map((stat, i) => (
+              <p
+                key={i}
+                className="border-l-2 border-primary/20 pl-4 text-xs leading-relaxed text-muted-foreground sm:border-l-0 sm:px-4 sm:first:pl-0 sm:last:pr-0"
+              >
+                {stat}
+              </p>
+            ))}
+          </motion.div>
 
           <motion.div
             className="mt-10 flex flex-col items-center gap-3"
@@ -140,10 +161,10 @@ export default function Landing() {
               className="rounded-lg bg-primary px-8 py-4 text-base font-medium text-primary-foreground hover:bg-[#1FAF97]"
               onClick={() => navigate("/auth")}
             >
-              Take the test — £19.99 →
+              See your free preview — 8 minutes →
             </Button>
             <span className="text-xs text-muted-foreground">
-              Free preview included. 8 minutes. No account needed to start.
+              Full report + 30-day activation plan: £19.99. No account needed to start.
             </span>
           </motion.div>
         </div>
