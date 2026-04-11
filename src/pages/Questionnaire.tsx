@@ -142,6 +142,9 @@ export default function Questionnaire() {
             transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
             <h2 className="text-xl font-semibold leading-snug sm:text-2xl">{currentQuestion.text}</h2>
+              {currentQuestion.subtext && (
+                <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{currentQuestion.subtext}</p>
+              )}
             {currentQuestion.type === "multi" && currentQuestion.maxSelect && (
               <p className="mt-2 text-sm text-muted-foreground">Select up to {currentQuestion.maxSelect}</p>
             )}
@@ -254,6 +257,21 @@ function QuestionInput({
           );
         })}
       </div>
+    );
+  }
+
+  if (question.type === "dropdown") {
+    return (
+      <select
+        value={answer as string || ""}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-border bg-surface p-4 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
+      >
+        <option value="">Select an option...</option>
+        {question.options?.map((opt: string, i: number) => (
+          <option key={i} value={opt}>{opt}</option>
+        ))}
+      </select>
     );
   }
 
