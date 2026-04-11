@@ -12,10 +12,10 @@ const fadeUp = {
 const industries = [
   { name: "Legal", risk: "HIGH RISK" as const, verdict: "Document review, compliance research, and contract drafting are being automated at scale. Law firms are already cutting research teams." },
   { name: "Financial Services & Accounting", risk: "HIGH RISK" as const, verdict: "AI handles bookkeeping, tax prep, and financial analysis faster and cheaper. Goldman Sachs projects up to 200,000 Wall Street roles cut in five years." },
-  { name: "Marketing & Advertising", risk: "HIGH RISK" as const, verdict: "Content creation, market research, campaign reporting — all compressible. Mid-level marketing roles are disappearing first." },
+  { name: "Marketing & Advertising", risk: "HIGH RISK" as const, verdict: "Content creation, market research, and campaign reporting are all compressible. Mid-level marketing roles are disappearing first." },
   { name: "Middle Management", risk: "MEDIUM RISK" as const, verdict: "Coordination and reporting roles are vulnerable. 20% of organisations are already using AI to flatten hierarchies." },
   { name: "HR & Recruitment", risk: "MEDIUM RISK" as const, verdict: "CV screening, onboarding, policy drafting, and job matching are increasingly automated. The administrative core of HR is under pressure." },
-  { name: "Consulting & Strategy", risk: "WATCH" as const, verdict: "Research and slide production are being automated, but senior advisory relationships remain human — for now." },
+  { name: "Consulting & Strategy", risk: "WATCH" as const, verdict: "Research and slide production are being automated, but senior advisory relationships remain human. For now." },
 ];
 
 const riskStyles = {

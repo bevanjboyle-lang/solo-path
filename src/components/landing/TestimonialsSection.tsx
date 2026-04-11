@@ -11,7 +11,7 @@ const fadeUp = {
 
 const testimonials = [
   {
-    quote: "I'd been vaguely aware my role was changing for two years. Solo gave me three concrete paths I'd never seriously considered — and I'm already six months into pursuing one of them.",
+    quote: "I'd been vaguely aware my role was changing for two years. Solo gave me three concrete paths I'd never seriously considered, and I'm already six months into pursuing one of them.",
     name: "James T., 44, Senior Account Director",
   },
   {
@@ -19,7 +19,7 @@ const testimonials = [
     name: "Rachel M., 38, Head of HR, Financial Services",
   },
   {
-    quote: "The 30-day plan was the thing that made it real. It wasn't just ideas — it was actual first steps. I sent my first outreach email in week two and had a conversation within days.",
+    quote: "The 30-day plan was the thing that made it real. It wasn't just ideas, it was actual first steps. I sent my first outreach email in week two and had a conversation within days.",
     name: "David K., 51, ex-Director of Strategy, Retail",
   },
 ];

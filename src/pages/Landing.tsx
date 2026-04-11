@@ -36,7 +36,7 @@ const problems = [
   {
     icon: Briefcase,
     title: "AI is compressing white-collar work",
-    desc: "Middle-management coordination, compliance process-following, and structured analytical work are becoming more automatable. Not gone — compressed.",
+    desc: "Middle-management coordination, compliance process-following, and structured analytical work are becoming more automatable. Not gone, but compressed.",
   },
   {
     icon: User,
@@ -53,7 +53,7 @@ const problems = [
 const steps = [
   {
     num: "01",
-    title: "Answer 15 targeted questions — or around 8 if you upload your CV first",
+    title: "Answer 15 targeted questions, or around 8 if you upload your CV first",
     desc: "We ask about your role, experience depth, network, situation, and location. Specific questions produce specific answers.",
   },
   {
@@ -130,7 +130,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Solo builds you a specific plan for independent income — the paths, the clients, the first 30 days — based on your actual career. So if AI does come for your role, you already know what you're doing next.
+            Solo builds you a specific plan for independent income: the paths, the clients, the first 30 days, based on your actual career. So if AI does come for your role, you already know what you're doing next.
           </motion.p>
 
           {/* ── Stat strip ── */}
@@ -165,7 +165,7 @@ export default function Landing() {
               className="rounded-lg bg-primary px-8 py-4 text-base font-medium text-primary-foreground hover:bg-[#1FAF97]"
               onClick={() => navigate("/auth")}
             >
-              See your free preview — 8 minutes →
+              See your free preview. 8 minutes →
             </Button>
             <span className="text-xs text-muted-foreground">
               Full report + 30-day activation plan: £19.99. No account needed to start.
@@ -293,11 +293,11 @@ export default function Landing() {
               What's In Your Report
             </span>
             <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              Six sections. No fluff.
+              Eight sections. No fluff.
             </h2>
           </motion.div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {reportSections.map((s, i) => (
               <motion.div
                 key={s.title}
@@ -415,7 +415,7 @@ export default function Landing() {
               "I'd been meaning to think through my options for two years. Solo gave me a concrete answer in under 10 minutes. The activation plan alone was worth £19.99."
             </p>
             <footer className="mt-4 text-xs text-muted-foreground">
-              — Risk Manager, Financial Services, London
+              Risk Manager, Financial Services, London
             </footer>
           </motion.blockquote>
         </div>
