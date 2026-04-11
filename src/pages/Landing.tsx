@@ -49,13 +49,13 @@ const problems = [
 const steps = [
   {
     num: "01",
-    title: "Answer 13 structured questions",
+    title: "Answer 15 targeted questions — or around 8 if you upload your CV first",
     desc: "We ask about your role, experience depth, network, situation, and location. Specific questions produce specific answers.",
   },
   {
     num: "02",
     title: "We classify your commercial profile",
-    desc: "Solo maps your background to a curated library of realistic solo business models. Not generic ideas. Paths that match what you've actually done.",
+    desc: "Solo scores your background against 95 archetypes, 480 business models, and 2,694 scored combinations across 14 professional domains. Not generic ideas. Paths that match what you've actually done.",
   },
   {
     num: "03",
@@ -71,6 +71,8 @@ const reportSections = [
   { icon: AlertTriangle, title: "Reality check", desc: "What's likely to go wrong, and why that matters" },
   { icon: CalendarCheck, title: "30-day activation plan", desc: "A day-by-day action sequence tailored to your situation" },
   { icon: MapPin, title: "Local market snapshot", desc: "Indicative demand and pricing data for your location" },
+  { icon: CalendarCheck, title: "Adaptive Tracker", desc: "Included in your £19.99 payment. 30 daily check-ins that adapt if you fall behind or your situation changes." },
+  { icon: ClipboardList, title: "Outreach drafts", desc: "Ready-to-send email templates for your first 3 target contacts, written from your profile." },
 ];
 
 const roles = [
