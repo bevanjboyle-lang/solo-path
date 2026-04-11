@@ -21,6 +21,7 @@ import Pricing from "./pages/Pricing";
 import WhoItsFor from "./pages/WhoItsFor";
 import SampleReport from "./pages/SampleReport";
 import FAQ from "./pages/FAQ";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/sample-report" element={<SampleReport />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/questionnaire" element={<ProtectedRoute><Questionnaire /></ProtectedRoute>} />
             <Route path="/processing" element={<ProtectedRoute><Processing /></ProtectedRoute>} />
             <Route path="/teaser" element={<ProtectedRoute><Teaser /></ProtectedRoute>} />
