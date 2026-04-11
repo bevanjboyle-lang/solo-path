@@ -21,11 +21,11 @@ const fadeUp = {
 const reportFaqs = [
   {
     q: "What do I actually get for £19.99?",
-    a: "A personalised 8-section report based on your 12-minute diagnostic. Covers: transferable skills ranked and explained, your three most viable alternative paths (with day rates, target clients, time-to-revenue estimates), market intelligence for your role and location, and a 90-day action plan with specific first steps. You own it permanently — no subscription required.",
+    a: "A personalised report based on around 8 minutes of structured questions. Covers: your professional archetype, three tailored business options with pricing and time-to-revenue, a clear recommendation, reality check, income outlook, 30-day activation plan with outreach drafts, local market feasibility snapshot, and AI impact section. You own it permanently — no subscription required.",
   },
   {
     q: "How long does it take?",
-    a: "The diagnostic takes 10–15 minutes. Your report is generated immediately and appears on screen as soon as you complete payment.",
+    a: "The questionnaire takes around 8 minutes. Your report is generated immediately and appears on screen as soon as you complete payment.",
   },
   {
     q: "Do I need to be thinking about leaving my job?",
@@ -36,8 +36,12 @@ const reportFaqs = [
     a: "No. Solo uses a structured diagnostic with profession-specific logic, curated market rate benchmarks, and a multi-step reasoning process built specifically for mid-career transitions. A generic AI prompt gives generic output. Solo is calibrated for your role, experience level, location, and the current market.",
   },
   {
+    q: "Can I upload my CV?",
+    a: "Yes. Before the questionnaire starts, you can upload your CV as a PDF or Word document. Solo reads your career history and pre-populates up to 7 of the 15 questions as confirmation cards — you just confirm or edit rather than type from scratch. Questions a CV can't answer, like your most important achievement or how urgently you need income, are always asked. The effective questionnaire reduces to around 8 questions.",
+  },
+  {
     q: "What's the Adaptive Tracker?",
-    a: "The Adaptive Tracker (£12.99/month) is a living version of your report. It sends a weekly check-in — one question, 90 seconds — and uses your answers to update your action plan over time. Includes quarterly re-scoring of your transferability and market positioning.",
+    a: "The Adaptive Tracker is included in your one-time £19.99 payment. For 30 days after you unlock your report, Solo sends you a daily check-in — a short, specific prompt tied to that day's task. If you fall behind, the plan adapts. If your situation changes materially, it generates a fresh plan from your current position. At Day 30, you can choose to continue with a subscription (£19/month or £149/year) which keeps the tracker running and unlocks the Practical Guidance suite and Ask Solo.",
   },
   {
     q: "Can I get a refund?",
