@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,10 +7,21 @@ import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 
 export default function Auth() {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/questionnaire", { replace: true });
+      }
+    };
+    checkSession();
+  }, [navigate]);
 
   if (loading) return null;
   if (user) return <Navigate to="/questionnaire" replace />;

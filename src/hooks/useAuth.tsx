@@ -21,13 +21,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Set up listener FIRST, then fetch session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setSession(session);
-        setLoading(false);
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+          setLoading(false);
+        }
       }
     );
 
+    // Fallback: ensure loading becomes false even if onAuthStateChange doesn't fire
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
