@@ -117,7 +117,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            AI is coming for your role. "I'll update my LinkedIn" isn't a Plan&nbsp;B.
+            Could AI be coming for your role? "I'll update my LinkedIn" isn't a Plan&nbsp;B.
           </motion.h1>
 
           <motion.p
