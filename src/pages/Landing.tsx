@@ -174,6 +174,11 @@ export default function Landing() {
         </div>
       </section>
 
+      <IndustryRiskSection />
+      <ExpertSaysSection />
+      <WaitingRoomSection />
+      <TestimonialsSection />
+
       {/* ── SECTION 2: THE PROBLEM ── */}
       <section className="border-t border-border/50 py-24">
         <div className="mx-auto max-w-5xl px-6">
