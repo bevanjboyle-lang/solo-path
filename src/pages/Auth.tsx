@@ -7,10 +7,21 @@ import { Mail, ArrowLeft, Loader2 } from "lucide-react";
 
 export default function Auth() {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/questionnaire", { replace: true });
+      }
+    };
+    checkSession();
+  }, [navigate]);
 
   if (loading) return null;
   if (user) return <Navigate to="/questionnaire" replace />;
