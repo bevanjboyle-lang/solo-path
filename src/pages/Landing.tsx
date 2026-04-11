@@ -91,11 +91,20 @@ export default function Landing() {
       {/* ── SECTION 1: HERO ── */}
       <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-14">
         <div className="mx-auto max-w-2xl text-center">
+          <motion.div
+            className="mb-8 flex justify-center"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
+            <SoloLogo width={220} height={63} />
+          </motion.div>
+
           <motion.span
             className="mb-6 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.5, delay: 0.15 }}
           >
             Your Plan B Engine
           </motion.span>
