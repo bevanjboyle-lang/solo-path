@@ -119,8 +119,10 @@ export default function Questionnaire() {
     }
   }, [user]);
 
-  const canContinue =
-    currentQuestion.type === "text"
+  const isRequired = currentQuestion.required !== false;
+  const canContinue = !isRequired
+    ? true
+    : currentQuestion.type === "text"
       ? typeof answer === "string" && answer.trim().length > 0
       : answer !== undefined && (Array.isArray(answer) ? answer.length > 0 : true);
 
