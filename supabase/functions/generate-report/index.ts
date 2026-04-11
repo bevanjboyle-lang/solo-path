@@ -237,8 +237,23 @@ Network calibration:
 
 Cover 4 phases: Foundations (Days 1–7), Network Activation (Days 8–16), Outreach (Days 17–25), Consolidation (Days 26–30).
 
+
+FIRST MOVE: Before the plan, generate a first_move — the single highest-probability action for generating real-world signal within 24 hours. Must be an outreach action naming a specific type of person to contact. Include a complete, ready-to-send draft (email, LinkedIn DM, or WhatsApp). follow_up_prompt is the exact question to ask the user 24 hours later.
 Return JSON:
 {
+  "first_move": {
+    "action": "One sentence: specific action, specific type of person to contact",
+    "window": "Within 24 hours",
+    "why_first": "One sentence: why this action before anything else",
+    "outreach_draft": {
+      "format": "email | linkedin_dm | whatsapp",
+      "subject": "Subject line (email only, omit for DM)",
+      "body": "Complete ready-to-send message",
+      "tone_note": "Brief note on tone",
+      "personalisation_instructions": "What the user needs to customise"
+    },
+    "follow_up_prompt": "Exact question to ask the user 24 hours later"
+  },
   "activation_plan": { "summary": string, "pacing_note": string, "network_note": string, "phases": [{ "phase": string, "days": string, "goal": string, "days_detail": [{ "day": string, "tasks": [string] }] }] },
   "network_toolkit": {
     "reconnect_email": { "subject": string, "body": string },
