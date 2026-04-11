@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, Zap } from "lucide-react";
+import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
@@ -81,7 +81,7 @@ export default function Results() {
       }
       if (!cancelled) {
         setChecking(false);
-        // Not paid — redirect to teaser or home
+        // Not paid â redirect to teaser or home
         if (reportId) {
           navigate(`/teaser?report_id=${reportId}`, { replace: true });
         } else {
@@ -133,7 +133,7 @@ export default function Results() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your Solo Plan B Report</h1>
 
-          {/* Free preview — always visible */}
+          {/* Free preview â always visible */}
           <div className="mt-10 rounded-xl border border-border bg-card p-8 shadow-card">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Free Preview</h2>
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
@@ -153,7 +153,7 @@ export default function Results() {
                 <p>
                   Based on your profile, you fit the{" "}
                   <span className="font-medium text-foreground">Strategic Advisor</span>{" "}
-                  archetype — a professional whose experience positions them well for high-value independent work.
+                  archetype â a professional whose experience positions them well for high-value independent work.
                 </p>
               )}
             </div>
@@ -242,6 +242,9 @@ export default function Results() {
                 {ap?.activation_plan && (
                   <div className="space-y-4">
                     <p>{ap.activation_plan.summary}</p>
+                  {ap.activation_plan.first_move && (
+                    <FirstMoveCard firstMove={ap.activation_plan.first_move} />
+                  )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="rounded-lg bg-surface p-3">
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Pacing</p>
@@ -296,7 +299,7 @@ export default function Results() {
                     className="mt-5 inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
                     style={{ background: "var(--gradient-cta)" }}
                   >
-                    Start your 30-day plan →
+                    Start your 30-day plan â
                   </button>
                 </motion.div>
               )}
@@ -316,7 +319,7 @@ export default function Results() {
                 ))}
               </div>
               <div className="mt-8 flex flex-col items-center gap-3 border-t border-border/50 pt-8 text-center">
-                <p className="text-lg font-semibold">Unlock your full report for £9.99</p>
+                <p className="text-lg font-semibold">Unlock your full report for Â£9.99</p>
                 <p className="text-sm text-muted-foreground">One-time payment. No subscription.</p>
                 <button
                   onClick={handlePayment}
@@ -324,7 +327,7 @@ export default function Results() {
                   className="mt-2 inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
                   style={{ background: "var(--gradient-cta)" }}
                 >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Get full report →"}
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Get full report â"}
                 </button>
               </div>
             </div>
@@ -335,7 +338,7 @@ export default function Results() {
   );
 }
 
-// ─── Sub-components ────────────────────────
+// âââ Sub-components ââââââââââââââââââââââââ
 
 function ReportSection({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (
@@ -383,7 +386,7 @@ function OptionCard({ option, isRecommended }: { option: any; isRecommended: boo
         </div>
         <div>
           <span className="text-muted-foreground/70 uppercase tracking-wider font-semibold">Pricing</span>
-          <p className="mt-0.5">£{option.pricing?.range_low_gbp?.toLocaleString()} – £{option.pricing?.range_high_gbp?.toLocaleString()} {option.pricing?.cadence}</p>
+          <p className="mt-0.5">Â£{option.pricing?.range_low_gbp?.toLocaleString()} â Â£{option.pricing?.range_high_gbp?.toLocaleString()} {option.pricing?.cadence}</p>
         </div>
         <div>
           <span className="text-muted-foreground/70 uppercase tracking-wider font-semibold">Time to Revenue</span>
@@ -391,6 +394,124 @@ function OptionCard({ option, isRecommended }: { option: any; isRecommended: boo
         </div>
       </div>
       <p className="text-xs italic text-muted-foreground/80">{option.why_this_works_for_them}</p>
+    </div>
+  );
+}
+
+function OutreachDraftPanel({ draft }: { draft: any }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    const text = draft.format === 'email' && draft.subject
+      ? `Subject: ${draft.subject}\n\n${draft.body}`
+      : draft.body;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+  return (
+    <div className="mt-2 ml-4">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
+      >
+        <MessageSquare className="w-3 h-3" />
+        {open ? 'Hide draft' : 'View draft message'}
+        {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+      {open && (
+        <div className="mt-2 rounded-lg border border-border bg-surface/50 p-3 space-y-2">
+          {draft.format === 'email' && draft.subject && (
+            <p className="text-xs font-semibold text-foreground">Subject: {draft.subject}</p>
+          )}
+          <pre className="text-xs text-foreground/90 whitespace-pre-wrap font-sans leading-relaxed">{draft.body}</pre>
+          <div className="flex items-center justify-between pt-1 border-t border-border">
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
+            >
+              <Copy className="w-3 h-3" />
+              {copied ? 'Copied!' : 'Copy to clipboard'}
+            </button>
+          </div>
+          {draft.tone_note && (
+            <p className="text-xs text-muted-foreground/70 italic">{draft.tone_note}</p>
+          )}
+          {draft.personalisation_instructions && (
+            <p className="text-xs text-amber-500/80">{draft.personalisation_instructions}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OutreachTaskItem({ task }: { task: any }) {
+  return (
+    <li className="space-y-1">
+      <span>{task.task}</span>
+      {task.outreach_draft && <OutreachDraftPanel draft={task.outreach_draft} />}
+    </li>
+  );
+}
+
+function FirstMoveCard({ firstMove }: { firstMove: any }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    if (!firstMove.outreach_draft) return;
+    const d = firstMove.outreach_draft;
+    const text = d.format === 'email' && d.subject
+      ? `Subject: ${d.subject}\n\n${d.body}`
+      : d.body;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+  return (
+    <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <Zap className="w-4 h-4 text-primary" />
+        <span className="text-sm font-semibold text-foreground">Your First Move — do this today</span>
+      </div>
+      <p className="text-sm text-foreground/90">{firstMove.action}</p>
+      {firstMove.why_first && (
+        <p className="text-xs text-muted-foreground">{firstMove.why_first}</p>
+      )}
+      {firstMove.outreach_draft && (
+        <div className="space-y-2">
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+          >
+            <MessageSquare className="w-3 h-3" />
+            {open ? 'Hide draft message' : 'View ready-to-send draft'}
+            {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+          {open && (
+            <div className="rounded-md border border-border bg-background p-3 space-y-2">
+              {firstMove.outreach_draft.format === 'email' && firstMove.outreach_draft.subject && (
+                <p className="text-xs font-semibold">Subject: {firstMove.outreach_draft.subject}</p>
+              )}
+              <pre className="text-xs whitespace-pre-wrap font-sans leading-relaxed text-foreground/90">{firstMove.outreach_draft.body}</pre>
+              <div className="flex items-center justify-between pt-1 border-t border-border">
+                <button
+                  onClick={handleCopy}
+                  className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  <Copy className="w-3 h-3" />
+                  {copied ? 'Copied!' : 'Copy to clipboard'}
+                </button>
+              </div>
+              {firstMove.outreach_draft.personalisation_instructions && (
+                <p className="text-xs text-amber-500/80">{firstMove.outreach_draft.personalisation_instructions}</p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -412,7 +533,11 @@ function PhaseSection({ phase }: { phase: any }) {
             <div key={i}>
               <p className="text-xs font-semibold text-foreground">{d.day}</p>
               <ul className="list-disc list-inside text-xs space-y-0.5 ml-1">
-                {d.tasks?.map((t: string, j: number) => <li key={j}>{t}</li>)}
+                {d.tasks?.map((t: any, j: number) => (
+                  typeof t === 'object' && t !== null && t.outreach_draft
+                    ? <OutreachTaskItem key={j} task={t} />
+                    : <li key={j}>{typeof t === 'string' ? t : (t?.task || '')}</li>
+                ))}
               </ul>
             </div>
           ))}
