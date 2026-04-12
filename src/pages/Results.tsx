@@ -781,6 +781,60 @@ function StrandPill({ strand, colorIdx }: { strand: string; colorIdx: number }) 
   );
 }
 
+function ActivationPlanDisplay({ plan }: { plan: any }) {
+  // Build strand color map from all tasks
+  const strandColorMap = new Map<string, number>();
+  let colorIdx = 0;
+  plan.phases?.forEach((phase: any) => {
+    phase.days_detail?.forEach((d: any) => {
+      d.tasks?.forEach((t: any) => {
+        const strand = typeof t === 'object' && t !== null ? t.strand : null;
+        if (strand && !strandColorMap.has(strand)) {
+          strandColorMap.set(strand, colorIdx++);
+        }
+      });
+    });
+  });
+
+  const hasStrands = strandColorMap.size > 1;
+
+  return (
+    <div className="space-y-4">
+      <p>{plan.summary}</p>
+      {hasStrands && (
+        <div className="flex flex-wrap gap-2">
+          {Array.from(strandColorMap.entries()).map(([strand, idx]) => (
+            <StrandPill key={strand} strand={strand} colorIdx={idx} />
+          ))}
+        </div>
+      )}
+      {plan.pacing_note && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="rounded-lg bg-surface p-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Pacing</p>
+            <p className="text-xs">{plan.pacing_note}</p>
+          </div>
+          <div className="rounded-lg bg-surface p-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Network</p>
+            <p className="text-xs">{plan.network_note}</p>
+          </div>
+        </div>
+      )}
+      <div className="space-y-2">
+        {plan.phases?.map((phase: any, i: number) => (
+          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} />
+        ))}
+      </div>
+      {plan.success_metric && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Success Metric</p>
+          <p className="text-xs">{plan.success_metric}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PhaseSection({ phase, strandColorMap }: { phase: any; strandColorMap: Map<string, number> }) {
   return (
     <Collapsible>
