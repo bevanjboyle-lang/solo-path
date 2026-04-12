@@ -8,6 +8,7 @@ import SoloLogo from "@/components/SoloLogo";
 const navLinks = [
   { label: "How it works", to: "/how-it-works" },
   { label: "Why Solo", to: "/why-solo" },
+  { label: "About", to: "/about" },
   { label: "Pricing", to: "/pricing" },
   { label: "Sample Report", to: "/sample-report" },
   { label: "FAQ", to: "/faq" },
