@@ -103,6 +103,9 @@ export default function Tracker() {
             <p className="mt-2 text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed</p>
           </div>
 
+          {/* Strand Status Cards — per-strand progress for portfolio plans */}
+          <StrandStatusCards phases={phases} completedTasks={completedTasks} />
+
           {/* Portfolio Review — mid-plan check-in for multi-strand plans */}
           <PortfolioReviewCard session={session} navigate={navigate} />
 
@@ -297,5 +300,60 @@ function PortfolioReviewCard({ session, navigate }: { session: any; navigate: (p
         </div>
       </div>
     </motion.div>
+  );
+}
+
+const STRAND_CARD_COLORS = [
+  { dot: "bg-[hsl(168,70%,45%)]", bar: "bg-[hsl(168,70%,45%)]" },   // mint
+  { dot: "bg-[hsl(38,90%,55%)]",  bar: "bg-[hsl(38,90%,55%)]" },    // amber
+  { dot: "bg-[hsl(270,60%,60%)]", bar: "bg-[hsl(270,60%,60%)]" },   // violet
+  { dot: "bg-[hsl(200,70%,50%)]", bar: "bg-[hsl(200,70%,50%)]" },   // blue
+  { dot: "bg-[hsl(340,70%,55%)]", bar: "bg-[hsl(340,70%,55%)]" },   // rose
+];
+
+function StrandStatusCards({ phases, completedTasks }: { phases: any[]; completedTasks: Set<string> }) {
+  // Build per-strand stats
+  const strandStats = new Map<string, { total: number; done: number; colorIdx: number }>();
+  let colorIdx = 0;
+
+  phases.forEach((phase: any, pi: number) => {
+    phase.days_detail?.forEach((d: any, di: number) => {
+      d.tasks?.forEach((t: any, ti: number) => {
+        const strand = typeof t === 'object' && t !== null ? t.strand : null;
+        if (!strand) return;
+        if (!strandStats.has(strand)) {
+          strandStats.set(strand, { total: 0, done: 0, colorIdx: colorIdx++ });
+        }
+        const s = strandStats.get(strand)!;
+        s.total++;
+        if (completedTasks.has(`${pi}-${di}-${ti}`)) s.done++;
+      });
+    });
+  });
+
+  if (strandStats.size < 2) return null;
+
+  return (
+    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {Array.from(strandStats.entries()).map(([strand, stats]) => {
+        const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
+        const c = STRAND_CARD_COLORS[stats.colorIdx % STRAND_CARD_COLORS.length];
+        return (
+          <div key={strand} className="rounded-xl border border-border bg-card p-4 shadow-card">
+            <div className="flex items-center gap-2 mb-3">
+              <span className={`inline-block h-2 w-2 rounded-full ${c.dot}`} />
+              <span className="text-sm font-medium text-foreground truncate">{strand}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                <div className={`h-full rounded-full ${c.bar} transition-all`} style={{ width: `${pct}%` }} />
+              </div>
+              <span className="text-xs font-medium text-muted-foreground w-8 text-right">{pct}%</span>
+            </div>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">{stats.done} of {stats.total} tasks</p>
+          </div>
+        );
+      })}
+    </div>
   );
 }
