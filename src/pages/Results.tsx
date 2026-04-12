@@ -9,6 +9,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import SoloLogo from "@/components/SoloLogo";
+import GlassCard from "@/components/ui/GlassCard";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import CircularGauge from "@/components/ui/CircularGauge";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+} from "recharts";
 
 interface ReportData {
   core_report: any;
@@ -26,6 +32,12 @@ const LOADING_MESSAGES = [
   "Analysing your local market...",
   "Scoring pricing benchmarks...",
   "Finalising your plan...",
+];
+
+const incomeProjectionData = [
+  { name: "Consulting", month3: 2500, month6: 5500, month12: 8500 },
+  { name: "Fractional CFO", month3: 4000, month6: 7500, month12: 12000 },
+  { name: "Online Course", month3: 500, month6: 3000, month12: 9000 },
 ];
 
 export default function Results() {
@@ -63,7 +75,6 @@ export default function Results() {
       .then(({ data }) => {
         if (data) {
           setReport(data as ReportData);
-          // Pre-load recommended_selection
           const cr = (data as ReportData).core_report;
           if (cr?.recommended_selection && !recommendedLoaded) {
             const ranks = (cr.recommended_selection.ranks || []) as number[];
@@ -103,7 +114,6 @@ export default function Results() {
     return () => { cancelled = true; };
   }, [checkPayment, fromPayment]);
 
-  // Cycle loading messages
   useEffect(() => {
     if (!generating) return;
     const interval = setInterval(() => {
@@ -198,30 +208,46 @@ export default function Results() {
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your Solo Plan B Report</h1>
 
           {/* Free preview - always visible */}
-          <div className="mt-10 rounded-xl border border-border bg-card p-8 shadow-card">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Free Preview</h2>
-            <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
-              {cr ? (
-                <>
+          <ScrollReveal>
+            <div className="mt-10 rounded-xl border border-border bg-card p-8 shadow-card">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Free Preview</h2>
+              <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                {cr ? (
+                  <>
+                    <p>
+                      Based on your profile, you fit the{" "}
+                      <span className="font-medium text-foreground">{cr.archetype?.primary}</span>{" "}
+                      archetype.
+                    </p>
+                    <p>{cr.archetype?.summary}</p>
+
+                    {/* Transferability CircularGauge */}
+                    {cr.archetype?.transferability_score != null && (
+                      <div className="flex items-center gap-4 pt-2">
+                        <div style={{ filter: "drop-shadow(0 0 8px rgba(46,205,176,0.3))" }}>
+                          <CircularGauge value={cr.archetype.transferability_score} size={140} strokeWidth={10} color="#2ECDB0" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Transferability Score</p>
+                          <p className="text-sm text-foreground mt-1">How portable your skills are across industries and roles.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {!paid && (
+                      <p>The full report explores specific paths tailored to your experience, with pricing guidance and a step-by-step activation plan.</p>
+                    )}
+                  </>
+                ) : (
                   <p>
                     Based on your profile, you fit the{" "}
-                    <span className="font-medium text-foreground">{cr.archetype?.primary}</span>{" "}
-                    archetype.
+                    <span className="font-medium text-foreground">Strategic Advisor</span>{" "}
+                    archetype - a professional whose experience positions them well for high-value independent work.
                   </p>
-                  <p>{cr.archetype?.summary}</p>
-                  {!paid && (
-                    <p>The full report explores specific paths tailored to your experience, with pricing guidance and a step-by-step activation plan.</p>
-                  )}
-                </>
-              ) : (
-                <p>
-                  Based on your profile, you fit the{" "}
-                  <span className="font-medium text-foreground">Strategic Advisor</span>{" "}
-                  archetype - a professional whose experience positions them well for high-value independent work.
-                </p>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          </ScrollReveal>
 
           {/* Generating plan loading state */}
           <AnimatePresence>
@@ -263,92 +289,110 @@ export default function Results() {
               </div>
 
               {/* Archetype & Transferable Value */}
-              <ReportSection title="Your Profile" icon={Briefcase}>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">What You Can Sell</p>
-                    <p>{cr.transferable_value?.what_they_can_sell}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Why Buyers Would Pay</p>
-                    <p>{cr.transferable_value?.why_buyers_would_pay}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Your Credibility Assets</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      {cr.transferable_value?.credibility_assets?.map((a: string, i: number) => (
-                        <li key={i}>{a}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </ReportSection>
-
-              {/* Options Card Grid */}
-              <div>
-                <h2 className="text-lg font-semibold text-foreground mb-1">We suggest starting with these options. Change anything you like.</h2>
-                <p className="text-sm text-muted-foreground mb-2">You can select 2 to 5 options. The recommendation is based on your capability profile and income risk spread.</p>
-                {cr.recommended_selection?.rationale && (
-                  <p className="text-sm text-muted-foreground/80 mb-4 italic">{cr.recommended_selection.rationale}</p>
-                )}
-
-                {/* Top 5 - expanded */}
-                <div className="space-y-4">
-                  {(cr.options || [])
-                    .slice()
-                    .sort((a: any, b: any) => a.rank - b.rank)
-                    .filter((opt: any) => opt.rank <= 5)
-                    .map((opt: any) => (
-                      <SelectionOptionCard
-                        key={opt.rank}
-                        option={opt}
-                        selected={selectedRanks.has(opt.rank)}
-                        onToggle={() => toggleRank(opt.rank)}
-                        selectionFull={selectedRanks.size >= MAX_SELECTIONS}
-                      />
-                    ))}
-                </div>
-
-                {/* Remaining 6-10 - collapsed */}
-                {(cr.options || []).some((o: any) => o.rank > 5) && (
-                  <div className="mt-4">
-                    {!showRemaining ? (
-                      <button
-                        onClick={() => setShowRemaining(true)}
-                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                        Show remaining {(cr.options || []).filter((o: any) => o.rank > 5).length} options
-                      </button>
-                    ) : (
-                      <div className="space-y-2">
-                        {(cr.options || [])
-                          .slice()
-                          .sort((a: any, b: any) => a.rank - b.rank)
-                          .filter((opt: any) => opt.rank > 5)
-                          .map((opt: any) => (
-                            <CompactOptionCard
-                              key={opt.rank}
-                              option={opt}
-                              selected={selectedRanks.has(opt.rank)}
-                              onToggle={() => toggleRank(opt.rank)}
-                              selectionFull={selectedRanks.size >= MAX_SELECTIONS}
-                            />
-                          ))}
+              <ScrollReveal>
+                <ReportSection title="Your Profile" icon={Briefcase}>
+                  <div className="space-y-4">
+                    {/* Transferability gauge row */}
+                    {cr.archetype?.transferability_score != null && (
+                      <div className="flex items-center gap-6 py-2">
+                        <div style={{ filter: "drop-shadow(0 0 8px rgba(46,205,176,0.3))" }}>
+                          <CircularGauge value={cr.archetype.transferability_score} size={140} strokeWidth={10} color="#2ECDB0" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Transferability Score</p>
+                          <p className="text-sm">How portable your skills are across industries and roles.</p>
+                        </div>
                       </div>
                     )}
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">What You Can Sell</p>
+                      <p>{cr.transferable_value?.what_they_can_sell}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Why Buyers Would Pay</p>
+                      <p>{cr.transferable_value?.why_buyers_would_pay}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Your Credibility Assets</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {cr.transferable_value?.credibility_assets?.map((a: string, i: number) => (
+                          <li key={i}>{a}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                )}
-              </div>
+                </ReportSection>
+              </ScrollReveal>
+
+              {/* Options Card Grid */}
+              <ScrollReveal delay={0.1}>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground mb-1">We suggest starting with these options. Change anything you like.</h2>
+                  <p className="text-sm text-muted-foreground mb-2">You can select 2 to 5 options. The recommendation is based on your capability profile and income risk spread.</p>
+                  {cr.recommended_selection?.rationale && (
+                    <p className="text-sm text-muted-foreground/80 mb-4 italic">{cr.recommended_selection.rationale}</p>
+                  )}
+
+                  {/* Top 5 - expanded */}
+                  <GlassCard className="p-4 space-y-4">
+                    {(cr.options || [])
+                      .slice()
+                      .sort((a: any, b: any) => a.rank - b.rank)
+                      .filter((opt: any) => opt.rank <= 5)
+                      .map((opt: any) => (
+                        <SelectionOptionCard
+                          key={opt.rank}
+                          option={opt}
+                          selected={selectedRanks.has(opt.rank)}
+                          onToggle={() => toggleRank(opt.rank)}
+                          selectionFull={selectedRanks.size >= MAX_SELECTIONS}
+                        />
+                      ))}
+                  </GlassCard>
+
+                  {/* Remaining 6-10 - collapsed */}
+                  {(cr.options || []).some((o: any) => o.rank > 5) && (
+                    <div className="mt-4">
+                      {!showRemaining ? (
+                        <button
+                          onClick={() => setShowRemaining(true)}
+                          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <ChevronDown className="h-4 w-4" />
+                          Show remaining {(cr.options || []).filter((o: any) => o.rank > 5).length} options
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          {(cr.options || [])
+                            .slice()
+                            .sort((a: any, b: any) => a.rank - b.rank)
+                            .filter((opt: any) => opt.rank > 5)
+                            .map((opt: any) => (
+                              <CompactOptionCard
+                                key={opt.rank}
+                                option={opt}
+                                selected={selectedRanks.has(opt.rank)}
+                                onToggle={() => toggleRank(opt.rank)}
+                                selectionFull={selectedRanks.size >= MAX_SELECTIONS}
+                              />
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </ScrollReveal>
 
               {/* AI Impact */}
               {report?.ai_impact_section && (
-                <AIImpactSection data={report.ai_impact_section} />
+                <ScrollReveal delay={0.15}>
+                  <AIImpactSection data={report.ai_impact_section} />
+                </ScrollReveal>
               )}
             </div>
           )}
 
-          {/* Fixed bottom selection bar - rendered outside the scrollable content */}
+          {/* Fixed bottom selection bar */}
           <AnimatePresence>
             {paid && isPendingSelection && !generating && !genError && selectedRanks.size > 0 && (
               <motion.div
@@ -386,8 +430,6 @@ export default function Results() {
             )}
           </AnimatePresence>
 
-
-
           {/* PHASE 2: Plan Display */}
           {showPlanPhase && !generating && !genError && (
             <div className="mt-8 space-y-6">
@@ -396,7 +438,6 @@ export default function Results() {
                   <CheckCircle className="h-4 w-4" />
                   Full report unlocked
                 </div>
-                {/* Change selection link - only if tracker not started */}
                 <button
                   onClick={() => setForceSelection(true)}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
@@ -406,168 +447,269 @@ export default function Results() {
               </div>
 
               {/* Selected model header */}
-              {cr.selected_models && cr.selected_models.length > 1 ? (
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
-                  <p className="font-medium text-foreground">Your Portfolio Plan</p>
-                  <div className="flex flex-wrap gap-2">
-                    {cr.selected_models.map((m: any, i: number) => (
-                      <span key={i} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold">
-                          {m.rank}
+              <ScrollReveal>
+                {cr.selected_models && cr.selected_models.length > 1 ? (
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
+                    <p className="font-medium text-foreground">Your Portfolio Plan</p>
+                    <div className="flex flex-wrap gap-2">
+                      {cr.selected_models.map((m: any, i: number) => (
+                        <span key={i} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold">
+                            {m.rank}
+                          </span>
+                          {m.model_name}
                         </span>
-                        {m.model_name}
-                      </span>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : cr.selected_model && (
-                <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
-                    #{cr.selected_rank || "✓"}
-                  </span>
-                  <div>
-                    <p className="font-medium text-foreground">Your Plan: {cr.selected_model}</p>
+                ) : cr.selected_model && (
+                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 flex items-center gap-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
+                      #{cr.selected_rank || "✓"}
+                    </span>
+                    <div>
+                      <p className="font-medium text-foreground">Your Plan: {cr.selected_model}</p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </ScrollReveal>
 
               {/* Profile */}
-              <ReportSection title="Your Profile" icon={Briefcase}>
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">What You Can Sell</p>
-                    <p>{cr.transferable_value?.what_they_can_sell}</p>
+              <ScrollReveal delay={0.05}>
+                <ReportSection title="Your Profile" icon={Briefcase}>
+                  <div className="space-y-4">
+                    {cr.archetype?.transferability_score != null && (
+                      <div className="flex items-center gap-6 py-2">
+                        <div style={{ filter: "drop-shadow(0 0 8px rgba(46,205,176,0.3))" }}>
+                          <CircularGauge value={cr.archetype.transferability_score} size={140} strokeWidth={10} color="#2ECDB0" />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Transferability Score</p>
+                          <p className="text-sm">How portable your skills are across industries and roles.</p>
+                        </div>
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">What You Can Sell</p>
+                      <p>{cr.transferable_value?.what_they_can_sell}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Why Buyers Would Pay</p>
+                      <p>{cr.transferable_value?.why_buyers_would_pay}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Your Credibility Assets</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        {cr.transferable_value?.credibility_assets?.map((a: string, i: number) => (
+                          <li key={i}>{a}</li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Why Buyers Would Pay</p>
-                    <p>{cr.transferable_value?.why_buyers_would_pay}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Your Credibility Assets</p>
-                    <ul className="list-disc list-inside space-y-1">
-                      {cr.transferable_value?.credibility_assets?.map((a: string, i: number) => (
-                        <li key={i}>{a}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </ReportSection>
+                </ReportSection>
+              </ScrollReveal>
 
               {/* Reality Check */}
-              <ReportSection title="Reality Check" icon={ShieldCheck}>
-                <div className="space-y-3">
-                  {[
-                    { label: "Most Likely Failure Mode", value: cr.reality_check?.most_likely_failure_mode },
-                    { label: "Second Failure Mode", value: cr.reality_check?.second_failure_mode },
-                    { label: "What You'll Find Hard", value: cr.reality_check?.what_they_will_find_hard },
-                    { label: "Honest Income Outlook", value: cr.reality_check?.honest_income_outlook },
-                  ].map((item) => (
-                    <div key={item.label}>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">{item.label}</p>
-                      <p>{item.value}</p>
-                    </div>
-                  ))}
-                </div>
-              </ReportSection>
+              <ScrollReveal delay={0.08}>
+                <ReportSection title="Reality Check" icon={ShieldCheck}>
+                  <div className="space-y-3">
+                    {[
+                      { label: "Most Likely Failure Mode", value: cr.reality_check?.most_likely_failure_mode },
+                      { label: "Second Failure Mode", value: cr.reality_check?.second_failure_mode },
+                      { label: "What You'll Find Hard", value: cr.reality_check?.what_they_will_find_hard },
+                      { label: "Honest Income Outlook", value: cr.reality_check?.honest_income_outlook },
+                    ].map((item) => (
+                      <div key={item.label}>
+                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">{item.label}</p>
+                        <p>{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </ReportSection>
+              </ScrollReveal>
+
+              {/* Income Projection Chart */}
+              <ScrollReveal delay={0.1}>
+                <GlassCard className="p-6">
+                  <div className="flex items-center gap-2.5 mb-4">
+                    <BarChart3 className="h-4 w-4 text-primary" strokeWidth={1.5} />
+                    <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Income Projection by Path</h3>
+                  </div>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <BarChart data={incomeProjectionData} barGap={2} barCategoryGap="20%">
+                      <XAxis
+                        dataKey="name"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 11, fill: "#7A7670" }}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 10, fill: "#7A7670" }}
+                        tickFormatter={(v: number) => `£${(v / 1000).toFixed(0)}k`}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          background: "#FAF9F7",
+                          border: "1px solid #E5E2DC",
+                          borderRadius: 8,
+                          fontSize: 12,
+                        }}
+                        formatter={(value: number) => [`£${value.toLocaleString()}`, ""]}
+                      />
+                      <Legend
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: 10, color: "#7A7670" }}
+                      />
+                      <Bar dataKey="month3" name="3 months" fill="#2ECDB0" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="month6" name="6 months" fill="#25A896" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="month12" name="12 months" fill="#1D8477" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </GlassCard>
+              </ScrollReveal>
 
               {/* First Steps */}
               {cr.first_steps && (
-                <ReportSection title="Your First Steps" icon={Target}>
-                  <ol className="list-decimal list-inside space-y-2">
-                    {cr.first_steps.map((step: string, i: number) => (
-                      <li key={i}>{step}</li>
-                    ))}
-                  </ol>
-                </ReportSection>
+                <ScrollReveal delay={0.1}>
+                  <ReportSection title="Your First Steps" icon={Target}>
+                    <ol className="list-decimal list-inside space-y-2">
+                      {cr.first_steps.map((step: string, i: number) => (
+                        <li key={i}>{step}</li>
+                      ))}
+                    </ol>
+                  </ReportSection>
+                </ScrollReveal>
               )}
 
               {/* First Move */}
               {ap?.first_move && (
-                <ReportSection title="Your First Move" icon={Zap}>
-                  <FirstMoveCard firstMove={ap.first_move} />
-                </ReportSection>
+                <ScrollReveal delay={0.1}>
+                  <ReportSection title="Your First Move" icon={Zap}>
+                    <FirstMoveCard firstMove={ap.first_move} />
+                  </ReportSection>
+                </ScrollReveal>
               )}
 
-              {/* 30-Day Activation Plan */}
-              <ReportSection title="30-Day Activation Plan" icon={CalendarCheck}>
-                {ap?.activation_plan && (
-                  <ActivationPlanDisplay plan={ap.activation_plan} />
-                )}
-              </ReportSection>
+              {/* 30-Day Activation Plan with Timeline */}
+              <ScrollReveal delay={0.1}>
+                <ReportSection title="30-Day Activation Plan" icon={CalendarCheck}>
+                  {/* Horizontal timeline visual */}
+                  <div className="mb-6">
+                    <div className="relative flex items-center">
+                      {/* Connecting line */}
+                      <div className="absolute top-5 left-6 right-6 h-0.5 bg-primary/20" />
+                      {[
+                        { label: "Foundation", week: "Week 1", opacity: 1.0 },
+                        { label: "Build", week: "Week 2", opacity: 0.8 },
+                        { label: "Launch", week: "Week 3", opacity: 0.6 },
+                        { label: "Grow", week: "Week 4", opacity: 0.4 },
+                      ].map((phase, i) => (
+                        <div key={i} className="relative z-10 flex flex-1 flex-col items-center">
+                          <div
+                            className="flex h-10 w-10 items-center justify-center rounded-lg text-xs font-bold text-primary-foreground"
+                            style={{ backgroundColor: `rgba(46,205,176,${phase.opacity})` }}
+                          >
+                            {i + 1}
+                          </div>
+                          <span className="mt-2 text-[10px] font-semibold text-foreground">{phase.label}</span>
+                          <span className="text-[9px] text-muted-foreground">{phase.week}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {ap?.activation_plan && (
+                    <ActivationPlanDisplay plan={ap.activation_plan} />
+                  )}
+                </ReportSection>
+              </ScrollReveal>
 
               {/* Network Toolkit */}
               {ap?.network_toolkit && (
-                <ReportSection title="Network Toolkit" icon={Users}>
-                  <div className="space-y-4">
-                    {ap.network_toolkit.intro && <p>{ap.network_toolkit.intro}</p>}
-                    {ap.network_toolkit.templates?.map((t: any, i: number) => (
-                      <CopyBox key={i} label={t.label || `Template ${i + 1}`} subject={t.subject} content={t.body} />
-                    ))}
-                    {/* Legacy format support */}
-                    {ap.network_toolkit.reconnect_email && (
-                      <CopyBox label="Reconnect Email" subject={ap.network_toolkit.reconnect_email.subject} content={ap.network_toolkit.reconnect_email.body} />
-                    )}
-                    {ap.network_toolkit.linkedin_dm && (
-                      <CopyBox label="LinkedIn DM" content={ap.network_toolkit.linkedin_dm.body} />
-                    )}
-                    {ap.network_toolkit.referral_ask_email && (
-                      <CopyBox label="Referral Ask Email" subject={ap.network_toolkit.referral_ask_email.subject} content={ap.network_toolkit.referral_ask_email.body} />
-                    )}
-                    {ap.network_toolkit.verbal_positioning && (
-                      <CopyBox label="Verbal Positioning Script" content={ap.network_toolkit.verbal_positioning.script} />
-                    )}
-                  </div>
-                </ReportSection>
+                <ScrollReveal delay={0.1}>
+                  <ReportSection title="Network Toolkit" icon={Users}>
+                    <div className="space-y-4">
+                      {ap.network_toolkit.intro && <p>{ap.network_toolkit.intro}</p>}
+                      {ap.network_toolkit.templates?.map((t: any, i: number) => (
+                        <ScrollReveal key={i} delay={i * 0.08}>
+                          <CopyBox label={t.label || `Template ${i + 1}`} subject={t.subject} content={t.body} />
+                        </ScrollReveal>
+                      ))}
+                      {ap.network_toolkit.reconnect_email && (
+                        <CopyBox label="Reconnect Email" subject={ap.network_toolkit.reconnect_email.subject} content={ap.network_toolkit.reconnect_email.body} />
+                      )}
+                      {ap.network_toolkit.linkedin_dm && (
+                        <CopyBox label="LinkedIn DM" content={ap.network_toolkit.linkedin_dm.body} />
+                      )}
+                      {ap.network_toolkit.referral_ask_email && (
+                        <CopyBox label="Referral Ask Email" subject={ap.network_toolkit.referral_ask_email.subject} content={ap.network_toolkit.referral_ask_email.body} />
+                      )}
+                      {ap.network_toolkit.verbal_positioning && (
+                        <CopyBox label="Verbal Positioning Script" content={ap.network_toolkit.verbal_positioning.script} />
+                      )}
+                    </div>
+                  </ReportSection>
+                </ScrollReveal>
               )}
 
-              {/* Market Snapshot - tabbed by strand if portfolio */}
-              <MarketSnapshotSection report={report} ap={ap} />
+              {/* Market Snapshot */}
+              <ScrollReveal delay={0.1}>
+                <MarketSnapshotSection report={report} ap={ap} />
+              </ScrollReveal>
 
               {/* AI Impact */}
               {report?.ai_impact_section && (
-                <AIImpactSection data={report.ai_impact_section} />
+                <ScrollReveal delay={0.1}>
+                  <AIImpactSection data={report.ai_impact_section} />
+                </ScrollReveal>
               )}
 
               {/* Start 30-day plan CTA */}
               {ap?.activation_plan && (
-                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="rounded-xl border-2 border-primary/20 bg-card p-8 shadow-card text-center">
-                  <CalendarCheck className="h-8 w-8 text-primary mx-auto mb-3" strokeWidth={1.5} />
-                  <h3 className="text-lg font-semibold text-foreground">Ready to take action?</h3>
-                  <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
-                    Turn your activation plan into daily tasks with check-ins, progress tracking, and adaptive replanning.
-                  </p>
-                  <button
-                    onClick={() => navigate(`/activate?report_id=${reportId}`)}
-                    className="mt-5 inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
-                    style={{ background: "var(--gradient-cta)" }}
-                  >
-                    Start your 30-day plan →
-                  </button>
-                </motion.div>
+                <ScrollReveal delay={0.1}>
+                  <div className="rounded-xl border-2 border-primary/20 bg-card p-8 shadow-card text-center">
+                    <CalendarCheck className="h-8 w-8 text-primary mx-auto mb-3" strokeWidth={1.5} />
+                    <h3 className="text-lg font-semibold text-foreground">Ready to take action?</h3>
+                    <p className="mt-2 text-sm text-muted-foreground max-w-md mx-auto">
+                      Turn your activation plan into daily tasks with check-ins, progress tracking, and adaptive replanning.
+                    </p>
+                    <button
+                      onClick={() => navigate(`/activate?report_id=${reportId}`)}
+                      className="mt-5 inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+                      style={{ background: "var(--gradient-cta)" }}
+                    >
+                      Start your 30-day plan →
+                    </button>
+                  </div>
+                </ScrollReveal>
               )}
             </div>
           )}
 
           {/* Paywall - not paid */}
           {!paid && (
-            <div className="mt-8 rounded-xl border border-border bg-card p-8 shadow-card">
-              <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-                <Lock className="h-4 w-4" />
-                Full Report
+            <ScrollReveal>
+              <div className="mt-8 rounded-xl border border-border bg-card p-8 shadow-card">
+                <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                  <Lock className="h-4 w-4" />
+                  Full Report
+                </div>
+                <div className="mt-8 flex flex-col items-center gap-3 border-t border-border/50 pt-8 text-center">
+                  <p className="text-lg font-semibold">Unlock your full report for £19.99</p>
+                  <p className="text-sm text-muted-foreground">One-time payment. No ongoing commitment.</p>
+                  <button
+                    onClick={handlePayment}
+                    disabled={loading}
+                    className="mt-2 inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+                    style={{ background: "var(--gradient-cta)" }}
+                  >
+                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Get full report →"}
+                  </button>
+                </div>
               </div>
-              <div className="mt-8 flex flex-col items-center gap-3 border-t border-border/50 pt-8 text-center">
-                <p className="text-lg font-semibold">Unlock your full report for £19.99</p>
-                <p className="text-sm text-muted-foreground">One-time payment. No ongoing commitment.</p>
-                <button
-                  onClick={handlePayment}
-                  disabled={loading}
-                  className="mt-2 inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
-                  style={{ background: "var(--gradient-cta)" }}
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Get full report →"}
-                </button>
-              </div>
-            </div>
+            </ScrollReveal>
           )}
         </motion.div>
       </div>
@@ -641,8 +783,12 @@ function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { op
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       onClick={() => !disabled && onToggle()}
-      className={`relative rounded-xl border bg-card shadow-card cursor-pointer transition-all ${
-        selected ? "border-primary ring-1 ring-primary/30" : disabled ? "border-border opacity-50 cursor-not-allowed" : "border-border hover:border-primary/40"
+      className={`relative rounded-xl border bg-card shadow-card cursor-pointer transition-all duration-200 ${
+        selected
+          ? "border-primary ring-1 ring-primary/30 metallic-border"
+          : disabled
+          ? "border-border opacity-50 cursor-not-allowed"
+          : "border-border hover:border-primary/40 hover:bg-[rgba(46,205,176,0.05)]"
       } ${isTop3 ? "p-6" : "p-4"}`}
     >
       {/* Checkbox top-right */}
@@ -670,6 +816,30 @@ function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { op
               {option.difficulty_rating}
             </Badge>
           </div>
+
+          {/* Difficulty & Speed gauges */}
+          {(option.difficulty_score != null || option.speed_score != null) && (
+            <div className="flex gap-4 mt-3">
+              {option.difficulty_score != null && (
+                <div className="flex flex-col items-center">
+                  <CircularGauge value={option.difficulty_score * 10} size={80} strokeWidth={6} color="#2ECDB0" />
+                  <span className="text-[9px] text-muted-foreground mt-1">Difficulty</span>
+                </div>
+              )}
+              {option.speed_score != null && (
+                <div className="flex flex-col items-center">
+                  <CircularGauge value={option.speed_score * 10} size={80} strokeWidth={6} color="#2ECDB0" />
+                  <span className="text-[9px] text-muted-foreground mt-1">Speed</span>
+                </div>
+              )}
+              {option.fit_score != null && (
+                <div className="flex flex-col items-center">
+                  <CircularGauge value={option.fit_score * 10} size={80} strokeWidth={6} color="#2ECDB0" />
+                  <span className="text-[9px] text-muted-foreground mt-1">Fit</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {option.fit_tags?.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-2">
@@ -723,7 +893,7 @@ function CompactOptionCard({ option, selected, onToggle, selectionFull }: { opti
     <div
       onClick={() => !disabled && onToggle()}
       className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-all ${
-        selected ? "border-primary bg-primary/5" : disabled ? "border-border opacity-40 cursor-not-allowed" : "border-border hover:border-primary/30"
+        selected ? "border-primary bg-primary/5" : disabled ? "border-border opacity-40 cursor-not-allowed" : "border-border hover:border-primary/30 hover:bg-[rgba(46,205,176,0.05)]"
       }`}
     >
       <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
@@ -747,13 +917,13 @@ function CompactOptionCard({ option, selected, onToggle, selectionFull }: { opti
 
 function ReportSection({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="rounded-xl border border-border bg-card p-8 shadow-card">
+    <div className="rounded-xl border border-border bg-card p-8 shadow-card">
       <div className="flex items-center gap-2.5 mb-4">
         <Icon className="h-4 w-4 text-primary" strokeWidth={1.5} />
         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
       </div>
       <div className="space-y-3 text-sm leading-relaxed text-muted-foreground">{children}</div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -772,7 +942,14 @@ function OutreachDraftPanel({ draft }: { draft: any }) {
         {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
       </button>
       {open && (
-        <div className="mt-2 rounded-lg border border-border bg-surface/50 p-3 space-y-2">
+        <div
+          className="mt-2 rounded-lg border border-border p-3 space-y-2"
+          style={{
+            borderLeft: "3px solid #2ECDB0",
+            background: "hsl(var(--surface-card))",
+            backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.03) 28px)",
+          }}
+        >
           {draft.format === 'email' && draft.subject && <p className="text-xs font-semibold text-foreground">Subject: {draft.subject}</p>}
           <pre className="text-xs text-foreground/90 whitespace-pre-wrap font-sans leading-relaxed">{draft.body}</pre>
           <div className="flex items-center justify-between pt-1 border-t border-border">
@@ -780,24 +957,24 @@ function OutreachDraftPanel({ draft }: { draft: any }) {
               <Copy className="w-3 h-3" />{copied ? 'Copied!' : 'Copy to clipboard'}
             </button>
           </div>
-          {draft.tone_note && <p className="text-xs text-muted-foreground/70 italic">{draft.tone_note}</p>}
-          {draft.personalisation_instructions && <p className="text-xs text-amber-500/80">{draft.personalisation_instructions}</p>}
+          {draft.personalisation_instructions && (
+            <p className="text-xs text-amber-500/80">{draft.personalisation_instructions}</p>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function OutreachTaskItem({ task, strandColorMap, greyStrands }: { task: any; strandColorMap?: Map<string, number>; greyStrands?: boolean }) {
-  const strand = task.strand;
+function OutreachTaskItem({ task, strandColorMap, greyStrands }: { task: any; strandColorMap: Map<string, number>; greyStrands?: boolean }) {
+  const taskText = task?.task || '';
+  const strand = task?.strand;
   return (
-    <li className="space-y-1">
-      <span className="flex items-center gap-1.5 flex-wrap">
-        <span>{task.task}</span>
-        {strand && strandColorMap?.has(strand) && (
-          <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} grey={greyStrands} />
-        )}
-      </span>
+    <li className="flex items-center gap-1.5 flex-wrap">
+      <span>{taskText}</span>
+      {strand && strandColorMap.has(strand) && (
+        <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} grey={greyStrands} />
+      )}
       {task.outreach_draft && <OutreachDraftPanel draft={task.outreach_draft} />}
     </li>
   );
@@ -827,7 +1004,14 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
             {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
           {open && (
-            <div className="rounded-md border border-border bg-background p-3 space-y-2">
+            <div
+              className="rounded-md border border-border p-3 space-y-2"
+              style={{
+                borderLeft: "3px solid #2ECDB0",
+                background: "hsl(var(--surface-card))",
+                backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.03) 28px)",
+              }}
+            >
               {firstMove.outreach_draft.format === 'email' && firstMove.outreach_draft.subject && (
                 <p className="text-xs font-semibold">Subject: {firstMove.outreach_draft.subject}</p>
               )}
@@ -848,13 +1032,13 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
   );
 }
 
-// Strand color palette - auto-assigned by index
+// Strand color palette
 const STRAND_COLORS = [
-  { bg: "bg-[hsl(168,70%,45%)]/15", dot: "bg-[hsl(168,70%,45%)]", text: "text-[hsl(168,70%,45%)]" },   // mint
-  { bg: "bg-[hsl(38,90%,55%)]/15",  dot: "bg-[hsl(38,90%,55%)]",  text: "text-[hsl(38,90%,55%)]" },    // amber
-  { bg: "bg-[hsl(270,60%,60%)]/15", dot: "bg-[hsl(270,60%,60%)]", text: "text-[hsl(270,60%,60%)]" },   // violet
-  { bg: "bg-[hsl(200,70%,50%)]/15", dot: "bg-[hsl(200,70%,50%)]", text: "text-[hsl(200,70%,50%)]" },   // blue
-  { bg: "bg-[hsl(340,70%,55%)]/15", dot: "bg-[hsl(340,70%,55%)]", text: "text-[hsl(340,70%,55%)]" },   // rose
+  { bg: "bg-[hsl(168,70%,45%)]/15", dot: "bg-[hsl(168,70%,45%)]", text: "text-[hsl(168,70%,45%)]" },
+  { bg: "bg-[hsl(38,90%,55%)]/15",  dot: "bg-[hsl(38,90%,55%)]",  text: "text-[hsl(38,90%,55%)]" },
+  { bg: "bg-[hsl(270,60%,60%)]/15", dot: "bg-[hsl(270,60%,60%)]", text: "text-[hsl(270,60%,60%)]" },
+  { bg: "bg-[hsl(200,70%,50%)]/15", dot: "bg-[hsl(200,70%,50%)]", text: "text-[hsl(200,70%,50%)]" },
+  { bg: "bg-[hsl(340,70%,55%)]/15", dot: "bg-[hsl(340,70%,55%)]", text: "text-[hsl(340,70%,55%)]" },
 ];
 
 const STRAND_SINGLE = { bg: "bg-destructive/15", dot: "bg-destructive", text: "text-destructive" };
@@ -870,7 +1054,6 @@ function StrandPill({ strand, colorIdx, grey }: { strand: string; colorIdx: numb
 }
 
 function ActivationPlanDisplay({ plan }: { plan: any }) {
-  // Build strand color map from all tasks
   const strandColorMap = new Map<string, number>();
   let colorIdx = 0;
   plan.phases?.forEach((phase: any) => {
@@ -971,7 +1154,14 @@ function CopyBox({ label, subject, content }: { label: string; subject?: string;
   const text = [subject && `Subject: ${subject}`, content].filter(Boolean).join("\n\n");
   const handleCopy = () => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); };
   return (
-    <div className="rounded-lg border border-border bg-surface p-4">
+    <div
+      className="rounded-lg border border-border p-4"
+      style={{
+        borderLeft: "3px solid #2ECDB0",
+        background: "hsl(var(--surface-card))",
+        backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.03) 28px)",
+      }}
+    >
       <div className="flex items-center justify-between mb-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">{label}</p>
         <button onClick={handleCopy} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
@@ -990,7 +1180,6 @@ function MarketSnapshotSection({ report, ap }: { report: ReportData | null; ap: 
   const hasStrandSnapshots = strandIds.length > 0;
   const [activeStrand, setActiveStrand] = useState(strandIds[0] || "");
 
-  // Fallback to single market_snapshot
   if (!hasStrandSnapshots && report?.market_snapshot) {
     return (
       <ReportSection title="Market Snapshot" icon={BarChart3}>
