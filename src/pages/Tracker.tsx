@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2, LogOut, CalendarCheck, ChevronDown, Circle, Lock, CreditCard, ClipboardList } from "lucide-react";
+import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrackerSession } from "@/hooks/useTrackerSession";
@@ -95,8 +96,32 @@ export default function Tracker() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-background">
+        <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+          <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
+            <SoloLogo width={100} height={28} />
+          </div>
+        </nav>
+        <div className="mx-auto max-w-3xl px-6 py-10 space-y-6">
+          {/* Gauge skeleton */}
+          <GlassCard className="flex flex-col items-center py-8">
+            <ShimmerSkeleton width={180} height={180} borderRadius="50%" />
+            <ShimmerSkeleton width={120} height={16} className="mt-4" />
+          </GlassCard>
+          {/* Momentum chart skeleton */}
+          <GlassCard className="p-6">
+            <ShimmerSkeleton width={140} height={14} className="mb-4" />
+            <ShimmerSkeleton width="100%" height={160} borderRadius={8} />
+          </GlassCard>
+          {/* Phase skeletons */}
+          {[1, 2, 3].map((i) => (
+            <GlassCard key={i} className="p-5">
+              <ShimmerSkeleton width="60%" height={14} />
+              <ShimmerSkeleton width="100%" height={6} className="mt-3" borderRadius={3} />
+              <ShimmerSkeleton width="40%" height={12} className="mt-2" />
+            </GlassCard>
+          ))}
+        </div>
       </div>
     );
   }
