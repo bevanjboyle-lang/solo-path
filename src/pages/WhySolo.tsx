@@ -1,64 +1,42 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import SoloLogo from "@/components/SoloLogo";
+import {
+  Scale,
+  Crosshair,
+  Gem,
+  Heart,
+  Shield,
+  Cpu,
+} from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 
-const fade = {
-  hidden: { opacity: 0, y: 0 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.1, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
+  }),
 };
 
-const sections = [
-  {
-    heading: "It's not about catastrophe. It's about arithmetic.",
-    paragraphs: [
-      "Careers change for dozens of reasons. Restructures. New leadership. Sector contraction. Relocation. Burnout. A simple realisation that the next promotion isn't worth what it costs.",
-      "Most professionals know this. What they haven't done is build anything outside the salaried structure that could generate income independently. Not because they can't — but because nothing in their career has ever required it.",
-      "The result is a specific kind of exposure. A senior finance professional with 15 years of experience and deep commercial knowledge has enormous economic value — but almost none of it is portable. It's locked inside one employer relationship, one job title, one set of internal processes. If that relationship ends, they start from zero in a market that doesn't know them.",
-      "That's the gap.",
-    ],
-  },
-  {
-    heading: "Who is most exposed",
-    paragraphs: [
-      "The optionality gap tends to be widest in structured professional roles: finance, legal, compliance, HR, operations, consulting, project management. These are people whose expertise is genuinely valuable — but whose careers have been built entirely within organisational structures.",
-      "They've never had to find a client. Never had to price their own time. Never had to describe what they do in terms a buyer would understand. They've been evaluated by internal metrics, promoted through internal hierarchies, and paid through payroll.",
-      "None of that prepares you for earning independently.",
-      "The gap isn't about capability. It's about infrastructure. The skills are there. The route to market isn't.",
-    ],
-  },
-  {
-    heading: "Why it matters now",
-    paragraphs: [
-      "Three things are converging.",
-      "First, career tenure is shortening. The average time in a senior role has compressed. More professionals will face involuntary transitions at some point — not as a worst case, but as a statistical likelihood.",
-      "Second, the market for independent professional expertise is larger and more accessible than most people inside organisations realise. Fractional roles, advisory work, interim management, specialist consulting, productised services — these are real revenue paths, not gig economy workarounds. But they require a different set of knowledge: how to position an offer, how to price, how to reach buyers, how to convert experience into something someone will pay for outside an employment contract.",
-      "Third, AI is changing the economics of professional work. Not overnight, and not uniformly — but the direction is clear. Roles that are primarily about processing, analysis, and structured decision-making are becoming easier to augment or replace. This doesn't mean mass unemployment. It means the premium shifts toward professionals who can operate independently, advise, and deliver outcomes — not just execute processes.",
-      "The professionals who will navigate this best are the ones who have options before they need them.",
-    ],
-  },
-  {
-    heading: "What closing the gap actually looks like",
-    paragraphs: [
-      "Closing the optionality gap doesn't mean quitting your job. It doesn't mean starting a business tomorrow. It means answering a small number of specific questions:",
-      "What is your professional archetype? Not your job title — your actual cluster of skills, experience, and commercial value as the market would see it.",
-      "Which independent income paths are realistic for someone with your profile? Not all of them. Not the inspiring ones. The ones that match your background, your risk tolerance, your available time, and the market's willingness to pay.",
-      "What would your first move be? If you decided to test one path — not commit to it, just test it — what would you do in the next 30 days?",
-      "How long to first revenue? Some paths generate income in weeks. Some take months. Knowing which is which prevents false starts.",
-      "Most professionals have never worked through these questions. Not because they're hard to answer, but because no one has structured the process for people like them.",
-    ],
-  },
-  {
-    heading: "The economics of optionality",
-    paragraphs: [
-      "There is a financial argument for closing this gap even if your career never changes.",
-      "A professional who has identified two or three realistic independent income paths — and knows concretely how they'd pursue them — negotiates differently. They make career decisions from a position of knowledge rather than dependency. They can evaluate whether a role is worth staying in, rather than assuming it has to be because there's nothing else.",
-      "Optionality doesn't require action. It requires preparation. And preparation, for most professionals, is far less work than they expect — once someone shows them where to look.",
-    ],
-  },
+const principles = [
+  { icon: Scale, title: "Realism over inspiration", desc: "A Plan B you can't actually execute isn't a Plan B. We privilege commercial realism over ideas that sound exciting but don't hold up." },
+  { icon: Crosshair, title: "Specificity over breadth", desc: "Generic ideas help no one. Solo tells you who would pay you, for what, why they'd trust you, and how soon the money could realistically come." },
+  { icon: Gem, title: "Your experience is the asset", desc: "We don't help you build something new from scratch. We help you translate what you've already spent years building into something independently valuable." },
+  { icon: Heart, title: "The anxious professional deserves better tools", desc: "Most career and entrepreneurship content is aimed at people who already want to start something. Solo is for people who aren't sure, but want a credible answer." },
+  { icon: Shield, title: "A Plan B shouldn't feel like giving up", desc: "Having a realistic fallback makes you more confident in your current role, not less. It's not about leaving. It's about not being trapped." },
+  { icon: Cpu, title: "Better than asking ChatGPT", desc: "Generic AI gives generic answers. Solo's value is in the structure: the questions, the classification, the scoring, the commercial translation. That's the product." },
+];
+
+const stats = [
+  { value: "5–12 years", desc: "The experience range where professionals have the most transferable commercial value — but the least practice selling it." },
+  { value: "£0", desc: "What most mid-career professionals have earned outside employment. The translation problem is almost universal." },
+  { value: "8 minutes", desc: "How long it takes Solo to map your background to a realistic independent income path." },
 ];
 
 export default function WhySolo() {
@@ -69,108 +47,97 @@ export default function WhySolo() {
       <MintTopBar />
       <Navbar />
 
-      <PanelLayout className="mt-20 px-6 py-16 sm:px-10 lg:px-16">
-        <article className="mx-auto max-w-[680px]">
-          {/* H1 */}
-          <motion.h1
-            className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-[2.75rem]"
-            style={{ letterSpacing: "-0.02em", color: "hsl(var(--text-heading))" }}
-            initial="hidden"
-            animate="visible"
-            variants={fade}
-          >
-            The Optionality Gap
-          </motion.h1>
+      {/* HERO */}
+      <PanelLayout className="mt-20 px-6 py-16 sm:px-10">
+        <section className="flex min-h-[50vh] flex-col items-center justify-center">
+          <div className="mx-auto max-w-2xl text-center">
+            <motion.span className="mb-6 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              The Solo Manifesto
+            </motion.span>
+            <motion.h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl" style={{ letterSpacing: "-0.02em" }} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.05 }}>
+              Professional independence used to be a niche choice. Increasingly, it is the smart preparation.
+            </motion.h1>
+            <motion.p className="mx-auto mt-6 max-w-[580px] text-base leading-relaxed text-muted-foreground sm:text-lg" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
+              This isn't a prediction. It's already happening. Solo exists to help capable, experienced professionals build a credible path that doesn't depend entirely on an employer.
+            </motion.p>
+          </div>
+        </section>
+      </PanelLayout>
 
-          {/* Intro */}
-          <motion.div
-            className="mt-10 space-y-5 text-[15px] leading-[1.8] sm:text-base"
-            style={{ color: "hsl(var(--text-body))" }}
-            initial="hidden"
-            animate="visible"
-            variants={fade}
-          >
-            <p>
-              Most white-collar professionals look secure. Salaried role, pension
-              contributions, a title that means something inside the building.
-              From the outside, it reads as stability.
-            </p>
-            <p>But look at the structure underneath and something is missing.</p>
-            <p>
-              One income stream. One employer. One professional identity — defined
-              entirely by an organisation they don't control. No tested route to
-              earning independently. No offer they could take to market next month
-              if they had to.
-            </p>
-            <p>
-              This is the optionality gap: the distance between how secure a
-              career looks and how few alternatives actually exist if it changes.
-            </p>
+      {/* THE SHIFT */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-3xl">
+          <motion.div className="mb-10" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} custom={0}>
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+              Why having independent income options matters
+            </h2>
           </motion.div>
+          <motion.div className="space-y-6 text-sm leading-[1.8] text-muted-foreground sm:text-base" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={1}>
+            <p>Artificial intelligence is doing to cognitive work what mechanisation did to physical work over the last two centuries — not eliminating it wholesale, but restructuring it. The middle layers of professional organisations — the managers, analysts, coordinators, and process specialists who translate strategy into execution — are increasingly caught between automation at the task level and consolidation at the organisational level.</p>
+            <p>This doesn't mean these roles disappear overnight. It means they become less predictable, less numerous, and less valuable as a proportion of what organisations need to pay for. The professionals in these roles are often highly capable. They are not, however, well-equipped to work outside the structures that have employed them. Most have never had to sell their services directly. Most couldn't tell you exactly what they'd charge, or who would pay them, or why.</p>
+            <p>That gap — between genuine capability and commercial self-sufficiency — is the problem Solo is built to close.</p>
+          </motion.div>
+        </div>
+      </PanelLayout>
 
-          {/* Body sections */}
-          {sections.map((section) => (
-            <motion.section
-              key={section.heading}
-              className="mt-14"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-60px" }}
-              variants={fade}
-            >
-              <h2
-                className="font-display text-xl font-semibold tracking-tight sm:text-2xl"
-                style={{ letterSpacing: "-0.02em", color: "hsl(var(--text-heading))" }}
-              >
-                {section.heading}
-              </h2>
-              <div
-                className="mt-5 space-y-5 text-[15px] leading-[1.8] sm:text-base"
-                style={{ color: "hsl(var(--text-body))" }}
-              >
-                {section.paragraphs.map((p, i) => (
-                  <p key={i}>{p}</p>
-                ))}
-              </div>
-            </motion.section>
-          ))}
-
-          {/* CTA card */}
-          <motion.div
-            className="mt-16 rounded-[10px] border bg-surface-card p-8 sm:p-10"
-            style={{ borderColor: "hsl(var(--border-default))" }}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fade}
-          >
-            <p
-              className="text-[15px] leading-[1.8] sm:text-base"
-              style={{ color: "hsl(var(--text-body))" }}
-            >
-              Solo takes your professional background and maps it against 95
-              archetypes and 480 business models to find the independent income
-              paths that are a realistic fit — scored by speed to revenue,
-              credibility gap, income potential, and lifestyle compatibility. Not
-              inspiration. Arithmetic.
-            </p>
-            <div className="mt-8 flex flex-col items-start gap-3">
-              <Button
-                size="lg"
-                className="rounded-md px-8 py-4 text-base font-medium"
-                onClick={() => navigate("/auth")}
-              >
-                See your archetype — free
-              </Button>
-              <span
-                className="text-sm"
-                style={{ color: "hsl(var(--text-muted))" }}
-              >
-                Build your Plan B before you need one.
-              </span>
+      {/* THE SOLO THESIS */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl">
+          <motion.h2 className="font-display mb-14 text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} custom={0}>
+            We believe the direction of travel is clear
+          </motion.h2>
+          <div className="grid gap-12 lg:grid-cols-2">
+            <motion.div className="text-sm leading-[1.8] text-muted-foreground sm:text-base" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
+              <p className="mb-6">The long arc of work points toward more individual agency. Not the gig economy — that model trades security for availability, which helps platforms more than workers. Something different: experienced professionals who work directly with clients, own their relationships, set their terms, and aren't dependent on a single employer for their livelihood.</p>
+              <p>AI doesn't just threaten that path. It enables it. The research, drafting, analysis, and coordination work that used to require support staff or full-time employment can increasingly be done by one capable person with the right tools. The question isn't whether this transition is coming. It's whether you're prepared for it.</p>
+            </motion.div>
+            <div className="flex flex-col gap-4">
+              {stats.map((s, i) => (
+                <motion.div key={s.value} className="rounded-[10px] border border-border bg-surface-card p-5 transition-all hover:border-primary hover:shadow-card-hover" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} custom={i}>
+                  <span className="mb-1 block font-display text-2xl font-bold text-primary">{s.value}</span>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                </motion.div>
+              ))}
             </div>
-          </motion.div>
-        </article>
+          </div>
+        </div>
+      </PanelLayout>
+
+      {/* OUR PRINCIPLES */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl">
+          <motion.h2 className="font-display mb-14 text-center text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} custom={0}>
+            How we think about this
+          </motion.h2>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {principles.map((p, i) => (
+              <motion.div key={p.title} className="rounded-[10px] border border-border bg-surface-card p-6 transition-all hover:border-primary hover:shadow-card-hover" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} custom={i}>
+                <p.icon className="mb-4 h-5 w-5 text-primary" strokeWidth={1.5} />
+                <h3 className="mb-2 text-sm font-semibold">{p.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </PanelLayout>
+
+      {/* CTA */}
+      <PanelLayout className="overflow-hidden">
+        <section className="bg-primary py-24 rounded-2xl">
+          <div className="mx-auto max-w-2xl px-6 text-center">
+            <motion.h2 className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl" style={{ letterSpacing: "-0.02em" }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+              If this resonates, the test takes 8 minutes.
+            </motion.h2>
+            <motion.p className="mt-4 text-base text-primary-foreground/70" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
+              You'll get a free preview immediately, and a full report — including your 30-day activation plan — for £19.99.
+            </motion.p>
+            <motion.div className="mt-8" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
+              <Button size="lg" className="rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90" onClick={() => navigate("/auth")}>
+                Take the test →
+              </Button>
+            </motion.div>
+          </div>
+        </section>
       </PanelLayout>
 
       <Footer />
