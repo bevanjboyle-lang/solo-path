@@ -103,6 +103,9 @@ export default function Tracker() {
             <p className="mt-2 text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed</p>
           </div>
 
+          {/* Portfolio Review — mid-plan check-in for multi-strand plans */}
+          <PortfolioReviewCard session={session} navigate={navigate} />
+
           {/* Phase cards */}
           <div className="mt-6 space-y-4">
             {phases.map((phase: any, pi: number) => {
