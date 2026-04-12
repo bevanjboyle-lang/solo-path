@@ -447,8 +447,8 @@ function Day30PaywallSection({
     : "30 days is often not enough. That's normal.";
 
   const body = hasTraction
-    ? "Your plan stays active with a subscription. You also unlock the full Practical Guidance suite, 9 structured modules covering the practical steps of setting up independently, and Ask Solo, a direct advisory conversation built on everything you've done over the last 30 days."
-    : "Getting to first income from a standing start takes longer than a month for most people. What usually gets in the way isn't lack of effort. It's a specific mindset or practical blocker that isn't obvious from the outside. The subscription gives you Ask Solo: a direct conversation, with full context of your profile and plan, to work out what's actually in the way. It's different from re-reading a plan.";
+    ? "Your plan stays active when you continue. You also unlock the full Practical Guidance suite, 9 structured modules covering the practical steps of setting up independently, and Ask Solo, a direct advisory conversation built on everything you've done over the last 30 days."
+    : "Getting to first income from a standing start takes longer than a month for most people. What usually gets in the way isn't lack of effort. It's a specific mindset or practical blocker that isn't obvious from the outside. Continuing gives you Ask Solo: a direct conversation, with full context of your profile and plan, to work out what's actually in the way. It's different from re-reading a plan.";
 
   return (
     <motion.div

@@ -125,7 +125,7 @@ export default function ManageSubscription() {
                       className="w-full text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
                       onClick={() => setShowConfirm(true)}
                     >
-                    Cancel Subscription
+                    Cancel Plan
                     </Button>
                   ) : (
                     <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-3">
@@ -162,7 +162,7 @@ export default function ManageSubscription() {
               ) : (
                 <div className="text-center py-4">
                   <p className="text-sm text-muted-foreground mb-4">
-                    You don't have an active subscription.
+                    You don't have an active plan.
                   </p>
                   <Button
                     onClick={() => navigate("/subscribe")}
