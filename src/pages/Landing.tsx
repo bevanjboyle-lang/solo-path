@@ -188,7 +188,55 @@ export default function Landing() {
       <WaitingRoomSection />
       <TestimonialsSection />
 
-      {/* ── SECTION 2: THE PROBLEM ── */}
+      {/* ── INDUSTRY TILES ── */}
+      <section className="border-t border-border/50 py-24">
+        <div className="mx-auto max-w-5xl px-6">
+          <motion.div
+            className="mb-16 text-center"
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
+            variants={fadeUp} custom={0}
+          >
+            <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Market Opportunity
+            </span>
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+              Where independent operators are growing fastest
+            </h2>
+          </motion.div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { badge: "STRONG DEMAND", badgeStyle: "bg-primary/20 text-primary border-primary/30", title: "Financial Services", body: "Fractional CFOs, FP&A directors, and finance business partners are among the most sought-after independent hires, particularly in PE-backed and growth businesses." },
+              { badge: "STRONG DEMAND", badgeStyle: "bg-primary/20 text-primary border-primary/30", title: "Legal", body: "Experienced lawyers and compliance specialists are building highly profitable advisory and fractional in-house practices, often at day rates that exceed employment." },
+              { badge: "HIGH GROWTH", badgeStyle: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", title: "Strategy and Consulting", body: "Former Big Four and strategy professionals are establishing independent advisory practices at rates significantly above their salaried packages." },
+              { badge: "HIGH GROWTH", badgeStyle: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", title: "Marketing and Communications", body: "Fractional CMO and senior brand roles are multiplying as companies seek senior expertise without full-time headcount cost." },
+              { badge: "GROWING", badgeStyle: "bg-muted text-muted-foreground border-border", title: "HR and People", body: "Fractional HR directors and L&D specialists are finding strong demand from mid-market businesses that need senior people expertise by the day." },
+              { badge: "STRONG DEMAND", badgeStyle: "bg-primary/20 text-primary border-primary/30", title: "Technology and Change", body: "Technical and programme leaders are increasingly in demand as fractional CTOs, digital transformation advisors, and delivery leads." },
+            ].map((tile, i) => (
+              <motion.div
+                key={tile.title}
+                className="rounded-xl border border-border/60 bg-card p-5"
+                variants={fadeUp} initial="hidden" whileInView="visible"
+                viewport={{ once: true, margin: "-60px" }} custom={i}
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold">{tile.title}</h3>
+                  <Badge variant="outline" className={`shrink-0 text-[10px] font-semibold ${tile.badgeStyle}`}>
+                    {tile.badge}
+                  </Badge>
+                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">{tile.body}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <p className="mt-8 text-center text-xs italic text-muted-foreground">
+            Sources: Solo knowledge bank, 480 business models across 16 professional domains.
+          </p>
+        </div>
+      </section>
+
+
       <section className="border-t border-border/50 py-24">
         <div className="mx-auto max-w-5xl px-6">
           <motion.div
