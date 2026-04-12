@@ -173,8 +173,8 @@ export default function FAQ() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6">
           <SoloLogo width={80} height={22} />
           <div className="flex gap-6 text-xs text-muted-foreground">
-            <span className="cursor-pointer transition-colors hover:text-foreground">Privacy</span>
-            <span className="cursor-pointer transition-colors hover:text-foreground">Terms</span>
+            <Link to="/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
+            <Link to="/terms" className="transition-colors hover:text-foreground">Terms</Link>
           </div>
         </div>
       </footer>
