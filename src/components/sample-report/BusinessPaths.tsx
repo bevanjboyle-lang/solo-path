@@ -3,7 +3,7 @@ import LockedOverlay from "./LockedOverlay";
 export default function BusinessPaths() {
   return (
     <div>
-      <h2 className="mb-5 text-lg font-semibold text-foreground" style={{ letterSpacing: "-0.02em" }}>Your Three Most Viable Paths</h2>
+      <h2 className="mb-5 text-lg font-semibold text-foreground" style={{ letterSpacing: "-0.02em" }}>Your 10 Most Viable Paths</h2>
 
       {/* Path 1 — Full */}
       <div className="mb-4 rounded-md border border-border bg-surface-card p-6" style={{ borderTop: "3px solid hsl(var(--mint))" }}>
@@ -90,6 +90,22 @@ export default function BusinessPaths() {
         <p className="text-sm text-muted-foreground" style={{ filter: "blur(4px)" }}>structured process and governance to teams that have outgrown their startup ways of working. Your audit background makes you unusually effective at this.</p>
         <LockedOverlay label="Unlock full path — £19.99" />
       </div>
-    </div>
-  );
-}
+
+      {/* Paths 4–10 — Greyed out stubs */}
+      <div className="mt-4 flex flex-col gap-2">
+        {[
+          { rank: 4, title: "Fractional Chief Risk Officer" },
+          { rank: 5, title: "RegTech Product Advisor" },
+          { rank: 6, title: "Compliance Programme Builder" },
+          { rank: 7, title: "Due Diligence Consultant (M&A)" },
+          { rank: 8, title: "Board-Level Risk Advisor (SME)" },
+          { rank: 9, title: "Operational Resilience Specialist" },
+          { rank: 10, title: "Risk Training Content Creator (Digital)" },
+        ].map((p) => (
+          <div key={p.rank} className="flex items-center gap-3 rounded-md border border-border/60 bg-surface-card/50 px-4 py-3 opacity-50">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">{p.rank}</span>
+            <span className="text-sm text-muted-foreground">{p.title}</span>
+            <Lock className="ml-auto h-3.5 w-3.5 text-muted-foreground/40" />
+          </div>
+        ))}
+      </div>
