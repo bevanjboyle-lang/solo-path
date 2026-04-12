@@ -9,8 +9,17 @@ interface LockedOverlayProps {
 export default function LockedOverlay({ label = "Unlock full report - £19.99" }: LockedOverlayProps) {
   const navigate = useNavigate();
   return (
-    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-md bg-surface-panel/60 backdrop-blur-[1px]">
-      <Lock className="h-5 w-5 text-muted-foreground/50" />
+    <div
+      className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-md"
+      style={{
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        background: "rgba(250,249,247,0.55)",
+      }}
+    >
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-inset/80">
+        <Lock className="h-5 w-5 text-muted-foreground/60" />
+      </div>
       <Button
         size="sm"
         className="rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-[hsl(var(--mint-hover))]"

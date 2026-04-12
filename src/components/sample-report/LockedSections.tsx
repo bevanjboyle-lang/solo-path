@@ -1,7 +1,12 @@
 import { Lock, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  RadarChart, PolarGrid, PolarAngleAxis, Radar,
+} from "recharts";
 import LockedOverlay from "./LockedOverlay";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 function LockedCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -25,32 +30,58 @@ export function RecommendationTeaser() {
 }
 
 export function IncomeOutlookTeaser() {
-  const bars = [
-    { label: "Month 3", h: "40%" },
-    { label: "Month 6", h: "65%" },
-    { label: "Month 12", h: "90%" },
+  const data = [
+    { name: "Consulting", month3: 2500, month6: 5500, month12: 8500 },
+    { name: "Fractional CFO", month3: 4000, month6: 7500, month12: 12000 },
+    { name: "Online Course", month3: 500, month6: 3000, month12: 9000 },
   ];
+
   return (
-    <LockedCard title="Reality Check & Income Outlook">
-      <div className="flex items-end justify-center gap-6 py-4" style={{ filter: "blur(5px)" }}>
-        {bars.map((b) => (
-          <div key={b.label} className="flex flex-col items-center gap-1">
-            <div className="w-12 rounded-t-md bg-primary" style={{ height: b.h, minHeight: 30 }} />
-            <span className="text-[10px] text-muted-foreground">{b.label}</span>
-          </div>
-        ))}
+    <div className="relative overflow-hidden rounded-md border border-border bg-surface-card p-6">
+      <h2 className="mb-3 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>Reality Check &amp; Income Outlook</h2>
+      <div style={{ filter: "blur(5px)" }}>
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={data} barGap={2} barCategoryGap="20%">
+            <XAxis
+              dataKey="name"
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: "#7A7670" }}
+            />
+            <YAxis hide />
+            <Tooltip
+              contentStyle={{
+                background: "#FAF9F7",
+                border: "1px solid #E5E2DC",
+                borderRadius: 8,
+                fontSize: 12,
+              }}
+              formatter={(value: number) => [`£${value.toLocaleString()}`, ""]}
+            />
+            <Legend
+              iconType="circle"
+              iconSize={8}
+              wrapperStyle={{ fontSize: 10, color: "#7A7670" }}
+            />
+            <Bar dataKey="month3" name="3 months" fill="#2ECDB0" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="month6" name="6 months" fill="#6EE7D3" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="month12" name="12 months" fill="#1A8A72" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
-    </LockedCard>
+      <LockedOverlay />
+    </div>
   );
 }
 
 export function ActivationPlanTeaser() {
   const phases = [
-    { label: "Week 1–2: Foundations", color: "bg-primary" },
-    { label: "Week 3–4: First Outreach", color: "bg-primary/70" },
-    { label: "Week 5–8: Pipeline Building", color: "bg-primary/50" },
-    { label: "Week 9–12: First Revenue", color: "bg-primary/30" },
+    { label: "Foundation", width: "25%", opacity: 0.4 },
+    { label: "Outreach", width: "25%", opacity: 0.6 },
+    { label: "Delivery", width: "25%", opacity: 0.8 },
+    { label: "Review", width: "25%", opacity: 1.0 },
   ];
+
   const tasks = [
     "Day 1: Update LinkedIn headline to signal consulting availability",
     "Day 2: Write your war story post from your Big Four achievement",
@@ -61,12 +92,25 @@ export function ActivationPlanTeaser() {
     <div className="relative overflow-hidden rounded-md border border-border bg-surface-card p-6">
       <h2 className="mb-4 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>30-Day Activation Plan</h2>
 
-      {/* Gantt-style phases */}
-      <div className="mb-4 flex flex-col gap-1.5">
+      {/* Horizontal timeline */}
+      <div className="mb-2 flex h-6 w-full overflow-hidden rounded-full bg-surface-inset">
         {phases.map((p, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <div className={`h-3 rounded-sm ${p.color}`} style={{ width: `${70 - i * 10}%` }} />
-            <span className="shrink-0 text-[10px] text-muted-foreground">{p.label}</span>
+          <div
+            key={i}
+            className="h-full"
+            style={{
+              width: p.width,
+              backgroundColor: `rgba(46,205,176,${p.opacity})`,
+              borderRight: i < phases.length - 1 ? "2px solid rgba(250,249,247,0.8)" : "none",
+            }}
+          />
+        ))}
+      </div>
+      <div className="mb-5 flex">
+        {phases.map((p, i) => (
+          <div key={i} className="flex-1 text-center">
+            <span className="text-[10px] font-medium text-muted-foreground">Wk {i + 1}</span>
+            <span className="block text-[9px] text-muted-foreground/70">{p.label}</span>
           </div>
         ))}
       </div>
@@ -121,6 +165,14 @@ export function LocalMarketTeaser() {
 }
 
 export function AIImpactTeaser() {
+  const radarData = [
+    { subject: "Routine Tasks", score: 72 },
+    { subject: "Analysis", score: 45 },
+    { subject: "Client Relations", score: 20 },
+    { subject: "Strategy", score: 15 },
+    { subject: "Creative Work", score: 30 },
+  ];
+
   return (
     <div className="relative overflow-hidden rounded-md border border-border bg-surface-card p-6">
       <h2 className="mb-3 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>AI Impact &amp; Adaptation Path</h2>
@@ -132,6 +184,27 @@ export function AIImpactTeaser() {
           </div>
         ))}
       </div>
+
+      {/* Radar chart */}
+      <div className="mt-4" style={{ filter: "blur(5px)" }}>
+        <ResponsiveContainer width="100%" height={220}>
+          <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
+            <PolarGrid stroke="#E5E2DC" />
+            <PolarAngleAxis
+              dataKey="subject"
+              tick={{ fontSize: 10, fill: "#7A7670" }}
+            />
+            <Radar
+              dataKey="score"
+              stroke="#2ECDB0"
+              fill="rgba(46,205,176,0.2)"
+              fillOpacity={1}
+              strokeWidth={2}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+
       <LockedOverlay />
     </div>
   );

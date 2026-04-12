@@ -1,4 +1,5 @@
 import { ShieldCheck } from "lucide-react";
+import GlassCard from "@/components/ui/GlassCard";
 
 export default function ProfileSummary() {
   const score = 73;
@@ -6,7 +7,7 @@ export default function ProfileSummary() {
   const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="rounded-md border border-border bg-surface-card p-6">
+    <GlassCard className="p-6">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
         {/* Left */}
         <div className="flex-1">
@@ -23,9 +24,12 @@ export default function ProfileSummary() {
           </div>
         </div>
 
-        {/* Right - Ring */}
+        {/* Right - Ring with mint glow */}
         <div className="flex flex-col items-center">
-          <svg width="100" height="100" viewBox="0 0 100 100" className="shrink-0">
+          <svg
+            width="100" height="100" viewBox="0 0 100 100" className="shrink-0"
+            style={{ filter: "drop-shadow(0 0 8px rgba(46,205,176,0.3))" }}
+          >
             <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--surface-inset))" strokeWidth="6" />
             <circle
               cx="50" cy="50" r="42" fill="none"
@@ -46,6 +50,6 @@ export default function ProfileSummary() {
       <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
         Your risk management background gives you unusually portable skills. The combination of regulatory knowledge, stakeholder communication, and process documentation places you in a strong position across multiple adjacent markets.
       </p>
-    </div>
+    </GlassCard>
   );
 }
