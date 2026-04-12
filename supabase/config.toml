@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.generate-guidance]
 verify_jwt = false
+
+[functions.ask-solo]
+verify_jwt = false

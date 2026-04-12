@@ -38,12 +38,23 @@ export default function Navbar() {
             </Link>
           ))}
           {user && (
-            <Link
-              to="/guidance"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Guidance
-            </Link>
+            <>
+              <Link
+                to="/guidance"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Guidance
+              </Link>
+              <Link
+                to="/ask-solo"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Ask Solo
+                <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                  Beta
+                </span>
+              </Link>
+            </>
           )}
         </div>
 
@@ -98,13 +109,25 @@ export default function Navbar() {
               </Link>
             ))}
             {user && (
-              <Link
-                to="/guidance"
-                onClick={() => setOpen(false)}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Guidance
-              </Link>
+              <>
+                <Link
+                  to="/guidance"
+                  onClick={() => setOpen(false)}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Guidance
+                </Link>
+                <Link
+                  to="/ask-solo"
+                  onClick={() => setOpen(false)}
+                  className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Ask Solo
+                  <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                    Beta
+                  </span>
+                </Link>
+              </>
             )}
             <hr className="border-border/50" />
             {user ? (
