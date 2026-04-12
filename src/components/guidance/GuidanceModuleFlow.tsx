@@ -45,24 +45,24 @@ export default function GuidanceModuleFlow({ module, onClose, onComplete }: Prop
 
   return (
     <Dialog open onOpenChange={() => !generating && onClose()}>
-      <DialogContent className="sm:max-w-xl bg-[#0A0A0A] border-white/10 text-white">
+      <DialogContent className="sm:max-w-xl bg-card border-border text-foreground">
         {generating ? (
           <div className="flex flex-col items-center justify-center py-16 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-white/50">Generating your personalised guidance…</p>
+            <p className="text-sm text-muted-foreground">Generating your personalised guidance…</p>
           </div>
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="text-white text-base font-semibold">
+              <DialogTitle className="text-foreground text-base font-semibold">
                 {module.name}
               </DialogTitle>
-              <p className="text-xs text-white/40 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Question {step + 1} of {total}
               </p>
             </DialogHeader>
 
-            <p className="text-[15px] text-white/90 leading-relaxed mt-2 mb-4">
+            <p className="text-[15px] text-foreground/90 leading-relaxed mt-2 mb-4">
               {question.text}
             </p>
 
@@ -73,8 +73,8 @@ export default function GuidanceModuleFlow({ module, onClose, onComplete }: Prop
                   onClick={() => setAnswers((a) => ({ ...a, [question.id]: opt }))}
                   className={`text-left px-4 py-3 rounded-lg border text-sm transition-all ${
                     selected === opt
-                      ? "border-primary bg-primary/10 text-white"
-                      : "border-white/10 bg-white/[0.03] text-white/70 hover:border-white/20 hover:bg-white/[0.05]"
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-muted/30 text-muted-foreground hover:border-border hover:bg-muted/50"
                   }`}
                 >
                   {opt}
