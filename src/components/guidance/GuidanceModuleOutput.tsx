@@ -22,14 +22,14 @@ export default function GuidanceModuleOutput({ module, output, onBack }: Props) 
     <div className="max-w-2xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="sm" onClick={onBack} className="text-white/50 hover:text-white">
+        <Button variant="ghost" size="sm" onClick={onBack} className="text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4 mr-1" /> Back to guidance
         </Button>
       </div>
 
       <div className="flex items-center gap-3 mb-6">
-        <h2 className="text-xl font-bold text-white">{module.name}</h2>
-        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-[10px] uppercase tracking-wider">
+        <h2 className="text-xl font-bold text-foreground">{module.name}</h2>
+        <Badge className="bg-emerald-500/20 text-emerald-600 border-emerald-500/30 text-[10px] uppercase tracking-wider">
           <Check className="h-3 w-3 mr-1" /> Completed
         </Badge>
       </div>
@@ -46,17 +46,17 @@ export default function GuidanceModuleOutput({ module, output, onBack }: Props) 
         if (key === "useful_links") return null;
         return (
           <div key={key} className="mb-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
               {toTitleCase(key)}
             </h3>
             {Array.isArray(value) ? (
               <ol className="list-decimal list-inside space-y-1.5">
                 {(value as string[]).map((item, i) => (
-                  <li key={i} className="text-sm text-white/70 leading-relaxed">{item}</li>
+                  <li key={i} className="text-sm text-foreground/70 leading-relaxed">{item}</li>
                 ))}
               </ol>
             ) : (
-              <p className="text-sm text-white/70 leading-relaxed">{String(value)}</p>
+              <p className="text-sm text-foreground/70 leading-relaxed">{String(value)}</p>
             )}
           </div>
         );
@@ -65,7 +65,7 @@ export default function GuidanceModuleOutput({ module, output, onBack }: Props) 
       {/* Useful links */}
       {useful_links && Array.isArray(useful_links) && useful_links.length > 0 && (
         <div className="mb-5">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-white/40 mb-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
             Useful Links
           </h3>
           <div className="flex flex-col gap-2">
@@ -87,8 +87,8 @@ export default function GuidanceModuleOutput({ module, output, onBack }: Props) 
 
       {/* Caveat */}
       {caveat && (
-        <div className="rounded-lg bg-white/[0.03] border border-white/5 px-4 py-3 mt-6">
-          <p className="text-xs text-white/30 italic">{caveat}</p>
+        <div className="rounded-lg bg-muted/50 border border-border px-4 py-3 mt-6">
+          <p className="text-xs text-muted-foreground italic">{caveat}</p>
         </div>
       )}
     </div>
