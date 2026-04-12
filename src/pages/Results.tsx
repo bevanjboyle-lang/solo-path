@@ -473,12 +473,8 @@ export default function Results() {
                 </ReportSection>
               )}
 
-              {/* Market Snapshot */}
-              {report?.market_snapshot && (
-                <ReportSection title="Market Snapshot" icon={BarChart3}>
-                  <MarketSnapshotRenderer text={report.market_snapshot} />
-                </ReportSection>
-              )}
+              {/* Market Snapshot — tabbed by strand if portfolio */}
+              <MarketSnapshotSection report={report} ap={ap} />
 
               {/* AI Impact */}
               {report?.ai_impact_section && (
