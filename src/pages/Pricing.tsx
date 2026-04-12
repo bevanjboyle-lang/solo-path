@@ -76,6 +76,7 @@ const cards: PricingCard[] = [
       { text: "Local Market Feasibility Snapshot" },
       { text: "AI Impact & Adaptation Section — how AI affects your archetype + how to adapt" },
       { text: "30-day Adaptive Tracker — daily check-ins, replan when you drift" },
+      { text: "3 Guidance Modules included — Business Structure, Registration & Setup, and Professional Presence" },
     ],
     cta: "Get your Plan B Report, £19.99 →",
     ctaVariant: "filled",
@@ -90,7 +91,7 @@ const cards: PricingCard[] = [
     features: [
       { text: "Everything in the full report" },
       { text: "Ongoing Adaptive Tracker: daily check-ins that continue for as long as you are subscribed" },
-      { text: "Practical Guidance suite — 9 structured modules" },
+      { text: "Full Guidance Library — 25 structured modules across 5 tracks (Modules 1–3 already included in your report)" },
       { text: "Ask Solo — on-demand career strategy conversations" },
       { text: "Replan engine if you go off track" },
       { text: "Progress tracking across all 4 phases" },
