@@ -190,7 +190,7 @@ export default function Checkin() {
       }
     } catch (err) {
       console.error("Check-in error:", err);
-      setExchanges((prev) => [...prev, { role: "assistant", text: "Something went wrong — try again." }]);
+      setExchanges((prev) => [...prev, { role: "assistant", text: "Something went wrong - try again." }]);
     }
     setSending(false);
   };

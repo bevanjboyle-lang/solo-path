@@ -33,7 +33,7 @@ serve(async (req) => {
     const checkinUrl = `https://${appDomain}/checkin/${tracker_session_id}`;
     const displayName = first_name || "there";
 
-    const subject = `Day ${current_day} check-in — your plan is waiting`;
+    const subject = `Day ${current_day} check-in - your plan is waiting`;
 
     const html = `
 <!DOCTYPE html>
@@ -42,11 +42,11 @@ serve(async (req) => {
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; max-width: 520px; margin: 0 auto; padding: 24px;">
   <p style="font-size: 16px; line-height: 1.5;">Hey ${displayName},</p>
   <p style="font-size: 16px; line-height: 1.5;">It's <strong>Day ${current_day}</strong> of your activation plan. Your tasks are lined up and ready.</p>
-  <p style="font-size: 16px; line-height: 1.5;">Take 2 minutes to check in — it keeps your momentum going.</p>
+  <p style="font-size: 16px; line-height: 1.5;">Take 2 minutes to check in - it keeps your momentum going.</p>
   <p style="margin: 28px 0;">
     <a href="${checkinUrl}" style="background-color: #1a1a1a; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-size: 15px; font-weight: 500;">Check in now →</a>
   </p>
-  <p style="font-size: 14px; color: #666; margin-top: 32px;">— Solo</p>
+  <p style="font-size: 14px; color: #666; margin-top: 32px;"> - Solo</p>
 </body>
 </html>`;
 

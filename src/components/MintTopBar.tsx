@@ -1,5 +1,5 @@
 /**
- * Mint Top Bar — 4px fixed mint bar at the very top of every page.
+ * Mint Top Bar - 4px fixed mint bar at the very top of every page.
  */
 export default function MintTopBar() {
   return (

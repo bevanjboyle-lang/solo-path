@@ -32,7 +32,7 @@ export default function SampleReport() {
               See exactly what Solo finds
             </h1>
             <p className="mx-auto mt-2 max-w-[520px] text-sm text-muted-foreground">
-              This is an edited extract from a real Solo report. Sarah is a composite — but the analysis, scoring, and recommendations are exactly what the product generates.
+              This is an edited extract from a real Solo report. Sarah is a composite - but the analysis, scoring, and recommendations are exactly what the product generates.
             </p>
           </div>
 
@@ -53,7 +53,7 @@ export default function SampleReport() {
         </div>
       </PanelLayout>
 
-      {/* Bottom CTA — outside panel, full width within a panel wrapper */}
+      {/* Bottom CTA - outside panel, full width within a panel wrapper */}
       <PanelLayout className="overflow-hidden px-0">
         <BottomCTA />
       </PanelLayout>

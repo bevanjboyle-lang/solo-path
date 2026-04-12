@@ -158,7 +158,7 @@ export default function Questionnaire() {
     setCurrent((c) => c - 1);
   };
 
-  // CV upload step — shown as first post-auth screen before Q1
+  // CV upload step - shown as first post-auth screen before Q1
   if (showCvStep) {
     return (
       <div className="flex min-h-screen flex-col bg-background text-foreground items-center justify-center px-6">

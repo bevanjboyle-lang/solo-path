@@ -23,7 +23,7 @@ export default function ProfileSummary() {
           </div>
         </div>
 
-        {/* Right — Ring */}
+        {/* Right - Ring */}
         <div className="flex flex-col items-center">
           <svg width="100" height="100" viewBox="0 0 100 100" className="shrink-0">
             <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--surface-inset))" strokeWidth="6" />

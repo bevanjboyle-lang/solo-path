@@ -45,7 +45,7 @@ export const questions: Question[] = [
   {
     id: 30,
     text: "Who is your current employer? (optional)",
-    subtext: "Name your employer or describe the type of organisation — for example: 'Big 4 risk advisory practice', 'FTSE100 retail bank', 'NHS acute trust'. This helps Solo calibrate recommendations but is not required.",
+    subtext: "Name your employer or describe the type of organisation - for example: 'Big 4 risk advisory practice', 'FTSE100 retail bank', 'NHS acute trust'. This helps Solo calibrate recommendations but is not required.",
     type: "text",
     placeholder: "e.g. HSBC, McKinsey, NHS Trust",
     required: false,
@@ -95,9 +95,9 @@ export const questions: Question[] = [
     text: "How urgent is it for you to have an independent income path in place?",
     type: "single",
     options: [
-      "Low — this is long-term planning, no immediate pressure",
-      "Medium — I'd like something in place within 6–12 months",
-      "High — I need a realistic path within the next 3 months",
+      "Low - this is long-term planning, no immediate pressure",
+      "Medium - I'd like something in place within 6–12 months",
+      "High - I need a realistic path within the next 3 months",
     ],
   },
   {
@@ -105,17 +105,17 @@ export const questions: Question[] = [
     text: "How confident do you feel about the idea of working independently?",
     type: "single",
     options: [
-      "Low — it feels unfamiliar and uncomfortable",
-      "Medium — I can see it working but have real doubts",
-      "High — I feel ready, I just need direction",
+      "Low - it feels unfamiliar and uncomfortable",
+      "Medium - I can see it working but have real doubts",
+      "High - I feel ready, I just need direction",
     ],
   },
   {
     id: 11,
     text: "Who are the 2–3 most relevant types of client, organisation, or sector you have worked with most closely?",
-    subtext: "What do you know about how they operate — what they struggle with, how they buy external help, or what matters to them?",
+    subtext: "What do you know about how they operate - what they struggle with, how they buy external help, or what matters to them?",
     type: "text",
-    placeholder: "e.g. NHS trusts going through CQC inspections — they tend to buy in bursts of urgency, through frameworks or warm referrals, and they respond to credibility over pitch decks.",
+    placeholder: "e.g. NHS trusts going through CQC inspections - they tend to buy in bursts of urgency, through frameworks or warm referrals, and they respond to credibility over pitch decks.",
   },
   {
     id: 12,
@@ -129,9 +129,9 @@ export const questions: Question[] = [
     text: "How would you describe your professional network?",
     type: "single",
     options: [
-      "Small — fewer than 50 relevant contacts I could actually reach out to",
-      "Medium — 50–200 people I know reasonably well",
-      "Large — 200+ contacts across multiple organisations and sectors",
+      "Small - fewer than 50 relevant contacts I could actually reach out to",
+      "Medium - 50–200 people I know reasonably well",
+      "Large - 200+ contacts across multiple organisations and sectors",
     ],
   },
   {

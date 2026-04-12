@@ -166,7 +166,7 @@ export default function Subscribe() {
               ) : (
                 <>
                   <Zap className="h-4 w-4 mr-1.5" />
-                  {selected === "annual" ? "Full year of support" : "Keep your plan active"} — {selected === "annual" ? "£149" : "£9.99/month"}
+                  {selected === "annual" ? "Full year of support" : "Keep your plan active"} - {selected === "annual" ? "£149" : "£9.99/month"}
                 </>
               )}
             </Button>

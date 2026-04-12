@@ -6,7 +6,7 @@ export default function BusinessPaths() {
     <div>
       <h2 className="mb-5 text-lg font-semibold text-foreground" style={{ letterSpacing: "-0.02em" }}>Your 10 Most Viable Paths</h2>
 
-      {/* Path 1 — Full */}
+      {/* Path 1 - Full */}
       <div className="mb-4 rounded-md border border-border bg-surface-card p-6" style={{ borderTop: "3px solid hsl(var(--mint))" }}>
         <span className="mb-3 inline-block rounded-md bg-surface-mint-tint px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--mint-text))]">Best Fit</span>
         <h3 className="mt-1 text-base font-semibold text-foreground">Independent Risk Consultant</h3>
@@ -56,7 +56,7 @@ export default function BusinessPaths() {
         </div>
       </div>
 
-      {/* Path 2 — Locked */}
+      {/* Path 2 - Locked */}
       <div className="relative mb-4 overflow-hidden rounded-md border border-border bg-surface-card p-6">
         <h3 className="text-base font-semibold text-foreground">Risk &amp; Compliance Trainer / Course Creator</h3>
         <div className="mt-3 grid grid-cols-2 gap-3">
@@ -71,10 +71,10 @@ export default function BusinessPaths() {
         </div>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Create structured training programmes for mid-market firms that need regulatory upskilling but</p>
         <p className="text-sm text-muted-foreground" style={{ filter: "blur(4px)" }}>can't justify hiring a full-time compliance lead. Your ability to translate complex frameworks into plain language is the differentiator.</p>
-        <LockedOverlay label="Unlock full path — £19.99" />
+        <LockedOverlay label="Unlock full path - £19.99" />
       </div>
 
-      {/* Path 3 — Locked */}
+      {/* Path 3 - Locked */}
       <div className="relative overflow-hidden rounded-md border border-border bg-surface-card p-6">
         <h3 className="text-base font-semibold text-foreground">Embedded Ops Lead (Scale-up)</h3>
         <div className="mt-3 grid grid-cols-2 gap-3">
@@ -89,10 +89,10 @@ export default function BusinessPaths() {
         </div>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Join a fast-growing company part-time as an embedded operational leader bringing</p>
         <p className="text-sm text-muted-foreground" style={{ filter: "blur(4px)" }}>structured process and governance to teams that have outgrown their startup ways of working. Your audit background makes you unusually effective at this.</p>
-        <LockedOverlay label="Unlock full path — £19.99" />
+        <LockedOverlay label="Unlock full path - £19.99" />
       </div>
 
-      {/* Paths 4–10 — Greyed out stubs */}
+      {/* Paths 4–10 - Greyed out stubs */}
       <div className="mt-4 flex flex-col gap-2">
         {[
           { rank: 4, title: "Fractional Chief Risk Officer" },

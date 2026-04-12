@@ -7,7 +7,7 @@ interface PanelLayoutProps {
 }
 
 /**
- * Warm Ivory Panel — Layer 2 of the three-layer surface model.
+ * Warm Ivory Panel - Layer 2 of the three-layer surface model.
  * Sits as a centred ivory panel floating on the grey desk background.
  */
 export default function PanelLayout({ children, className = "", wide = false }: PanelLayoutProps) {
