@@ -287,29 +287,6 @@ export default function Results() {
                     ))}
                 </div>
 
-                {/* Floating selection bar */}
-                {selectedRanks.size > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="sticky bottom-6 mt-6 rounded-xl border border-primary/30 bg-card/95 backdrop-blur-lg p-4 flex items-center justify-between shadow-lg"
-                  >
-                    <p className="text-sm text-foreground">
-                      <span className="font-semibold">{selectedRanks.size}</span> of {MAX_SELECTIONS} selected
-                      {selectedRanks.size < MIN_SELECTIONS && (
-                        <span className="text-muted-foreground ml-2">(min {MIN_SELECTIONS})</span>
-                      )}
-                    </p>
-                    <Button
-                      disabled={selectedRanks.size < MIN_SELECTIONS}
-                      onClick={() => setShowConfirm(true)}
-                      style={{ background: "var(--gradient-cta)" }}
-                      className="text-primary-foreground border-0"
-                    >
-                      Build my portfolio plan →
-                    </Button>
-                  </motion.div>
-                )}
               </div>
 
               {/* AI Impact */}
@@ -318,6 +295,34 @@ export default function Results() {
               )}
             </div>
           )}
+
+          {/* Fixed bottom selection bar — rendered outside the scrollable content */}
+          <AnimatePresence>
+            {paid && isPendingSelection && !generating && !genError && selectedRanks.size > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 40 }}
+                className="fixed bottom-0 left-0 right-0 z-50 border-t border-primary/30 bg-card/95 backdrop-blur-lg px-6 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]"
+              >
+                <div className="mx-auto max-w-3xl flex items-center justify-between">
+                  <p className="text-sm text-foreground">
+                    <span className="font-semibold">{selectedRanks.size}</span> of {MAX_SELECTIONS} selected
+                  </p>
+                  <Button
+                    disabled={selectedRanks.size < MIN_SELECTIONS}
+                    onClick={() => setShowConfirm(true)}
+                    style={{ background: "var(--gradient-cta)" }}
+                    className="text-primary-foreground border-0"
+                  >
+                    {selectedRanks.size === 1 ? "Build my plan →" : "Build my portfolio plan →"}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+
 
           {/* PHASE 2: Plan Display */}
           {showPlanPhase && !generating && !genError && (
