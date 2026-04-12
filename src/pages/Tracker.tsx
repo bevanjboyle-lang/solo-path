@@ -9,9 +9,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Progress } from "@/components/ui/progress";
 import SoloLogo from "@/components/SoloLogo";
 import TrackerProgress from "@/components/tracker/TrackerProgress";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
-import { CircularGauge } from "@/components/ui/CircularGauge";
+import GlassCard from "@/components/ui/GlassCard";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import CircularGauge from "@/components/ui/CircularGauge";
 
 const momentumData = [
   { week: 'W1', completed: 3, total: 7 },
