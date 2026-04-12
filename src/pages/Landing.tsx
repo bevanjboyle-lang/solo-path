@@ -185,16 +185,7 @@ export default function Landing() {
         </section>
       </PanelLayout>
 
-      {/* Waiting room — inside its own panel */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <WaitingRoomSection />
-      </PanelLayout>
-
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <TestimonialsSection />
-      </PanelLayout>
-
-      {/* ── INDUSTRY TILES ── */}
+      {/* 2. INDUSTRY TILES */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <motion.div
@@ -242,12 +233,17 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* ── THE SHIFT: External articles ── */}
+      {/* 3. EXPERT SAYS / NEWS ARTICLES */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <ExpertSaysSection />
       </PanelLayout>
 
+      {/* 4. THE OPTIONALITY GAP */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <WaitingRoomSection />
+      </PanelLayout>
 
+      {/* 5. PROBLEM STATEMENT */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <motion.div
@@ -286,7 +282,7 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* ── SECTION 3: HOW IT WORKS ── */}
+      {/* 6. HOW IT WORKS */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl">
           <motion.div
@@ -346,7 +342,7 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* ── SECTION 4: WHAT YOU GET ── */}
+      {/* 7. WHAT'S IN YOUR REPORT */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <motion.div
@@ -389,7 +385,12 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* ── SECTION 5: WHO IT'S FOR ── */}
+      {/* 8. TESTIMONIALS */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <TestimonialsSection />
+      </PanelLayout>
+
+      {/* 9. WHO IT'S FOR */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl">
           <motion.div
@@ -500,7 +501,7 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* ── SECTION 6: SOCIAL PROOF ── */}
+      {/* 10. EARLY USERS QUOTE */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl">
           <motion.div
@@ -535,7 +536,7 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* ── SECTION 7: FINAL CTA ── */}
+      {/* 11. FINAL CTA */}
       <PanelLayout className="overflow-hidden">
         <section className="bg-primary py-24 rounded-2xl">
           <div className="mx-auto max-w-2xl px-6 text-center">
