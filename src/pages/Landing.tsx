@@ -242,6 +242,11 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
+      {/* ── THE SHIFT: External articles ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ExpertSaysSection />
+      </PanelLayout>
+
 
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
