@@ -110,6 +110,7 @@
   height: 2px;
   background-image: linear-gradient(90deg, transparent 0%, rgba(46,205,176,0.3) 50%, transparent 100%);
   pointer-events: none;
+  border-radius: 16px 16px 0 0;
 }
 
 /* Shimmer animation */
@@ -144,4 +145,42 @@
 }
 .animate-typing-dot {
   animation: typing-dot 1.4s ease-in-out infinite;
+}
+
+/* Nav link mint underline slide-in */
+.nav-link-mint {
+  position: relative;
+  display: inline-block;
+}
+.nav-link-mint::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;
+  background: #2ECDB0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+.nav-link-mint:hover::after {
+  transform: scaleX(1);
+}
+
+/* Mint button brightness on hover */
+.mint-btn {
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+.mint-btn:hover {
+  filter: brightness(1.05);
+}
+
+/* Page transition wrapper */
+.page-transition-enter {
+  opacity: 0;
+}
+.page-transition-enter-active {
+  opacity: 1;
+  transition: opacity 0.3s ease;
 }

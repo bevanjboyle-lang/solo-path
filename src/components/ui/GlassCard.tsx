@@ -7,7 +7,7 @@ interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
 export default function GlassCard({ className, children, ...props }: GlassCardProps) {
   return (
     <div
-      className={cn("rounded-2xl", className)}
+      className={cn("rounded-2xl transition-all duration-200 ease-out hover:-translate-y-[2px]", className)}
       style={{
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
@@ -15,6 +15,14 @@ export default function GlassCard({ className, children, ...props }: GlassCardPr
         border: "1px solid rgba(229,226,220,0.5)",
         borderRadius: 16,
         boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.1)";
+        props.onMouseEnter?.(e);
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)";
+        props.onMouseLeave?.(e);
       }}
       {...props}
     >

@@ -33,7 +33,7 @@ export default function Navbar() {
             <Link
               key={l.to}
               to={l.to}
-              className="text-sm transition-colors hover:text-foreground"
+              className="nav-link-mint text-sm transition-colors hover:text-foreground"
               style={{ color: "#5A5650" }}
             >
               {l.label}
@@ -43,14 +43,14 @@ export default function Navbar() {
             <>
               <Link
                 to="/guidance"
-                className="text-sm transition-colors hover:text-foreground"
+                className="nav-link-mint text-sm transition-colors hover:text-foreground"
                 style={{ color: "#5A5650" }}
               >
                 Guidance
               </Link>
               <Link
                 to="/ask-solo"
-                className="inline-flex items-center gap-1.5 text-sm transition-colors hover:text-foreground"
+                className="nav-link-mint inline-flex items-center gap-1.5 text-sm transition-colors hover:text-foreground"
                 style={{ color: "#5A5650" }}
               >
                 Ask Solo
@@ -81,7 +81,7 @@ export default function Navbar() {
           )}
           <Button
             size="sm"
-            className="rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-[#26B89D]"
+            className="mint-btn rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-[#26B89D]"
             onClick={() => navigate("/auth")}
           >
             Take the test →
@@ -152,7 +152,7 @@ export default function Navbar() {
             )}
             <Button
               size="sm"
-              className="w-full rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-[#26B89D]"
+              className="mint-btn w-full rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-[#26B89D]"
               onClick={() => { navigate("/auth"); setOpen(false); }}
             >
               Take the test →
