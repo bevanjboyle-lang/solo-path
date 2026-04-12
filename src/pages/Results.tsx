@@ -783,8 +783,8 @@ const STRAND_COLORS = [
 
 const STRAND_GREY = { bg: "bg-muted", dot: "bg-muted-foreground/50", text: "text-muted-foreground" };
 
-function StrandPill({ strand, colorIdx }: { strand: string; colorIdx: number }) {
-  const c = STRAND_COLORS[colorIdx % STRAND_COLORS.length];
+function StrandPill({ strand, colorIdx, grey }: { strand: string; colorIdx: number; grey?: boolean }) {
+  const c = grey ? STRAND_GREY : STRAND_COLORS[colorIdx % STRAND_COLORS.length];
   return (
     <span className={`inline-flex items-center gap-1 rounded-full ${c.bg} px-2 py-0.5 text-[10px] font-medium ${c.text}`}>
       <span className={`inline-block h-1.5 w-1.5 rounded-full ${c.dot}`} />
