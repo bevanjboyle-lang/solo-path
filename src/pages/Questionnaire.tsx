@@ -82,10 +82,10 @@ export default function Questionnaire() {
       if (user?.id) formData.append('user_id', user.id);
       const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/parse-cv`,
+        `https://dnnxmjazillhktwttkux.supabase.co/functions/v1/parse-cv`,
         {
           method: 'POST',
-          headers: { Authorization: `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+          headers: { Authorization: `Bearer ${session?.access_token || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRubnhtamF6aWxsaGt0d3R0a3V4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NjM5NTEsImV4cCI6MjA5MTIzOTk1MX0.kf_6j2W2Vnw01qaxBrtg4yCJUHVs40Es_WG-IFu53YE"}` },
           body: formData,
         }
       );
