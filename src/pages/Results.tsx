@@ -95,7 +95,7 @@ export default function Results() {
     if (!generating) return;
     const interval = setInterval(() => {
       setLoadingMsgIdx((prev) => (prev + 1) % LOADING_MESSAGES.length);
-    }, 3500);
+    }, 5000);
     return () => clearInterval(interval);
   }, [generating]);
 
