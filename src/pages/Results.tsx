@@ -305,26 +305,33 @@ export default function Results() {
                 exit={{ opacity: 0, y: 40 }}
                 className="fixed bottom-0 left-0 right-0 z-50 border-t border-primary/30 bg-card/95 backdrop-blur-lg px-6 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]"
               >
-                <div className="mx-auto max-w-3xl flex items-center justify-between">
-                  <p className="text-sm text-foreground">
-                    {selectedRanks.size === 1 ? (
-                      <>
-                        <span className="font-semibold">1</span> option selected
-                      </>
-                    ) : (
-                      <>
-                        <span className="font-semibold">{selectedRanks.size}</span> strands selected — building a portfolio
-                      </>
-                    )}
-                  </p>
-                  <Button
-                    disabled={selectedRanks.size < MIN_SELECTIONS}
-                    onClick={() => setShowConfirm(true)}
-                    style={{ background: "#2ECDB0" }}
-                    className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
-                  >
-                    {selectedRanks.size === 1 ? "Build my plan →" : "Build my portfolio plan →"}
-                  </Button>
+                <div className="mx-auto max-w-3xl">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-foreground">
+                      {selectedRanks.size === 1 ? (
+                        <>
+                          <span className="font-semibold">1</span> option selected
+                        </>
+                      ) : (
+                        <>
+                          <span className="font-semibold">{selectedRanks.size}</span> strands selected — building a portfolio
+                        </>
+                      )}
+                    </p>
+                    <Button
+                      disabled={selectedRanks.size < MIN_SELECTIONS}
+                      onClick={() => setShowConfirm(true)}
+                      style={{ background: "#2ECDB0" }}
+                      className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
+                    >
+                      {selectedRanks.size === 1 ? "Build my plan →" : "Build my portfolio plan →"}
+                    </Button>
+                  </div>
+                  {selectedRanks.size >= MAX_SELECTIONS && (
+                    <p className="text-xs text-muted-foreground mt-2 text-center">
+                      You've reached the maximum. Deselect one to add a different option.
+                    </p>
+                  )}
                 </div>
               </motion.div>
             )}
