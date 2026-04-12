@@ -712,14 +712,14 @@ function OutreachDraftPanel({ draft }: { draft: any }) {
   );
 }
 
-function OutreachTaskItem({ task, strandColorMap }: { task: any; strandColorMap?: Map<string, number> }) {
+function OutreachTaskItem({ task, strandColorMap, greyStrands }: { task: any; strandColorMap?: Map<string, number>; greyStrands?: boolean }) {
   const strand = task.strand;
   return (
     <li className="space-y-1">
       <span className="flex items-center gap-1.5 flex-wrap">
         <span>{task.task}</span>
         {strand && strandColorMap?.has(strand) && (
-          <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} />
+          <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} grey={greyStrands} />
         )}
       </span>
       {task.outreach_draft && <OutreachDraftPanel draft={task.outreach_draft} />}
