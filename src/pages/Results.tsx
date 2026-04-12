@@ -307,13 +307,21 @@ export default function Results() {
               >
                 <div className="mx-auto max-w-3xl flex items-center justify-between">
                   <p className="text-sm text-foreground">
-                    <span className="font-semibold">{selectedRanks.size}</span> of {MAX_SELECTIONS} selected
+                    {selectedRanks.size === 1 ? (
+                      <>
+                        <span className="font-semibold">1</span> option selected
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-semibold">{selectedRanks.size}</span> strands selected — building a portfolio
+                      </>
+                    )}
                   </p>
                   <Button
                     disabled={selectedRanks.size < MIN_SELECTIONS}
                     onClick={() => setShowConfirm(true)}
-                    style={{ background: "var(--gradient-cta)" }}
-                    className="text-primary-foreground border-0"
+                    style={{ background: "#2ECDB0" }}
+                    className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
                   >
                     {selectedRanks.size === 1 ? "Build my plan →" : "Build my portfolio plan →"}
                   </Button>
