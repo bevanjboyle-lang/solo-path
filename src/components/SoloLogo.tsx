@@ -35,7 +35,7 @@ export default function SoloLogo({ width = 140, height = 40, className }: SoloLo
       <circle cx="17.00" cy="24.00" r="4.0" fill="#2ECDB0"/>
 
       {/* Wordmark */}
-      <text x="36" y="37" fontFamily="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" fontSize="34" fontWeight="600" letterSpacing="-1" fill="#F0F0F5">solo</text>
+      <text x="36" y="37" fontFamily="'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif" fontSize="34" fontWeight="600" letterSpacing="-1" fill="currentColor">solo</text>
     </svg>
   );
 }

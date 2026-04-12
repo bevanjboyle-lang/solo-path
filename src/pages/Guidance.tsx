@@ -27,11 +27,11 @@ export default function Guidance() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <main className="mx-auto max-w-5xl px-6 pt-24 pb-16">
         <h1 className="text-2xl font-bold mb-1">Practical Guidance</h1>
-        <p className="text-sm text-white/40 mb-8">
+        <p className="text-sm text-muted-foreground mb-8">
           Nine modules to help you navigate going independent.
         </p>
 
@@ -42,9 +42,9 @@ export default function Guidance() {
         ) : hasAccess ? (
           <GuidanceLibrary />
         ) : (
-          <div className="rounded-xl border border-white/10 bg-white/[0.02] p-10 text-center max-w-md mx-auto">
-            <Lock className="h-8 w-8 text-white/20 mx-auto mb-4" />
-            <p className="text-sm text-white/50 mb-4">
+          <div className="rounded-xl border border-border bg-muted/30 p-10 text-center max-w-md mx-auto">
+            <Lock className="h-8 w-8 text-muted-foreground/40 mx-auto mb-4" />
+            <p className="text-sm text-muted-foreground mb-4">
               This feature is available with an active plan. Continue from your tracker page.
             </p>
             <Button

@@ -8,12 +8,12 @@ import GuidanceModuleFlow from "./GuidanceModuleFlow";
 import GuidanceModuleOutput from "./GuidanceModuleOutput";
 
 const AREA_COLORS: Record<string, string> = {
-  "Legal & Tax": "bg-blue-500/20 text-blue-300",
-  "Tax & Finance": "bg-amber-500/20 text-amber-300",
-  "Compliance": "bg-violet-500/20 text-violet-300",
-  "Risk & Protection": "bg-rose-500/20 text-rose-300",
-  "Operations": "bg-cyan-500/20 text-cyan-300",
-  "Profile & Positioning": "bg-emerald-500/20 text-emerald-300",
+  "Legal & Tax": "bg-blue-500/20 text-blue-600",
+  "Tax & Finance": "bg-amber-500/20 text-amber-600",
+  "Compliance": "bg-violet-500/20 text-violet-600",
+  "Risk & Protection": "bg-rose-500/20 text-rose-600",
+  "Operations": "bg-cyan-500/20 text-cyan-600",
+  "Profile & Positioning": "bg-emerald-500/20 text-emerald-600",
 };
 
 export default function GuidanceLibrary() {
@@ -69,7 +69,7 @@ export default function GuidanceLibrary() {
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="h-40 rounded-xl bg-white/5 animate-pulse" />
+            <div key={i} className="h-40 rounded-xl bg-muted animate-pulse" />
           ))}
         </div>
       ) : (
@@ -89,16 +89,16 @@ export default function GuidanceLibrary() {
                 }}
                 className={`group relative text-left rounded-xl border p-5 transition-all ${
                   status === "available"
-                    ? "border-primary/30 bg-white/[0.03] hover:border-primary/60 hover:bg-white/[0.06] cursor-pointer"
+                    ? "border-primary/30 bg-card hover:border-primary/60 hover:bg-muted/50 cursor-pointer"
                     : status === "completed"
-                    ? "border-white/10 bg-white/[0.02] cursor-pointer hover:bg-white/[0.04]"
-                    : "border-white/5 bg-white/[0.01] opacity-50 cursor-not-allowed"
+                    ? "border-border bg-card cursor-pointer hover:bg-muted/30"
+                    : "border-border/50 bg-muted/20 opacity-50 cursor-not-allowed"
                 }`}
               >
                 {/* Number badge */}
                 <div className="flex items-start justify-between mb-3">
                   <span className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                    status === "available" ? "bg-primary/20 text-primary" : "bg-white/10 text-white/40"
+                    status === "available" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
                   }`}>
                     {mod.id}
                   </span>
@@ -108,32 +108,32 @@ export default function GuidanceLibrary() {
                     </Badge>
                   )}
                   {status === "completed" && (
-                    <Badge className="bg-white/10 text-white/50 border-white/10 text-[10px] uppercase tracking-wider">
+                    <Badge className="bg-muted text-muted-foreground border-border text-[10px] uppercase tracking-wider">
                       <Check className="h-3 w-3 mr-1" /> Completed
                     </Badge>
                   )}
                   {status === "locked" && (
-                    <Badge className="bg-white/5 text-white/30 border-white/5 text-[10px] uppercase tracking-wider">
+                    <Badge className="bg-muted/50 text-muted-foreground/50 border-border/50 text-[10px] uppercase tracking-wider">
                       <Lock className="h-3 w-3 mr-1" /> Locked
                     </Badge>
                   )}
                 </div>
 
-                <h3 className={`text-sm font-semibold mb-1 ${status === "locked" ? "text-white/30" : "text-white"}`}>
+                <h3 className={`text-sm font-semibold mb-1 ${status === "locked" ? "text-muted-foreground/50" : "text-foreground"}`}>
                   {mod.name}
                 </h3>
 
                 <div className="flex items-center gap-2 mb-2">
-                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${AREA_COLORS[mod.area] || "bg-white/10 text-white/50"}`}>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${AREA_COLORS[mod.area] || "bg-muted text-muted-foreground"}`}>
                     {mod.area}
                   </span>
-                  <span className="flex items-center gap-1 text-[10px] text-white/30">
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
                     <Clock className="h-3 w-3" /> {mod.minutes} min
                   </span>
                 </div>
 
                 {status === "locked" && mod.prereq && (
-                  <p className="text-[10px] text-white/25 mt-1">
+                  <p className="text-[10px] text-muted-foreground/50 mt-1">
                     Complete Module {mod.prereq} first
                   </p>
                 )}
