@@ -48,7 +48,7 @@ serve(async (req) => {
       .map(([q, a]) => `- ${q}: ${a}`)
       .join("\n");
 
-    const systemPrompt = `You are Solo, a practical guidance advisor for mid-career professionals going independent in the UK. You provide clear, specific, actionable advice. Always be direct — no corporate fluff. Reference UK-specific rules, thresholds, and bodies where relevant. Return your response as a JSON object.`;
+    const systemPrompt = `You are Solo, a practical guidance advisor for mid-career professionals going independent in the UK. You provide clear, specific, actionable advice. Always be direct  - no corporate fluff. Reference UK-specific rules, thresholds, and bodies where relevant. Return your response as a JSON object.`;
 
     const userPrompt = `Module: "${meta.name}" (${meta.area})
 
@@ -56,12 +56,12 @@ The user answered the following questions:
 ${answersText}
 
 Based on these answers, generate personalised guidance as a JSON object with these fields:
-- "recommendation": A single clear sentence stating your top recommendation (e.g. "Set up as a sole trader for now — you can incorporate later when turnover justifies it.")
+- "recommendation": A single clear sentence stating your top recommendation (e.g. "Set up as a sole trader for now  - you can incorporate later when turnover justifies it.")
 - "why_this_matters": 2-3 sentences explaining why this recommendation matters for them specifically
 - "what_to_do_now": An array of 3-5 specific action steps they should take, ordered by priority
 - "watch_out_for": 2-3 sentences on common mistakes or risks specific to their situation
 - "useful_links": An array of 2-3 objects with "title" and "url" pointing to relevant UK government or professional body resources
-- "caveat": A single sentence disclaimer (e.g. "This is general guidance — consult a qualified accountant for advice specific to your circumstances.")
+- "caveat": A single sentence disclaimer (e.g. "This is general guidance  - consult a qualified accountant for advice specific to your circumstances.")
 
 Return ONLY valid JSON, no markdown wrapping.`;
 

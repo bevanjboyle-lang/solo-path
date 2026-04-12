@@ -13,7 +13,7 @@ const articles = [
   {
     pub: "HARVARD BUSINESS REVIEW",
     headline: "The Rise of the Fractional Executive",
-    desc: "More companies are hiring senior leaders on a fractional basis — and more executives are choosing it. The model is reshaping how expertise reaches the market.",
+    desc: "More companies are hiring senior leaders on a fractional basis  - and more executives are choosing it. The model is reshaping how expertise reaches the market.",
     link: "https://hbr.org/2024/11/the-rise-of-fractional-executives",
   },
   {
@@ -24,7 +24,7 @@ const articles = [
   },
   {
     pub: "FINANCIAL TIMES",
-    headline: "Independent Consulting Is Booming — and Big Firms Are Worried",
+    headline: "Independent Consulting Is Booming  - and Big Firms Are Worried",
     desc: "Former Big Four professionals are leaving to build solo advisory practices, taking clients and expertise with them. The trend is accelerating across professional services.",
     link: "https://www.ft.com/content/independent-consulting-growth",
   },

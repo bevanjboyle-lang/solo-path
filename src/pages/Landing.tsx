@@ -39,7 +39,7 @@ const problems = [
   {
     icon: Briefcase,
     title: "Professional roles are becoming less predictable",
-    desc: "Middle-management, analytical, and process roles are being restructured faster than most professionals expected. Not eliminated — but less stable, less numerous, and less guaranteed than a decade ago.",
+    desc: "Middle-management, analytical, and process roles are being restructured faster than most professionals expected. Not eliminated  - but less stable, less numerous, and less guaranteed than a decade ago.",
   },
   {
     icon: User,
@@ -129,7 +129,7 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.15 }}
             >
-              Solo takes what you've built over your career and turns it into a realistic, executable path to independent income: the paths, the clients, the first 30 days, based on your actual experience. <span className="font-bold text-foreground">So whatever changes — whether it's AI, restructuring, or simply wanting more options — you already know what you're doing next.</span>
+              Solo takes what you've built over your career and turns it into a realistic, executable path to independent income: the paths, the clients, the first 30 days, based on your actual experience. <span className="font-bold text-foreground">So whatever changes  - whether it's AI, restructuring, or simply wanting more options  - you already know what you're doing next.</span>
             </motion.p>
 
             {/* ── Stat strip ── */}

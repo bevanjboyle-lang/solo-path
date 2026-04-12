@@ -34,7 +34,7 @@ const principles = [
 ];
 
 const stats = [
-  { value: "5–12 years", desc: "The experience range where professionals have the most transferable commercial value — but the least practice selling it." },
+  { value: "5–12 years", desc: "The experience range where professionals have the most transferable commercial value  - but the least practice selling it." },
   { value: "£0", desc: "What most mid-career professionals have earned outside employment. The translation problem is almost universal." },
   { value: "8 minutes", desc: "How long it takes Solo to map your background to a realistic independent income path." },
 ];
@@ -73,9 +73,9 @@ export default function WhySolo() {
             </h2>
           </motion.div>
           <motion.div className="space-y-6 text-sm leading-[1.8] text-muted-foreground sm:text-base" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={1}>
-            <p>Artificial intelligence is doing to cognitive work what mechanisation did to physical work over the last two centuries — not eliminating it wholesale, but restructuring it. The middle layers of professional organisations — the managers, analysts, coordinators, and process specialists who translate strategy into execution — are increasingly caught between automation at the task level and consolidation at the organisational level.</p>
+            <p>Artificial intelligence is doing to cognitive work what mechanisation did to physical work over the last two centuries  - not eliminating it wholesale, but restructuring it. The middle layers of professional organisations  - the managers, analysts, coordinators, and process specialists who translate strategy into execution  - are increasingly caught between automation at the task level and consolidation at the organisational level.</p>
             <p>This doesn't mean these roles disappear overnight. It means they become less predictable, less numerous, and less valuable as a proportion of what organisations need to pay for. The professionals in these roles are often highly capable. They are not, however, well-equipped to work outside the structures that have employed them. Most have never had to sell their services directly. Most couldn't tell you exactly what they'd charge, or who would pay them, or why.</p>
-            <p>That gap — between genuine capability and commercial self-sufficiency — is the problem Solo is built to close.</p>
+            <p>That gap  - between genuine capability and commercial self-sufficiency  - is the problem Solo is built to close.</p>
           </motion.div>
         </div>
       </PanelLayout>
@@ -88,7 +88,7 @@ export default function WhySolo() {
           </motion.h2>
           <div className="grid gap-12 lg:grid-cols-2">
             <motion.div className="text-sm leading-[1.8] text-muted-foreground sm:text-base" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
-              <p className="mb-6">The long arc of work points toward more individual agency. Not the gig economy — that model trades security for availability, which helps platforms more than workers. Something different: experienced professionals who work directly with clients, own their relationships, set their terms, and aren't dependent on a single employer for their livelihood.</p>
+              <p className="mb-6">The long arc of work points toward more individual agency. Not the gig economy  - that model trades security for availability, which helps platforms more than workers. Something different: experienced professionals who work directly with clients, own their relationships, set their terms, and aren't dependent on a single employer for their livelihood.</p>
               <p>AI doesn't just threaten that path. It enables it. The research, drafting, analysis, and coordination work that used to require support staff or full-time employment can increasingly be done by one capable person with the right tools. The question isn't whether this transition is coming. It's whether you're prepared for it.</p>
             </motion.div>
             <div className="flex flex-col gap-4">
@@ -129,7 +129,7 @@ export default function WhySolo() {
               If this resonates, the test takes 8 minutes.
             </motion.h2>
             <motion.p className="mt-4 text-base text-primary-foreground/70" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
-              You'll get a free preview immediately, and a full report — including your 30-day activation plan — for £19.99.
+              You'll get a free preview immediately, and a full report  - including your 30-day activation plan  - for £19.99.
             </motion.p>
             <motion.div className="mt-8" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
               <Button size="lg" className="rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90" onClick={() => navigate("/auth")}>

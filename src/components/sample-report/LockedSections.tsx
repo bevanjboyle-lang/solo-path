@@ -16,7 +16,7 @@ function LockedCard({ title, children }: { title: string; children: React.ReactN
 export function RecommendationTeaser() {
   return (
     <LockedCard title="Solo's Recommendation">
-      <p className="text-sm text-muted-foreground">Based on your profile, Path 1 is the strongest fit because—</p>
+      <p className="text-sm text-muted-foreground">Based on your profile, Path 1 is the strongest fit because -</p>
       <p className="text-sm text-muted-foreground" style={{ filter: "blur(4px)" }}>
         your regulatory fluency combined with stakeholder management experience maps directly to the fractional risk consulting model. The demand signal in Edinburgh's FinTech corridor is strong enough to support a pipeline within 8 weeks.
       </p>
@@ -97,7 +97,7 @@ export function ActivationPlanTeaser() {
 export function FirstMoveTeaser() {
   return (
     <div className="relative overflow-hidden rounded-md border border-border bg-surface-mint-tint p-6">
-      <h2 className="mb-2 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>Your First Move — Do This Within 24 Hours</h2>
+      <h2 className="mb-2 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>Your First Move  - Do This Within 24 Hours</h2>
       <p className="text-sm text-muted-foreground">Send this exact message to [specific contact type]...</p>
       <p className="mt-1 text-sm text-muted-foreground" style={{ filter: "blur(4px)" }}>
         "Hi [Name], I'm moving into independent consulting focused on regulatory risk for growth-stage companies. Given your experience at [Company], I'd value 15 minutes of your perspective on the market."
@@ -110,7 +110,7 @@ export function FirstMoveTeaser() {
 
 export function LocalMarketTeaser() {
   return (
-    <LockedCard title="Local Market Feasibility — Edinburgh">
+    <LockedCard title="Local Market Feasibility  - Edinburgh">
       <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
         <li>• Day rate benchmarks for Risk Managers going independent in Edinburgh</li>
         <li>• Which sectors are actively hiring fractional risk expertise right now</li>

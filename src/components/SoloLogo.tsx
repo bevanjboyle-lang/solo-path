@@ -15,7 +15,7 @@ export default function SoloLogo({ width = 140, height = 40, className }: SoloLo
       aria-label="Solo"
       className={className}
     >
-      {/* Ring 2 — outer, very faint */}
+      {/* Ring 2  - outer, very faint */}
       <circle cx="29.12" cy="17.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
       <circle cx="17.00" cy="10.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
       <circle cx="4.88"  cy="17.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
@@ -23,7 +23,7 @@ export default function SoloLogo({ width = 140, height = 40, className }: SoloLo
       <circle cx="17.00" cy="38.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
       <circle cx="29.12" cy="31.00" r="1.3" fill="#2ECDB0" opacity="0.25"/>
 
-      {/* Ring 1 — inner halo */}
+      {/* Ring 1  - inner halo */}
       <circle cx="25.50" cy="24.00" r="2.0" fill="#2ECDB0" opacity="0.55"/>
       <circle cx="21.25" cy="16.64" r="2.0" fill="#2ECDB0" opacity="0.55"/>
       <circle cx="12.75" cy="16.64" r="2.0" fill="#2ECDB0" opacity="0.55"/>

@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
 
-const P10_SYSTEM = `You are an expert ghostwriter for mid-career professionals who are moving into independent advisory work. Your job is to write outreach messages that feel authentic to the sender — professional, direct, warm, and not salesy.
+const P10_SYSTEM = `You are an expert ghostwriter for mid-career professionals who are moving into independent advisory work. Your job is to write outreach messages that feel authentic to the sender  - professional, direct, warm, and not salesy.
 
 You have full context about this user: their career background, their recommended business model, their specific achievement, their sector context, and where they are in their 30-day activation journey. Use all of this context to write a message that feels like it could only have been written by this specific person.
 
@@ -17,7 +17,7 @@ Rules:
 - Write in plain, direct British English. No Americanisms, no startup language.
 - The message should make the recipient feel noticed and respected, not targeted.
 - Keep it short. Longer is not better. A crisp 120-word email gets more replies than a thorough 300-word one.
-- Always end with a single, low-friction CTA — a 20-minute call, a coffee, a quick question. Not "let me know if you want to connect" (too vague) and not "I'd love to discuss how I might help your business" (too salesy).
+- Always end with a single, low-friction CTA  - a 20-minute call, a coffee, a quick question. Not "let me know if you want to connect" (too vague) and not "I'd love to discuss how I might help your business" (too salesy).
 - Never use the word "leverage" as a verb.
 - Format guidelines by type: reconnect email (150-200 words), cold email (100-140 words), referral_ask (120-160 words), linkedin_dm (80-120 words), verbal (60 words max).`;
 
@@ -66,7 +66,7 @@ Return ONLY this JSON:
   "draft": {
     "format": "email | linkedin_dm | verbal",
     "subject": "string (email only) or null",
-    "body": "string — the full message with \\n for line breaks",
+    "body": "string  - the full message with \\n for line breaks",
     "word_count": integer
   },
   "tone_note": "One sentence on the strategic tone intent",
