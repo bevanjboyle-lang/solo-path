@@ -51,6 +51,10 @@ const reportFaqs = [
 
 const productFaqs = [
   {
+    q: "Do I need to be worried about AI to use Solo?",
+    a: "No. Solo is for any mid-career professional who wants to understand their realistic options for independent income — and to have a credible fallback that does not depend entirely on one employer. Some users come because they are concerned about AI or automation in their sector. Others are thinking about restructuring, redundancy, or simply wanting more control over their career. The product works regardless of what is driving your curiosity. If you have 8 or more years of professional experience and have never seriously mapped what you could do independently, Solo is for you.",
+  },
+  {
     q: "Who is Solo for?",
     a: "Mid-career white-collar professionals — typically 30s or 40s — who have built real expertise but aren't sure how portable it is. Most users are in risk, finance, operations, compliance, transformation, or consulting. If you've been in a proper job for 8+ years and you're vaguely worried about what comes next, Solo is for you.",
   },
