@@ -15,6 +15,9 @@ export default function Checkin() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const catchUpModeRef = useRef(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const { session, setSession, loading: sessionLoading } = useTrackerSession({ sessionId });
 
@@ -56,7 +59,7 @@ export default function Checkin() {
     setOpeningDone(true);
     (async () => {
       try {
-        const callType = session._catchUpMode ? "catch_up" : "opening";
+        const callType = catchUpModeRef.current ? "catch_up" : "opening";
         const { data: result, error } = await supabase.functions.invoke("process-checkin", {
           body: {
             call_type: callType,
@@ -81,9 +84,7 @@ export default function Checkin() {
 
   const handleStartCatchUp = () => {
     setShowCatchUp(false);
-    if (session) {
-      (session as any)._catchUpMode = true;
-    }
+    catchUpModeRef.current = true;
   };
 
   const handleSend = async () => {
