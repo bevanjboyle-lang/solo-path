@@ -7,6 +7,7 @@ import { useTrackerSession } from "@/hooks/useTrackerSession";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
 import SoloLogo from "@/components/SoloLogo";
+import TrackerProgress from "@/components/tracker/TrackerProgress";
 
 export default function Tracker() {
   const { signOut } = useAuth();
