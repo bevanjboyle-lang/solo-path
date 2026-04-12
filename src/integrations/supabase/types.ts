@@ -64,6 +64,36 @@ export type Database = {
           },
         ]
       }
+      guidance_module_completions: {
+        Row: {
+          answers: Json
+          completed_at: string
+          created_at: string
+          id: string
+          module_id: number
+          output: Json
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          completed_at?: string
+          created_at?: string
+          id?: string
+          module_id: number
+          output?: Json
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          created_at?: string
+          id?: string
+          module_id?: number
+          output?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number

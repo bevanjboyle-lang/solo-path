@@ -37,6 +37,14 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
+          {user && (
+            <Link
+              to="/guidance"
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Guidance
+            </Link>
+          )}
         </div>
 
         {/* Desktop right */}
@@ -89,6 +97,15 @@ export default function Navbar() {
                 {l.label}
               </Link>
             ))}
+            {user && (
+              <Link
+                to="/guidance"
+                onClick={() => setOpen(false)}
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Guidance
+              </Link>
+            )}
             <hr className="border-border/50" />
             {user ? (
               <button
