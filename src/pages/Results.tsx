@@ -848,7 +848,7 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
   );
 }
 
-function PhaseSection({ phase, strandColorMap }: { phase: any; strandColorMap: Map<string, number> }) {
+function PhaseSection({ phase, strandColorMap, greyStrands }: { phase: any; strandColorMap: Map<string, number>; greyStrands?: boolean }) {
   return (
     <Collapsible>
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg bg-surface p-4 text-left hover:bg-surface/80 transition-colors group">
@@ -871,12 +871,12 @@ function PhaseSection({ phase, strandColorMap }: { phase: any; strandColorMap: M
                   const hasOutreach = typeof t === 'object' && t !== null && t.outreach_draft;
                   
                   return hasOutreach ? (
-                    <OutreachTaskItem key={j} task={t} strandColorMap={strandColorMap} />
+                    <OutreachTaskItem key={j} task={t} strandColorMap={strandColorMap} greyStrands={greyStrands} />
                   ) : (
                     <li key={j} className="flex items-center gap-1.5 flex-wrap">
                       <span>{taskText}</span>
                       {strand && strandColorMap.has(strand) && (
-                        <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} />
+                        <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} grey={greyStrands} />
                       )}
                     </li>
                   );
