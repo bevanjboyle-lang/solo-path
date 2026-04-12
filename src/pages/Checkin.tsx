@@ -26,21 +26,40 @@ export default function Checkin() {
   const [exchangeCount, setExchangeCount] = useState(0);
   const [checkinState, setCheckinState] = useState("open");
   const [openingDone, setOpeningDone] = useState(false);
+  const [showCatchUp, setShowCatchUp] = useState(false);
+  const [catchUpChecked, setCatchUpChecked] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [exchanges]);
 
-  // Trigger opening call once session is loaded
+  // Check if catch-up screen is needed (72h since last check-in)
   useEffect(() => {
-    if (!session || !user || openingDone) return;
+    if (!session || catchUpChecked) return;
+    setCatchUpChecked(true);
+    const lastCheckin = session.last_checkin_date;
+    if (lastCheckin) {
+      const lastDate = new Date(lastCheckin);
+      const now = new Date();
+      const hoursSince = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60);
+      if (hoursSince > 72) {
+        setShowCatchUp(true);
+        return;
+      }
+    }
+  }, [session, catchUpChecked]);
+
+  // Trigger opening call once session is loaded (and catch-up is dismissed)
+  useEffect(() => {
+    if (!session || !user || openingDone || showCatchUp) return;
     setOpeningDone(true);
     (async () => {
       try {
+        const callType = session._catchUpMode ? "catch_up" : "opening";
         const { data: result, error } = await supabase.functions.invoke("process-checkin", {
           body: {
-            call_type: "opening",
+            call_type: callType,
             tracker_session_id: session.id,
             user_id: user.id,
             current_day: session.current_day,
@@ -55,10 +74,17 @@ export default function Checkin() {
         setCheckinState(result.state || "open");
       } catch (err) {
         console.error("Opening check-in error:", err);
-        setExchanges([{ role: "assistant", text: "Hi — let's check in on today's plan. How did it go?" }]);
+        setExchanges([{ role: "assistant", text: "Hi. Let's check in on today's plan. How did it go?" }]);
       }
     })();
-  }, [session, user, openingDone]);
+  }, [session, user, openingDone, showCatchUp]);
+
+  const handleStartCatchUp = () => {
+    setShowCatchUp(false);
+    if (session) {
+      (session as any)._catchUpMode = true;
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || sending || complete || !session || !user) return;
@@ -181,6 +207,29 @@ export default function Checkin() {
   if (!session) {
     navigate("/tracker", { replace: true });
     return null;
+  }
+
+  // Catch-up re-entry screen
+  if (showCatchUp && session) {
+    const lastDate = new Date(session.last_checkin_date!);
+    const daysSince = Math.round((new Date().getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+    return (
+      <div className="flex min-h-screen flex-col bg-background text-foreground items-center justify-center px-6">
+        <div className="w-full max-w-lg space-y-6 text-center">
+          <h1 className="text-2xl font-semibold text-foreground">Welcome back. Let's take stock.</h1>
+          <p className="text-muted-foreground">
+            You last checked in {daysSince} day{daysSince !== 1 ? "s" : ""} ago. Rather than working through what you missed, let's start from where you actually are today.
+          </p>
+          <button
+            onClick={handleStartCatchUp}
+            className="inline-flex items-center rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+            style={{ background: "var(--gradient-cta)" }}
+          >
+            Start check-in →
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
