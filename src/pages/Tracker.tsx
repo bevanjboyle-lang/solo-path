@@ -1,13 +1,58 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, LogOut, CalendarCheck, ChevronDown, CheckCircle2, Circle, Lock, CreditCard, ClipboardList } from "lucide-react";
+import { Loader2, LogOut, CalendarCheck, ChevronDown, Circle, Lock, CreditCard, ClipboardList } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrackerSession } from "@/hooks/useTrackerSession";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from "@/components/ui/progress";
 import SoloLogo from "@/components/SoloLogo";
 import TrackerProgress from "@/components/tracker/TrackerProgress";
+import GlassCard from "@/components/ui/GlassCard";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import CircularGauge from "@/components/ui/CircularGauge";
+
+const momentumData = [
+  { week: 'W1', completed: 3, total: 7 },
+  { week: 'W2', completed: 5, total: 7 },
+  { week: 'W3', completed: 6, total: 7 },
+  { week: 'W4', completed: 4, total: 7 },
+];
+
+function AnimatedTaskIcon({ status }: { status: "done" | "pending" | "skipped" }) {
+  if (status === "done") {
+    return (
+      <motion.svg width="24" height="24" viewBox="0 0 24 24" className="shrink-0">
+        <circle cx="12" cy="12" r="10" fill="#2ECDB0" />
+        <motion.path
+          d="M7 12.5L10.5 16L17 9"
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        />
+      </motion.svg>
+    );
+  }
+  if (status === "skipped") {
+    return (
+      <svg width="24" height="24" viewBox="0 0 24 24" className="shrink-0">
+        <circle cx="12" cy="12" r="10" fill="none" stroke="#A09A92" strokeWidth="1.5" opacity="0.5" />
+        <path d="M9 9L15 15M15 9L9 15" stroke="#A09A92" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" className="shrink-0">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="#A09A92" strokeWidth="1.5" opacity="0.4" />
+    </svg>
+  );
+}
 
 export default function Tracker() {
   const { signOut } = useAuth();
@@ -62,7 +107,8 @@ export default function Tracker() {
   }
 
   const phaseLabels = ["Foundations", "Network Activation", "Outreach", "Consolidation"];
-  const phaseRanges = ["Days 1â7", "Days 8â16", "Days 17â25", "Days 26â30"];
+  const phaseRanges = ["Days 1–7", "Days 8–16", "Days 17–25", "Days 26–30"];
+  const phaseGradientNames = ["Foundation", "Build", "Launch", "Grow"];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -89,35 +135,85 @@ export default function Tracker() {
           ) : (
             <>
               {/* Header */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Your Tracker</h1>
-                  <p className="mt-1 text-sm text-muted-foreground">Day {session.current_day} of 30</p>
+              <ScrollReveal>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your Tracker</h1>
+                  </div>
                 </div>
-                <button
-                  onClick={() => navigate(`/checkin/${session.id}`)}
-                  className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
-                  style={{ background: "var(--gradient-cta)" }}
-                >
-                  <CalendarCheck className="h-4 w-4" />
-                  Check in for today
-                </button>
-              </div>
+              </ScrollReveal>
 
-              {/* Overall progress */}
-              <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-card">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-foreground">Overall Progress</span>
-                  <span className="text-sm font-semibold text-primary">{progressPct}%</span>
-                </div>
-                <Progress value={progressPct} className="h-2" />
-                <p className="mt-2 text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed</p>
-              </div>
+              {/* Day Progress Arc */}
+              <ScrollReveal delay={0.1}>
+                <GlassCard className="mt-8 flex flex-col items-center py-8">
+                  <div style={{ filter: "drop-shadow(0 0 8px rgba(46,205,176,0.3))" }}>
+                    <CircularGauge value={Math.round((session.current_day / 30) * 100)} size={180} strokeWidth={14} color="#2ECDB0" />
+                  </div>
+                  <div className="mt-[-100px] flex flex-col items-center z-10">
+                    <span className="text-4xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+                      {session.current_day}
+                    </span>
+                    <span className="text-sm mt-1" style={{ color: "#5A5650" }}>of 30 days</span>
+                  </div>
+                  <div className="mt-14" />
+                  <p className="text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed · {progressPct}%</p>
+                </GlassCard>
+              </ScrollReveal>
 
-              {/* Strand Status Cards - per-strand progress for portfolio plans */}
+              {/* Weekly Momentum Chart */}
+              <ScrollReveal delay={0.2}>
+                <GlassCard className="mt-6 p-6">
+                  <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+                    Your Momentum
+                  </h3>
+                  <ResponsiveContainer width="100%" height={160}>
+                    <AreaChart data={momentumData}>
+                      <defs>
+                        <linearGradient id="momentumFill" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#2ECDB0" stopOpacity={0.2} />
+                          <stop offset="100%" stopColor="#2ECDB0" stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#5A5650" }} />
+                      <YAxis hide />
+                      <Tooltip
+                        contentStyle={{ background: "#FAF9F7", border: "1px solid #E5E2DC", borderRadius: 8, fontSize: 12 }}
+                        formatter={(value: number) => [`${value} tasks`, "Completed"]}
+                      />
+                      <Area type="monotone" dataKey="completed" stroke="#2ECDB0" strokeWidth={2} fill="url(#momentumFill)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </GlassCard>
+              </ScrollReveal>
+
+              {/* Check-in CTA */}
+              <ScrollReveal delay={0.25}>
+                <GlassCard className="mt-6 p-0 overflow-hidden">
+                  <button
+                    onClick={() => navigate(`/checkin/${session.id}`)}
+                    className="w-full flex items-center gap-4 p-5 text-left hover:bg-[rgba(46,205,176,0.04)] transition-colors"
+                  >
+                    <div
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white"
+                      style={{
+                        background: "linear-gradient(135deg, #2ECDB0, #25A896)",
+                        animation: "checkin-pulse 2s ease-in-out infinite",
+                      }}
+                    >
+                      <CalendarCheck className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold" style={{ color: "#1D2025" }}>Check in for today</p>
+                      <p className="text-xs" style={{ color: "#5A5650" }}>Log progress and get your next steps</p>
+                    </div>
+                  </button>
+                </GlassCard>
+              </ScrollReveal>
+
+              {/* Strand Status Cards */}
               <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
 
-              {/* Portfolio Review - mid-plan check-in for multi-strand plans */}
+              {/* Portfolio Review */}
               <PortfolioReviewCard session={session} navigate={navigate} />
 
               {/* Phase cards */}
@@ -134,54 +230,63 @@ export default function Tracker() {
                   const phasePct = phaseTotalTasks > 0 ? Math.round((phaseCompleted / phaseTotalTasks) * 100) : 0;
 
                   return (
-                    <Collapsible key={pi}>
-                      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-xl border border-border bg-card p-5 text-left hover:bg-card/80 transition-colors group shadow-card">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-medium text-foreground">
-                              {phase.phase || phaseLabels[pi] || `Phase ${pi + 1}`}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {phase.days || phaseRanges[pi] || ""}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 mt-2">
-                            <Progress value={phasePct} className="h-1.5 flex-1" />
-                            <span className="text-xs font-medium text-muted-foreground w-8">{phasePct}%</span>
-                          </div>
-                        </div>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground ml-4 transition-transform group-data-[state=open]:rotate-180" />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-2 space-y-2 pl-2">
-                        {phase.days_detail?.map((day: any, di: number) => (
-                          <div key={di} className="rounded-lg border border-border/50 bg-surface p-4">
-                            <p className="text-xs font-semibold text-foreground mb-2">{day.day}</p>
-                            <div className="space-y-2">
-                              {day.tasks?.map((task: any, ti: number) => {
-                                const key = `${pi}-${di}-${ti}`;
-                                const isDone = completedTasks.has(key);
-                                return (
-                                  <button
-                                    key={ti}
-                                    onClick={() => toggleTask(pi, di, ti)}
-                                    className="flex w-full items-start gap-3 text-left group"
-                                  >
-                                    {isDone ? (
-                                      <CheckCircle2 className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                                    ) : (
-                                      <Circle className="h-4 w-4 mt-0.5 text-muted-foreground/50 shrink-0 group-hover:text-muted-foreground" />
-                                    )}
-                                    <span className={`text-sm leading-snug ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}>
-                                      {typeof task === "string" ? task : task.task || task.description || JSON.stringify(task)}
-                                    </span>
-                                  </button>
-                                );
-                              })}
+                    <ScrollReveal key={pi} delay={0.1 * pi}>
+                      <Collapsible>
+                        <CollapsibleTrigger asChild>
+                          <GlassCard className="metallic-border flex w-full items-center justify-between p-5 text-left hover:bg-[rgba(46,205,176,0.04)] transition-colors group cursor-pointer">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3">
+                                <span
+                                  className="text-sm font-medium"
+                                  style={{
+                                    background: "linear-gradient(135deg, #1D2025 0%, #2ECDB0 50%, #1D2025 100%)",
+                                    WebkitBackgroundClip: "text",
+                                    WebkitTextFillColor: "transparent",
+                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                    fontWeight: 700,
+                                  }}
+                                >
+                                  {phase.phase || phaseLabels[pi] || `Phase ${pi + 1}`}
+                                </span>
+                                <span className="text-xs" style={{ color: "#5A5650" }}>
+                                  {phase.days || phaseRanges[pi] || ""}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 mt-2">
+                                <Progress value={phasePct} className="h-1.5 flex-1" />
+                                <span className="text-xs font-medium text-muted-foreground w-8">{phasePct}%</span>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
+                            <ChevronDown className="h-4 w-4 text-muted-foreground ml-4 transition-transform group-data-[state=open]:rotate-180" />
+                          </GlassCard>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-2 space-y-2 pl-2">
+                          {phase.days_detail?.map((day: any, di: number) => (
+                            <div key={di} className="rounded-lg border border-border/50 bg-surface p-4">
+                              <p className="text-xs font-semibold text-foreground mb-2">{day.day}</p>
+                              <div className="space-y-2">
+                                {day.tasks?.map((task: any, ti: number) => {
+                                  const key = `${pi}-${di}-${ti}`;
+                                  const isDone = completedTasks.has(key);
+                                  return (
+                                    <button
+                                      key={ti}
+                                      onClick={() => toggleTask(pi, di, ti)}
+                                      className="flex w-full items-start gap-3 text-left group"
+                                    >
+                                      <AnimatedTaskIcon status={isDone ? "done" : "pending"} />
+                                      <span className={`text-sm leading-snug ${isDone ? "text-muted-foreground line-through" : "text-foreground"}`}>
+                                        {typeof task === "string" ? task : task.task || task.description || JSON.stringify(task)}
+                                      </span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </ScrollReveal>
                   );
                 })}
               </div>
@@ -228,49 +333,53 @@ function PortfolioReviewCard({ session, navigate }: { session: any; navigate: (p
   if (!showReview) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mt-6 rounded-xl border-2 border-primary/30 bg-card p-6 shadow-card"
-    >
-      <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-          <ClipboardList className="h-5 w-5 text-primary" />
-        </div>
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-foreground">
-            📋 Portfolio Review - Day {session.current_day}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            This is your mid-plan check-in. You'll review which strands are showing signal and decide where to focus your final stretch.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {strands.map((s, i) => (
-              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
-                <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
-                {s}
-              </span>
-            ))}
+    <ScrollReveal delay={0.3}>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-6"
+      >
+        <GlassCard className="border-2 border-primary/30 p-6">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <ClipboardList className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                📋 Portfolio Review - Day {session.current_day}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                This is your mid-plan check-in. You'll review which strands are showing signal and decide where to focus your final stretch.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {strands.map((s, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
+                    <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                    {s}
+                  </span>
+                ))}
+              </div>
+              <button
+                onClick={() => navigate(`/checkin/${session.id}?review=portfolio`)}
+                className="mt-4 inline-flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+                style={{ background: "var(--gradient-cta)" }}
+              >
+                Start portfolio review →
+              </button>
+            </div>
           </div>
-          <button
-            onClick={() => navigate(`/checkin/${session.id}?review=portfolio`)}
-            className="mt-4 inline-flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
-            style={{ background: "var(--gradient-cta)" }}
-          >
-            Start portfolio review →
-          </button>
-        </div>
-      </div>
-    </motion.div>
+        </GlassCard>
+      </motion.div>
+    </ScrollReveal>
   );
 }
 
 const STRAND_CARD_COLORS = [
-  { dot: "bg-[hsl(168,70%,45%)]", bar: "bg-[hsl(168,70%,45%)]" },   // mint
-  { dot: "bg-[hsl(38,90%,55%)]",  bar: "bg-[hsl(38,90%,55%)]" },    // amber
-  { dot: "bg-[hsl(270,60%,60%)]", bar: "bg-[hsl(270,60%,60%)]" },   // violet
-  { dot: "bg-[hsl(200,70%,50%)]", bar: "bg-[hsl(200,70%,50%)]" },   // blue
-  { dot: "bg-[hsl(340,70%,55%)]", bar: "bg-[hsl(340,70%,55%)]" },   // rose
+  { dot: "bg-[hsl(168,70%,45%)]", bar: "bg-[hsl(168,70%,45%)]" },
+  { dot: "bg-[hsl(38,90%,55%)]",  bar: "bg-[hsl(38,90%,55%)]" },
+  { dot: "bg-[hsl(270,60%,60%)]", bar: "bg-[hsl(270,60%,60%)]" },
+  { dot: "bg-[hsl(200,70%,50%)]", bar: "bg-[hsl(200,70%,50%)]" },
+  { dot: "bg-[hsl(340,70%,55%)]", bar: "bg-[hsl(340,70%,55%)]" },
 ];
 
 type StrandStatus = "active" | "watching" | "paused" | "graduated";
@@ -299,7 +408,6 @@ function SignalDots({ score }: { score: number }) {
 }
 
 function StrandStatusCards({ phases, completedTasks, session, navigate }: { phases: any[]; completedTasks: Set<string>; session: any; navigate: (path: string) => void }) {
-  // Read strand_status array from working_plan
   const strandStatusArr: Array<{
     model_name: string;
     status: StrandStatus;
@@ -312,7 +420,6 @@ function StrandStatusCards({ phases, completedTasks, session, navigate }: { phas
   const hasStrandData = strandStatusArr.length >= 2;
 
   if (!hasStrandData) {
-    // Fallback: count unique strands from tasks
     const strandNames = new Set<string>();
     phases.forEach((phase: any) => {
       phase.days_detail?.forEach((d: any) => {
@@ -326,7 +433,6 @@ function StrandStatusCards({ phases, completedTasks, session, navigate }: { phas
 
   const isReviewDay = session?.current_day === 19 || session?.current_day === 26;
 
-  // Build entries from strand_status data if available, otherwise from tasks
   let entries: Array<{
     name: string; status: StrandStatus; traction_score: number;
     signals_count: number; done: number; total: number; colorIdx: number;
@@ -364,58 +470,60 @@ function StrandStatusCards({ phases, completedTasks, session, navigate }: { phas
   }
 
   return (
-    <div className="mt-6 space-y-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {entries.map((entry) => {
-          const pct = entry.total > 0 ? Math.round((entry.done / entry.total) * 100) : 0;
-          const c = STRAND_CARD_COLORS[entry.colorIdx % STRAND_CARD_COLORS.length];
-          const badge = STATUS_BADGES[entry.status] || STATUS_BADGES.active;
+    <ScrollReveal delay={0.3}>
+      <div className="mt-6 space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {entries.map((entry) => {
+            const pct = entry.total > 0 ? Math.round((entry.done / entry.total) * 100) : 0;
+            const c = STRAND_CARD_COLORS[entry.colorIdx % STRAND_CARD_COLORS.length];
+            const badge = STATUS_BADGES[entry.status] || STATUS_BADGES.active;
 
-          return (
-            <div key={entry.name} className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${c.dot}`} />
-                  <span className="text-sm font-medium text-foreground truncate">{entry.name}</span>
+            return (
+              <GlassCard key={entry.name} className="p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${c.dot}`} />
+                    <span className="text-sm font-medium text-foreground truncate">{entry.name}</span>
+                  </div>
+                  <span className={`shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${badge.className}`}>
+                    {badge.label}
+                  </span>
                 </div>
-                <span className={`shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${badge.className}`}>
-                  {badge.label}
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                  <div className={`h-full rounded-full ${c.bar} transition-all`} style={{ width: `${pct}%` }} />
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                    <div className={`h-full rounded-full ${c.bar} transition-all`} style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="text-xs font-medium text-muted-foreground w-8 text-right">{pct}%</span>
                 </div>
-                <span className="text-xs font-medium text-muted-foreground w-8 text-right">{pct}%</span>
-              </div>
-              <div className="mt-2 flex items-center justify-between">
-                <p className="text-[11px] text-muted-foreground">Tasks: {entry.done}/{entry.total} complete</p>
-                <div className="flex items-center gap-2">
-                  {entry.signals_count > 0 && (
-                    <span className="text-[10px] text-muted-foreground/70">{entry.signals_count} signal{entry.signals_count !== 1 ? "s" : ""}</span>
-                  )}
-                  {entry.traction_score > 0 && <SignalDots score={entry.traction_score} />}
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-[11px] text-muted-foreground">Tasks: {entry.done}/{entry.total} complete</p>
+                  <div className="flex items-center gap-2">
+                    {entry.signals_count > 0 && (
+                      <span className="text-[10px] text-muted-foreground/70">{entry.signals_count} signal{entry.signals_count !== 1 ? "s" : ""}</span>
+                    )}
+                    {entry.traction_score > 0 && <SignalDots score={entry.traction_score} />}
+                  </div>
                 </div>
-              </div>
+              </GlassCard>
+            );
+          })}
+        </div>
+
+        {isReviewDay && (
+          <button
+            onClick={() => navigate(`/checkin/${session.id}?review=portfolio`)}
+            className="w-full rounded-xl border-2 border-primary/30 bg-card p-4 shadow-card text-left hover:bg-card/80 transition-colors flex items-center gap-3"
+          >
+            <span className="text-lg">🗓</span>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Portfolio Review Today</p>
+              <p className="text-xs text-muted-foreground">Review which strands are showing signal and decide where to focus</p>
             </div>
-          );
-        })}
+            <span className="text-xs text-primary font-medium">Start →</span>
+          </button>
+        )}
       </div>
-
-      {isReviewDay && (
-        <button
-          onClick={() => navigate(`/checkin/${session.id}?review=portfolio`)}
-          className="w-full rounded-xl border-2 border-primary/30 bg-card p-4 shadow-card text-left hover:bg-card/80 transition-colors flex items-center gap-3"
-        >
-          <span className="text-lg">🗓</span>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground">Portfolio Review Today</p>
-            <p className="text-xs text-muted-foreground">Review which strands are showing signal and decide where to focus</p>
-          </div>
-          <span className="text-xs text-primary font-medium">Start →</span>
-        </button>
-      )}
-    </div>
+    </ScrollReveal>
   );
 }
 
@@ -432,7 +540,6 @@ function Day30PaywallSection({
   subscribing: boolean;
   handleSubscribe: (plan: 'monthly' | 'annual') => void;
 }) {
-  // Determine traction from strand_status
   const strandStatusArr: Array<{
     traction_score: number;
     signals_observed: string[];
@@ -451,52 +558,56 @@ function Day30PaywallSection({
     : "Getting to first income from a standing start takes longer than a month for most people. What usually gets in the way isn't lack of effort. It's a specific mindset or practical blocker that isn't obvious from the outside. Continuing gives you Ask Solo: a direct conversation, with full context of your profile and plan, to work out what's actually in the way. It's different from re-reading a plan.";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mt-8 rounded-xl border-2 border-primary/30 bg-card p-8 shadow-elevated text-center"
-    >
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-        <Lock className="h-6 w-6 text-primary" />
-      </div>
-      <h2 className="text-xl font-semibold tracking-tight">{heading}</h2>
-      <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">{body}</p>
-      <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center max-w-xs mx-auto">
-        <button
-          onClick={() => setSelectedPlan('monthly')}
-          className={`flex-1 rounded-lg border-2 p-4 text-left transition-all ${selectedPlan === 'monthly' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-        >
-          <div className="text-sm font-medium">Monthly plan</div>
-          <div className="text-2xl font-bold mt-1">£19<span className="text-sm font-normal text-muted-foreground">/month</span></div>
-          <div className="text-xs text-muted-foreground mt-1">Cancel any time</div>
-        </button>
-        <button
-          onClick={() => setSelectedPlan('annual')}
-          className={`flex-1 rounded-lg border-2 p-4 text-left relative transition-all ${selectedPlan === 'annual' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-        >
-          <div className="absolute -top-2.5 right-3 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">Save £79</div>
-          <div className="text-sm font-medium">Full year of support</div>
-          <div className="text-2xl font-bold mt-1">£149<span className="text-sm font-normal text-muted-foreground">/year</span></div>
-          <div className="text-xs text-muted-foreground mt-1">£12.42/month</div>
-        </button>
-      </div>
-      <div className="mt-4 flex flex-col items-center gap-3">
-        <button
-          onClick={() => handleSubscribe(selectedPlan)}
-          disabled={subscribing}
-          className="inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
-          style={{ background: "var(--gradient-cta)" }}
-        >
-          {subscribing ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <CreditCard className="h-4 w-4" />
-              {selectedPlan === 'annual' ? 'Full year of support - £149' : 'Keep my plan active - £19/month'}
-            </>
-          )}
-        </button>
-      </div>
-    </motion.div>
+    <ScrollReveal delay={0.4}>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-8"
+      >
+        <GlassCard className="p-8 text-center border-2 border-primary/30">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <Lock className="h-6 w-6 text-primary" />
+          </div>
+          <h2 className="text-xl font-semibold tracking-tight">{heading}</h2>
+          <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">{body}</p>
+          <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center max-w-xs mx-auto">
+            <button
+              onClick={() => setSelectedPlan('monthly')}
+              className={`flex-1 rounded-lg border-2 p-4 text-left transition-all ${selectedPlan === 'monthly' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+            >
+              <div className="text-sm font-medium">Monthly plan</div>
+              <div className="text-2xl font-bold mt-1">£19<span className="text-sm font-normal text-muted-foreground">/month</span></div>
+              <div className="text-xs text-muted-foreground mt-1">Cancel any time</div>
+            </button>
+            <button
+              onClick={() => setSelectedPlan('annual')}
+              className={`flex-1 rounded-lg border-2 p-4 text-left relative transition-all ${selectedPlan === 'annual' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+            >
+              <div className="absolute -top-2.5 right-3 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">Save £79</div>
+              <div className="text-sm font-medium">Full year of support</div>
+              <div className="text-2xl font-bold mt-1">£149<span className="text-sm font-normal text-muted-foreground">/year</span></div>
+              <div className="text-xs text-muted-foreground mt-1">£12.42/month</div>
+            </button>
+          </div>
+          <div className="mt-4 flex flex-col items-center gap-3">
+            <button
+              onClick={() => handleSubscribe(selectedPlan)}
+              disabled={subscribing}
+              className="inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+              style={{ background: "var(--gradient-cta)", animation: "checkin-pulse 2s ease-in-out infinite" }}
+            >
+              {subscribing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <CreditCard className="h-4 w-4" />
+                  {selectedPlan === 'annual' ? 'Full year of support - £149' : 'Keep my plan active - £19/month'}
+                </>
+              )}
+            </button>
+          </div>
+        </GlassCard>
+      </motion.div>
+    </ScrollReveal>
   );
 }
