@@ -34,7 +34,7 @@ export default function WaitingRoomSection() {
             Solo Perspective
           </span>
           <h2 className="font-display mb-10 text-2xl font-semibold tracking-tight sm:text-3xl">
-            The Waiting Room
+            The Optionality Gap
           </h2>
         </motion.div>
 
