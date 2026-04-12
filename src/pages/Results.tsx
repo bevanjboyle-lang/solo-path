@@ -270,7 +270,8 @@ export default function Results() {
 
               {/* Options Card Grid */}
               <div>
-                <h2 className="text-lg font-semibold text-foreground mb-4">Your Options</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-1">Build Your Portfolio</h2>
+                <p className="text-sm text-muted-foreground mb-4">Select {MIN_SELECTIONS}–{MAX_SELECTIONS} models to pursue in parallel. We'll build a combined plan.</p>
                 <div className="space-y-4">
                   {(cr.options || [])
                     .slice()
@@ -279,10 +280,36 @@ export default function Results() {
                       <SelectionOptionCard
                         key={opt.rank}
                         option={opt}
-                        onSelect={() => setConfirmOption(opt)}
+                        selected={selectedRanks.has(opt.rank)}
+                        onToggle={() => toggleRank(opt.rank)}
+                        selectionFull={selectedRanks.size >= MAX_SELECTIONS}
                       />
                     ))}
                 </div>
+
+                {/* Floating selection bar */}
+                {selectedRanks.size > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="sticky bottom-6 mt-6 rounded-xl border border-primary/30 bg-card/95 backdrop-blur-lg p-4 flex items-center justify-between shadow-lg"
+                  >
+                    <p className="text-sm text-foreground">
+                      <span className="font-semibold">{selectedRanks.size}</span> of {MAX_SELECTIONS} selected
+                      {selectedRanks.size < MIN_SELECTIONS && (
+                        <span className="text-muted-foreground ml-2">(min {MIN_SELECTIONS})</span>
+                      )}
+                    </p>
+                    <Button
+                      disabled={selectedRanks.size < MIN_SELECTIONS}
+                      onClick={() => setShowConfirm(true)}
+                      style={{ background: "var(--gradient-cta)" }}
+                      className="text-primary-foreground border-0"
+                    >
+                      Build my portfolio plan →
+                    </Button>
+                  </motion.div>
+                )}
               </div>
 
               {/* AI Impact */}
