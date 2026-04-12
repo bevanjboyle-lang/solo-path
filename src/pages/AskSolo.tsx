@@ -69,7 +69,7 @@ export default function AskSolo() {
 
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ask-solo`,
+        `https://dnnxmjazillhktwttkux.supabase.co/functions/v1/ask-solo`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
