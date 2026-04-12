@@ -49,8 +49,8 @@ const cards: PricingCard[] = [
     features: [
       { text: "Your professional archetype + profile interpretation" },
       { text: "One hook insight headline" },
-      { text: "Option A headline (top business model match)" },
-      { text: "Options B and C names", locked: true },
+      { text: "Your top-ranked business path headline" },
+      { text: "Additional path names (locked)", locked: true },
       { text: "Recommendation", locked: true },
     ],
     cta: "Start the free preview →",
@@ -67,8 +67,8 @@ const cards: PricingCard[] = [
     features: [
       { text: "First Move — your named post-payment action, ready immediately" },
       { text: "Hook insight — full paragraph" },
-      { text: "3 tailored business options with full write-ups" },
-      { text: "Clear recommendation with rationale" },
+      { text: "Up to 10 business paths scored and ranked for your profile — select up to 5 to explore in parallel" },
+      { text: "Portfolio approach — pursue multiple paths at once instead of betting on one" },
       { text: "Reality check — what's likely to go wrong" },
       { text: "Income outlook calibrated to your seniority" },
       { text: "30-day Activation Plan with outreach drafts baked into every task" },
