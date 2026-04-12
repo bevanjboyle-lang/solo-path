@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react";
 import LockedOverlay from "./LockedOverlay";
 
 export default function BusinessPaths() {
@@ -109,3 +110,6 @@ export default function BusinessPaths() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
