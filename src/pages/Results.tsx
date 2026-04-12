@@ -809,6 +809,7 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
   });
 
   const hasStrands = strandColorMap.size > 1;
+  const isSingleStrand = strandColorMap.size === 1;
 
   return (
     <div className="space-y-4">
