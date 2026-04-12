@@ -140,7 +140,7 @@ export function AIImpactTeaser() {
 export function FullReportGrid() {
   const items = [
     "Profile & Archetype Analysis",
-    "3 Scored Business Paths",
+    "Up to 5 Parallel Opportunities",
     "Personalised Recommendation",
     "Reality Check & Income Outlook",
     "Hook Insight",
