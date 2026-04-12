@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { questions, Question } from "@/data/questions";
-import { ArrowLeft, Check, LogOut, Upload, FileText } from "lucide-react";
+import { ArrowLeft, Check, LogOut, Upload, FileText, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -54,7 +54,8 @@ export default function Questionnaire() {
   );
 
   const currentQuestion = questions[current] ?? questions[0]!;
-
+  const cvWasUploaded = cvExtract !== null;
+  const displayTotal = cvWasUploaded ? 12 : questions.length;
   const total = questions.length;
   const progress = ((current + 1) / total) * 100;
   const answer = answers[currentQuestion.id];
@@ -222,7 +223,7 @@ export default function Questionnaire() {
             Back
           </button>
           <span className="text-xs text-muted-foreground">
-            Question {current + 1} of {total}
+            Question {Math.min(current + 1, displayTotal)} of {displayTotal}
           </span>
           <button onClick={() => signOut()} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <LogOut className="h-3.5 w-3.5" />
@@ -298,15 +299,36 @@ function QuestionInput({
   value: string | string[] | undefined;
   onChange: (val: string | string[]) => void;
 }) {
+  const [hintOpen, setHintOpen] = useState(false);
+
   if (question.type === "text") {
     return (
-      <textarea
-        className="w-full resize-none rounded-lg border border-border bg-surface p-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
-        rows={3}
-        placeholder={question.placeholder}
-        value={(value as string) ?? ""}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <div className="space-y-3">
+        <textarea
+          className="w-full resize-none rounded-lg border border-border bg-surface p-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30"
+          rows={3}
+          placeholder={question.placeholder}
+          value={(value as string) ?? ""}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        {question.expandableHint && (
+          <div>
+            <button
+              type="button"
+              onClick={() => setHintOpen(!hintOpen)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ChevronDown className={`h-3 w-3 transition-transform ${hintOpen ? "rotate-180" : ""}`} />
+              {question.expandableLabel || "More detail"}
+            </button>
+            {hintOpen && (
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground/80 pl-4 border-l-2 border-primary/20">
+                {question.expandableHint}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     );
   }
 
