@@ -835,7 +835,7 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
       )}
       <div className="space-y-2">
         {plan.phases?.map((phase: any, i: number) => (
-          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} />
+          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} greyStrands={isSingleStrand} />
         ))}
       </div>
       {plan.success_metric && (
