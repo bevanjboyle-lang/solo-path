@@ -24,6 +24,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import WaitingRoomSection from "@/components/landing/WaitingRoomSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
+import ExpertSaysSection from "@/components/landing/ExpertSaysSection";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -239,6 +240,11 @@ export default function Landing() {
             Sources: Solo knowledge bank, 480 business models across 16 professional domains.
           </p>
         </div>
+      </PanelLayout>
+
+      {/* ── THE SHIFT: External articles ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ExpertSaysSection />
       </PanelLayout>
 
 
