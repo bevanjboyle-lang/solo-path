@@ -712,14 +712,14 @@ function OutreachDraftPanel({ draft }: { draft: any }) {
   );
 }
 
-function OutreachTaskItem({ task, strandColorMap }: { task: any; strandColorMap?: Map<string, number> }) {
+function OutreachTaskItem({ task, strandColorMap, greyStrands }: { task: any; strandColorMap?: Map<string, number>; greyStrands?: boolean }) {
   const strand = task.strand;
   return (
     <li className="space-y-1">
       <span className="flex items-center gap-1.5 flex-wrap">
         <span>{task.task}</span>
         {strand && strandColorMap?.has(strand) && (
-          <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} />
+          <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} grey={greyStrands} />
         )}
       </span>
       {task.outreach_draft && <OutreachDraftPanel draft={task.outreach_draft} />}
@@ -781,8 +781,10 @@ const STRAND_COLORS = [
   { bg: "bg-[hsl(340,70%,55%)]/15", dot: "bg-[hsl(340,70%,55%)]", text: "text-[hsl(340,70%,55%)]" },   // rose
 ];
 
-function StrandPill({ strand, colorIdx }: { strand: string; colorIdx: number }) {
-  const c = STRAND_COLORS[colorIdx % STRAND_COLORS.length];
+const STRAND_GREY = { bg: "bg-muted", dot: "bg-muted-foreground/50", text: "text-muted-foreground" };
+
+function StrandPill({ strand, colorIdx, grey }: { strand: string; colorIdx: number; grey?: boolean }) {
+  const c = grey ? STRAND_GREY : STRAND_COLORS[colorIdx % STRAND_COLORS.length];
   return (
     <span className={`inline-flex items-center gap-1 rounded-full ${c.bg} px-2 py-0.5 text-[10px] font-medium ${c.text}`}>
       <span className={`inline-block h-1.5 w-1.5 rounded-full ${c.dot}`} />
@@ -807,6 +809,7 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
   });
 
   const hasStrands = strandColorMap.size > 1;
+  const isSingleStrand = strandColorMap.size === 1;
 
   return (
     <div className="space-y-4">
@@ -832,7 +835,7 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
       )}
       <div className="space-y-2">
         {plan.phases?.map((phase: any, i: number) => (
-          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} />
+          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} greyStrands={isSingleStrand} />
         ))}
       </div>
       {plan.success_metric && (
@@ -845,7 +848,7 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
   );
 }
 
-function PhaseSection({ phase, strandColorMap }: { phase: any; strandColorMap: Map<string, number> }) {
+function PhaseSection({ phase, strandColorMap, greyStrands }: { phase: any; strandColorMap: Map<string, number>; greyStrands?: boolean }) {
   return (
     <Collapsible>
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg bg-surface p-4 text-left hover:bg-surface/80 transition-colors group">
@@ -868,12 +871,12 @@ function PhaseSection({ phase, strandColorMap }: { phase: any; strandColorMap: M
                   const hasOutreach = typeof t === 'object' && t !== null && t.outreach_draft;
                   
                   return hasOutreach ? (
-                    <OutreachTaskItem key={j} task={t} strandColorMap={strandColorMap} />
+                    <OutreachTaskItem key={j} task={t} strandColorMap={strandColorMap} greyStrands={greyStrands} />
                   ) : (
                     <li key={j} className="flex items-center gap-1.5 flex-wrap">
                       <span>{taskText}</span>
                       {strand && strandColorMap.has(strand) && (
-                        <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} />
+                        <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} grey={greyStrands} />
                       )}
                     </li>
                   );
