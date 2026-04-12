@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import GuidanceLibrary from "@/components/guidance/GuidanceLibrary";
 import { Lock } from "lucide-react";
+import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
+import GlassCard from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import ScrollReveal from "@/components/ui/ScrollReveal";
@@ -43,8 +45,28 @@ export default function Guidance() {
         </ScrollReveal>
 
         {hasAccess === null ? (
-          <div className="h-40 flex items-center justify-center">
-            <div className="h-5 w-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="space-y-6">
+            {/* Radial chart skeleton */}
+            <GlassCard className="flex flex-col sm:flex-row items-center gap-6 p-6">
+              <ShimmerSkeleton width={160} height={160} borderRadius="50%" />
+              <div className="space-y-2 flex-1">
+                <ShimmerSkeleton width="70%" height={18} />
+                <ShimmerSkeleton width="90%" height={14} />
+              </div>
+            </GlassCard>
+            {/* Module card skeletons */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <GlassCard key={i} className="p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <ShimmerSkeleton width={24} height={24} borderRadius="50%" />
+                    <ShimmerSkeleton width={28} height={28} borderRadius="50%" />
+                  </div>
+                  <ShimmerSkeleton width="80%" height={14} className="mb-2" />
+                  <ShimmerSkeleton width="50%" height={10} />
+                </GlassCard>
+              ))}
+            </div>
           </div>
         ) : hasAccess ? (
           <GuidanceLibrary />
