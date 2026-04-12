@@ -20,9 +20,11 @@ interface ReportData {
 
 const LOADING_MESSAGES = [
   "Building your personalised 30-day plan...",
+  "Mapping strand-specific tasks...",
   "Designing your activation strategy...",
   "Drafting outreach messages...",
   "Analysing your local market...",
+  "Scoring pricing benchmarks...",
   "Finalising your plan...",
 ];
 
