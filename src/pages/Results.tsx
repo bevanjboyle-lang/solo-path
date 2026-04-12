@@ -430,32 +430,7 @@ export default function Results() {
               {/* 30-Day Activation Plan */}
               <ReportSection title="30-Day Activation Plan" icon={CalendarCheck}>
                 {ap?.activation_plan && (
-                  <div className="space-y-4">
-                    <p>{ap.activation_plan.summary}</p>
-                    {ap.activation_plan.pacing_note && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="rounded-lg bg-surface p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Pacing</p>
-                          <p className="text-xs">{ap.activation_plan.pacing_note}</p>
-                        </div>
-                        <div className="rounded-lg bg-surface p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Network</p>
-                          <p className="text-xs">{ap.activation_plan.network_note}</p>
-                        </div>
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      {ap.activation_plan.phases?.map((phase: any, i: number) => (
-                        <PhaseSection key={i} phase={phase} />
-                      ))}
-                    </div>
-                    {ap.activation_plan.success_metric && (
-                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Success Metric</p>
-                        <p className="text-xs">{ap.activation_plan.success_metric}</p>
-                      </div>
-                    )}
-                  </div>
+                  <ActivationPlanDisplay plan={ap.activation_plan} />
                 )}
               </ReportSection>
 
@@ -727,10 +702,16 @@ function OutreachDraftPanel({ draft }: { draft: any }) {
   );
 }
 
-function OutreachTaskItem({ task }: { task: any }) {
+function OutreachTaskItem({ task, strandColorMap }: { task: any; strandColorMap?: Map<string, number> }) {
+  const strand = task.strand;
   return (
     <li className="space-y-1">
-      <span>{task.task}</span>
+      <span className="flex items-center gap-1.5 flex-wrap">
+        <span>{task.task}</span>
+        {strand && strandColorMap?.has(strand) && (
+          <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} />
+        )}
+      </span>
       {task.outreach_draft && <OutreachDraftPanel draft={task.outreach_draft} />}
     </li>
   );
