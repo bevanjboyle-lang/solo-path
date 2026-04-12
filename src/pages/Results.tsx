@@ -542,29 +542,45 @@ export default function Results() {
       <Dialog open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Build your portfolio plan</DialogTitle>
-            <DialogDescription>
-              Generate a combined 30-day plan for {selectedRanks.size} selected models?
-              <ul className="mt-2 space-y-1 text-left">
-                {cr && (cr.options || [])
-                  .filter((o: any) => selectedRanks.has(o.rank))
-                  .sort((a: any, b: any) => a.rank - b.rank)
-                  .map((o: any) => (
-                    <li key={o.rank} className="text-sm text-foreground">
-                      <span className="font-semibold">#{o.rank}</span> {o.model_name}
-                    </li>
-                  ))}
-              </ul>
+            <DialogTitle>
+              {selectedRanks.size === 1 ? "Build your plan" : "Build your portfolio plan"}
+            </DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-3 text-sm text-muted-foreground">
+                {selectedRanks.size === 1 ? (
+                  <p>Build your personalised 30-day plan for:</p>
+                ) : (
+                  <p>You're building a parallel pursuit plan across {selectedRanks.size} strands:</p>
+                )}
+                <ul className="space-y-1.5 text-left">
+                  {cr && (cr.options || [])
+                    .filter((o: any) => selectedRanks.has(o.rank))
+                    .sort((a: any, b: any) => a.rank - b.rank)
+                    .map((o: any) => (
+                      <li key={o.rank} className="flex items-center gap-2 text-sm text-foreground">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                          {o.rank}
+                        </span>
+                        {o.model_name}
+                      </li>
+                    ))}
+                </ul>
+                {selectedRanks.size > 1 && (
+                  <p className="text-xs text-muted-foreground/80">
+                    Solo will create one integrated 30-day plan with strand-specific tasks for each path. You'll run them in parallel and narrow down as you gather evidence.
+                  </p>
+                )}
+              </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setShowConfirm(false)}>Back to options</Button>
             <Button
               onClick={handleGeneratePlan}
-              style={{ background: "var(--gradient-cta)" }}
-              className="text-primary-foreground border-0"
+              style={{ background: "#2ECDB0" }}
+              className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
             >
-              Yes, build my plan
+              {selectedRanks.size === 1 ? "Build my plan" : "Build portfolio plan"}
             </Button>
           </DialogFooter>
         </DialogContent>
