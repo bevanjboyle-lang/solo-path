@@ -286,12 +286,18 @@ export default function Results() {
 
               {/* Options Card Grid */}
               <div>
-                <h2 className="text-lg font-semibold text-foreground mb-1">Build Your Portfolio</h2>
-                <p className="text-sm text-muted-foreground mb-4">Select 1–{MAX_SELECTIONS} options to build a portfolio plan — or pick 1 if you have a clear preference. We recommend 3.</p>
+                <h2 className="text-lg font-semibold text-foreground mb-1">We suggest starting with these options. Change anything you like.</h2>
+                <p className="text-sm text-muted-foreground mb-2">You can select 2 to 5 options. The recommendation is based on your capability profile and income risk spread.</p>
+                {cr.recommended_selection?.rationale && (
+                  <p className="text-sm text-muted-foreground/80 mb-4 italic">{cr.recommended_selection.rationale}</p>
+                )}
+
+                {/* Top 5 — expanded */}
                 <div className="space-y-4">
                   {(cr.options || [])
                     .slice()
                     .sort((a: any, b: any) => a.rank - b.rank)
+                    .filter((opt: any) => opt.rank <= 5)
                     .map((opt: any) => (
                       <SelectionOptionCard
                         key={opt.rank}
@@ -303,6 +309,36 @@ export default function Results() {
                     ))}
                 </div>
 
+                {/* Remaining 6-10 — collapsed */}
+                {(cr.options || []).some((o: any) => o.rank > 5) && (
+                  <div className="mt-4">
+                    {!showRemaining ? (
+                      <button
+                        onClick={() => setShowRemaining(true)}
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                        Show remaining {(cr.options || []).filter((o: any) => o.rank > 5).length} options
+                      </button>
+                    ) : (
+                      <div className="space-y-2">
+                        {(cr.options || [])
+                          .slice()
+                          .sort((a: any, b: any) => a.rank - b.rank)
+                          .filter((opt: any) => opt.rank > 5)
+                          .map((opt: any) => (
+                            <CompactOptionCard
+                              key={opt.rank}
+                              option={opt}
+                              selected={selectedRanks.has(opt.rank)}
+                              onToggle={() => toggleRank(opt.rank)}
+                              selectionFull={selectedRanks.size >= MAX_SELECTIONS}
+                            />
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* AI Impact */}
