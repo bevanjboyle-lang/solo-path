@@ -117,3 +117,12 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* Savings badge pulsing glow */
+@keyframes savings-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(46,205,176,0.3); }
+  50% { box-shadow: 0 0 25px rgba(46,205,176,0.15); }
+}
+.animate-savings-glow {
+  animation: savings-glow 2s ease-in-out infinite;
+}
