@@ -260,8 +260,7 @@ function getStrandsFromPlan(workingPlan: any): string[] {
 function PortfolioReviewCard({ session, navigate }: { session: any; navigate: (path: string) => void }) {
   const strands = getStrandsFromPlan(session.working_plan);
   const isPortfolio = strands.length > 1;
-  const reviewDay = 15;
-  const showReview = isPortfolio && session.current_day >= reviewDay && session.current_day <= reviewDay + 2;
+  const showReview = isPortfolio && (session.current_day === 19 || session.current_day === 26);
 
   if (!showReview) return null;
 
@@ -337,49 +336,84 @@ function SignalDots({ score }: { score: number }) {
 }
 
 function StrandStatusCards({ phases, completedTasks, session, navigate }: { phases: any[]; completedTasks: Set<string>; session: any; navigate: (path: string) => void }) {
-  // Build per-strand stats from tasks
-  const strandStats = new Map<string, { total: number; done: number; colorIdx: number }>();
-  let colorIdx = 0;
+  // Read strand_status array from working_plan
+  const strandStatusArr: Array<{
+    model_name: string;
+    status: StrandStatus;
+    traction_score: number;
+    signals_observed: string[];
+    tasks_completed: number;
+    tasks_total: number;
+  }> = Array.isArray(session?.working_plan?.strand_status) ? session.working_plan.strand_status : [];
 
-  phases.forEach((phase: any, pi: number) => {
-    phase.days_detail?.forEach((d: any, di: number) => {
-      d.tasks?.forEach((t: any, ti: number) => {
-        const strand = typeof t === 'object' && t !== null ? t.strand : null;
-        if (!strand) return;
-        if (!strandStats.has(strand)) {
-          strandStats.set(strand, { total: 0, done: 0, colorIdx: colorIdx++ });
-        }
-        const s = strandStats.get(strand)!;
-        s.total++;
-        if (completedTasks.has(`${pi}-${di}-${ti}`)) s.done++;
+  const hasStrandData = strandStatusArr.length >= 2;
+
+  if (!hasStrandData) {
+    // Fallback: count unique strands from tasks
+    const strandNames = new Set<string>();
+    phases.forEach((phase: any) => {
+      phase.days_detail?.forEach((d: any) => {
+        d.tasks?.forEach((t: any) => {
+          if (typeof t === 'object' && t !== null && t.strand) strandNames.add(t.strand);
+        });
       });
     });
-  });
+    if (strandNames.size < 2) return null;
+  }
 
-  if (strandStats.size < 2) return null;
+  const isReviewDay = session?.current_day === 19 || session?.current_day === 26;
 
-  // Strand metadata from working_plan (status, signal_score)
-  const strandMeta: Record<string, { status: StrandStatus; signal_score: number }> =
-    session?.working_plan?.strand_status || {};
+  // Build entries from strand_status data if available, otherwise from tasks
+  let entries: Array<{
+    name: string; status: StrandStatus; traction_score: number;
+    signals_count: number; done: number; total: number; colorIdx: number;
+  }>;
 
-  const reviewDay = 15;
-  const isReviewDay = session?.current_day >= reviewDay && session?.current_day <= reviewDay + 2;
+  if (hasStrandData) {
+    entries = strandStatusArr.map((s, i) => ({
+      name: s.model_name,
+      status: s.status || "active",
+      traction_score: s.traction_score || 0,
+      signals_count: (s.signals_observed || []).length,
+      done: s.tasks_completed || 0,
+      total: s.tasks_total || 0,
+      colorIdx: i,
+    }));
+  } else {
+    const strandStats = new Map<string, { total: number; done: number; colorIdx: number }>();
+    let ci = 0;
+    phases.forEach((phase: any, pi: number) => {
+      phase.days_detail?.forEach((d: any, di: number) => {
+        d.tasks?.forEach((t: any, ti: number) => {
+          const strand = typeof t === 'object' && t !== null ? t.strand : null;
+          if (!strand) return;
+          if (!strandStats.has(strand)) strandStats.set(strand, { total: 0, done: 0, colorIdx: ci++ });
+          const ss = strandStats.get(strand)!;
+          ss.total++;
+          if (completedTasks.has(`${pi}-${di}-${ti}`)) ss.done++;
+        });
+      });
+    });
+    entries = Array.from(strandStats.entries()).map(([name, s]) => ({
+      name, status: "active" as StrandStatus, traction_score: 0,
+      signals_count: 0, done: s.done, total: s.total, colorIdx: s.colorIdx,
+    }));
+  }
 
   return (
     <div className="mt-6 space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {Array.from(strandStats.entries()).map(([strand, stats]) => {
-          const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
-          const c = STRAND_CARD_COLORS[stats.colorIdx % STRAND_CARD_COLORS.length];
-          const meta = strandMeta[strand] || { status: "active" as StrandStatus, signal_score: 0 };
-          const badge = STATUS_BADGES[meta.status] || STATUS_BADGES.active;
+        {entries.map((entry) => {
+          const pct = entry.total > 0 ? Math.round((entry.done / entry.total) * 100) : 0;
+          const c = STRAND_CARD_COLORS[entry.colorIdx % STRAND_CARD_COLORS.length];
+          const badge = STATUS_BADGES[entry.status] || STATUS_BADGES.active;
 
           return (
-            <div key={strand} className="rounded-xl border border-border bg-card p-4 shadow-card">
+            <div key={entry.name} className="rounded-xl border border-border bg-card p-4 shadow-card">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${c.dot}`} />
-                  <span className="text-sm font-medium text-foreground truncate">{strand}</span>
+                  <span className="text-sm font-medium text-foreground truncate">{entry.name}</span>
                 </div>
                 <span className={`shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${badge.className}`}>
                   {badge.label}
@@ -392,20 +426,19 @@ function StrandStatusCards({ phases, completedTasks, session, navigate }: { phas
                 <span className="text-xs font-medium text-muted-foreground w-8 text-right">{pct}%</span>
               </div>
               <div className="mt-2 flex items-center justify-between">
-                <p className="text-[11px] text-muted-foreground">{stats.done} of {stats.total} tasks</p>
-                {meta.signal_score > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-muted-foreground/70">Signal</span>
-                    <SignalDots score={meta.signal_score} />
-                  </div>
-                )}
+                <p className="text-[11px] text-muted-foreground">Tasks: {entry.done}/{entry.total} complete</p>
+                <div className="flex items-center gap-2">
+                  {entry.signals_count > 0 && (
+                    <span className="text-[10px] text-muted-foreground/70">{entry.signals_count} signal{entry.signals_count !== 1 ? "s" : ""}</span>
+                  )}
+                  {entry.traction_score > 0 && <SignalDots score={entry.traction_score} />}
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Portfolio Review Today prompt */}
       {isReviewDay && (
         <button
           onClick={() => navigate(`/checkin/${session.id}?review=portfolio`)}
