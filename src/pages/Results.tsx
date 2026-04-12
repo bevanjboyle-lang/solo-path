@@ -561,21 +561,27 @@ const diffColors: Record<string, string> = {
   hard: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
-function SelectionOptionCard({ option, onSelect }: { option: any; onSelect: () => void }) {
+function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { option: any; selected: boolean; onToggle: () => void; selectionFull: boolean }) {
   const isTop3 = option.rank <= 3;
   const dc = diffColors[option.difficulty_rating] || diffColors.moderate;
+  const disabled = !selected && selectionFull;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={`rounded-xl border bg-card shadow-card ${option.rank === 1 ? "border-primary/30" : "border-border"} ${isTop3 ? "p-6" : "p-4"}`}
+      onClick={() => !disabled && onToggle()}
+      className={`rounded-xl border bg-card shadow-card cursor-pointer transition-all ${
+        selected ? "border-primary ring-1 ring-primary/30" : disabled ? "border-border opacity-50" : "border-border hover:border-primary/40"
+      } ${isTop3 ? "p-6" : "p-4"}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold mt-0.5">
-            #{option.rank}
+          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold mt-0.5 ${
+            selected ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+          }`}>
+            {selected ? <Check className="h-3.5 w-3.5" /> : `#${option.rank}`}
           </span>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -634,14 +640,6 @@ function SelectionOptionCard({ option, onSelect }: { option: any; onSelect: () =
           </>
         )}
       </div>
-
-      <button
-        onClick={onSelect}
-        className="mt-4 inline-flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
-        style={{ background: "var(--gradient-cta)" }}
-      >
-        Choose this path →
-      </button>
     </motion.div>
   );
 }
