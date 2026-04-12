@@ -110,17 +110,29 @@ export default function Results() {
     }
   };
 
-  const handleGeneratePlan = async (option: any) => {
-    setConfirmOption(null);
+  const toggleRank = (rank: number) => {
+    setSelectedRanks((prev) => {
+      const next = new Set(prev);
+      if (next.has(rank)) {
+        next.delete(rank);
+      } else if (next.size < MAX_SELECTIONS) {
+        next.add(rank);
+      }
+      return next;
+    });
+  };
+
+  const handleGeneratePlan = async () => {
+    setShowConfirm(false);
     setGenerating(true);
     setGenError(null);
     setLoadingMsgIdx(0);
     try {
+      const ranks = Array.from(selectedRanks).sort((a, b) => a - b);
       const { data, error } = await supabase.functions.invoke("generate-plan", {
-        body: { report_id: reportId, selected_rank: option.rank },
+        body: { report_id: reportId, selected_ranks: ranks },
       });
       if (error) throw error;
-      // Update local report state with returned data
       setReport((prev) => {
         if (!prev) return prev;
         return {
