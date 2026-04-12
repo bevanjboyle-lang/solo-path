@@ -19,7 +19,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <nav className="fixed top-1 left-0 right-0 z-50 border-b bg-surface-panel/95 backdrop-blur-lg" style={{ borderColor: "#D5D0C8" }}>
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
         {/* Logo */}
         <a href="/" className="flex items-center no-underline">
@@ -32,7 +32,8 @@ export default function Navbar() {
             <Link
               key={l.to}
               to={l.to}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="text-sm transition-colors hover:text-foreground"
+              style={{ color: "#5A5650" }}
             >
               {l.label}
             </Link>
@@ -41,16 +42,18 @@ export default function Navbar() {
             <>
               <Link
                 to="/guidance"
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="text-sm transition-colors hover:text-foreground"
+                style={{ color: "#5A5650" }}
               >
                 Guidance
               </Link>
               <Link
                 to="/ask-solo"
-                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="inline-flex items-center gap-1.5 text-sm transition-colors hover:text-foreground"
+                style={{ color: "#5A5650" }}
               >
                 Ask Solo
-                <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                <span className="rounded-full bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent-foreground">
                   Beta
                 </span>
               </Link>
@@ -77,7 +80,7 @@ export default function Navbar() {
           )}
           <Button
             size="sm"
-            className="rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-[#1FAF97]"
+            className="rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-[#26B89D]"
             onClick={() => navigate("/auth")}
           >
             Take the test →
@@ -96,7 +99,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="border-t border-border/50 bg-background px-6 py-4 md:hidden">
+        <div className="border-t bg-surface-panel px-6 py-4 md:hidden" style={{ borderColor: "#D5D0C8" }}>
           <div className="flex flex-col gap-3">
             {navLinks.map((l) => (
               <Link
@@ -123,13 +126,13 @@ export default function Navbar() {
                   className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Ask Solo
-                  <span className="rounded-full bg-primary/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary">
+                  <span className="rounded-full bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent-foreground">
                     Beta
                   </span>
                 </Link>
               </>
             )}
-            <hr className="border-border/50" />
+            <hr style={{ borderColor: "#D5D0C8" }} />
             {user ? (
               <button
                 onClick={() => { signOut(); setOpen(false); }}
@@ -148,7 +151,7 @@ export default function Navbar() {
             )}
             <Button
               size="sm"
-              className="w-full rounded-lg bg-primary text-sm font-medium text-primary-foreground hover:bg-[#1FAF97]"
+              className="w-full rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-[#26B89D]"
               onClick={() => { navigate("/auth"); setOpen(false); }}
             >
               Take the test →
