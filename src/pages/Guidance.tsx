@@ -45,13 +45,13 @@ export default function Guidance() {
           <div className="rounded-xl border border-white/10 bg-white/[0.02] p-10 text-center max-w-md mx-auto">
             <Lock className="h-8 w-8 text-white/20 mx-auto mb-4" />
             <p className="text-sm text-white/50 mb-4">
-              This feature is available to subscribers. Subscribe from your tracker page.
+              This feature is available with an active plan. Continue from your tracker page.
             </p>
             <Button
               onClick={() => navigate("/subscribe")}
               className="bg-primary text-primary-foreground hover:bg-[#1FAF97]"
             >
-              Subscribe
+              Keep your plan active
             </Button>
           </div>
         )}
