@@ -166,10 +166,10 @@ export default function Pricing() {
           {cards.map((card, i) => (
             <motion.div
               key={card.title}
-              className={`relative flex flex-col rounded-2xl border p-6 ${
+              className={`relative flex flex-col rounded-2xl border border-border p-6 ${
                 card.highlighted
                   ? "border-primary/60 shadow-[0_0_40px_-12px_hsl(166_63%_49%/0.25)]"
-                  : "border-border/60 bg-card"
+                  : "bg-card"
               }`}
               style={card.highlighted ? { background: "var(--gradient-subtle, hsl(228 12% 11%))" } : undefined}
               variants={fadeUp}
@@ -183,9 +183,9 @@ export default function Pricing() {
                 {card.badge}
               </span>
 
-              <h3 className="font-display text-base font-semibold">{card.title}</h3>
+              <h3 className="font-display text-base font-semibold text-foreground">{card.title}</h3>
               <div className="mt-3 flex items-baseline gap-1">
-                <span className="font-display text-3xl font-bold">{card.price}</span>
+                <span className="font-display text-3xl font-bold text-foreground">{card.price}</span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{card.subtitle}</p>
 
@@ -198,7 +198,7 @@ export default function Pricing() {
                     ) : (
                       <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                     )}
-                    <span className={f.locked ? "text-muted-foreground/50" : "text-muted-foreground"}>
+                    <span className={f.locked ? "text-muted-foreground/60" : "text-foreground/70"}>
                       {f.text}
                     </span>
                   </li>
