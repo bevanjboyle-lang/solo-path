@@ -359,7 +359,21 @@ export default function Results() {
               </div>
 
               {/* Selected model header */}
-              {cr.selected_model && (
+              {cr.selected_models && cr.selected_models.length > 1 ? (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
+                  <p className="font-medium text-foreground">Your Portfolio Plan</p>
+                  <div className="flex flex-wrap gap-2">
+                    {cr.selected_models.map((m: any, i: number) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold">
+                          {m.rank}
+                        </span>
+                        {m.model_name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : cr.selected_model && (
                 <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 flex items-center gap-3">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
                     #{cr.selected_rank || "✓"}
