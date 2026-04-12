@@ -14,15 +14,15 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14% 96%;
     --secondary-foreground: 220 13% 13%;
-    --muted: 220 10% 94%;
-    --muted-foreground: 220 9% 44%;
-    --accent: 166 63% 49%;
-    --accent-foreground: 0 0% 100%;
+    --muted: 220 14% 95%;
+    --muted-foreground: 220 9% 40%;
+    --accent: 166 63% 95%;
+    --accent-foreground: 220 13% 13%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 82%;
-    --input: 220 13% 82%;
-    --ring: 220 13% 82%;
+    --border: 220 13% 78%;
+    --input: 220 13% 78%;
+    --ring: 166 63% 49%;
     --radius: 0.625rem;
 
     --sidebar-background: 220 14% 98%;
