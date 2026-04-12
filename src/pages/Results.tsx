@@ -359,29 +359,26 @@ export default function Results() {
               >
                 <div className="mx-auto max-w-3xl">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-foreground">
-                      {selectedRanks.size === 1 ? (
-                        <>
-                          <span className="font-semibold">1</span> option selected
-                        </>
-                      ) : (
-                        <>
-                          <span className="font-semibold">{selectedRanks.size}</span> strands selected — building a portfolio
-                        </>
+                    <div>
+                      <p className="text-sm text-foreground">
+                        <span className="font-semibold">{selectedRanks.size}</span> option{selectedRanks.size !== 1 ? "s" : ""} selected
+                      </p>
+                      {selectedRanks.size < MIN_SELECTIONS && (
+                        <p className="text-xs text-muted-foreground">Select at least {MIN_SELECTIONS} options</p>
                       )}
-                    </p>
+                    </div>
                     <Button
                       disabled={selectedRanks.size < MIN_SELECTIONS}
                       onClick={() => setShowConfirm(true)}
                       style={{ background: "#2ECDB0" }}
                       className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
                     >
-                      {selectedRanks.size === 1 ? "Build my plan →" : "Build my portfolio plan →"}
+                      Build my plan with these {selectedRanks.size} options →
                     </Button>
                   </div>
                   {selectedRanks.size >= MAX_SELECTIONS && (
                     <p className="text-xs text-muted-foreground mt-2 text-center">
-                      You've reached the maximum. Deselect one to add a different option.
+                      You've reached the maximum of {MAX_SELECTIONS}. Deselect one to add a different option.
                     </p>
                   )}
                 </div>
