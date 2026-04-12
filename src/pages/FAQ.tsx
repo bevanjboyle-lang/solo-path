@@ -21,7 +21,7 @@ const fadeUp = {
 const reportFaqs = [
   {
     q: "What do I actually get for £19.99?",
-    a: "A personalised report based on around 8 minutes of structured questions. Covers: your professional archetype, three tailored business options with pricing and time-to-revenue, a clear recommendation, reality check, income outlook, 30-day activation plan with outreach drafts, local market feasibility snapshot, and AI impact section. You own it permanently — no subscription required.",
+    a: "A personalised report based on around 8 minutes of structured questions. Covers: your professional archetype, three tailored business options with pricing and time-to-revenue, a clear recommendation, reality check, income outlook, 30-day activation plan with outreach drafts, local market feasibility snapshot, and AI impact section. You own it permanently.",
   },
   {
     q: "How long does it take?",
@@ -41,7 +41,7 @@ const reportFaqs = [
   },
   {
     q: "What's the Adaptive Tracker?",
-    a: "The Adaptive Tracker is included in your one-time £19.99 payment. For 30 days after you unlock your report, Solo sends you a daily check-in — a short, specific prompt tied to that day's task. If you fall behind, the plan adapts. If your situation changes materially, it generates a fresh plan from your current position. At Day 30, you can choose to continue with a subscription (£19/month or £149/year) which keeps the tracker running and unlocks the Practical Guidance suite and Ask Solo.",
+    a: "The Adaptive Tracker is included in your one-time £19.99 payment. For 30 days after you unlock your report, Solo sends you a daily check-in: a short, specific prompt tied to that day's task. If you fall behind, the plan adapts. If your situation changes materially, it generates a fresh plan from your current position. At Day 30, you can choose to keep your plan active (£19/month or £149/year) which keeps the tracker running and unlocks the Practical Guidance suite and Ask Solo.",
   },
   {
     q: "Can I get a refund?",

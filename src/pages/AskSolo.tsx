@@ -157,7 +157,7 @@ export default function AskSolo() {
                 Unlock Ask Solo
               </h2>
               <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                Ask Solo is your AI advisory companion, available to Solo subscribers. Upgrade to start a conversation.
+                Ask Solo is your AI advisory companion, available with an active plan. Keep going to start a conversation.
               </p>
               <Button
                 onClick={() => navigate("/pricing")}

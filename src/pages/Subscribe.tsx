@@ -98,10 +98,10 @@ export default function Subscribe() {
         >
           <div className="text-center mb-10">
             <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              Continue beyond Day 30
+              Keep your plan active
             </h1>
             <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
-              Your first 30 days are free. Subscribe to keep your adaptive plan, daily check-ins, and AI replanning.
+              Your profile, your plan, and everything you've built over the last 30 days stays live.
             </p>
           </div>
 
@@ -166,7 +166,7 @@ export default function Subscribe() {
               ) : (
                 <>
                   <Zap className="h-4 w-4 mr-1.5" />
-                  Subscribe to {selected === "annual" ? "Annual" : "Monthly"}
+                  {selected === "annual" ? "Full year of support" : "Keep your plan active"} — {selected === "annual" ? "£149" : "£9.99/month"}
                 </>
               )}
             </Button>

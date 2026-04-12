@@ -114,7 +114,7 @@ const faqs = [
   },
   {
     q: "Is this a subscription?",
-    a: "The full report is a one-time payment. The Adaptive Tracker is optional and billed monthly — you can cancel any time.",
+    a: "The full report is a one-time payment. The Adaptive Tracker is optional and billed monthly. You can cancel any time.",
   },
   {
     q: "Can I come back to my report later?",
@@ -154,7 +154,7 @@ export default function Pricing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            One product. Two ways to engage. No subscriptions you'll forget about.
+            One product. Two ways to engage. No plans you'll forget about.
           </motion.p>
         </div>
       </section>

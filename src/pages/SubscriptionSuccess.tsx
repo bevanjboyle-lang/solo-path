@@ -28,11 +28,11 @@ export default function SubscriptionSuccess() {
         </div>
 
         <h1 className="font-display text-2xl font-semibold tracking-tight">
-          You're subscribed
+          Your plan is active.
         </h1>
 
         <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-          Your subscription is now active. You have full access to daily check-ins, adaptive replanning, and extended tracking.
+          Your profile, your plan, and everything you've built over the last 30 days stays live. You have full access to daily check-ins, adaptive replanning, and extended tracking.
         </p>
 
         <div className="mt-8 space-y-3">

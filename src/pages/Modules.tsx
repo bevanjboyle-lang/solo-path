@@ -86,7 +86,7 @@ export default function Modules() {
                   Unlock all modules
                 </h2>
                 <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-                  Modules are available to Solo subscribers. Upgrade to access all nine guided modules, plus check-ins and replanning.
+                  Modules are available with an active plan. Keep going to access all nine guided modules, plus check-ins and replanning.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Button
