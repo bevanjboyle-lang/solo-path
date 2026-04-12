@@ -84,11 +84,43 @@ export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
+      {/* ── Subtle background effects ── */}
+      <div className="pointer-events-none fixed inset-0 z-0" aria-hidden="true">
+        {/* Soft radial glow — top center */}
+        <div className="absolute -top-[30%] left-1/2 h-[80vh] w-[120vw] -translate-x-1/2 rounded-full bg-primary/[0.03] blur-[120px]" />
+        {/* Secondary glow — bottom right */}
+        <div className="absolute -bottom-[20%] -right-[10%] h-[60vh] w-[60vw] rounded-full bg-primary/[0.02] blur-[100px]" />
+        {/* Shimmer lines — brushed metal effect */}
+        <div className="absolute inset-0 opacity-[0.015]" style={{
+          backgroundImage: `repeating-linear-gradient(
+            105deg,
+            transparent,
+            transparent 60px,
+            hsl(var(--primary)) 60px,
+            hsl(var(--primary)) 61px,
+            transparent 61px,
+            transparent 200px
+          )`,
+        }} />
+        {/* Animated shimmer sweep */}
+        <div className="animate-shimmer-sweep absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `linear-gradient(
+            105deg,
+            transparent 0%,
+            transparent 40%,
+            hsl(var(--primary) / 0.4) 50%,
+            transparent 60%,
+            transparent 100%
+          )`,
+          backgroundSize: '200% 100%',
+        }} />
+      </div>
+
       <Navbar />
 
       {/* ── SECTION 1: HERO ── */}
-      <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-14">
+      <section className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 pt-14">
         <div className="mx-auto max-w-2xl text-center">
           <motion.div
             className="mb-8 flex justify-center"
