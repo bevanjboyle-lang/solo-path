@@ -16,6 +16,7 @@ import {
   Star,
   Quote,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import WaitingRoomSection from "@/components/landing/WaitingRoomSection";
