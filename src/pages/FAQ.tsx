@@ -10,6 +10,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import GlassCard from "@/components/ui/GlassCard";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -61,47 +63,65 @@ export default function FAQ() {
 
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-2xl space-y-16">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <h2 className="font-display mb-6 text-lg font-semibold">About the Report</h2>
-            <Accordion type="single" collapsible className="w-full">
-              {reportFaqs.map((faq, i) => (
-                <AccordionItem key={i} value={`report-${i}`} className="border-border">
-                  <AccordionTrigger className="text-sm font-medium text-foreground hover:no-underline">{faq.q}</AccordionTrigger>
-                  <AccordionContent className="text-sm leading-relaxed text-muted-foreground">{faq.a}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </motion.div>
+          {/* About the Report */}
+          <ScrollReveal>
+            <GlassCard className="metallic-border p-6">
+              <h2 className="font-display mb-6 text-lg font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>About the Report</h2>
+              <Accordion type="single" collapsible className="w-full">
+                {reportFaqs.map((faq, i) => (
+                  <ScrollReveal key={i} delay={i * 0.05}>
+                    <AccordionItem
+                      value={`report-${i}`}
+                      className="border-border transition-all data-[state=open]:border-l-[3px] data-[state=open]:border-l-[#2ECDB0] data-[state=open]:pl-3 hover:shadow-md rounded-lg mb-1"
+                    >
+                      <AccordionTrigger className="text-sm font-medium text-foreground hover:no-underline py-4">{faq.q}</AccordionTrigger>
+                      <AccordionContent className="text-sm leading-relaxed text-muted-foreground">{faq.a}</AccordionContent>
+                    </AccordionItem>
+                  </ScrollReveal>
+                ))}
+              </Accordion>
+            </GlassCard>
+          </ScrollReveal>
 
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <h2 className="font-display mb-6 text-lg font-semibold">About the Product</h2>
-            <Accordion type="single" collapsible className="w-full">
-              {productFaqs.map((faq, i) => (
-                <AccordionItem key={i} value={`product-${i}`} className="border-border">
-                  <AccordionTrigger className="text-sm font-medium text-foreground hover:no-underline">{faq.q}</AccordionTrigger>
-                  <AccordionContent className="text-sm leading-relaxed text-muted-foreground">{faq.a}</AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </motion.div>
+          {/* About the Product */}
+          <ScrollReveal delay={0.1}>
+            <GlassCard className="metallic-border p-6">
+              <h2 className="font-display mb-6 text-lg font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>About the Product</h2>
+              <Accordion type="single" collapsible className="w-full">
+                {productFaqs.map((faq, i) => (
+                  <ScrollReveal key={i} delay={i * 0.05}>
+                    <AccordionItem
+                      value={`product-${i}`}
+                      className="border-border transition-all data-[state=open]:border-l-[3px] data-[state=open]:border-l-[#2ECDB0] data-[state=open]:pl-3 hover:shadow-md rounded-lg mb-1"
+                    >
+                      <AccordionTrigger className="text-sm font-medium text-foreground hover:no-underline py-4">{faq.q}</AccordionTrigger>
+                      <AccordionContent className="text-sm leading-relaxed text-muted-foreground">{faq.a}</AccordionContent>
+                    </AccordionItem>
+                  </ScrollReveal>
+                ))}
+              </Accordion>
+            </GlassCard>
+          </ScrollReveal>
         </div>
       </PanelLayout>
 
       {/* FOOTER CTA */}
       <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-2xl text-center">
-          <h3 className="font-display text-lg font-semibold">Still have a question?</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Email us at{" "}
-            <a href="mailto:hello@solopath.co" className="text-primary hover:text-primary/80">hello@solopath.co</a>{" "}
-            - we respond within one business day.
-          </p>
-          <p className="mt-4 text-sm">
-            <Link to="/sample-report" className="text-primary transition-colors hover:text-primary/80">
-              Or check out the sample report to see exactly what you get →
-            </Link>
-          </p>
-        </div>
+        <ScrollReveal>
+          <div className="mx-auto max-w-2xl text-center">
+            <h3 className="font-display text-lg font-semibold">Still have a question?</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Email us at{" "}
+              <a href="mailto:hello@solopath.co" className="text-primary hover:text-primary/80">hello@solopath.co</a>{" "}
+              - we respond within one business day.
+            </p>
+            <p className="mt-4 text-sm">
+              <Link to="/sample-report" className="text-primary transition-colors hover:text-primary/80">
+                Or check out the sample report to see exactly what you get →
+              </Link>
+            </p>
+          </div>
+        </ScrollReveal>
       </PanelLayout>
 
       <Footer />

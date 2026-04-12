@@ -8,12 +8,20 @@ import {
   Heart,
   Shield,
   Cpu,
+  Zap,
+  Target,
+  Users,
+  TrendingUp,
+  Brain,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import GlassCard from "@/components/ui/GlassCard";
+import AnimatedCounter from "@/components/ui/AnimatedCounter";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -67,36 +75,44 @@ export default function WhySolo() {
       {/* THE SHIFT */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl">
-          <motion.div className="mb-10" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} custom={0}>
-            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+          <ScrollReveal>
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl mb-10" style={{ letterSpacing: "-0.02em" }}>
               Why having independent income options matters
             </h2>
-          </motion.div>
-          <motion.div className="space-y-6 text-sm leading-[1.8] text-muted-foreground sm:text-base" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={1}>
-            <p>Artificial intelligence is doing to cognitive work what mechanisation did to physical work over the last two centuries - not eliminating it wholesale, but restructuring it. The middle layers of professional organisations - the managers, analysts, coordinators, and process specialists who translate strategy into execution - are increasingly caught between automation at the task level and consolidation at the organisational level.</p>
-            <p>This doesn't mean these roles disappear overnight. It means they become less predictable, less numerous, and less valuable as a proportion of what organisations need to pay for. The professionals in these roles are often highly capable. They are not, however, well-equipped to work outside the structures that have employed them. Most have never had to sell their services directly. Most couldn't tell you exactly what they'd charge, or who would pay them, or why.</p>
-            <p>That gap - between genuine capability and commercial self-sufficiency - is the problem Solo is built to close.</p>
-          </motion.div>
+          </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <div className="space-y-6 text-sm leading-[1.8] text-muted-foreground sm:text-base">
+              <p>Artificial intelligence is doing to cognitive work what mechanisation did to physical work over the last two centuries - not eliminating it wholesale, but restructuring it. The middle layers of professional organisations - the managers, analysts, coordinators, and process specialists who translate strategy into execution - are increasingly caught between automation at the task level and consolidation at the organisational level.</p>
+              <p>This doesn't mean these roles disappear overnight. It means they become less predictable, less numerous, and less valuable as a proportion of what organisations need to pay for. The professionals in these roles are often highly capable. They are not, however, well-equipped to work outside the structures that have employed them. Most have never had to sell their services directly. Most couldn't tell you exactly what they'd charge, or who would pay them, or why.</p>
+              <p>That gap - between genuine capability and commercial self-sufficiency - is the problem Solo is built to close.</p>
+            </div>
+          </ScrollReveal>
         </div>
       </PanelLayout>
 
       {/* THE SOLO THESIS */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
-          <motion.h2 className="font-display mb-14 text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} custom={0}>
-            We believe the direction of travel is clear
-          </motion.h2>
+          <ScrollReveal>
+            <h2 className="font-display mb-14 text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+              We believe the direction of travel is clear
+            </h2>
+          </ScrollReveal>
           <div className="grid gap-12 lg:grid-cols-2">
-            <motion.div className="text-sm leading-[1.8] text-muted-foreground sm:text-base" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
-              <p className="mb-6">The long arc of work points toward more individual agency. Not the gig economy - that model trades security for availability, which helps platforms more than workers. Something different: experienced professionals who work directly with clients, own their relationships, set their terms, and aren't dependent on a single employer for their livelihood.</p>
-              <p>AI doesn't just threaten that path. It enables it. The research, drafting, analysis, and coordination work that used to require support staff or full-time employment can increasingly be done by one capable person with the right tools. The question isn't whether this transition is coming. It's whether you're prepared for it.</p>
-            </motion.div>
+            <ScrollReveal delay={0.1}>
+              <div className="text-sm leading-[1.8] text-muted-foreground sm:text-base">
+                <p className="mb-6">The long arc of work points toward more individual agency. Not the gig economy - that model trades security for availability, which helps platforms more than workers. Something different: experienced professionals who work directly with clients, own their relationships, set their terms, and aren't dependent on a single employer for their livelihood.</p>
+                <p>AI doesn't just threaten that path. It enables it. The research, drafting, analysis, and coordination work that used to require support staff or full-time employment can increasingly be done by one capable person with the right tools. The question isn't whether this transition is coming. It's whether you're prepared for it.</p>
+              </div>
+            </ScrollReveal>
             <div className="flex flex-col gap-4">
               {stats.map((s, i) => (
-                <motion.div key={s.value} className="rounded-[10px] border border-border bg-surface-card p-5 transition-all hover:border-primary hover:shadow-card-hover" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} custom={i}>
-                  <span className="mb-1 block font-display text-2xl font-bold text-primary">{s.value}</span>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
-                </motion.div>
+                <ScrollReveal key={s.value} delay={i * 0.1}>
+                  <GlassCard className="p-5 transition-all hover:shadow-lg">
+                    <span className="mb-1 block font-display text-2xl font-bold text-primary" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</span>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
+                  </GlassCard>
+                </ScrollReveal>
               ))}
             </div>
           </div>
@@ -106,16 +122,20 @@ export default function WhySolo() {
       {/* OUR PRINCIPLES */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
-          <motion.h2 className="font-display mb-14 text-center text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }} variants={fadeUp} custom={0}>
-            How we think about this
-          </motion.h2>
+          <ScrollReveal>
+            <h2 className="font-display mb-14 text-center text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+              How we think about this
+            </h2>
+          </ScrollReveal>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {principles.map((p, i) => (
-              <motion.div key={p.title} className="rounded-[10px] border border-border bg-surface-card p-6 transition-all hover:border-primary hover:shadow-card-hover" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} custom={i}>
-                <p.icon className="mb-4 h-5 w-5 text-primary" strokeWidth={1.5} />
-                <h3 className="mb-2 text-sm font-semibold">{p.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
-              </motion.div>
+              <ScrollReveal key={p.title} delay={i * 0.08}>
+                <GlassCard className="p-6 transition-all hover:shadow-lg h-full">
+                  <p.icon className="mb-4 h-8 w-8" style={{ color: "#2ECDB0" }} strokeWidth={1.5} />
+                  <h3 className="mb-2 text-sm font-semibold">{p.title}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
+                </GlassCard>
+              </ScrollReveal>
             ))}
           </div>
         </div>
