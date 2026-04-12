@@ -572,43 +572,45 @@ function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { op
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       onClick={() => !disabled && onToggle()}
-      className={`rounded-xl border bg-card shadow-card cursor-pointer transition-all ${
-        selected ? "border-primary ring-1 ring-primary/30" : disabled ? "border-border opacity-50" : "border-border hover:border-primary/40"
+      className={`relative rounded-xl border bg-card shadow-card cursor-pointer transition-all ${
+        selected ? "border-primary ring-1 ring-primary/30" : disabled ? "border-border opacity-50 cursor-not-allowed" : "border-border hover:border-primary/40"
       } ${isTop3 ? "p-6" : "p-4"}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold mt-0.5 ${
-            selected ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
-          }`}>
-            {selected ? <Check className="h-3.5 w-3.5" /> : `#${option.rank}`}
-          </span>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className={`font-semibold text-foreground ${isTop3 ? "text-base" : "text-sm"}`}>
-                {option.model_name}
-              </h3>
-              {option.rank === 1 && (
-                <Badge className="text-[10px] px-2 py-0.5 border-0" style={{ background: "#2ECDB0", color: "#000" }}>
-                  Recommended
-                </Badge>
-              )}
-              <Badge className={`text-[10px] px-2 py-0.5 border ${dc}`}>
-                {option.difficulty_rating}
-              </Badge>
-            </div>
+      {/* Checkbox top-right */}
+      <div className={`absolute top-4 right-4 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
+        selected ? "bg-primary border-primary" : "border-muted-foreground/30 bg-transparent"
+      }`}>
+        {selected && <Check className="h-3 w-3 text-primary-foreground" />}
+      </div>
 
-            {/* Fit tags */}
-            {option.fit_tags?.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {option.fit_tags.map((tag: string, i: number) => (
-                  <span key={i} className="text-[10px] rounded-full border border-border bg-surface px-2 py-0.5 text-muted-foreground">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+      <div className="flex items-start gap-3 pr-8">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold mt-0.5">
+          #{option.rank}
+        </span>
+        <div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className={`font-semibold text-foreground ${isTop3 ? "text-base" : "text-sm"}`}>
+              {option.model_name}
+            </h3>
+            {option.rank === 1 && (
+              <Badge className="text-[10px] px-2 py-0.5 border-0" style={{ background: "#2ECDB0", color: "#000" }}>
+                Recommended
+              </Badge>
             )}
+            <Badge className={`text-[10px] px-2 py-0.5 border ${dc}`}>
+              {option.difficulty_rating}
+            </Badge>
           </div>
+
+          {option.fit_tags?.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {option.fit_tags.map((tag: string, i: number) => (
+                <span key={i} className="text-[10px] rounded-full border border-border bg-surface px-2 py-0.5 text-muted-foreground">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
