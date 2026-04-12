@@ -19,7 +19,6 @@ import {
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import WaitingRoomSection from "@/components/landing/WaitingRoomSection";
-import WaitingRoomSection from "@/components/landing/WaitingRoomSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 
 const fadeUp = {
