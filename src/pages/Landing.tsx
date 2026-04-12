@@ -24,6 +24,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import WaitingRoomSection from "@/components/landing/WaitingRoomSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
+import ExpertSaysSection from "@/components/landing/ExpertSaysSection";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },

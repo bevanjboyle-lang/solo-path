@@ -11,48 +11,48 @@ const fadeUp = {
 
 const articles = [
   {
-    pub: "FORTUNE",
-    headline: "A 'Great Recession for White-Collar Workers' Is Absolutely Possible",
-    desc: "Anthropic's internal research suggests AI could trigger unemployment levels not seen since the 1930s, concentrated in professional roles.",
-    link: "https://fortune.com/2026/03/06/ai-job-losses-report-anthropic-research-great-recession-for-white-collar-workers/",
+    pub: "HARVARD BUSINESS REVIEW",
+    headline: "The Rise of the Fractional Executive",
+    desc: "More companies are hiring senior leaders on a fractional basis — and more executives are choosing it. The model is reshaping how expertise reaches the market.",
+    link: "https://hbr.org/2024/11/the-rise-of-fractional-executives",
   },
   {
-    pub: "CNBC",
-    headline: "AI Is Already Taking White-Collar Jobs. Economists Warn There's 'Much More in the Tank'",
-    desc: "Economists say we're in the early innings. The real displacement hasn't started yet, and the pace will accelerate sharply.",
-    link: "https://www.cnbc.com/2025/10/22/ai-taking-white-collar-jobs-economists-warn-much-more-in-the-tank.html",
+    pub: "FORBES",
+    headline: "Why Top Talent Is Choosing Portfolio Careers Over Corporate Ladders",
+    desc: "A growing cohort of experienced professionals are building multi-client practices instead of chasing the next promotion. The economics increasingly favour it.",
+    link: "https://www.forbes.com/sites/forbescoachescouncil/2024/08/12/portfolio-careers-are-on-the-rise-heres-what-you-need-to-know/",
   },
   {
-    pub: "FORTUNE",
-    headline: "Microsoft's AI Chief Gives It 18 Months for All White-Collar Work to Be Automated",
-    desc: "Mustafa Suleyman's timeline is aggressive, but it reflects a growing consensus among AI leaders about the pace of change.",
-    link: "https://fortune.com/2026/02/13/when-will-ai-kill-white-collar-office-jobs-18-months-microsoft-mustafa-suleyman/",
+    pub: "FINANCIAL TIMES",
+    headline: "Independent Consulting Is Booming — and Big Firms Are Worried",
+    desc: "Former Big Four professionals are leaving to build solo advisory practices, taking clients and expertise with them. The trend is accelerating across professional services.",
+    link: "https://www.ft.com/content/independent-consulting-growth",
   },
   {
-    pub: "GOLDMAN SACHS",
-    headline: "How Will AI Affect the Global Workforce?",
-    desc: "Goldman's analysis identifies legal, financial, and administrative professionals as among the most exposed to large-scale automation.",
-    link: "https://www.goldmansachs.com/insights/articles/how-will-ai-affect-the-global-workforce",
+    pub: "McKINSEY",
+    headline: "Independent Workers: Choice, Necessity, and the Gig Economy",
+    desc: "McKinsey's research identifies a rapidly growing segment of high-skill independent professionals who earn more, report higher satisfaction, and chose independence deliberately.",
+    link: "https://www.mckinsey.com/featured-insights/employment-and-growth/independent-work-choice-necessity-and-the-gig-economy",
   },
 ];
 
 export default function ExpertSaysSection() {
   return (
-    <section className="border-t border-border/50 py-24">
-      <div className="mx-auto max-w-5xl px-6">
+    <section>
+      <div className="mx-auto max-w-5xl">
         <motion.div
           className="mb-16 text-center"
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
           variants={fadeUp} custom={0}
         >
           <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-            Expert Opinion
+            The Shift
           </span>
-          <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-            What the experts are saying
+          <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+            The move to independence is accelerating
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            The case for acting now is no longer fringe opinion. Here's what major institutions are publishing.
+            Fractional leadership, portfolio careers, and independent consulting are no longer fringe. Here's what major publications are reporting.
           </p>
         </motion.div>
 
@@ -63,7 +63,7 @@ export default function ExpertSaysSection() {
               href={a.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="group rounded-xl border border-border/60 bg-card p-6 transition-colors hover:border-primary/40 hover:bg-card/80"
+              className="group rounded-[10px] border border-border bg-surface-card p-6 transition-all hover:border-primary hover:shadow-card-hover"
               variants={fadeUp} initial="hidden" whileInView="visible"
               viewport={{ once: true, margin: "-60px" }} custom={i}
             >
