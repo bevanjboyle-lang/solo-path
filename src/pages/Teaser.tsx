@@ -3,31 +3,16 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Sparkles } from "lucide-react";
+import { LogOut, Sparkles, CheckCircle } from "lucide-react";
 import SoloLogo from "@/components/SoloLogo";
 import { Badge } from "@/components/ui/badge";
-
-interface OptionPreview {
-  rank: number;
-  model_name: string;
-  difficulty_rating: "easy" | "moderate" | "hard";
-  pricing: { range_low_gbp: number; range_high_gbp: number; cadence: string };
-  why_this_works_for_them: string;
-}
-
-const diffColors: Record<string, { bg: string; text: string }> = {
-  easy: { bg: "bg-green-500/10", text: "text-green-400" },
-  moderate: { bg: "bg-amber-500/10", text: "text-amber-400" },
-  hard: { bg: "bg-red-500/10", text: "text-red-400" },
-};
 
 export default function Teaser() {
   const [searchParams] = useSearchParams();
   const { user, signOut } = useAuth();
   const reportId = searchParams.get("report_id");
   const [hookInsight, setHookInsight] = useState<string | null>(null);
-  const [options, setOptions] = useState<OptionPreview[]>([]);
-  const [totalOptions, setTotalOptions] = useState(0);
+  const [archetype, setArchetype] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [payLoading, setPayLoading] = useState(false);
 
@@ -42,10 +27,7 @@ export default function Teaser() {
       .maybeSingle()
       .then(({ data }) => {
         setHookInsight((data as any)?.hook_insight || null);
-        const opts = (data as any)?.core_report?.options || [];
-        const sorted = [...opts].sort((a: any, b: any) => a.rank - b.rank);
-        setTotalOptions(sorted.length);
-        setOptions(sorted.slice(0, 3));
+        setArchetype((data as any)?.core_report?.archetype?.primary || null);
         setLoading(false);
       });
   }, [user, reportId]);
@@ -75,6 +57,15 @@ export default function Teaser() {
     );
   }
 
+  const outcomeItems = [
+    "The full analysis of your career capital and what it's worth commercially",
+    "10 scored and ranked options, with honest assessments of what each one requires",
+    "Your 30-day activation plan, with every outreach message written for you",
+    "A realistic assessment of AI risk to your current role, and the options most resilient to it",
+    "A market snapshot for your sector and location",
+    "30 days of daily execution support via the Adaptive Tracker",
+  ];
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       {/* Top bar */}
@@ -98,6 +89,7 @@ export default function Teaser() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          {/* Section 1: Archetype card */}
           <div
             className="mb-6 flex h-12 w-12 items-center justify-center rounded-full"
             style={{ background: "var(--gradient-cta)" }}
@@ -109,77 +101,68 @@ export default function Teaser() {
             Your Plan B options are ready
           </h1>
 
+          {archetype && (
+            <p className="mt-3 text-sm text-muted-foreground">
+              Archetype: <span className="font-medium text-foreground">{archetype}</span>
+            </p>
+          )}
+
+          {/* Section 2: Hook insight - enlarged */}
           {hookInsight && (
-            <motion.p
-              className="mt-4 text-lg font-bold leading-snug text-foreground sm:text-xl"
+            <motion.div
+              className="mt-8 w-full rounded-xl border-l-4 border-primary bg-card p-6 text-left"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.4 }}
             >
-              "{hookInsight}"
-            </motion.p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary mb-3">What we know about your situation</p>
+              <p className="text-base font-medium leading-relaxed text-foreground sm:text-lg">
+                "{hookInsight}"
+              </p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                This is specific to your role and sector. The full analysis is below.
+              </p>
+            </motion.div>
           )}
 
-          {/* Preview cards */}
-          <div className="mt-8 w-full space-y-3">
-            {options.map((opt, i) => {
-              const dc = diffColors[opt.difficulty_rating] || diffColors.moderate;
-              return (
-                <motion.div
-                  key={opt.rank}
-                  className="rounded-xl border border-border bg-card p-5 text-left"
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + i * 0.1, duration: 0.4 }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold">
-                        {opt.rank}
-                      </span>
-                      <h3 className="text-sm font-semibold text-foreground">{opt.model_name}</h3>
-                    </div>
-                    <Badge className={`text-[10px] px-2 py-0.5 border-0 ${dc.bg} ${dc.text}`}>
-                      {opt.difficulty_rating}
-                    </Badge>
-                  </div>
-
-                  {/* Pricing - blurred */}
-                  <div className="mt-3 select-none blur-[5px] pointer-events-none">
-                    <p className="text-xs text-muted-foreground">
-                      £{opt.pricing?.range_low_gbp?.toLocaleString()}–£{opt.pricing?.range_high_gbp?.toLocaleString()} per {opt.pricing?.cadence}
-                    </p>
-                  </div>
-
-                  {/* Why this works - blurred */}
-                  <div className="mt-2 select-none blur-[5px] pointer-events-none">
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {opt.why_this_works_for_them}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {totalOptions > 3 && (
-            <p className="mt-4 text-sm text-muted-foreground">
-              Plus {totalOptions - 3} more options scored for your profile
-            </p>
-          )}
-
-          <p className="mt-6 max-w-md text-sm leading-relaxed text-muted-foreground">
-            Unlock all options with full pricing, personalised rationale, and a 30-day action plan built for your top choice.
-          </p>
-
-          <button
-            onClick={handleCheckout}
-            disabled={payLoading}
-            className="mt-8 inline-flex items-center rounded-lg px-8 py-3 text-base font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
-            style={{ background: "var(--gradient-cta)" }}
+          {/* Section 3: Outcomes list */}
+          <motion.div
+            className="mt-8 w-full rounded-xl border border-border bg-card p-6 text-left"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
           >
-            {payLoading ? "Loading..." : "Unlock your full report — £19.99"}
-          </button>
+            <h3 className="text-sm font-semibold text-foreground mb-4">What's in your report.</h3>
+            <div className="space-y-3">
+              {outcomeItems.map((item, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+                  <p className="text-sm leading-relaxed text-muted-foreground">{item}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Section 4: Trust signal + CTA */}
+          <motion.div
+            className="mt-8 flex flex-col items-center gap-4"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+          >
+            <p className="max-w-md text-xs text-center text-muted-foreground leading-relaxed">
+              Built from 95 professional archetypes across 14 sectors. Every output is specific to your role, your sector, and your seniority level. Not a framework with your name on it.
+            </p>
+
+            <button
+              onClick={handleCheckout}
+              disabled={payLoading}
+              className="inline-flex items-center rounded-lg px-8 py-3 text-base font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
+              style={{ background: "var(--gradient-cta)" }}
+            >
+              {payLoading ? "Loading..." : "Unlock your 30-day execution plan — £19.99"}
+            </button>
+          </motion.div>
         </motion.div>
       </div>
     </div>
