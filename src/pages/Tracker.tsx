@@ -103,6 +103,9 @@ export default function Tracker() {
             <p className="mt-2 text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed</p>
           </div>
 
+          {/* Strand Status Cards — per-strand progress for portfolio plans */}
+          <StrandStatusCards phases={phases} completedTasks={completedTasks} />
+
           {/* Portfolio Review — mid-plan check-in for multi-strand plans */}
           <PortfolioReviewCard session={session} navigate={navigate} />
 
