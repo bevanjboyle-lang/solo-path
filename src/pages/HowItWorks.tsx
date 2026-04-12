@@ -247,7 +247,7 @@ export default function HowItWorks() {
                     ].map((row, i) => (
                       <li key={i} className="flex items-start gap-3">
                         {row.done ? (
-                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" strokeWidth={2} />
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2} />
                         ) : (row as any).today ? (
                           <div className="mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 border-primary" />
                         ) : (
