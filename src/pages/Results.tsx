@@ -716,6 +716,36 @@ function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { op
   );
 }
 
+function CompactOptionCard({ option, selected, onToggle, selectionFull }: { option: any; selected: boolean; onToggle: () => void; selectionFull: boolean }) {
+  const dc = diffColors[option.difficulty_rating] || diffColors.moderate;
+  const disabled = !selected && selectionFull;
+
+  return (
+    <div
+      onClick={() => !disabled && onToggle()}
+      className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-all ${
+        selected ? "border-primary bg-primary/5" : disabled ? "border-border opacity-40 cursor-not-allowed" : "border-border hover:border-primary/30"
+      }`}
+    >
+      <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
+        selected ? "bg-primary border-primary" : "border-muted-foreground/30"
+      }`}>
+        {selected && <Check className="h-3 w-3 text-primary-foreground" />}
+      </div>
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
+        {option.rank}
+      </span>
+      <span className="text-sm font-medium text-foreground flex-1">{option.model_name}</span>
+      <Badge className={`text-[10px] px-2 py-0.5 border ${dc}`}>
+        {option.difficulty_rating}
+      </Badge>
+      {option.fit_score != null && (
+        <span className="text-xs text-muted-foreground">{option.fit_score}/10</span>
+      )}
+    </div>
+  );
+}
+
 function ReportSection({ title, icon: Icon, children }: { title: string; icon: React.ElementType; children: React.ReactNode }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="rounded-xl border border-border bg-card p-8 shadow-card">
