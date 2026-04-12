@@ -135,6 +135,7 @@ export default function Results() {
       }
       return next;
     });
+    setSelectionChanged(true);
   };
 
   const handleGeneratePlan = async () => {
