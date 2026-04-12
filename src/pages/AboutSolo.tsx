@@ -33,7 +33,7 @@ export default function AboutSolo() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              About Solo
+              We Built Solo For A Reason
             </motion.span>
             <motion.h1
               className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
