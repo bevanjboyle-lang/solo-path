@@ -16,8 +16,6 @@ export default function Checkin() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const catchUpModeRef = useRef(false);
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
 
   const { session, setSession, loading: sessionLoading } = useTrackerSession({ sessionId });
 
