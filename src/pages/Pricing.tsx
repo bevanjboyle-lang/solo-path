@@ -1,27 +1,20 @@
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, Lock } from "lucide-react";
+import { Check, X, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
 import Footer from "@/components/Footer";
-import SoloLogo from "@/components/SoloLogo";
 import { Button } from "@/components/ui/button";
+import GlassCard from "@/components/ui/GlassCard";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.1, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
-  }),
-};
 
 interface Feature {
   text: string;
@@ -32,13 +25,16 @@ interface PricingCard {
   badge: string;
   badgeClass: string;
   title: string;
-  price: string;
+  priceWhole: number;
+  priceSuffix?: string;
+  pricePrefix?: string;
   subtitle: string;
   features: Feature[];
   cta: string;
   ctaVariant: "filled" | "outline";
   href: string;
   highlighted?: boolean;
+  recommended?: boolean;
   footnote?: string;
 }
 
@@ -47,7 +43,8 @@ const cards: PricingCard[] = [
     badge: "FREE",
     badgeClass: "bg-surface-inset text-muted-foreground",
     title: "See if Solo is for you",
-    price: "£0",
+    priceWhole: 0,
+    pricePrefix: "£",
     subtitle: "No account needed to start",
     features: [
       { text: "Your professional archetype + profile interpretation" },
@@ -64,9 +61,12 @@ const cards: PricingCard[] = [
     badge: "MOST POPULAR",
     badgeClass: "bg-accent text-accent-foreground",
     title: "Your Plan B Report",
-    price: "£19.99",
+    priceWhole: 19,
+    priceSuffix: ".99",
+    pricePrefix: "£",
     subtitle: "One-time payment. Yours to keep.",
     highlighted: true,
+    recommended: true,
     features: [
       { text: "First Move - your named post-payment action, ready immediately" },
       { text: "Hook insight - full paragraph" },
@@ -89,7 +89,9 @@ const cards: PricingCard[] = [
     badge: "ONGOING",
     badgeClass: "bg-surface-inset text-muted-foreground",
     title: "Solo Subscription",
-    price: "£19/mo",
+    priceWhole: 19,
+    priceSuffix: "/mo",
+    pricePrefix: "£",
     subtitle: "Or £149/year. After your initial 30 days.",
     features: [
       { text: "Everything in the full report" },
@@ -150,62 +152,110 @@ export default function Pricing() {
       </PanelLayout>
 
       {/* PRICING CARDS */}
-      <PanelLayout wide className="px-6 py-16 sm:px-10">
-        <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-3">
+      <PanelLayout wide className="px-6 py-16 sm:px-10 relative overflow-hidden">
+        {/* Mint radial glow behind cards */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: "radial-gradient(ellipse at 50% 40%, rgba(46,205,176,0.06) 0%, transparent 60%)",
+          }}
+        />
+
+        <div className="relative mx-auto grid max-w-5xl gap-6 lg:grid-cols-3 items-start">
           {cards.map((card, i) => (
-            <motion.div
-              key={card.title}
-              className={`relative flex flex-col rounded-[10px] border p-6 ${
-                card.highlighted
-                  ? "border-primary shadow-card-hover bg-surface-mint-tint"
-                  : "border-border bg-surface-card"
-              }`}
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-40px" }}
-              custom={i}
-            >
-              <span className={`mb-4 inline-block w-fit rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${card.badgeClass}`}>
-                {card.badge}
-              </span>
-
-              <h3 className="font-display text-base font-semibold text-foreground">{card.title}</h3>
-              <div className="mt-3 flex items-baseline gap-1">
-                <span className="font-display text-3xl font-bold text-foreground">{card.price}</span>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">{card.subtitle}</p>
-
-              <ul className="mt-6 flex flex-1 flex-col gap-2.5">
-                {card.features.map((f) => (
-                  <li key={f.text} className="flex items-start gap-2 text-sm">
-                    {f.locked ? (
-                      <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/40" />
-                    ) : (
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-                    )}
-                    <span className={f.locked ? "text-muted-foreground/60" : "text-foreground/70"}>
-                      {f.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                className={`mt-6 w-full rounded-md text-sm font-medium transition-all hover:-translate-y-px ${
-                  card.ctaVariant === "filled"
-                    ? "bg-primary text-primary-foreground hover:bg-[#26B89D] hover:shadow-card-hover"
-                    : "border-[1.5px] border-[#D5D0C8] bg-transparent text-foreground hover:border-primary"
+            <ScrollReveal key={card.title} delay={i * 0.12}>
+              <GlassCard
+                className={`relative flex flex-col p-6 transition-all duration-300 ${
+                  card.highlighted
+                    ? "lg:scale-[1.02] border-0"
+                    : ""
                 }`}
-                onClick={() => navigate(card.href)}
+                style={card.highlighted ? {
+                  border: "none",
+                  background: "rgba(232,247,243,0.85)",
+                  backdropFilter: "blur(20px)",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+                } : undefined}
               >
-                {card.cta}
-              </Button>
+                {/* Metallic top border for highlighted card */}
+                {card.highlighted && (
+                  <div
+                    className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl"
+                    style={{
+                      background: "linear-gradient(90deg, transparent 0%, rgba(46,205,176,0.4) 50%, transparent 100%)",
+                    }}
+                  />
+                )}
 
-              {card.footnote && (
-                <p className="mt-3 text-center text-[11px] text-muted-foreground">{card.footnote}</p>
-              )}
-            </motion.div>
+                {/* Recommended badge */}
+                {card.recommended && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="inline-block rounded-full bg-primary px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-sm">
+                      Recommended
+                    </span>
+                  </div>
+                )}
+
+                <span className={`mb-4 inline-block w-fit rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${card.badgeClass}`}>
+                  {card.badge}
+                </span>
+
+                <h3 className="font-display text-base font-semibold text-foreground">{card.title}</h3>
+
+                {/* Animated price */}
+                <div className="mt-3 flex items-baseline gap-0.5">
+                  <span className="font-display text-4xl font-extrabold text-foreground" style={{ fontWeight: 800 }}>
+                    {card.pricePrefix}<AnimatedCounter target={card.priceWhole} />
+                  </span>
+                  {card.priceSuffix && (
+                    <span className="font-display text-lg font-bold text-foreground/70">{card.priceSuffix}</span>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">{card.subtitle}</p>
+
+                {/* Annual savings badge for subscription card */}
+                {card.title === "Solo Subscription" && (
+                  <div className="mt-3">
+                    <span className="inline-block rounded-full bg-accent px-3 py-1 text-[10px] font-semibold text-accent-foreground animate-savings-glow">
+                      Save £79 with annual
+                    </span>
+                  </div>
+                )}
+
+                <ul className="mt-6 flex flex-1 flex-col gap-2.5">
+                  {card.features.map((f) => (
+                    <li
+                      key={f.text}
+                      className="flex items-start gap-2 text-sm rounded-md px-2 py-1 -mx-2 transition-colors duration-150 hover:bg-[rgba(46,205,176,0.04)]"
+                    >
+                      {f.locked ? (
+                        <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#A09A92]" strokeWidth={2} />
+                      ) : (
+                        <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2ECDB0]" strokeWidth={2.5} />
+                      )}
+                      <span className={f.locked ? "text-muted-foreground/60" : "text-foreground/70"}>
+                        {f.text}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button
+                  className={`mt-6 w-full rounded-md text-sm font-medium transition-all hover:-translate-y-px ${
+                    card.ctaVariant === "filled"
+                      ? "bg-primary text-primary-foreground hover:bg-[#26B89D] hover:shadow-card-hover"
+                      : "border-[1.5px] border-[#D5D0C8] bg-transparent text-foreground hover:border-primary"
+                  }`}
+                  onClick={() => navigate(card.href)}
+                >
+                  {card.cta}
+                </Button>
+
+                {card.footnote && (
+                  <p className="mt-3 text-center text-[11px] text-muted-foreground">{card.footnote}</p>
+                )}
+              </GlassCard>
+            </ScrollReveal>
           ))}
         </div>
       </PanelLayout>
@@ -213,47 +263,55 @@ export default function Pricing() {
       {/* FAQ */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-2xl">
-          <motion.h2
-            className="font-display mb-10 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
-            style={{ letterSpacing: "-0.02em" }}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            variants={fadeUp}
-            custom={0}
-          >
-            Questions about pricing
-          </motion.h2>
+          <ScrollReveal>
+            <h2
+              className="font-display mb-10 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
+              style={{ letterSpacing: "-0.02em" }}
+            >
+              Questions about pricing
+            </h2>
+          </ScrollReveal>
 
-          <Accordion type="single" collapsible className="w-full">
-            {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="border-border">
-                <AccordionTrigger className="text-sm font-medium text-foreground hover:no-underline">
-                  {faq.q}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm leading-relaxed text-muted-foreground">
-                  {faq.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+          <ScrollReveal delay={0.1}>
+            <Accordion type="single" collapsible className="w-full">
+              {faqs.map((faq, i) => (
+                <AccordionItem key={i} value={`faq-${i}`} className="border-border">
+                  <AccordionTrigger className="text-sm font-medium text-foreground hover:no-underline">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm leading-relaxed text-muted-foreground">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </ScrollReveal>
         </div>
       </PanelLayout>
 
       {/* CTA */}
       <PanelLayout className="overflow-hidden">
-        <section className="bg-primary py-24 rounded-2xl">
-          <div className="mx-auto max-w-2xl px-6 text-center">
-            <motion.h2 className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl" style={{ letterSpacing: "-0.02em" }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-              Start with the free preview. Decide from there.
-            </motion.h2>
-            <motion.div className="mt-8" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
-              <Button size="lg" className="rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90" onClick={() => navigate("/auth")}>
-                Take the test →
-              </Button>
-            </motion.div>
-          </div>
-        </section>
+        <ScrollReveal>
+          <section className="bg-primary py-24 rounded-2xl">
+            <div className="mx-auto max-w-2xl px-6 text-center">
+              <h2
+                className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
+                style={{ letterSpacing: "-0.02em" }}
+              >
+                Start with the free preview. Decide from there.
+              </h2>
+              <div className="mt-8">
+                <Button
+                  size="lg"
+                  className="rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
+                  onClick={() => navigate("/auth")}
+                >
+                  Take the test →
+                </Button>
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
       </PanelLayout>
 
       <Footer />
