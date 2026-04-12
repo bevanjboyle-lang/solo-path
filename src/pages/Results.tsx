@@ -20,9 +20,11 @@ interface ReportData {
 
 const LOADING_MESSAGES = [
   "Building your personalised 30-day plan...",
+  "Mapping strand-specific tasks...",
   "Designing your activation strategy...",
   "Drafting outreach messages...",
   "Analysing your local market...",
+  "Scoring pricing benchmarks...",
   "Finalising your plan...",
 ];
 
@@ -93,7 +95,7 @@ export default function Results() {
     if (!generating) return;
     const interval = setInterval(() => {
       setLoadingMsgIdx((prev) => (prev + 1) % LOADING_MESSAGES.length);
-    }, 3500);
+    }, 5000);
     return () => clearInterval(interval);
   }, [generating]);
 
