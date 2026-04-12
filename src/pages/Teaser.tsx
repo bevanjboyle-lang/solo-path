@@ -160,7 +160,7 @@ export default function Teaser() {
               className="inline-flex items-center rounded-lg px-8 py-3 text-base font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
               style={{ background: "var(--gradient-cta)" }}
             >
-              {payLoading ? "Loading..." : "Unlock your 30-day execution plan  - £19.99"}
+              {payLoading ? "Loading..." : "Unlock your 30-day execution plan - £19.99"}
             </button>
           </motion.div>
         </motion.div>

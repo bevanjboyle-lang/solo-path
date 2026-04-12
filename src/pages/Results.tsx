@@ -197,7 +197,7 @@ export default function Results() {
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your Solo Plan B Report</h1>
 
-          {/* Free preview  - always visible */}
+          {/* Free preview - always visible */}
           <div className="mt-10 rounded-xl border border-border bg-card p-8 shadow-card">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Free Preview</h2>
             <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
@@ -217,7 +217,7 @@ export default function Results() {
                 <p>
                   Based on your profile, you fit the{" "}
                   <span className="font-medium text-foreground">Strategic Advisor</span>{" "}
-                  archetype  - a professional whose experience positions them well for high-value independent work.
+                  archetype - a professional whose experience positions them well for high-value independent work.
                 </p>
               )}
             </div>
@@ -292,7 +292,7 @@ export default function Results() {
                   <p className="text-sm text-muted-foreground/80 mb-4 italic">{cr.recommended_selection.rationale}</p>
                 )}
 
-                {/* Top 5  - expanded */}
+                {/* Top 5 - expanded */}
                 <div className="space-y-4">
                   {(cr.options || [])
                     .slice()
@@ -309,7 +309,7 @@ export default function Results() {
                     ))}
                 </div>
 
-                {/* Remaining 6-10  - collapsed */}
+                {/* Remaining 6-10 - collapsed */}
                 {(cr.options || []).some((o: any) => o.rank > 5) && (
                   <div className="mt-4">
                     {!showRemaining ? (
@@ -348,7 +348,7 @@ export default function Results() {
             </div>
           )}
 
-          {/* Fixed bottom selection bar  - rendered outside the scrollable content */}
+          {/* Fixed bottom selection bar - rendered outside the scrollable content */}
           <AnimatePresence>
             {paid && isPendingSelection && !generating && !genError && selectedRanks.size > 0 && (
               <motion.div
@@ -396,7 +396,7 @@ export default function Results() {
                   <CheckCircle className="h-4 w-4" />
                   Full report unlocked
                 </div>
-                {/* Change selection link  - only if tracker not started */}
+                {/* Change selection link - only if tracker not started */}
                 <button
                   onClick={() => setForceSelection(true)}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
@@ -520,7 +520,7 @@ export default function Results() {
                 </ReportSection>
               )}
 
-              {/* Market Snapshot  - tabbed by strand if portfolio */}
+              {/* Market Snapshot - tabbed by strand if portfolio */}
               <MarketSnapshotSection report={report} ap={ap} />
 
               {/* AI Impact */}
@@ -548,7 +548,7 @@ export default function Results() {
             </div>
           )}
 
-          {/* Paywall  - not paid */}
+          {/* Paywall - not paid */}
           {!paid && (
             <div className="mt-8 rounded-xl border border-border bg-card p-8 shadow-card">
               <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -622,7 +622,7 @@ export default function Results() {
   );
 }
 
-//  - - - Sub-components  - - - - - - - - - - - - - - - - - - - -
+// - - Sub-components - - - - - - - - - -
 
 const diffColors: Record<string, string> = {
   easy: "bg-green-500/10 text-green-400 border-green-500/20",
@@ -816,7 +816,7 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
     <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
       <div className="flex items-center gap-2">
         <Zap className="w-4 h-4 text-primary" />
-        <span className="text-sm font-semibold text-foreground">Your First Move  - do this today</span>
+        <span className="text-sm font-semibold text-foreground">Your First Move - do this today</span>
       </div>
       <p className="text-sm text-foreground/90">{firstMove.action}</p>
       {firstMove.why_first && <p className="text-xs text-muted-foreground">{firstMove.why_first}</p>}
@@ -848,7 +848,7 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
   );
 }
 
-// Strand color palette  - auto-assigned by index
+// Strand color palette - auto-assigned by index
 const STRAND_COLORS = [
   { bg: "bg-[hsl(168,70%,45%)]/15", dot: "bg-[hsl(168,70%,45%)]", text: "text-[hsl(168,70%,45%)]" },   // mint
   { bg: "bg-[hsl(38,90%,55%)]/15",  dot: "bg-[hsl(38,90%,55%)]",  text: "text-[hsl(38,90%,55%)]" },    // amber

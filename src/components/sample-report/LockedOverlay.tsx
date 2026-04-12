@@ -6,7 +6,7 @@ interface LockedOverlayProps {
   label?: string;
 }
 
-export default function LockedOverlay({ label = "Unlock full report  - £19.99" }: LockedOverlayProps) {
+export default function LockedOverlay({ label = "Unlock full report - £19.99" }: LockedOverlayProps) {
   const navigate = useNavigate();
   return (
     <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-md bg-surface-panel/60 backdrop-blur-[1px]">

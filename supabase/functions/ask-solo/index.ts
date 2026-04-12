@@ -85,7 +85,7 @@ serve(async (req) => {
       const currentDay = tracker?.current_day || 0;
       const narrative = tracker?.running_narrative || "";
 
-      const systemPrompt = `You are Solo  - a sharp, practical AI advisor for mid-career professionals going independent.
+      const systemPrompt = `You are Solo - a sharp, practical AI advisor for mid-career professionals going independent.
 
 USER CONTEXT:
 - Archetype: ${archetype}
@@ -97,10 +97,10 @@ ${report?.core_report ? `- Core report data available` : ""}
 RULES:
 - Be direct and practical. No corporate fluff.
 - Reference UK-specific rules, thresholds, and bodies where relevant.
-- Keep responses concise  - 2-4 paragraphs max unless they ask for detail.
+- Keep responses concise - 2-4 paragraphs max unless they ask for detail.
 - If they ask about something covered in their plan, reference their specific situation.
 - Use markdown formatting for clarity.
-- Never invent facts about their specific situation  - only reference what you know from context.`;
+- Never invent facts about their specific situation - only reference what you know from context.`;
 
       const conversationHistory = Array.isArray(history) ? history : [];
       const messages = [

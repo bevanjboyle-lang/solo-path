@@ -114,10 +114,10 @@ export default function Tracker() {
                 <p className="mt-2 text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed</p>
               </div>
 
-              {/* Strand Status Cards  - per-strand progress for portfolio plans */}
+              {/* Strand Status Cards - per-strand progress for portfolio plans */}
               <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
 
-              {/* Portfolio Review  - mid-plan check-in for multi-strand plans */}
+              {/* Portfolio Review - mid-plan check-in for multi-strand plans */}
               <PortfolioReviewCard session={session} navigate={navigate} />
 
               {/* Phase cards */}
@@ -239,7 +239,7 @@ function PortfolioReviewCard({ session, navigate }: { session: any; navigate: (p
         </div>
         <div className="flex-1">
           <p className="text-sm font-semibold text-foreground">
-            📋 Portfolio Review  - Day {session.current_day}
+            📋 Portfolio Review - Day {session.current_day}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             This is your mid-plan check-in. You'll review which strands are showing signal and decide where to focus your final stretch.
@@ -492,7 +492,7 @@ function Day30PaywallSection({
           ) : (
             <>
               <CreditCard className="h-4 w-4" />
-              {selectedPlan === 'annual' ? 'Full year of support  - £149' : 'Keep my plan active  - £19/month'}
+              {selectedPlan === 'annual' ? 'Full year of support - £149' : 'Keep my plan active - £19/month'}
             </>
           )}
         </button>

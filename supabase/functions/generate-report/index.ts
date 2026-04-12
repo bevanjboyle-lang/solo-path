@@ -125,7 +125,7 @@ serve(async (req) => {
 
   try {
     const { answers, cv_extract } = await req.json();
-    const cvContextBlock = cv_extract ? '\n\nCV CONTEXT (extracted from uploaded CV  - use to enrich and personalise the output):\n' + JSON.stringify(cv_extract) : '';
+    const cvContextBlock = cv_extract ? '\n\nCV CONTEXT (extracted from uploaded CV - use to enrich and personalise the output):\n' + JSON.stringify(cv_extract) : '';
     if (!answers) throw new Error("Missing answers");
 
     // Create report record

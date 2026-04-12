@@ -13,7 +13,7 @@ const P0_SYSTEM = `You are a structured data extraction engine. Your only job is
 
 Extract ONLY from what is explicitly written in the CV. Do not infer or embellish. If a field cannot be reliably extracted, set it to null and add a note in parse_notes.
 
-Your output must be a single valid JSON object matching this schema exactly. No preamble, no explanation, no markdown  - only the JSON object.`;
+Your output must be a single valid JSON object matching this schema exactly. No preamble, no explanation, no markdown - only the JSON object.`;
 
 async function extractTextFromDocx(buffer: ArrayBuffer): Promise<string> {
   // Use mammoth via npm for DOCX parsing
@@ -99,7 +99,7 @@ SCHEMA:
   "current_job_title": "Most recent or current job title (string).",
   "years_experience": "Total professional experience as an integer (years). Infer from the career timeline if not stated explicitly. Round to nearest whole year.",
   "sector_primary": "Primary sector. Map to one of these values where possible: Financial Services / Consulting & Professional Services / Technology / Public Sector & NHS / Industry & Manufacturing / Retail & Consumer / Other. Use 'Other' if none fit.",
-  "employer_org_type": "Specific description of the current or most recent employer type. Be specific  - not just 'Financial Services' but 'Big 4 risk advisory practice' or 'FTSE100 retail bank' or 'NHS acute trust' or 'boutique M&A advisory firm'.",
+  "employer_org_type": "Specific description of the current or most recent employer type. Be specific - not just 'Financial Services' but 'Big 4 risk advisory practice' or 'FTSE100 retail bank' or 'NHS acute trust' or 'boutique M&A advisory firm'.",
   "type_of_work": "Primary type of work. Examples: analysis and reporting / project delivery / governance and compliance / operations and process / consulting and advisory.",
   "seniority_level": "Seniority inferred from titles. Examples: manager / senior manager / director / head of / partner / VP.",
   "career_highlights": ["Array of 3-5 notable projects or achievements mentioned in the CV. Each item is a single sentence."],

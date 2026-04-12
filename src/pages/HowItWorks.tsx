@@ -75,7 +75,7 @@ export default function HowItWorks() {
           </motion.div>
 
           <motion.div className="grid gap-5 md:grid-cols-2" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
-            {/* Left  - generic */}
+            {/* Left - generic */}
             <div className="rounded-[10px] border border-border bg-surface-card p-6">
               <h3 className="mb-5 text-sm font-semibold text-muted-foreground">A general AI assistant</h3>
               <ul className="space-y-4">
@@ -93,7 +93,7 @@ export default function HowItWorks() {
               </ul>
             </div>
 
-            {/* Right  - Solo */}
+            {/* Right - Solo */}
             <div className="rounded-[10px] border border-primary/30 bg-surface-mint-tint p-6">
               <h3 className="mb-5 text-sm font-semibold text-primary">Solo</h3>
               <ul className="space-y-4">
@@ -188,7 +188,7 @@ export default function HowItWorks() {
                 </p>
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {[
-                    { title: "Full report", desc: "Up to 5 paths, explored in parallel  - realistic pricing, time-to-first-income, and what makes each one work or fail for your profile" },
+                    { title: "Full report", desc: "Up to 5 paths, explored in parallel - realistic pricing, time-to-first-income, and what makes each one work or fail for your profile" },
                     { title: "30-day plan", desc: "A day-by-day action sequence built around your situation: where you are starting from, who your first contacts should be, what to say" },
                     { title: "Outreach messages", desc: "For every outreach task in your plan, a ready-to-send message. You edit, you send, Solo writes the first draft" },
                     { title: "Market snapshot", desc: "Demand, pricing benchmarks, and competitive landscape for your chosen path, calibrated to your geography and sector" },
@@ -204,7 +204,7 @@ export default function HowItWorks() {
                 <div className="mt-5 rounded-[10px] border-l-4 border-primary bg-surface-mint-tint p-5">
                   <p className="text-sm font-semibold">The portfolio approach</p>
                   <p className="mt-2 text-sm leading-[1.85] text-muted-foreground">
-                    Solo doesn't make you choose one path before you know what has traction. You select up to 5 options and run them alongside each other. Don't put all your eggs in one basket  - the 30-day plan is built around all of your chosen paths. By day 30, you know which one is worth going further  - because you've already started.
+                    Solo doesn't make you choose one path before you know what has traction. You select up to 5 options and run them alongside each other. Don't put all your eggs in one basket - the 30-day plan is built around all of your chosen paths. By day 30, you know which one is worth going further - because you've already started.
                   </p>
                 </div>
               </Step>
