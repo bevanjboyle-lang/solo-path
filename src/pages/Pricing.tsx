@@ -77,7 +77,7 @@ const cards: PricingCard[] = [
       { text: "AI Impact & Adaptation Section — how AI affects your archetype + how to adapt" },
       { text: "30-day Adaptive Tracker — daily check-ins, replan when you drift" },
     ],
-    cta: "Unlock your 30-day execution plan — £19.99 →",
+    cta: "Get your Plan B Report, £19.99 →",
     ctaVariant: "filled",
     href: "/auth",
   },
@@ -89,7 +89,7 @@ const cards: PricingCard[] = [
     subtitle: "Or £149/year. After your initial 30 days.",
     features: [
       { text: "Everything in the full report" },
-      { text: "Adaptive Tracker — daily check-ins that adapt when life gets in the way" },
+      { text: "Ongoing Adaptive Tracker: daily check-ins that continue for as long as you are subscribed" },
       { text: "Practical Guidance suite — 9 structured modules" },
       { text: "Ask Solo — on-demand career strategy conversations" },
       { text: "Replan engine if you go off track" },
