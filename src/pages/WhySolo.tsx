@@ -93,7 +93,7 @@ export default function WhySolo() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
           >
-            The way work is organised is changing. Most professionals aren't ready.
+            Professional independence used to be a niche choice. Increasingly, it is the smart preparation.
           </motion.h1>
           <motion.p
             className="mx-auto mt-6 max-w-[580px] text-base leading-relaxed text-muted-foreground sm:text-lg"
@@ -118,7 +118,7 @@ export default function WhySolo() {
             custom={0}
           >
             <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              What's actually happening to white-collar work
+              Why having independent income options matters
             </h2>
           </motion.div>
 
