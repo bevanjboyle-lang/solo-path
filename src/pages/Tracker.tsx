@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Loader2, LogOut, CalendarCheck, ChevronDown, CheckCircle2, Circle, Lock, CreditCard } from "lucide-react";
+import { Loader2, LogOut, CalendarCheck, ChevronDown, CheckCircle2, Circle, Lock, CreditCard, ClipboardList } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrackerSession } from "@/hooks/useTrackerSession";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
