@@ -114,7 +114,8 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            Could AI be coming for your role? "I'll update my LinkedIn" isn't a Plan&nbsp;B.
+            <span className="block">Could AI be coming for your role?</span>
+            <span className="mt-3 block">"I'll update my LinkedIn" isn't a Plan&nbsp;B.</span>
           </motion.h1>
 
           <motion.p
@@ -123,7 +124,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Solo builds you a specific plan for independent income: the paths, the clients, the first 30 days, based on your actual career. So if AI does come for your role, you already know what you're doing next.
+            Solo builds you a specific plan for independent income: the paths, the clients, the first 30 days, based on your actual career. <span className="font-bold text-foreground">So if AI does come for your role, you already know what you're doing next.</span>
           </motion.p>
 
           {/* ── Stat strip ── */}
@@ -147,56 +148,8 @@ export default function Landing() {
             ))}
           </motion.div>
 
-          {/* ── Worked Example Panel ── */}
-          <motion.div
-            className="mt-12 w-full max-w-xl mx-auto rounded-xl border border-primary/30 bg-card p-6 text-left space-y-5"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.32 }}
-          >
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Here's what a Finance Business Partner received</h3>
-              <p className="mt-1 text-xs text-muted-foreground">FTSE 250 manufacturing business · 8 years' experience · Session completed April 2026</p>
-            </div>
 
-            <div className="space-y-4">
-              {/* Sub-panel 1: Hook Insight */}
-              <div className="rounded-lg border border-border/60 bg-background p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary mb-2">Hook Insight</p>
-                <p className="text-sm leading-relaxed text-foreground/90">
-                  Your sector's finance directors actively use interim networks rather than agencies for FP&A capability. Your window is a direct approach to two interim providers before registering anywhere, not the other way round.
-                </p>
-              </div>
 
-              {/* Sub-panel 2: First Move */}
-              <div className="rounded-lg border border-border/60 bg-background p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary mb-2">Your First Move: Do This Within 24 Hours</p>
-                <p className="text-sm leading-relaxed text-foreground/90">
-                  Email [Interim provider name]. Not to ask about work, but to introduce yourself as someone building an independent FP&A practice. Subject: FP&A. Independent Capacity from Q3. One paragraph. We've written it for you.
-                </p>
-                <div className="relative mt-3 rounded-md bg-muted/30 p-3 overflow-hidden">
-                  <p className="text-xs text-muted-foreground leading-relaxed" style={{ filter: "blur(3px)", opacity: 0.7 }}>
-                    Hi [Name], I'm reaching out because I'm building an independent FP&A practice focused on manufacturing businesses going through operational transformation. I've spent the last eight years as a Finance Business Partner in FTSE 250 manufacturing, most recently leading planning and analysis across three divisions during a major restructure. I'd welcome a conversation about how your network places independent FP&A capability.
-                  </p>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="rounded-full bg-card/90 border border-border px-3 py-1 text-[11px] font-medium text-muted-foreground">Full draft included in your report</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sub-panel 3: Day 3 */}
-              <div className="rounded-lg border border-border/60 bg-background p-4">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary mb-2">From Your 30-Day Plan: Day 3</p>
-                <p className="text-sm leading-relaxed text-foreground/90">
-                  Send your positioning statement to three former colleagues at buyer level. Not a pitch. A brief update on what you're building and who you're looking to work with. We've drafted this for you too.
-                </p>
-              </div>
-            </div>
-
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Every output is built from your specific answers: your archetype, your sector, your seniority, and your experience. Not a template.
-            </p>
-          </motion.div>
 
           <motion.div
             className="mt-10 flex flex-col items-center gap-3"
