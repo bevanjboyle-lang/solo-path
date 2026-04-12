@@ -781,7 +781,7 @@ const STRAND_COLORS = [
   { bg: "bg-[hsl(340,70%,55%)]/15", dot: "bg-[hsl(340,70%,55%)]", text: "text-[hsl(340,70%,55%)]" },   // rose
 ];
 
-const STRAND_GREY = { bg: "bg-muted", dot: "bg-muted-foreground/50", text: "text-muted-foreground" };
+const STRAND_GREY = { bg: "bg-[hsl(38,90%,55%)]/15", dot: "bg-[hsl(38,90%,55%)]", text: "text-[hsl(38,90%,55%)]" };
 
 function StrandPill({ strand, colorIdx, grey }: { strand: string; colorIdx: number; grey?: boolean }) {
   const c = grey ? STRAND_GREY : STRAND_COLORS[colorIdx % STRAND_COLORS.length];
