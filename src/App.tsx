@@ -17,6 +17,7 @@ import Tracker from "./pages/Tracker";
 import Checkin from "./pages/Checkin";
 import HowItWorks from "./pages/HowItWorks";
 import WhySolo from "./pages/WhySolo";
+import AboutSolo from "./pages/AboutSolo";
 import Pricing from "./pages/Pricing";
 import WhoItsFor from "./pages/WhoItsFor";
 import SampleReport from "./pages/SampleReport";
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/why-solo" element={<WhySolo />} />
+            <Route path="/about" element={<AboutSolo />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/who-its-for" element={<WhoItsFor />} />
             <Route path="/sample-report" element={<SampleReport />} />
