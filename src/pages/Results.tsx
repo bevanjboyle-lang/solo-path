@@ -42,8 +42,8 @@ export default function Results() {
   // Allow returning to selection after plan generated (before tracker started)
   const [forceSelection, setForceSelection] = useState(false);
 
-  const MIN_SELECTIONS = 2;
-  const MAX_SELECTIONS = 5;
+  const MIN_SELECTIONS = 1;
+  const MAX_SELECTIONS = 3;
 
   const reportId = searchParams.get("report_id");
   const fromPayment = searchParams.get("from") === "payment";
