@@ -146,7 +146,23 @@ export default function Landing() {
             ))}
           </motion.div>
 
-
+          <motion.div
+            className="mt-10 max-w-xl mx-auto text-center"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Solo specialises in helping structured, experienced professionals establish a credible independent income stream, whether you're ready to make the move, or simply want to know what your options are.
+            </p>
+            <Button
+              size="lg"
+              className="mt-6 rounded-lg bg-primary px-8 py-4 text-sm font-medium text-primary-foreground hover:bg-[#1FAF97]"
+              onClick={() => navigate("/questionnaire")}
+            >
+              Take the test, it's free to see your profile →
+            </Button>
+          </motion.div>
 
 
           <motion.div
