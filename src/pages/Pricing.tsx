@@ -2,6 +2,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, Lock } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import MintTopBar from "@/components/MintTopBar";
+import PanelLayout from "@/components/PanelLayout";
+import Footer from "@/components/Footer";
 import SoloLogo from "@/components/SoloLogo";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,7 +45,7 @@ interface PricingCard {
 const cards: PricingCard[] = [
   {
     badge: "FREE",
-    badgeClass: "bg-muted text-muted-foreground",
+    badgeClass: "bg-surface-inset text-muted-foreground",
     title: "See if Solo is for you",
     price: "£0",
     subtitle: "No account needed to start",
@@ -59,7 +62,7 @@ const cards: PricingCard[] = [
   },
   {
     badge: "MOST POPULAR",
-    badgeClass: "bg-primary/20 text-primary",
+    badgeClass: "bg-accent text-accent-foreground",
     title: "Your Plan B Report",
     price: "£19.99",
     subtitle: "One-time payment. Yours to keep.",
@@ -84,7 +87,7 @@ const cards: PricingCard[] = [
   },
   {
     badge: "ONGOING",
-    badgeClass: "bg-muted text-muted-foreground",
+    badgeClass: "bg-surface-inset text-muted-foreground",
     title: "Solo Subscription",
     price: "£19/mo",
     subtitle: "Or £149/year. After your initial 30 days.",
@@ -105,30 +108,12 @@ const cards: PricingCard[] = [
 ];
 
 const faqs = [
-  {
-    q: "Why isn't the full report free?",
-    a: "Building a high-quality, personalised Plan B report requires serious computation and curated logic. The £19.99 covers that and ensures we can keep improving the product.",
-  },
-  {
-    q: "What if I'm not satisfied with my report?",
-    a: "If your report genuinely doesn't feel relevant to your background, get in touch. We'll look at it and make it right.",
-  },
-  {
-    q: "Is this a subscription?",
-    a: "The full report is a one-time payment. The Adaptive Tracker is optional and billed monthly. You can cancel any time.",
-  },
-  {
-    q: "Can I come back to my report later?",
-    a: "Yes. Your report is saved to your account and accessible any time you return.",
-  },
-  {
-    q: "Do I need to create an account to start?",
-    a: "No. You can complete the assessment and see your free preview without an account. You'll create one when you pay for the full report.",
-  },
-  {
-    q: "What's the Adaptive Tracker and do I need it?",
-    a: "The Tracker is a 30-day guided activation system — daily AI check-ins, progress tracking, and a plan that adapts if you fall behind. It's optional. The full report stands alone as a useful product.",
-  },
+  { q: "Why isn't the full report free?", a: "Building a high-quality, personalised Plan B report requires serious computation and curated logic. The £19.99 covers that and ensures we can keep improving the product." },
+  { q: "What if I'm not satisfied with my report?", a: "If your report genuinely doesn't feel relevant to your background, get in touch. We'll look at it and make it right." },
+  { q: "Is this a subscription?", a: "The full report is a one-time payment. The Adaptive Tracker is optional and billed monthly. You can cancel any time." },
+  { q: "Can I come back to my report later?", a: "Yes. Your report is saved to your account and accessible any time you return." },
+  { q: "Do I need to create an account to start?", a: "No. You can complete the assessment and see your free preview without an account. You'll create one when you pay for the full report." },
+  { q: "What's the Adaptive Tracker and do I need it?", a: "The Tracker is a 30-day guided activation system — daily AI check-ins, progress tracking, and a plan that adapts if you fall behind. It's optional. The full report stands alone as a useful product." },
 ];
 
 export default function Pricing() {
@@ -136,50 +121,52 @@ export default function Pricing() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <MintTopBar />
       <Navbar />
 
       {/* HERO */}
-      <section className="flex flex-col items-center justify-center px-6 pb-8 pt-32 sm:pt-36">
-        <div className="mx-auto max-w-2xl text-center">
-          <motion.h1
-            className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            Simple, honest pricing.
-          </motion.h1>
-          <motion.p
-            className="mt-4 text-base text-muted-foreground sm:text-lg"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            One product. Two ways to engage. No plans you'll forget about.
-          </motion.p>
-        </div>
-      </section>
+      <PanelLayout className="mt-20 px-6 py-16 sm:px-10">
+        <section className="flex flex-col items-center justify-center pb-4">
+          <div className="mx-auto max-w-2xl text-center">
+            <motion.h1
+              className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
+              style={{ letterSpacing: "-0.02em" }}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              Simple, honest pricing.
+            </motion.h1>
+            <motion.p
+              className="mt-4 text-base text-muted-foreground sm:text-lg"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              One product. Two ways to engage. No plans you'll forget about.
+            </motion.p>
+          </div>
+        </section>
+      </PanelLayout>
 
       {/* PRICING CARDS */}
-      <section className="py-16">
-        <div className="mx-auto grid max-w-5xl gap-6 px-6 lg:grid-cols-3">
+      <PanelLayout wide className="px-6 py-16 sm:px-10">
+        <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-3">
           {cards.map((card, i) => (
             <motion.div
               key={card.title}
-              className={`relative flex flex-col rounded-2xl border border-border p-6 ${
+              className={`relative flex flex-col rounded-[10px] border p-6 ${
                 card.highlighted
-                  ? "border-primary/60 shadow-[0_0_40px_-12px_hsl(166_63%_49%/0.25)]"
-                  : "bg-card"
+                  ? "border-primary shadow-card-hover bg-surface-mint-tint"
+                  : "border-border bg-surface-card"
               }`}
-              style={card.highlighted ? { background: "var(--gradient-subtle, hsl(228 12% 11%))" } : undefined}
               variants={fadeUp}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, margin: "-40px" }}
               custom={i}
             >
-              {/* Badge */}
-              <span className={`mb-4 inline-block w-fit rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${card.badgeClass}`}>
+              <span className={`mb-4 inline-block w-fit rounded-md px-3 py-1 text-[10px] font-semibold uppercase tracking-wider ${card.badgeClass}`}>
                 {card.badge}
               </span>
 
@@ -189,7 +176,6 @@ export default function Pricing() {
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{card.subtitle}</p>
 
-              {/* Features */}
               <ul className="mt-6 flex flex-1 flex-col gap-2.5">
                 {card.features.map((f) => (
                   <li key={f.text} className="flex items-start gap-2 text-sm">
@@ -205,12 +191,11 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              {/* CTA */}
               <Button
-                className={`mt-6 w-full rounded-lg text-sm font-medium ${
+                className={`mt-6 w-full rounded-md text-sm font-medium transition-all hover:-translate-y-px ${
                   card.ctaVariant === "filled"
-                    ? "bg-primary text-primary-foreground hover:bg-[#1FAF97]"
-                    : "border border-border/60 bg-transparent text-foreground hover:bg-accent"
+                    ? "bg-primary text-primary-foreground hover:bg-[#26B89D] hover:shadow-card-hover"
+                    : "border-[1.5px] border-[#D5D0C8] bg-transparent text-foreground hover:border-primary"
                 }`}
                 onClick={() => navigate(card.href)}
               >
@@ -223,13 +208,14 @@ export default function Pricing() {
             </motion.div>
           ))}
         </div>
-      </section>
+      </PanelLayout>
 
       {/* FAQ */}
-      <section className="border-t border-border/50 py-24">
-        <div className="mx-auto max-w-2xl px-6">
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-2xl">
           <motion.h2
             className="font-display mb-10 text-center text-2xl font-semibold tracking-tight sm:text-3xl"
+            style={{ letterSpacing: "-0.02em" }}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
@@ -241,7 +227,7 @@ export default function Pricing() {
 
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, i) => (
-              <AccordionItem key={i} value={`faq-${i}`} className="border-border/50">
+              <AccordionItem key={i} value={`faq-${i}`} className="border-border">
                 <AccordionTrigger className="text-sm font-medium text-foreground hover:no-underline">
                   {faq.q}
                 </AccordionTrigger>
@@ -252,50 +238,25 @@ export default function Pricing() {
             ))}
           </Accordion>
         </div>
-      </section>
+      </PanelLayout>
 
       {/* CTA */}
-      <section className="bg-primary py-24">
-        <div className="mx-auto max-w-2xl px-6 text-center">
-          <motion.h2
-            className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={0}
-          >
-            Start with the free preview. Decide from there.
-          </motion.h2>
-          <motion.div
-            className="mt-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={1}
-          >
-            <Button
-              size="lg"
-              className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
-              onClick={() => navigate("/auth")}
-            >
-              Take the test →
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-border/50 py-8">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6">
-          <SoloLogo width={80} height={22} />
-          <div className="flex gap-6 text-xs text-muted-foreground">
-            <Link to="/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
-            <Link to="/terms" className="transition-colors hover:text-foreground">Terms</Link>
+      <PanelLayout className="overflow-hidden">
+        <section className="bg-primary py-24 rounded-2xl">
+          <div className="mx-auto max-w-2xl px-6 text-center">
+            <motion.h2 className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl" style={{ letterSpacing: "-0.02em" }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+              Start with the free preview. Decide from there.
+            </motion.h2>
+            <motion.div className="mt-8" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
+              <Button size="lg" className="rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90" onClick={() => navigate("/auth")}>
+                Take the test →
+              </Button>
+            </motion.div>
           </div>
-        </div>
-      </footer>
+        </section>
+      </PanelLayout>
+
+      <Footer />
     </div>
   );
 }

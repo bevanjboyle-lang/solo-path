@@ -1,6 +1,9 @@
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
+import MintTopBar from "@/components/MintTopBar";
+import PanelLayout from "@/components/PanelLayout";
+import Footer from "@/components/Footer";
 import SoloLogo from "@/components/SoloLogo";
 import { Button } from "@/components/ui/button";
 import { Check, Circle, CheckCircle2 } from "lucide-react";
@@ -19,57 +22,61 @@ export default function HowItWorks() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <MintTopBar />
       <Navbar />
 
       {/* ─── HERO ─── */}
-      <section className="flex min-h-[56vh] flex-col items-center justify-center px-6 pt-14">
-        <div className="mx-auto max-w-2xl text-center">
-          <motion.span
-            className="mb-5 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            How it works
-          </motion.span>
-          <motion.h1
-            className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.05 }}
-          >
-            From career to credible Plan&nbsp;B
-          </motion.h1>
-          <motion.p
-            className="mx-auto mt-6 max-w-[560px] text-base leading-relaxed text-muted-foreground sm:text-lg"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            Solo takes what you've built over your career and turns it into a realistic, executable path to independent income, with the first action ready before you close the tab.
-          </motion.p>
-          <motion.p
-            className="mt-4 text-sm text-muted-foreground/60"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            Most people are done in under 10 minutes. The plan runs for 30 days.
-          </motion.p>
-        </div>
-      </section>
+      <PanelLayout className="mt-20 px-6 py-16 sm:px-10">
+        <section className="flex min-h-[46vh] flex-col items-center justify-center">
+          <div className="mx-auto max-w-2xl text-center">
+            <motion.span
+              className="mb-5 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              How it works
+            </motion.span>
+            <motion.h1
+              className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
+              style={{ letterSpacing: "-0.02em" }}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.05 }}
+            >
+              From career to credible Plan&nbsp;B
+            </motion.h1>
+            <motion.p
+              className="mx-auto mt-6 max-w-[560px] text-base leading-relaxed text-muted-foreground sm:text-lg"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+            >
+              Solo takes what you've built over your career and turns it into a realistic, executable path to independent income, with the first action ready before you close the tab.
+            </motion.p>
+            <motion.p
+              className="mt-4 text-sm" style={{ color: "#A09A92" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              Most people are done in under 10 minutes. The plan runs for 30 days.
+            </motion.p>
+          </div>
+        </section>
+      </PanelLayout>
 
       {/* ─── CHATGPT COMPARISON ─── */}
-      <section className="border-t border-border/50 py-20">
-        <div className="mx-auto max-w-4xl px-6">
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-4xl">
           <motion.div className="mb-10 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <h2 className="font-display text-2xl font-bold sm:text-3xl">Why not just ask ChatGPT?</h2>
+            <h2 className="font-display text-2xl font-bold sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>Why not just ask ChatGPT?</h2>
             <p className="mt-3 text-muted-foreground">Fair question. Here is what changes when the model is built specifically for your situation.</p>
           </motion.div>
 
           <motion.div className="grid gap-5 md:grid-cols-2" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
             {/* Left — generic */}
-            <div className="rounded-xl border border-border/60 bg-card p-6">
+            <div className="rounded-[10px] border border-border bg-surface-card p-6">
               <h3 className="mb-5 text-sm font-semibold text-muted-foreground">A general AI assistant</h3>
               <ul className="space-y-4">
                 {[
@@ -87,7 +94,7 @@ export default function HowItWorks() {
             </div>
 
             {/* Right — Solo */}
-            <div className="rounded-xl border border-primary/30 bg-primary/5 p-6">
+            <div className="rounded-[10px] border border-primary/30 bg-surface-mint-tint p-6">
               <h3 className="mb-5 text-sm font-semibold text-primary">Solo</h3>
               <ul className="space-y-4">
                 {[
@@ -107,11 +114,11 @@ export default function HowItWorks() {
             </div>
           </motion.div>
         </div>
-      </section>
+      </PanelLayout>
 
       {/* ─── STATS STRIP ─── */}
-      <section className="border-y border-border/50 bg-card py-14">
-        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 px-6 sm:grid-cols-4">
+      <PanelLayout className="px-6 py-14 sm:px-10">
+        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
           {[
             { num: "95", label: "professional profiles Solo classifies against" },
             { num: "480", label: "business models scored for fit with your background" },
@@ -124,14 +131,14 @@ export default function HowItWorks() {
             </motion.div>
           ))}
         </div>
-      </section>
+      </PanelLayout>
 
       {/* ─── 6 STEPS ─── */}
-      <section className="py-20">
-        <div className="mx-auto max-w-3xl px-6">
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-3xl">
           <motion.div className="mb-14 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">The process</span>
-            <h2 className="font-display text-2xl font-bold sm:text-3xl">Six steps from your current career to an active Plan&nbsp;B</h2>
+            <h2 className="font-display text-2xl font-bold sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>Six steps from your current career to an active Plan&nbsp;B</h2>
           </motion.div>
 
           <div className="relative">
@@ -139,7 +146,6 @@ export default function HowItWorks() {
             <div className="absolute left-[21px] top-6 bottom-6 w-px bg-primary/20 sm:left-[23px]" />
 
             <div className="flex flex-col gap-16">
-              {/* ── STEP 1 ── */}
               <Step num={1} tag="Step one" heading="Tell Solo about your career" badge="Around 8-10 minutes" index={0}>
                 <p className="text-sm leading-[1.85] text-muted-foreground">
                   Solo asks you 15 targeted questions, or fewer if you upload your CV first, which lets Solo pre-fill the straightforward ones. The questions that matter most are the ones a CV cannot answer: a specific piece of work you are proud of, who informally turns to you for advice, what you know about how your sector actually buys external help.
@@ -155,12 +161,11 @@ export default function HowItWorks() {
                 ]} />
               </Step>
 
-              {/* ── STEP 2 ── */}
               <Step num={2} tag="Step two, free" heading="See what Solo finds about you, before you pay anything" index={1}>
                 <p className="text-sm leading-[1.85] text-muted-foreground">
                   Before any payment, Solo shows you a free preview of what it has found. This is not a teaser trailer, it is a genuine read of how Solo sees your commercial position.
                 </p>
-                <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-5">
+                <div className="mt-5 rounded-[10px] border border-primary/30 bg-surface-mint-tint p-5">
                   <ul className="space-y-3">
                     {[
                       "Your professional profile, how Solo has classified your career and what makes your experience commercially distinctive",
@@ -177,7 +182,6 @@ export default function HowItWorks() {
                 </div>
               </Step>
 
-              {/* ── STEP 3 ── */}
               <Step num={3} tag="Step three" heading="Unlock your full plan" priceBadge="£19.99, one-time payment" index={2}>
                 <p className="text-sm leading-[1.85] text-muted-foreground">
                   One payment. No plan continuation required at this stage. Everything you need to understand your options clearly and start executing is included.
@@ -191,14 +195,13 @@ export default function HowItWorks() {
                     { title: "AI impact read", desc: "Honest assessment of AI risk to your current role, AI resilience of your Plan B, and specific tools that strengthen it" },
                     { title: "30-day tracker", desc: "Included at no extra cost. Guided daily execution for the length of your plan, not just a document you file away" },
                   ].map((tile, i) => (
-                    <div key={i} className="rounded-lg border border-border/60 bg-card p-4">
+                    <div key={i} className="rounded-[10px] border border-border bg-surface-card p-4">
                       <p className="text-xs font-semibold text-primary">{tile.title}</p>
                       <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{tile.desc}</p>
                     </div>
                   ))}
                 </div>
-                {/* Portfolio approach callout */}
-                <div className="mt-5 rounded-xl border-l-4 border-primary bg-primary/5 p-5">
+                <div className="mt-5 rounded-[10px] border-l-4 border-primary bg-surface-mint-tint p-5">
                   <p className="text-sm font-semibold">The portfolio approach</p>
                   <p className="mt-2 text-sm leading-[1.85] text-muted-foreground">
                     Solo doesn't make you choose one path before you know what has traction. You select up to 5 options and run them alongside each other. Don't put all your eggs in one basket — the 30-day plan is built around all of your chosen paths. By day 30, you know which one is worth going further — because you've already started.
@@ -206,7 +209,6 @@ export default function HowItWorks() {
                 </div>
               </Step>
 
-              {/* ── STEP 4 ── */}
               <Step num={4} tag="Step four, the bit most products skip" heading="Your first action, ready to go" index={3}>
                 <p className="text-sm leading-[1.85] text-muted-foreground">
                   The hardest part of any Plan B is not knowing what to do. It is doing the first uncomfortable thing. Solo picks that thing for you, a specific named outreach action, and has the message written before you have read the rest of the report.
@@ -214,15 +216,14 @@ export default function HowItWorks() {
                 <p className="mt-3 text-sm leading-[1.85] text-muted-foreground">
                   The window is 24 hours. Not because of artificial urgency. Because that is how long the momentum from reading a plan actually lasts.
                 </p>
-                {/* sample card */}
-                <div className="mt-5 rounded-xl border-l-4 border-primary bg-card p-5">
+                <div className="mt-5 rounded-[10px] border-l-4 border-primary bg-surface-card p-5">
                   <span className="text-xs font-semibold uppercase tracking-widest text-primary">Your first action</span>
                   <h4 className="mt-2 text-sm font-semibold">Reconnect with a former colleague at a mid-market PE-backed firm</h4>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     You mentioned you have worked closely with three PE-backed businesses. One former colleague is now a CFO at a relevant firm. This is the highest-probability first conversation for someone with your profile.
                   </p>
-                  <div className="mt-4 rounded-lg bg-muted/30 p-4">
-                    <p className="text-xs text-muted-foreground/60">Message, ready to send</p>
+                  <div className="mt-4 rounded-lg bg-surface-inset p-4">
+                    <p className="text-xs" style={{ color: "#A09A92" }}>Message, ready to send</p>
                     <p className="mt-2 text-sm italic leading-relaxed text-muted-foreground">
                       Hi [Name], hope things are well. I have been thinking about stepping out on my own, doing what I do now but independently. I would love 20 minutes to pick your brain, not a pitch, genuinely curious about how businesses like yours think about bringing in external finance support. Would you be up for a call?
                     </p>
@@ -230,7 +231,6 @@ export default function HowItWorks() {
                 </div>
               </Step>
 
-              {/* ── STEP 5 ── */}
               <Step num={5} tag="Step five, included with your plan" heading="30 days of guided execution" index={4}>
                 <p className="text-sm leading-[1.85] text-muted-foreground">
                   Your plan does not sit in a PDF. Solo checks in with you every day, by email, then with a short guided conversation in the app. It tracks what has happened, adjusts what is next, and replans around you if things go off track.
@@ -238,11 +238,10 @@ export default function HowItWorks() {
                 <p className="mt-3 text-sm leading-[1.85] text-muted-foreground">
                   If you go quiet for a few days, Solo does not pretend that did not happen. It acknowledges it and recalibrates the remaining time.
                 </p>
-                {/* mini tracker */}
-                <div className="mt-5 rounded-xl border border-border/60 bg-card p-5">
+                <div className="mt-5 rounded-[10px] border border-border bg-surface-card p-5">
                   <p className="text-sm font-semibold">Your plan, Day 11 of 30</p>
                   <p className="mt-0.5 text-xs text-muted-foreground">Week 2, Building visibility</p>
-                  <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted/40">
+                  <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-inset">
                     <div className="h-full rounded-full bg-primary" style={{ width: "37%" }} />
                   </div>
                   <ul className="mt-4 space-y-3">
@@ -262,7 +261,7 @@ export default function HowItWorks() {
                         )}
                         <span className="flex-1 text-sm text-muted-foreground">{row.text}</span>
                         {row.badge && (
-                          <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-medium ${row.done ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary"}`}>
+                          <span className={`shrink-0 rounded-md px-2.5 py-0.5 text-[10px] font-medium ${row.done ? "bg-surface-inset text-muted-foreground" : "bg-accent text-accent-foreground"}`}>
                             {row.badge}
                           </span>
                         )}
@@ -272,7 +271,6 @@ export default function HowItWorks() {
                 </div>
               </Step>
 
-              {/* ── STEP 6 ── */}
               <Step num={6} tag="Step six, optional, at day 30" heading="Keep the momentum going" priceBadge="£19/month or £149/year, cancel any time" index={5}>
                 <p className="text-sm leading-[1.85] text-muted-foreground">
                   At day 30, Solo asks whether you want to continue. No pressure. If you have found your first client by then, you may not need it. If you are still working through it, the plan continues, with three additional capabilities that are unavailable in the one-time plan.
@@ -283,7 +281,7 @@ export default function HowItWorks() {
                     { emoji: "💬", title: "Ask Solo", desc: "A persistent advisory conversation that knows your full plan and history. Not a generic chatbot, an advisor who knows your situation" },
                     { emoji: "📈", title: "Extended tracker", desc: "Continued daily check-ins, plan adaptation, and progress tracking beyond day 30, for as long as you need it" },
                   ].map((c, i) => (
-                    <div key={i} className="rounded-xl border border-border/60 bg-card p-5 text-center">
+                    <div key={i} className="rounded-[10px] border border-border bg-surface-card p-5 text-center">
                       <span className="text-2xl">{c.emoji}</span>
                       <p className="mt-2 text-sm font-semibold">{c.title}</p>
                       <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{c.desc}</p>
@@ -294,57 +292,50 @@ export default function HowItWorks() {
             </div>
           </div>
         </div>
-      </section>
+      </PanelLayout>
 
       {/* ─── BOTTOM CTA ─── */}
-      <section className="bg-primary py-24">
-        <div className="mx-auto max-w-2xl px-6 text-center">
-          <motion.h2
-            className="font-display text-2xl font-bold tracking-tight text-primary-foreground sm:text-3xl lg:text-4xl"
-            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
-          >
-            See what Solo finds about your career
-          </motion.h2>
-          <motion.p
-            className="mt-4 text-base text-primary-foreground/70"
-            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
-          >
-            The first look is free. You will see your professional profile, transferable value, and one specific insight about your situation, before you decide anything.
-          </motion.p>
-          <motion.div className="mt-8" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
-            <Button
-              size="lg"
-              className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
-              onClick={() => navigate("/questionnaire")}
+      <PanelLayout className="overflow-hidden">
+        <section className="bg-primary py-24 rounded-2xl">
+          <div className="mx-auto max-w-2xl px-6 text-center">
+            <motion.h2
+              className="font-display text-2xl font-bold tracking-tight text-primary-foreground sm:text-3xl lg:text-4xl"
+              style={{ letterSpacing: "-0.02em" }}
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
             >
-              Get started, it is free to see your profile
-            </Button>
-          </motion.div>
-          <motion.p
-            className="mt-4 text-sm text-primary-foreground/50"
-            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={3}
-          >
-            £19.99 to unlock the full plan. No plan continuation required.
-          </motion.p>
-        </div>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-border/50 py-8">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6">
-          <SoloLogo width={80} height={22} />
-          <div className="flex gap-6 text-xs text-muted-foreground">
-            <Link to="/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
-            <Link to="/terms" className="transition-colors hover:text-foreground">Terms</Link>
+              See what Solo finds about your career
+            </motion.h2>
+            <motion.p
+              className="mt-4 text-base text-primary-foreground/70"
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
+            >
+              The first look is free. You will see your professional profile, transferable value, and one specific insight about your situation, before you decide anything.
+            </motion.p>
+            <motion.div className="mt-8" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
+              <Button
+                size="lg"
+                className="rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
+                onClick={() => navigate("/questionnaire")}
+              >
+                Get started, it is free to see your profile
+              </Button>
+            </motion.div>
+            <motion.p
+              className="mt-4 text-sm text-primary-foreground/50"
+              initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={3}
+            >
+              £19.99 to unlock the full plan. No plan continuation required.
+            </motion.p>
           </div>
-        </div>
-      </footer>
+        </section>
+      </PanelLayout>
+
+      <Footer />
     </div>
   );
 }
 
 /* ─── Step wrapper component ─── */
-
 function Step({
   num,
   tag,
@@ -371,14 +362,13 @@ function Step({
       viewport={{ once: true, margin: "-60px" }}
       custom={index}
     >
-      {/* number circle */}
-      <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-sm font-bold text-primary sm:h-12 sm:w-12">
+      <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-surface-panel text-sm font-bold text-primary sm:h-12 sm:w-12">
         {num}
       </div>
 
       <div className="min-w-0 flex-1 pb-2">
         {priceBadge && (
-          <span className="mb-2 inline-block rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
+          <span className="mb-2 inline-block rounded-md bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
             {priceBadge}
           </span>
         )}
@@ -388,7 +378,7 @@ function Step({
         <h3 className="font-display mb-3 text-lg font-semibold leading-snug sm:text-xl">
           {heading}
           {badge && (
-            <span className="ml-3 inline-block rounded-full bg-muted px-3 py-1 align-middle text-xs font-medium text-muted-foreground">
+            <span className="ml-3 inline-block rounded-md bg-surface-inset px-3 py-1 align-middle text-xs font-medium text-muted-foreground">
               {badge}
             </span>
           )}
@@ -400,10 +390,9 @@ function Step({
 }
 
 /* ─── Detail card with bullets ─── */
-
 function DetailCard({ bullets }: { bullets: string[] }) {
   return (
-    <div className="mt-5 rounded-xl border border-border/60 bg-card p-5">
+    <div className="mt-5 rounded-[10px] border border-border bg-surface-card p-5">
       <ul className="space-y-2.5">
         {bullets.map((b, i) => (
           <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-muted-foreground">
