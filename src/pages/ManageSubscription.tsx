@@ -67,14 +67,14 @@ export default function ManageSubscription() {
           transition={{ duration: 0.5 }}
         >
           <h1 className="font-display text-2xl font-semibold tracking-tight mb-8">
-            Manage Subscription
+            Manage Your Plan
           </h1>
 
           {cancelled && (
             <div className="mb-6 flex items-start gap-3 rounded-lg border border-primary/20 bg-primary/5 p-4">
               <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-foreground">Subscription cancelled</p>
+                <p className="text-sm font-medium text-foreground">Plan cancelled</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   You'll retain access until the end of your current billing period.
                 </p>
@@ -125,7 +125,7 @@ export default function ManageSubscription() {
                       className="w-full text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
                       onClick={() => setShowConfirm(true)}
                     >
-                      Cancel Subscription
+                    Cancel Subscription
                     </Button>
                   ) : (
                     <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 space-y-3">

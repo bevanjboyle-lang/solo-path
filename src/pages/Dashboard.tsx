@@ -70,7 +70,7 @@ export default function Dashboard() {
               Your Dashboard
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Everything in one place. Track progress, view your report, and manage your subscription.
+              Everything in one place. Track progress, view your report, and manage your plan.
             </p>
           </div>
 
@@ -112,7 +112,7 @@ export default function Dashboard() {
             <Card className="bg-card border-border/50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Subscription
+                  Your Plan
                 </CardTitle>
               </CardHeader>
               <CardContent>

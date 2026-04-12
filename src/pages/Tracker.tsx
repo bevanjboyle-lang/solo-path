@@ -188,63 +188,13 @@ export default function Tracker() {
 
               {/* Day-30 Paywall */}
               {showPaywall && (
-                <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-8 rounded-xl border-2 border-primary/30 bg-card p-8 shadow-elevated text-center"
-                >
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                    <Lock className="h-6 w-6 text-primary" />
-                  </div>
-                  <h2 className="text-xl font-semibold tracking-tight">
-                    Your 30 days are up — keep the momentum going
-                  </h2>
-                  <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
-                    Continue with guided check-ins, an adaptive plan, and the full Practical Guidance suite.
-                  </p>
-                  <div className="mt-5 flex flex-col sm:flex-row gap-3 justify-center max-w-xs mx-auto">
-                    <button
-                      onClick={() => setSelectedPlan('monthly')}
-                      className={`flex-1 rounded-lg border-2 p-4 text-left transition-all ${selectedPlan === 'monthly' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-                    >
-                      <div className="text-sm font-medium">Monthly</div>
-                      <div className="text-2xl font-bold mt-1">£19<span className="text-sm font-normal text-muted-foreground">/month</span></div>
-                      <div className="text-xs text-muted-foreground mt-1">Cancel any time</div>
-                    </button>
-                    <button
-                      onClick={() => setSelectedPlan('annual')}
-                      className={`flex-1 rounded-lg border-2 p-4 text-left relative transition-all ${selectedPlan === 'annual' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
-                    >
-                      <div className="absolute -top-2.5 right-3 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full font-medium">Save £79</div>
-                      <div className="text-sm font-medium">Annual</div>
-                      <div className="text-2xl font-bold mt-1">£149<span className="text-sm font-normal text-muted-foreground">/year</span></div>
-                      <div className="text-xs text-muted-foreground mt-1">£12.42/month</div>
-                    </button>
-                  </div>
-                  <div className="mt-4 flex flex-col items-center gap-3">
-                    <button
-                      onClick={() => handleSubscribe(selectedPlan)}
-                      disabled={subscribing}
-                      className="inline-flex items-center gap-2 rounded-lg px-8 py-3 text-sm font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
-                      style={{ background: "var(--gradient-cta)" }}
-                    >
-                      {subscribing ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <CreditCard className="h-4 w-4" />
-                          Continue — {selectedPlan === 'annual' ? '£149/year' : '£19/month'}
-                        </>
-                      )}
-                    </button>
-                    <button
-                      onClick={() => {}}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      View your plan summary
-                    </button>
-                  </div>
-                </motion.div>
+                <Day30PaywallSection
+                  session={session}
+                  selectedPlan={selectedPlan}
+                  setSelectedPlan={setSelectedPlan}
+                  subscribing={subscribing}
+                  handleSubscribe={handleSubscribe}
+                />
               )}
             </>
           )}
