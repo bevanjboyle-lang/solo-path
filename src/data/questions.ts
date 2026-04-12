@@ -9,6 +9,8 @@ export interface Question {
   maxSelect?: number;
   placeholder?: string;
   required?: boolean; // defaults to true if omitted
+  expandableHint?: string;
+  expandableLabel?: string;
 }
 
 export const questions: Question[] = [
@@ -68,17 +70,19 @@ export const questions: Question[] = [
   },
   {
     id: 6,
-    text: "Think of a specific piece of work in the last 2–3 years where you delivered something you're genuinely proud of.",
-    subtext: "Describe it briefly: the situation, what you did, and the outcome.",
+    text: "What's one piece of work in the last few years you're genuinely proud of? One or two sentences is fine.",
     type: "text",
     placeholder: "e.g. Led a regulatory remediation programme across 4 business lines, reducing risk exposure by 40% and preventing a £2M fine.",
+    expandableHint: "If you can, tell us: what the situation was, what you did, and what the outcome was. This is used to write the outreach drafts and activation plan tasks specifically for you.",
+    expandableLabel: "The more detail you add here, the more specific your plan will be →",
   },
   {
     id: 7,
-    text: "Have you ever found yourself advising colleagues, clients, or others informally on a professional topic — outside your official remit, just because they trusted your judgement?",
-    subtext: "What was it, and how often does this happen?",
+    text: "Have you ever informally advised colleagues or others on your area of expertise, not as part of your job, just because they asked? What was it?",
     type: "text",
     placeholder: "e.g. People regularly ask me to review their business cases before they go to the board, even though that's not my role.",
+    expandableHint: "Even occasional informal advisory behaviour matters here. It tells us something about how your knowledge is perceived externally, which shapes the recommendation.",
+    expandableLabel: "Why we ask this →",
   },
   {
     id: 8,
