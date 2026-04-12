@@ -576,16 +576,10 @@ export default function Results() {
       <Dialog open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {selectedRanks.size === 1 ? "Build your plan" : "Build your portfolio plan"}
-            </DialogTitle>
+            <DialogTitle>Build your portfolio plan</DialogTitle>
             <DialogDescription asChild>
               <div className="space-y-3 text-sm text-muted-foreground">
-                {selectedRanks.size === 1 ? (
-                  <p>Build your personalised 30-day plan for:</p>
-                ) : (
-                  <p>You're building a parallel pursuit plan across {selectedRanks.size} strands:</p>
-                )}
+                <p>You're building a parallel pursuit plan across {selectedRanks.size} strands:</p>
                 <ul className="space-y-1.5 text-left">
                   {cr && (cr.options || [])
                     .filter((o: any) => selectedRanks.has(o.rank))
@@ -599,9 +593,14 @@ export default function Results() {
                       </li>
                     ))}
                 </ul>
-                {selectedRanks.size > 1 && (
+                {selectionChanged && (
                   <p className="text-xs text-muted-foreground/80">
-                    Solo will create one integrated 30-day plan with strand-specific tasks for each path. You'll run them in parallel and narrow down as you gather evidence.
+                    Rebuilding your plan for your chosen options. Usually under 20 seconds.
+                  </p>
+                )}
+                {!selectionChanged && (
+                  <p className="text-xs text-muted-foreground/80">
+                    Solo will create one integrated 30-day plan with strand-specific tasks for each path.
                   </p>
                 )}
               </div>
@@ -614,7 +613,7 @@ export default function Results() {
               style={{ background: "#2ECDB0" }}
               className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
             >
-              {selectedRanks.size === 1 ? "Build my plan" : "Build portfolio plan"}
+              Build my plan with these {selectedRanks.size} options
             </Button>
           </DialogFooter>
         </DialogContent>
