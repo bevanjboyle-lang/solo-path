@@ -4,45 +4,83 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 13% 13%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 13%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 13%;
-    --primary: 166 63% 49%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 13% 13%;
-    --muted: 220 14% 95%;
-    --muted-foreground: 220 9% 40%;
-    --accent: 166 63% 95%;
-    --accent-foreground: 220 13% 13%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 78%;
-    --input: 220 13% 78%;
-    --ring: 166 63% 49%;
+    /* ── Warm Ivory Brand System ── */
+
+    /* Surfaces */
+    --surface-page: 30 8% 88%;        /* #E5E2DC */
+    --surface-panel: 40 14% 97%;      /* #FAF9F7 */
+    --surface-card: 30 8% 94%;        /* #F3F1ED */
+    --surface-inset: 35 8% 91%;       /* #ECEAE4 */
+    --surface-mint-tint: 162 42% 94%; /* #E8F7F3 */
+
+    /* Borders */
+    --border-default: 30 8% 88%;      /* #E5E2DC */
+    --border-strong: 30 10% 81%;      /* #D5D0C8 */
+    --border-subtle: 35 10% 92%;      /* #EDEBE6 */
+
+    /* Text */
+    --text-heading: 220 16% 13%;      /* #1D2025 */
+    --text-body: 30 5% 33%;           /* #5A5650 */
+    --text-muted: 30 4% 46%;          /* #7A7670 */
+    --text-faint: 30 5% 60%;          /* #A09A92 */
+
+    /* Brand mint */
+    --mint: 166 63% 49%;              /* #2ECDB0 */
+    --mint-hover: 166 62% 44%;        /* #26B89D */
+    --mint-light: 166 73% 67%;        /* #6EE7D3 */
+    --mint-bg: 162 60% 85%;           /* #D6F5EE */
+    --mint-text: 166 62% 32%;         /* #1A8A72 */
+
+    /* Semantic */
+    --error: 0 62% 58%;               /* #D94F4F */
+    --error-bg: 0 79% 97%;            /* #FDF0F0 */
+    --success: 166 63% 49%;           /* #2ECDB0 */
+    --success-bg: 162 42% 94%;        /* #E8F7F3 */
+    --warning: 42 88% 43%;            /* #D4940A */
+    --warning-bg: 45 85% 95%;         /* #FDF8E8 */
+
+    /* Shadows (used via tailwind config) */
+    --shadow-panel: 0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.04);
+    --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.08);
+
+    /* Radii */
     --radius: 0.625rem;
 
-    --sidebar-background: 220 14% 98%;
-    --sidebar-foreground: 220 9% 26%;
-    --sidebar-primary: 166 63% 49%;
+    /* ── Mapped to shadcn token system ── */
+    --background: var(--surface-page);
+    --foreground: var(--text-heading);
+    --card: var(--surface-card);
+    --card-foreground: var(--text-heading);
+    --popover: var(--surface-panel);
+    --popover-foreground: var(--text-heading);
+    --primary: var(--mint);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--surface-card);
+    --secondary-foreground: var(--text-body);
+    --muted: var(--surface-inset);
+    --muted-foreground: var(--text-muted);
+    --accent: var(--surface-mint-tint);
+    --accent-foreground: var(--mint-text);
+    --destructive: var(--error);
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--border-default);
+    --input: var(--border-strong);
+    --ring: var(--mint);
+
+    --sidebar-background: var(--surface-panel);
+    --sidebar-foreground: var(--text-body);
+    --sidebar-primary: var(--mint);
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 220 9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 166 63% 49%;
+    --sidebar-accent: var(--surface-card);
+    --sidebar-accent-foreground: var(--text-heading);
+    --sidebar-border: var(--border-subtle);
+    --sidebar-ring: var(--mint);
 
-    --surface: 220 14% 96%;
-    --surface-foreground: 220 13% 13%;
-    --surface-elevated: 0 0% 100%;
-    --gradient-subtle: linear-gradient(135deg, hsl(166 63% 49% / 0.04), hsl(166 80% 67% / 0.04));
-    --gradient-cta: linear-gradient(135deg, #2ECDB0, #1FAF97);
-    --shadow-card: 0 1px 3px hsl(220 13% 13% / 0.04), 0 1px 2px hsl(220 13% 13% / 0.06);
-    --shadow-elevated: 0 4px 24px hsl(220 13% 13% / 0.08);
+    /* CTA gradient */
+    --gradient-cta: linear-gradient(135deg, #2ECDB0, #26B89D);
+    --gradient-subtle: linear-gradient(135deg, hsl(166 63% 49% / 0.04), hsl(166 73% 67% / 0.04));
   }
-
 }
 
 @layer base {
