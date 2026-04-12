@@ -781,6 +781,8 @@ const STRAND_COLORS = [
   { bg: "bg-[hsl(340,70%,55%)]/15", dot: "bg-[hsl(340,70%,55%)]", text: "text-[hsl(340,70%,55%)]" },   // rose
 ];
 
+const STRAND_GREY = { bg: "bg-muted", dot: "bg-muted-foreground/50", text: "text-muted-foreground" };
+
 function StrandPill({ strand, colorIdx }: { strand: string; colorIdx: number }) {
   const c = STRAND_COLORS[colorIdx % STRAND_COLORS.length];
   return (
