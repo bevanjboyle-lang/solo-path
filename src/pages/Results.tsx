@@ -41,11 +41,13 @@ export default function Results() {
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
-  // Allow returning to selection after plan generated (before tracker started)
   const [forceSelection, setForceSelection] = useState(false);
+  const [showRemaining, setShowRemaining] = useState(false);
+  const [recommendedLoaded, setRecommendedLoaded] = useState(false);
+  const [selectionChanged, setSelectionChanged] = useState(false);
 
-  const MIN_SELECTIONS = 1;
-  const MAX_SELECTIONS = 3;
+  const MIN_SELECTIONS = 2;
+  const MAX_SELECTIONS = 5;
 
   const reportId = searchParams.get("report_id");
   const fromPayment = searchParams.get("from") === "payment";
