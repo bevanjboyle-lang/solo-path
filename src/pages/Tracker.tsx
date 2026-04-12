@@ -78,34 +78,44 @@ export default function Tracker() {
 
       <div className="mx-auto max-w-3xl px-6 py-10">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Your Tracker</h1>
-              <p className="mt-1 text-sm text-muted-foreground">Day {session.current_day} of 30</p>
-            </div>
-            <button
-              onClick={() => navigate(`/checkin/${session.id}`)}
-              className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
-              style={{ background: "var(--gradient-cta)" }}
-            >
-              <CalendarCheck className="h-4 w-4" />
-              Check in for today
-            </button>
-          </div>
+          {/* Check if working_plan has the new phases-with-status format */}
+          {session.working_plan?.phases && Array.isArray(session.working_plan.phases) && session.working_plan.phases[0]?.tasks?.[0]?.status ? (
+            <TrackerProgress
+              workingPlan={session.working_plan as any}
+              currentDay={session.current_day}
+              sessionId={session.id}
+              lastCheckinDate={session.last_checkin_date}
+            />
+          ) : (
+            <>
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Your Tracker</h1>
+                  <p className="mt-1 text-sm text-muted-foreground">Day {session.current_day} of 30</p>
+                </div>
+                <button
+                  onClick={() => navigate(`/checkin/${session.id}`)}
+                  className="inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+                  style={{ background: "var(--gradient-cta)" }}
+                >
+                  <CalendarCheck className="h-4 w-4" />
+                  Check in for today
+                </button>
+              </div>
 
-          {/* Overall progress */}
-          <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-card">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-medium text-foreground">Overall Progress</span>
-              <span className="text-sm font-semibold text-primary">{progressPct}%</span>
-            </div>
-            <Progress value={progressPct} className="h-2" />
-            <p className="mt-2 text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed</p>
-          </div>
+              {/* Overall progress */}
+              <div className="mt-8 rounded-xl border border-border bg-card p-6 shadow-card">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-foreground">Overall Progress</span>
+                  <span className="text-sm font-semibold text-primary">{progressPct}%</span>
+                </div>
+                <Progress value={progressPct} className="h-2" />
+                <p className="mt-2 text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed</p>
+              </div>
 
-          {/* Strand Status Cards — per-strand progress for portfolio plans */}
-          <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
+              {/* Strand Status Cards — per-strand progress for portfolio plans */}
+              <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
 
           {/* Portfolio Review — mid-plan check-in for multi-strand plans */}
           <PortfolioReviewCard session={session} navigate={navigate} />
