@@ -3,260 +3,16 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import SoloLogo from "@/components/SoloLogo";
 import { Button } from "@/components/ui/button";
-import {
-  Upload,
-  ClipboardList,
-  Cpu,
-  Eye,
-  FileText,
-  CalendarCheck,
-  Infinity,
-  Quote,
-} from "lucide-react";
+import { Check, Circle, CheckCircle2 } from "lucide-react";
 
-/* ── animation presets ─────────────────────────────── */
 const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: { delay: i * 0.07, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
   }),
 };
-
-/* ── stage data ────────────────────────────────────── */
-
-interface Stage {
-  num: string;
-  label: string;
-  headline: string;
-  body: string;
-  bullets?: string[];
-  statPills?: string[];
-  cards2x2?: { label: string; value: string }[];
-  callout: string;
-  accent?: boolean;
-  icon: React.ElementType;
-}
-
-const stages: Stage[] = [
-  {
-    num: "01",
-    label: "The starting point",
-    headline: "You've built a career. You want a credible fallback.",
-    body: "You're capable, structured, and experienced — but you're not naturally entrepreneurial. You don't want generic 'go freelance' advice. You want to know: if your current role became unstable, what specific income path could you build from your actual experience, and how quickly could you get there?",
-    callout: "Solo is built for professionals who want commercial realism, not inspiration.",
-    icon: Eye,
-  },
-  {
-    num: "02",
-    label: "Optional first step",
-    headline: "Upload your CV and skip most of the questions",
-    body: "Upload your CV as a PDF or Word document. Solo reads your career history and pre-populates up to 7 of the 15 questions as confirmation cards. Questions a CV can't answer are always asked. The effective questionnaire reduces to around 8 questions.",
-    callout: "Not a CV screener. Solo uses your CV to skip context-setting, not to assess your employability.",
-    icon: Upload,
-  },
-  {
-    num: "03",
-    label: "15 targeted questions",
-    headline: "Questions that surface what is commercially valuable about you",
-    body: "Not a personality test. Each question extracts a specific commercial signal — your best piece of work, how peers perceive you, what type of organisation you work in. The most important question: Who exactly do you work for? Big 4 risk advisory practice or NHS acute trust or PE-backed mid-market manufacturer — that distinction shapes every recommendation.",
-    bullets: [
-      "Q6 asks for a specific achievement — this becomes the foundation of your outreach messages.",
-      "Q7 surfaces informal advisory behaviour that signals commercial readiness.",
-      "Q11 captures what you know about how your sector buys external help.",
-    ],
-    callout: "ChatGPT asks you nothing. Solo surfaces what you actually need to know about yourself as a commercial proposition.",
-    icon: ClipboardList,
-  },
-  {
-    num: "04",
-    label: "The intelligence engine",
-    headline: "95 archetypes. 480 business models. 2,694 scored combinations.",
-    body: "Your answers are classified against a structured library of professional archetypes across 14 domains — Finance, HR, Tech, Legal, Marketing, Sales, Procurement, Healthcare, ESG, Property, Public Sector, Customer Experience and more. Each archetype is mapped to every relevant business model, scored across 6 dimensions: capability fit, credibility gap, speed to revenue, sales complexity, income potential, and recurrence. The weak paths are eliminated. The 3 strongest are surfaced.",
-    statPills: [
-      "95 archetypes",
-      "480 business models",
-      "2,694 scored paths",
-      "14 professional domains",
-      "6 scoring dimensions",
-    ],
-    callout: "Solo doesn't brainstorm business ideas. It runs your profile against a structured decision engine.",
-    accent: true,
-    icon: Cpu,
-  },
-  {
-    num: "05",
-    label: "Free — before you pay",
-    headline: "See who you are commercially, before you commit",
-    body: "Before any payment, you see your archetype classification, your transferable value, and the headline of your hook insight — an 8-to-12-word statement identifying the single most non-obvious thing you need to know about your recommended path. The full insight is behind the paywall.",
-    callout: "The free teaser is specific to you — not generic.",
-    icon: Eye,
-  },
-  {
-    num: "06",
-    label: "The paid report",
-    headline: "Your 3 options in full — plus the message you need to send",
-    body: "The full report opens with your hook insight. Then: all 3 business model options with positioning, target buyer, realistic pricing, and time to first revenue. A clear recommendation. A reality check on what's most likely to go wrong. Plus a ready-to-send outreach draft for every contact task in your 30-day plan.",
-    bullets: [
-      "Outreach drafts written from your profile and Q6 achievement — not a template with [Name] placeholders.",
-      "Local Market Feasibility Snapshot: demand signal, pricing benchmark, and market entry insight.",
-      "AI Impact section: how AI is affecting your current role, how resilient your Plan B is, and 3–5 specific adaptation actions.",
-    ],
-    callout: "ChatGPT can describe a business model. Solo tells you who to contact, why they'd respond, and gives you the message.",
-    accent: true,
-    icon: FileText,
-  },
-  {
-    num: "07",
-    label: "Included in £19.99",
-    headline: "30 days of guided daily execution — built around your plan",
-    body: "The Adaptive Tracker is included in your one-time payment. Every day at a time you choose, Solo sends a short email with that day's specific task and a link to a guided check-in conversation. If you fall behind, Solo adjusts the plan.",
-    cards2x2: [
-      { label: "On track", value: "Carries forward" },
-      { label: "Drifting", value: "Adjusts plan" },
-      { label: "Significantly behind", value: "Replans" },
-      { label: "Day 30", value: "Progress summary" },
-    ],
-    callout: "Most products give you a plan and leave you with it. Solo checks in daily and adapts when you don't do it.",
-    accent: true,
-    icon: CalendarCheck,
-  },
-  {
-    num: "08",
-    label: "Long-term",
-    headline: "An advisor that already knows you, and gets better the longer you use it",
-    body: "The subscription keeps the Tracker running, unlocks the 9-module Practical Guidance suite (business structure, tax, IR35, contracts, insurance, professional presence), and gives you Ask Solo: a persistent advisory conversation that already knows your full history, plan, and context.",
-    bullets: [
-      "Ask Solo knows your archetype, plan, check-in history, and every guidance module output — you never explain your situation again.",
-      "The longer you subscribe, the richer your context becomes.",
-      "9 practical guidance modules covering every aspect of setting up an independent practice.",
-    ],
-    callout: "ChatGPT answers your question. Ask Solo answers your situation. The context compounds.",
-    accent: true,
-    icon: Infinity,
-  },
-];
-
-/* ── divider component ─────────────────────────────── */
-
-function PriceDivider({ text }: { text: string }) {
-  return (
-    <motion.div
-      className="relative flex items-center justify-center py-12"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true }}
-      variants={fadeUp}
-      custom={0}
-    >
-      <div className="absolute inset-x-0 top-1/2 h-px bg-primary/30" />
-      <span className="relative z-10 rounded-full border border-primary/40 bg-background px-6 py-2 text-sm font-semibold tracking-wide text-primary">
-        {text}
-      </span>
-    </motion.div>
-  );
-}
-
-/* ── stage card component ──────────────────────────── */
-
-function StageCard({ stage, index }: { stage: Stage; index: number }) {
-  const Icon = stage.icon;
-
-  return (
-    <motion.div
-      className="group"
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-60px" }}
-      custom={index}
-    >
-      <div className="flex gap-5 sm:gap-6">
-        {/* number circle */}
-        <div
-          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-            stage.accent
-              ? "bg-primary text-primary-foreground"
-              : "border border-primary/30 bg-primary/10 text-primary"
-          }`}
-        >
-          {stage.num}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          {/* label */}
-          <span className="mb-1.5 inline-block text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-            {stage.label}
-          </span>
-
-          {/* headline */}
-          <h3 className="font-display mb-3 text-lg font-semibold leading-snug sm:text-xl">
-            {stage.headline}
-          </h3>
-
-          {/* body */}
-          <p className="text-sm leading-[1.85] text-muted-foreground sm:text-[15px]">
-            {stage.body}
-          </p>
-
-          {/* stat pills */}
-          {stage.statPills && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {stage.statPills.map((pill) => (
-                <span
-                  key={pill}
-                  className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
-                >
-                  {pill}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* bullets */}
-          {stage.bullets && (
-            <ul className="mt-4 space-y-2">
-              {stage.bullets.map((b, i) => (
-                <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-muted-foreground">
-                  <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/70" strokeWidth={2} />
-                  <span>{b}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-
-          {/* 2×2 cards */}
-          {stage.cards2x2 && (
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              {stage.cards2x2.map((c) => (
-                <div
-                  key={c.label}
-                  className="rounded-lg border border-border/60 bg-card p-3.5 text-center"
-                >
-                  <p className="text-xs font-semibold text-foreground">{c.label}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{c.value}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* callout */}
-          <div className="mt-5 rounded-xl border border-primary/20 bg-primary/5 px-5 py-4">
-            <div className="flex gap-2.5">
-              <Quote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/60" strokeWidth={2} />
-              <p className="text-xs leading-relaxed text-muted-foreground sm:text-sm italic">
-                {stage.callout}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-/* ── page ──────────────────────────────────────────── */
 
 export default function HowItWorks() {
   const navigate = useNavigate();
@@ -265,16 +21,16 @@ export default function HowItWorks() {
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
 
-      {/* HERO */}
-      <section className="flex min-h-[60vh] flex-col items-center justify-center px-6 pt-14">
+      {/* ─── HERO ─── */}
+      <section className="flex min-h-[56vh] flex-col items-center justify-center px-6 pt-14">
         <div className="mx-auto max-w-2xl text-center">
           <motion.span
-            className="mb-6 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary"
+            className="mb-5 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            How It Works
+            How it works
           </motion.span>
           <motion.h1
             className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
@@ -282,7 +38,7 @@ export default function HowItWorks() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
           >
-            From your career history to a working Plan&nbsp;B — in 8&nbsp;stages
+            From career to credible Plan&nbsp;B
           </motion.h1>
           <motion.p
             className="mx-auto mt-6 max-w-[560px] text-base leading-relaxed text-muted-foreground sm:text-lg"
@@ -290,92 +46,279 @@ export default function HowItWorks() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Solo isn't a chatbot. It's a structured decision engine that classifies, scores, recommends, and executes alongside you.
+            Solo takes what you've built over your career and turns it into a realistic, executable path to independent income, with the first action ready before you close the tab.
+          </motion.p>
+          <motion.p
+            className="mt-4 text-sm text-muted-foreground/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            Most people are done in under 10 minutes. The plan runs for 30 days.
           </motion.p>
         </div>
       </section>
 
-      {/* STAGES 1–5 (free) */}
+      {/* ─── CHATGPT COMPARISON ─── */}
       <section className="border-t border-border/50 py-20">
+        <div className="mx-auto max-w-4xl px-6">
+          <motion.div className="mb-10 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+            <h2 className="font-display text-2xl font-bold sm:text-3xl">Why not just ask ChatGPT?</h2>
+            <p className="mt-3 text-muted-foreground">Fair question. Here is what changes when the model is built specifically for your situation.</p>
+          </motion.div>
+
+          <motion.div className="grid gap-5 md:grid-cols-2" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
+            {/* Left — generic */}
+            <div className="rounded-xl border border-border/60 bg-card p-6">
+              <h3 className="mb-5 text-sm font-semibold text-muted-foreground">A general AI assistant</h3>
+              <ul className="space-y-4">
+                {[
+                  "Suggests consulting or fractional work without scoring whether that fits your specific experience, seniority, or sector",
+                  "Cannot tell you realistic pricing for someone of your seniority, or how long it actually takes to land a first client",
+                  "Gives you a list of ideas. Does not help you do the awkward bit, actually contacting the first person",
+                  "The output lives in a chat window. Nothing is structured, tracked, or there when you need to pick it back up",
+                ].map((t, i) => (
+                  <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+                    <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40" strokeWidth={2} />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Right — Solo */}
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-6">
+              <h3 className="mb-5 text-sm font-semibold text-primary">Solo</h3>
+              <ul className="space-y-4">
+                {[
+                  "Solo classifies your career against 95 professional profiles and scores 480 business models to find which ones are a genuine fit for your background",
+                  "Day rates, project fees, and time-to-first-revenue are calibrated to your level, not taken from generic market data",
+                  "For every outreach task in your plan, Solo writes the actual message, ready to send, personalised to your situation and the specific person you are reaching",
+                  "Your plan is saved, tracked, and adapts as you go. Solo checks in daily and adjusts the plan if things slip, it does not just sit in a history window",
+                ].map((t, i) => (
+                  <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+                    <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary">
+                      <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3} />
+                    </div>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ─── STATS STRIP ─── */}
+      <section className="border-y border-border/50 bg-card py-14">
+        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 px-6 sm:grid-cols-4">
+          {[
+            { num: "95", label: "professional profiles Solo classifies against" },
+            { num: "480", label: "business models scored for fit with your background" },
+            { num: "30", label: "days of guided execution built into every plan" },
+            { num: "<10", label: "minutes to your first look at what Solo finds" },
+          ].map((s, i) => (
+            <motion.div key={i} className="text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}>
+              <p className="font-display text-3xl font-bold text-primary sm:text-4xl">{s.num}</p>
+              <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">{s.label}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ─── 6 STEPS ─── */}
+      <section className="py-20">
         <div className="mx-auto max-w-3xl px-6">
-          <div className="flex flex-col gap-20">
-            {stages.slice(0, 5).map((s, i) => (
-              <StageCard key={s.num} stage={s} index={i} />
-            ))}
+          <motion.div className="mb-14 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
+            <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">The process</span>
+            <h2 className="font-display text-2xl font-bold sm:text-3xl">Six steps from your current career to an active Plan&nbsp;B</h2>
+          </motion.div>
+
+          <div className="relative">
+            {/* vertical connector line */}
+            <div className="absolute left-[21px] top-6 bottom-6 w-px bg-primary/20 sm:left-[23px]" />
+
+            <div className="flex flex-col gap-16">
+              {/* ── STEP 1 ── */}
+              <Step num={1} tag="Step one" heading="Tell Solo about your career" badge="Around 8-10 minutes" index={0}>
+                <p className="text-sm leading-[1.85] text-muted-foreground">
+                  Solo asks you 15 targeted questions, or fewer if you upload your CV first, which lets Solo pre-fill the straightforward ones. The questions that matter most are the ones a CV cannot answer: a specific piece of work you are proud of, who informally turns to you for advice, what you know about how your sector actually buys external help.
+                </p>
+                <p className="mt-3 text-sm leading-[1.85] text-muted-foreground">
+                  This is what separates what Solo produces from a generic AI output. The more specific you are, the more specific the plan.
+                </p>
+                <DetailCard bullets={[
+                  "Upload your CV to pre-fill most questions, or answer them directly, your choice",
+                  "15 questions total, but typically 8 if you upload a CV",
+                  "No right or wrong answers. Solo is not looking for entrepreneurial ambition, it is looking for commercial reality",
+                  "Your answers are saved. You can return and pick up where you left off",
+                ]} />
+              </Step>
+
+              {/* ── STEP 2 ── */}
+              <Step num={2} tag="Step two, free" heading="See what Solo finds about you, before you pay anything" index={1}>
+                <p className="text-sm leading-[1.85] text-muted-foreground">
+                  Before any payment, Solo shows you a free preview of what it has found. This is not a teaser trailer, it is a genuine read of how Solo sees your commercial position.
+                </p>
+                <div className="mt-5 rounded-xl border border-primary/30 bg-primary/5 p-5">
+                  <ul className="space-y-3">
+                    {[
+                      "Your professional profile, how Solo has classified your career and what makes your experience commercially distinctive",
+                      "Your transferable value, the capabilities and credibility signals that make you a credible independent, described in terms of what clients would actually pay for",
+                      "One specific insight, a single non-obvious observation about your situation that shapes which path you pursue and how fast you can move",
+                      "Your top options, named, the paths that score highest for your profile. The reasoning and detail are behind the paywall but the options themselves are visible",
+                    ].map((t, i) => (
+                      <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+                        <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                        <span>{t}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Step>
+
+              {/* ── STEP 3 ── */}
+              <Step num={3} tag="Step three" heading="Unlock your full plan" priceBadge="£19.99, one-time payment" index={2}>
+                <p className="text-sm leading-[1.85] text-muted-foreground">
+                  One payment. No plan continuation required at this stage. Everything you need to understand your options clearly and start executing is included.
+                </p>
+                <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {[
+                    { title: "Full report", desc: "All three paths in detail, realistic pricing, time to first income, what makes each one work or fail for your specific profile" },
+                    { title: "30-day plan", desc: "A day-by-day action sequence built around your situation: where you are starting from, who your first contacts should be, what to say" },
+                    { title: "Outreach messages", desc: "For every outreach task in your plan, a ready-to-send message. You edit, you send, Solo writes the first draft" },
+                    { title: "Market snapshot", desc: "Demand, pricing benchmarks, and competitive landscape for your chosen path, calibrated to your geography and sector" },
+                    { title: "AI impact read", desc: "Honest assessment of AI risk to your current role, AI resilience of your Plan B, and specific tools that strengthen it" },
+                    { title: "30-day tracker", desc: "Included at no extra cost. Guided daily execution for the length of your plan, not just a document you file away" },
+                  ].map((tile, i) => (
+                    <div key={i} className="rounded-lg border border-border/60 bg-card p-4">
+                      <p className="text-xs font-semibold text-primary">{tile.title}</p>
+                      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{tile.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </Step>
+
+              {/* ── STEP 4 ── */}
+              <Step num={4} tag="Step four, the bit most products skip" heading="Your first action, ready to go" index={3}>
+                <p className="text-sm leading-[1.85] text-muted-foreground">
+                  The hardest part of any Plan B is not knowing what to do. It is doing the first uncomfortable thing. Solo picks that thing for you, a specific named outreach action, and has the message written before you have read the rest of the report.
+                </p>
+                <p className="mt-3 text-sm leading-[1.85] text-muted-foreground">
+                  The window is 24 hours. Not because of artificial urgency. Because that is how long the momentum from reading a plan actually lasts.
+                </p>
+                {/* sample card */}
+                <div className="mt-5 rounded-xl border-l-4 border-primary bg-card p-5">
+                  <span className="text-xs font-semibold uppercase tracking-widest text-primary">Your first action</span>
+                  <h4 className="mt-2 text-sm font-semibold">Reconnect with a former colleague at a mid-market PE-backed firm</h4>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    You mentioned you have worked closely with three PE-backed businesses. One former colleague is now a CFO at a relevant firm. This is the highest-probability first conversation for someone with your profile.
+                  </p>
+                  <div className="mt-4 rounded-lg bg-muted/30 p-4">
+                    <p className="text-xs text-muted-foreground/60">Message, ready to send</p>
+                    <p className="mt-2 text-sm italic leading-relaxed text-muted-foreground">
+                      Hi [Name], hope things are well. I have been thinking about stepping out on my own, doing what I do now but independently. I would love 20 minutes to pick your brain, not a pitch, genuinely curious about how businesses like yours think about bringing in external finance support. Would you be up for a call?
+                    </p>
+                  </div>
+                </div>
+              </Step>
+
+              {/* ── STEP 5 ── */}
+              <Step num={5} tag="Step five, included with your plan" heading="30 days of guided execution" index={4}>
+                <p className="text-sm leading-[1.85] text-muted-foreground">
+                  Your plan does not sit in a PDF. Solo checks in with you every day, by email, then with a short guided conversation in the app. It tracks what has happened, adjusts what is next, and replans around you if things go off track.
+                </p>
+                <p className="mt-3 text-sm leading-[1.85] text-muted-foreground">
+                  If you go quiet for a few days, Solo does not pretend that did not happen. It acknowledges it and recalibrates the remaining time.
+                </p>
+                {/* mini tracker */}
+                <div className="mt-5 rounded-xl border border-border/60 bg-card p-5">
+                  <p className="text-sm font-semibold">Your plan, Day 11 of 30</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Week 2, Building visibility</p>
+                  <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted/40">
+                    <div className="h-full rounded-full bg-primary" style={{ width: "37%" }} />
+                  </div>
+                  <ul className="mt-4 space-y-3">
+                    {[
+                      { done: true, text: "Sent reconnect message to former CFO contact", badge: "Done" },
+                      { done: true, text: "Updated LinkedIn headline to reflect independent positioning", badge: "Done" },
+                      { today: true, text: "Follow up on the CFO reconnect, it has been 5 days. One short note is appropriate.", badge: "Today" },
+                      { text: "Draft your positioning one-liner for when people ask what you do" },
+                    ].map((row, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                        {row.done ? (
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2} />
+                        ) : (row as any).today ? (
+                          <div className="mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 border-primary" />
+                        ) : (
+                          <div className="mt-0.5 h-4 w-4 shrink-0 rounded-full border-2 border-muted-foreground/30" />
+                        )}
+                        <span className="flex-1 text-sm text-muted-foreground">{row.text}</span>
+                        {row.badge && (
+                          <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-medium ${row.done ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary"}`}>
+                            {row.badge}
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </Step>
+
+              {/* ── STEP 6 ── */}
+              <Step num={6} tag="Step six, optional, at day 30" heading="Keep the momentum going" priceBadge="£19/month or £149/year, cancel any time" index={5}>
+                <p className="text-sm leading-[1.85] text-muted-foreground">
+                  At day 30, Solo asks whether you want to continue. No pressure. If you have found your first client by then, you may not need it. If you are still working through it, the plan continues, with three additional capabilities that are unavailable in the one-time plan.
+                </p>
+                <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                  {[
+                    { emoji: "📋", title: "Practical guides", desc: "9 step-by-step modules covering the practical side of operating independently: structure, tax, contracts, VAT, IR35, insurance, in plain language" },
+                    { emoji: "💬", title: "Ask Solo", desc: "A persistent advisory conversation that knows your full plan and history. Not a generic chatbot, an advisor who knows your situation" },
+                    { emoji: "📈", title: "Extended tracker", desc: "Continued daily check-ins, plan adaptation, and progress tracking beyond day 30, for as long as you need it" },
+                  ].map((c, i) => (
+                    <div key={i} className="rounded-xl border border-border/60 bg-card p-5 text-center">
+                      <span className="text-2xl">{c.emoji}</span>
+                      <p className="mt-2 text-sm font-semibold">{c.title}</p>
+                      <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{c.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </Step>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* DIVIDER — £19.99 */}
-      <div className="mx-auto max-w-3xl px-6">
-        <PriceDivider text="£19.99 one-time unlock" />
-      </div>
-
-      {/* STAGE 6 */}
-      <section className="py-10">
-        <div className="mx-auto max-w-3xl px-6">
-          <StageCard stage={stages[5]} index={0} />
-        </div>
-      </section>
-
-      {/* STAGE 7 */}
-      <section className="py-10">
-        <div className="mx-auto max-w-3xl px-6">
-          <StageCard stage={stages[6]} index={0} />
-        </div>
-      </section>
-
-      {/* DIVIDER — subscription */}
-      <div className="mx-auto max-w-3xl px-6">
-        <PriceDivider text="£19/month or £149/year subscription" />
-      </div>
-
-      {/* STAGE 8 */}
-      <section className="py-10 pb-20">
-        <div className="mx-auto max-w-3xl px-6">
-          <StageCard stage={stages[7]} index={0} />
-        </div>
-      </section>
-
-      {/* FOOTER CTA */}
+      {/* ─── BOTTOM CTA ─── */}
       <section className="bg-primary py-24">
         <div className="mx-auto max-w-2xl px-6 text-center">
-          <motion.p
+          <motion.h2
             className="font-display text-2xl font-bold tracking-tight text-primary-foreground sm:text-3xl lg:text-4xl"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={0}
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}
           >
-            Solo doesn't brainstorm. It classifies, scores, recommends, and does the hard work alongside&nbsp;you.
-          </motion.p>
+            See what Solo finds about your career
+          </motion.h2>
           <motion.p
             className="mt-4 text-base text-primary-foreground/70"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={1}
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}
           >
-            Starting with the message you need to send.
+            The first look is free. You will see your professional profile, transferable value, and one specific insight about your situation, before you decide anything.
           </motion.p>
-          <motion.div
-            className="mt-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={2}
-          >
+          <motion.div className="mt-8" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
             <Button
               size="lg"
               className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
               onClick={() => navigate("/questionnaire")}
             >
-              Get your Plan B →
+              Get started, it is free to see your profile
             </Button>
           </motion.div>
+          <motion.p
+            className="mt-4 text-sm text-primary-foreground/50"
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={3}
+          >
+            £19.99 to unlock the full plan. No plan continuation required.
+          </motion.p>
         </div>
       </section>
 
@@ -389,6 +332,79 @@ export default function HowItWorks() {
           </div>
         </div>
       </footer>
+    </div>
+  );
+}
+
+/* ─── Step wrapper component ─── */
+
+function Step({
+  num,
+  tag,
+  heading,
+  badge,
+  priceBadge,
+  index,
+  children,
+}: {
+  num: number;
+  tag: string;
+  heading: string;
+  badge?: string;
+  priceBadge?: string;
+  index: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <motion.div
+      className="relative flex gap-5 sm:gap-6"
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-60px" }}
+      custom={index}
+    >
+      {/* number circle */}
+      <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-background text-sm font-bold text-primary sm:h-12 sm:w-12">
+        {num}
+      </div>
+
+      <div className="min-w-0 flex-1 pb-2">
+        {priceBadge && (
+          <span className="mb-2 inline-block rounded-full bg-primary/15 px-3 py-1 text-xs font-semibold text-primary">
+            {priceBadge}
+          </span>
+        )}
+        <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+          {tag}
+        </span>
+        <h3 className="font-display mb-3 text-lg font-semibold leading-snug sm:text-xl">
+          {heading}
+          {badge && (
+            <span className="ml-3 inline-block rounded-full bg-muted px-3 py-1 align-middle text-xs font-medium text-muted-foreground">
+              {badge}
+            </span>
+          )}
+        </h3>
+        {children}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Detail card with bullets ─── */
+
+function DetailCard({ bullets }: { bullets: string[] }) {
+  return (
+    <div className="mt-5 rounded-xl border border-border/60 bg-card p-5">
+      <ul className="space-y-2.5">
+        {bullets.map((b, i) => (
+          <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-muted-foreground">
+            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={2.5} />
+            <span>{b}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
