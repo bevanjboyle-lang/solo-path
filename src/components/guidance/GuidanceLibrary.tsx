@@ -7,8 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import GuidanceModuleFlow from "./GuidanceModuleFlow";
 import GuidanceModuleOutput from "./GuidanceModuleOutput";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import GlassCard from "@/components/ui/GlassCard";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 
 const MODULE_ICONS: Record<number, React.ElementType> = {

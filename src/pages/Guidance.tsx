@@ -6,7 +6,7 @@ import GuidanceLibrary from "@/components/guidance/GuidanceLibrary";
 import { Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ScrollReveal } from "@/components/ui/ScrollReveal";
+import ScrollReveal from "@/components/ui/ScrollReveal";
 
 export default function Guidance() {
   const { user } = useAuth();
