@@ -9,17 +9,14 @@ const fadeUp = {
 };
 
 const paragraphs = [
-  "There's a particular kind of anxiety that comes from knowing something is probably coming, but not knowing exactly when.",
-  "I've been talking to mid-career professionals about their Plan B. What strikes me isn't their panic. It's their paralysis.",
-  "They know AI is changing their industry. They've seen the articles. They've watched colleagues' roles get restructured. They've sat through town halls about 'digital transformation.' And then they go back to their desks and do exactly the same job, in exactly the same way, hoping their particular niche holds out a bit longer.",
-  "This is the waiting room problem.",
-  "The professionals who'll be fine aren't the ones in the right sector. They're the ones who got uncomfortable early, the ones who asked 'what would I do if this role disappeared tomorrow?' before it became an emergency.",
-  "Most people can't answer that question. Not because they're not talented. They are. But because they've never needed to think commercially about their own experience before. An employer always did that translation for them.",
-  "The question isn't whether AI is coming for your role. The better question is: what do you already have that an employer was paying for, and who else would pay for it directly?",
-  "A solicitor with 15 years in employment law doesn't just 'do legal work.' They have judgment, relationships, and specialist knowledge that smaller companies can't afford to keep in-house, but would pay for by the day.",
-  "A senior marketing director who's overseen £40m in media spend isn't just 'a marketer.' They're someone who can walk into a founder-led business and immediately diagnose why their customer acquisition is broken.",
-  "The experience is there. The capability is there. What's missing is the map.",
-  "The people who'll look back on this period most calmly are the ones who built something before the emergency. Not because they were certain something was coming. But because they didn't want to still be in the waiting room when it did.",
+  "Most white-collar professionals look secure. Salaried role, pension contributions, a title that means something inside the building. From the outside, it reads as stability.",
+  "But look at the structure underneath and something is missing.",
+  "One income stream. One employer. One professional identity — defined entirely by an organisation they don't control. No tested route to earning independently. No offer they could take to market next month if they had to.",
+  "This is the optionality gap: the distance between how secure a career looks and how few alternatives actually exist if it changes.",
+  "Careers change for dozens of reasons. Restructures. New leadership. Sector contraction. Relocation. Burnout. A simple realisation that the next promotion isn't worth what it costs. Most professionals know this. What they haven't done is build anything outside the salaried structure that could generate income independently.",
+  "The gap isn't about capability. It's about infrastructure. The skills are there. The route to market isn't.",
+  "A professional who has identified two or three realistic independent income paths — and knows concretely how they'd pursue them — negotiates differently. They make career decisions from a position of knowledge rather than dependency.",
+  "Optionality doesn't require action. It requires preparation.",
 ];
 
 export default function WaitingRoomSection() {
