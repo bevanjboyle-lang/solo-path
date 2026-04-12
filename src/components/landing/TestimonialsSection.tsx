@@ -26,8 +26,8 @@ const testimonials = [
 
 export default function TestimonialsSection() {
   return (
-    <section className="border-t border-border/50 py-24">
-      <div className="mx-auto max-w-5xl px-6">
+    <section>
+      <div className="mx-auto max-w-5xl">
         <motion.div
           className="mb-16 text-center"
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
@@ -36,7 +36,7 @@ export default function TestimonialsSection() {
           <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             Testimonials
           </span>
-          <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
             From people who've built their Plan B
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
@@ -48,7 +48,7 @@ export default function TestimonialsSection() {
           {testimonials.map((t, i) => (
             <motion.div
               key={t.name}
-              className="rounded-xl border border-border/60 bg-card p-6"
+              className="rounded-[10px] border border-border bg-surface-card p-6 transition-all hover:border-primary hover:shadow-card-hover"
               variants={fadeUp} initial="hidden" whileInView="visible"
               viewport={{ once: true, margin: "-60px" }} custom={i}
             >

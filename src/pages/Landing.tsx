@@ -18,6 +18,9 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
+import MintTopBar from "@/components/MintTopBar";
+import PanelLayout from "@/components/PanelLayout";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import WaitingRoomSection from "@/components/landing/WaitingRoomSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
@@ -84,105 +87,115 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <MintTopBar />
       <Navbar />
 
-      {/* ── SECTION 1: HERO ── */}
-      <section className="flex min-h-screen flex-col items-center justify-center px-6 pt-14">
-        <div className="mx-auto max-w-2xl text-center">
-          <motion.div
-            className="mb-8 flex justify-center"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            <SoloLogo width={220} height={63} />
-          </motion.div>
-
-          <motion.span
-            className="mb-6 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.15 }}
-          >
-            Your Plan B Engine
-          </motion.span>
-
-          <motion.h1
-            className="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
-          >
-            Build your Plan B before you need one.
-          </motion.h1>
-
-          <motion.p
-            className="mx-auto mt-6 max-w-[540px] text-lg leading-relaxed text-muted-foreground sm:text-xl"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-          >
-            Solo takes what you've built over your career and turns it into a realistic, executable path to independent income: the paths, the clients, the first 30 days, based on your actual experience. <span className="font-bold text-foreground">So whatever changes — whether it's AI, restructuring, or simply wanting more options — you already know what you're doing next.</span>
-          </motion.p>
-
-          {/* ── Stat strip ── */}
-          <motion.div
-            className="mx-auto mt-8 flex max-w-xl flex-col gap-4 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.22 }}
-          >
-            {[
-              "Most managers couldn't name a single person who'd pay them outside an employer.",
-              "The average professional spends 18 months thinking before acting.",
-              "Generic AI gives you ideas. Solo gives you your answer.",
-            ].map((stat, i) => (
-              <p
-                key={i}
-                className="border-l-2 border-primary/20 pl-4 text-xs leading-relaxed text-muted-foreground sm:border-l-0 sm:px-4 sm:first:pl-0 sm:last:pr-0"
-              >
-                {stat}
-              </p>
-            ))}
-          </motion.div>
-
-          <motion.div
-            className="mt-10 max-w-xl mx-auto text-center"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              Solo specialises in helping structured, experienced professionals establish a credible independent income stream, whether you're ready to make the move, or simply want to know what your options are.
-            </p>
-          </motion.div>
-
-          <motion.div
-            className="mt-10 flex flex-col items-center gap-3"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <Button
-              size="lg"
-              className="rounded-lg bg-primary px-8 py-4 text-base font-medium text-primary-foreground hover:bg-[#1FAF97]"
-              onClick={() => navigate("/auth")}
+      <PanelLayout className="mt-20 px-6 py-16 sm:px-10">
+        {/* ── SECTION 1: HERO ── */}
+        <section className="flex min-h-[70vh] flex-col items-center justify-center">
+          <div className="mx-auto max-w-2xl text-center">
+            <motion.div
+              className="mb-8 flex justify-center"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-              See your free preview. 8 minutes →
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              Full report + 30-day activation plan: £19.99. No account needed to start.
-            </span>
-          </motion.div>
-        </div>
-      </section>
+              <SoloLogo width={220} height={63} />
+            </motion.div>
 
-      <WaitingRoomSection />
-      <TestimonialsSection />
+            <motion.span
+              className="mb-6 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.15 }}
+            >
+              Your Plan B Engine
+            </motion.span>
+
+            <motion.h1
+              className="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+              style={{ letterSpacing: "-0.02em" }}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              Build your Plan B before you need one.
+            </motion.h1>
+
+            <motion.p
+              className="mx-auto mt-6 max-w-[540px] text-lg leading-relaxed text-muted-foreground sm:text-xl"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+            >
+              Solo takes what you've built over your career and turns it into a realistic, executable path to independent income: the paths, the clients, the first 30 days, based on your actual experience. <span className="font-bold text-foreground">So whatever changes — whether it's AI, restructuring, or simply wanting more options — you already know what you're doing next.</span>
+            </motion.p>
+
+            {/* ── Stat strip ── */}
+            <motion.div
+              className="mx-auto mt-8 flex max-w-xl flex-col gap-4 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.22 }}
+            >
+              {[
+                "Most managers couldn't name a single person who'd pay them outside an employer.",
+                "The average professional spends 18 months thinking before acting.",
+                "Generic AI gives you ideas. Solo gives you your answer.",
+              ].map((stat, i) => (
+                <p
+                  key={i}
+                  className="border-l-2 border-primary/20 pl-4 text-xs leading-relaxed text-muted-foreground sm:border-l-0 sm:px-4 sm:first:pl-0 sm:last:pr-0"
+                >
+                  {stat}
+                </p>
+              ))}
+            </motion.div>
+
+            <motion.div
+              className="mt-10 max-w-xl mx-auto text-center"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Solo specialises in helping structured, experienced professionals establish a credible independent income stream, whether you're ready to make the move, or simply want to know what your options are.
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="mt-10 flex flex-col items-center gap-3"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
+              <Button
+                size="lg"
+                className="rounded-md bg-primary px-8 py-4 text-base font-medium text-primary-foreground hover:bg-[#26B89D] transition-all hover:-translate-y-px hover:shadow-card-hover"
+                onClick={() => navigate("/auth")}
+              >
+                See your free preview. 8 minutes →
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Full report + 30-day activation plan: £19.99. No account needed to start.
+              </span>
+            </motion.div>
+          </div>
+        </section>
+      </PanelLayout>
+
+      {/* Waiting room — inside its own panel */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <WaitingRoomSection />
+      </PanelLayout>
+
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <TestimonialsSection />
+      </PanelLayout>
 
       {/* ── INDUSTRY TILES ── */}
-      <section className="border-t border-border/50 py-24">
-        <div className="mx-auto max-w-5xl px-6">
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl">
           <motion.div
             className="mb-16 text-center"
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
@@ -191,29 +204,29 @@ export default function Landing() {
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               Market Opportunity
             </span>
-            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
               Where independent operators are growing fastest
             </h2>
           </motion.div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[
-              { badge: "STRONG DEMAND", badgeStyle: "bg-primary/20 text-primary border-primary/30", title: "Financial Services", body: "Fractional CFOs, FP&A directors, and finance business partners are among the most sought-after independent hires, particularly in PE-backed and growth businesses." },
-              { badge: "STRONG DEMAND", badgeStyle: "bg-primary/20 text-primary border-primary/30", title: "Legal", body: "Experienced lawyers and compliance specialists are building highly profitable advisory and fractional in-house practices, often at day rates that exceed employment." },
-              { badge: "HIGH GROWTH", badgeStyle: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", title: "Strategy and Consulting", body: "Former Big Four and strategy professionals are establishing independent advisory practices at rates significantly above their salaried packages." },
-              { badge: "HIGH GROWTH", badgeStyle: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30", title: "Marketing and Communications", body: "Fractional CMO and senior brand roles are multiplying as companies seek senior expertise without full-time headcount cost." },
-              { badge: "GROWING", badgeStyle: "bg-muted text-muted-foreground border-border", title: "HR and People", body: "Fractional HR directors and L&D specialists are finding strong demand from mid-market businesses that need senior people expertise by the day." },
-              { badge: "STRONG DEMAND", badgeStyle: "bg-primary/20 text-primary border-primary/30", title: "Technology and Change", body: "Technical and programme leaders are increasingly in demand as fractional CTOs, digital transformation advisors, and delivery leads." },
+              { badge: "STRONG DEMAND", badgeStyle: "bg-accent text-accent-foreground border-primary/30", title: "Financial Services", body: "Fractional CFOs, FP&A directors, and finance business partners are among the most sought-after independent hires, particularly in PE-backed and growth businesses." },
+              { badge: "STRONG DEMAND", badgeStyle: "bg-accent text-accent-foreground border-primary/30", title: "Legal", body: "Experienced lawyers and compliance specialists are building highly profitable advisory and fractional in-house practices, often at day rates that exceed employment." },
+              { badge: "HIGH GROWTH", badgeStyle: "bg-[#FDF8E8] text-[#D4940A] border-[#D4940A]/30", title: "Strategy and Consulting", body: "Former Big Four and strategy professionals are establishing independent advisory practices at rates significantly above their salaried packages." },
+              { badge: "HIGH GROWTH", badgeStyle: "bg-[#FDF8E8] text-[#D4940A] border-[#D4940A]/30", title: "Marketing and Communications", body: "Fractional CMO and senior brand roles are multiplying as companies seek senior expertise without full-time headcount cost." },
+              { badge: "GROWING", badgeStyle: "bg-surface-card text-muted-foreground border-border", title: "HR and People", body: "Fractional HR directors and L&D specialists are finding strong demand from mid-market businesses that need senior people expertise by the day." },
+              { badge: "STRONG DEMAND", badgeStyle: "bg-accent text-accent-foreground border-primary/30", title: "Technology and Change", body: "Technical and programme leaders are increasingly in demand as fractional CTOs, digital transformation advisors, and delivery leads." },
             ].map((tile, i) => (
               <motion.div
                 key={tile.title}
-                className="rounded-xl border border-border/60 bg-card p-5"
+                className="rounded-[10px] border border-border bg-surface-card p-5 transition-all hover:border-primary hover:shadow-card-hover"
                 variants={fadeUp} initial="hidden" whileInView="visible"
                 viewport={{ once: true, margin: "-60px" }} custom={i}
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <h3 className="text-sm font-semibold">{tile.title}</h3>
-                  <Badge variant="outline" className={`shrink-0 text-[10px] font-semibold ${tile.badgeStyle}`}>
+                  <Badge variant="outline" className={`shrink-0 text-[10px] font-semibold rounded-md ${tile.badgeStyle}`}>
                     {tile.badge}
                   </Badge>
                 </div>
@@ -226,11 +239,11 @@ export default function Landing() {
             Sources: Solo knowledge bank, 480 business models across 16 professional domains.
           </p>
         </div>
-      </section>
+      </PanelLayout>
 
 
-      <section className="border-t border-border/50 py-24">
-        <div className="mx-auto max-w-5xl px-6">
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl">
           <motion.div
             className="mb-16 text-center"
             initial="hidden"
@@ -242,7 +255,7 @@ export default function Landing() {
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               The Problem
             </span>
-            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
               Most professionals have no credible Plan B
             </h2>
           </motion.div>
@@ -251,7 +264,7 @@ export default function Landing() {
             {problems.map((p, i) => (
               <motion.div
                 key={p.title}
-                className="rounded-xl border border-border/60 bg-card p-6"
+                className="rounded-[10px] border border-border bg-surface-card p-6 transition-all hover:border-primary hover:shadow-card-hover"
                 variants={fadeUp}
                 initial="hidden"
                 whileInView="visible"
@@ -265,11 +278,11 @@ export default function Landing() {
             ))}
           </div>
         </div>
-      </section>
+      </PanelLayout>
 
       {/* ── SECTION 3: HOW IT WORKS ── */}
-      <section className="border-t border-border/50 py-24">
-        <div className="mx-auto max-w-3xl px-6">
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-3xl">
           <motion.div
             className="mb-16 text-center"
             initial="hidden"
@@ -281,7 +294,7 @@ export default function Landing() {
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               How It Works
             </span>
-            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
               From experience to income path in 8 minutes
             </h2>
           </motion.div>
@@ -297,7 +310,7 @@ export default function Landing() {
                 viewport={{ once: true, margin: "-60px" }}
                 custom={i}
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-sm font-bold text-primary">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-accent text-sm font-bold text-accent-foreground">
                   {s.num}
                 </span>
                 <div>
@@ -318,18 +331,18 @@ export default function Landing() {
           >
             <Button
               size="lg"
-              className="rounded-lg bg-primary px-8 py-4 text-sm font-medium text-primary-foreground hover:bg-[#1FAF97]"
+              className="rounded-md bg-primary px-8 py-4 text-sm font-medium text-primary-foreground hover:bg-[#26B89D] transition-all hover:-translate-y-px hover:shadow-card-hover"
               onClick={() => navigate("/auth")}
             >
               Take the test →
             </Button>
           </motion.div>
         </div>
-      </section>
+      </PanelLayout>
 
       {/* ── SECTION 4: WHAT YOU GET ── */}
-      <section className="border-t border-border/50 py-24">
-        <div className="mx-auto max-w-5xl px-6">
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl">
           <motion.div
             className="mb-16 text-center"
             initial="hidden"
@@ -341,7 +354,7 @@ export default function Landing() {
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               What's In Your Report
             </span>
-            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
               Eight sections. No fluff.
             </h2>
           </motion.div>
@@ -350,7 +363,7 @@ export default function Landing() {
             {reportSections.map((s, i) => (
               <motion.div
                 key={s.title}
-                className="rounded-xl border border-border/60 bg-card p-5"
+                className="rounded-[10px] border border-border bg-surface-card p-5 transition-all hover:border-primary hover:shadow-card-hover"
                 variants={fadeUp}
                 initial="hidden"
                 whileInView="visible"
@@ -368,11 +381,11 @@ export default function Landing() {
             Your report is saved. Return to it any time.
           </p>
         </div>
-      </section>
+      </PanelLayout>
 
       {/* ── SECTION 5: WHO IT'S FOR ── */}
-      <section className="border-t border-border/50 py-24">
-        <div className="mx-auto max-w-3xl px-6">
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-3xl">
           <motion.div
             className="mb-6 text-center"
             initial="hidden"
@@ -384,7 +397,7 @@ export default function Landing() {
             <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               Who Solo Is For
             </span>
-            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
               Solo isn't for everyone.
             </h2>
           </motion.div>
@@ -455,12 +468,12 @@ export default function Landing() {
             ].map((tag) => (
               <span
                 key={tag.label}
-                className={`inline-block rounded-full border px-4 py-1.5 font-medium ${
+                className={`inline-block rounded-md border px-4 py-1.5 font-medium ${
                   tag.size === "lg" ? "text-sm" : tag.size === "md" ? "text-xs" : "text-[11px]"
                 } ${
                   tag.accent
-                    ? "border-primary/30 bg-primary/10 text-primary"
-                    : "border-border/60 bg-card text-muted-foreground"
+                    ? "border-primary/30 bg-accent text-accent-foreground"
+                    : "border-border bg-surface-card text-muted-foreground"
                 }`}
               >
                 {tag.label}
@@ -479,11 +492,11 @@ export default function Landing() {
             95 professional archetypes. 14 domains. 480 business models.
           </motion.p>
         </div>
-      </section>
+      </PanelLayout>
 
       {/* ── SECTION 6: SOCIAL PROOF ── */}
-      <section className="border-t border-border/50 py-24">
-        <div className="mx-auto max-w-3xl px-6">
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-3xl">
           <motion.div
             className="mb-12 text-center"
             initial="hidden"
@@ -498,7 +511,7 @@ export default function Landing() {
           </motion.div>
 
           <motion.blockquote
-            className="relative rounded-xl border border-border/60 bg-card p-8 text-center"
+            className="relative rounded-[10px] border border-border bg-surface-card p-8 text-center"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
@@ -514,60 +527,54 @@ export default function Landing() {
             </footer>
           </motion.blockquote>
         </div>
-      </section>
+      </PanelLayout>
 
       {/* ── SECTION 7: FINAL CTA ── */}
-      <section className="bg-primary py-24">
-        <div className="mx-auto max-w-2xl px-6 text-center">
-          <motion.h2
-            className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={0}
-          >
-            Know your Plan B before you need it.
-          </motion.h2>
-          <motion.p
-            className="mt-4 text-base text-primary-foreground/70"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={1}
-          >
-            8 minutes. £19.99. A report built from your actual experience.
-          </motion.p>
-          <motion.div
-            className="mt-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeUp}
-            custom={2}
-          >
-            <Button
-              size="lg"
-              className="rounded-lg bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
-              onClick={() => navigate("/auth")}
+      <PanelLayout className="overflow-hidden">
+        <section className="bg-primary py-24 rounded-2xl">
+          <div className="mx-auto max-w-2xl px-6 text-center">
+            <motion.h2
+              className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
+              style={{ letterSpacing: "-0.02em" }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              custom={0}
             >
-              Take the test →
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── FOOTER ── */}
-      <footer className="border-t border-border/50 py-8">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6">
-          <SoloLogo width={80} height={22} />
-          <div className="flex gap-6 text-xs text-muted-foreground">
-            <Link to="/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
-            <Link to="/terms" className="transition-colors hover:text-foreground">Terms</Link>
+              Know your Plan B before you need it.
+            </motion.h2>
+            <motion.p
+              className="mt-4 text-base text-primary-foreground/70"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              custom={1}
+            >
+              8 minutes. £19.99. A report built from your actual experience.
+            </motion.p>
+            <motion.div
+              className="mt-8"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              custom={2}
+            >
+              <Button
+                size="lg"
+                className="rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
+                onClick={() => navigate("/auth")}
+              >
+                Take the test →
+              </Button>
+            </motion.div>
           </div>
-        </div>
-      </footer>
+        </section>
+      </PanelLayout>
+
+      <Footer />
     </div>
   );
 }

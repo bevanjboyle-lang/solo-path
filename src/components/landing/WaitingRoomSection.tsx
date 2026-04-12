@@ -24,8 +24,8 @@ const paragraphs = [
 
 export default function WaitingRoomSection() {
   return (
-    <section className="border-t border-border/50 bg-[hsl(var(--card))] py-24">
-      <div className="mx-auto max-w-2xl px-6">
+    <section>
+      <div className="mx-auto max-w-2xl">
         <motion.div
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-80px" }}
           variants={fadeUp} custom={0}
@@ -33,7 +33,7 @@ export default function WaitingRoomSection() {
           <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             Solo Perspective
           </span>
-          <h2 className="font-display mb-10 text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h2 className="font-display mb-10 text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
             The Optionality Gap
           </h2>
         </motion.div>
@@ -51,7 +51,7 @@ export default function WaitingRoomSection() {
         </motion.div>
 
         <motion.p
-          className="mt-10 text-xs text-muted-foreground/60"
+          className="mt-10 text-xs" style={{ color: "#A09A92" }}
           initial="hidden" whileInView="visible" viewport={{ once: true }}
           variants={fadeUp} custom={2}
         >
