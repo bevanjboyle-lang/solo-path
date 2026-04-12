@@ -53,6 +53,7 @@ export default function Questionnaire() {
     [user]
   );
 
+  const currentQuestion = questions[current] ?? questions[0]!;
   const cvWasUploaded = cvExtract !== null;
   const displayTotal = cvWasUploaded ? 12 : questions.length;
   const total = questions.length;
