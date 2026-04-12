@@ -905,6 +905,49 @@ function CopyBox({ label, subject, content }: { label: string; subject?: string;
   );
 }
 
+function MarketSnapshotSection({ report, ap }: { report: ReportData | null; ap: any }) {
+  const marketSnapshots = ap?.activation_plan?.market_snapshots;
+  const strandIds = marketSnapshots ? Object.keys(marketSnapshots) : [];
+  const hasStrandSnapshots = strandIds.length > 0;
+  const [activeStrand, setActiveStrand] = useState(strandIds[0] || "");
+
+  // Fallback to single market_snapshot
+  if (!hasStrandSnapshots && report?.market_snapshot) {
+    return (
+      <ReportSection title="Market Snapshot" icon={BarChart3}>
+        <MarketSnapshotRenderer text={report.market_snapshot} />
+      </ReportSection>
+    );
+  }
+
+  if (!hasStrandSnapshots) return null;
+
+  return (
+    <ReportSection title="Market Snapshot" icon={BarChart3}>
+      <div className="space-y-4">
+        {strandIds.length > 1 && (
+          <div className="flex flex-wrap gap-1.5">
+            {strandIds.map((id) => (
+              <button
+                key={id}
+                onClick={() => setActiveStrand(id)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  activeStrand === id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-surface text-muted-foreground hover:text-foreground hover:bg-surface-elevated"
+                }`}
+              >
+                {id}
+              </button>
+            ))}
+          </div>
+        )}
+        <MarketSnapshotRenderer text={marketSnapshots[activeStrand] || ""} />
+      </div>
+    </ReportSection>
+  );
+}
+
 function MarketSnapshotRenderer({ text }: { text: string }) {
   if (!text) return null;
   const sections = text.split(/\n(?=[A-Z]{2,})/).filter(Boolean);
