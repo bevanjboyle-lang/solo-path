@@ -5,6 +5,8 @@ import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import GlassCard from "@/components/ui/GlassCard";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -55,35 +57,43 @@ export default function WhoItsFor() {
         </section>
       </PanelLayout>
 
-      {/* 5 ARCHETYPES */}
+      {/* 5 ARCHETYPES — staggered grid */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-4xl">
           <div className="flex flex-col gap-8">
             {archetypes.map((a, i) => (
-              <motion.div key={a.title} className="rounded-[10px] border border-border bg-surface-card p-6 sm:p-8 transition-all hover:border-primary hover:shadow-card-hover" variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} custom={i % 3}>
-                <h3 className="font-display mb-4 text-lg font-semibold">{a.title}</h3>
-                <div className="grid gap-5 sm:grid-cols-2">
-                  <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">Who</p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{a.who}</p>
-                  </div>
-                  <div>
-                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">What they have</p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{a.have}</p>
-                  </div>
-                </div>
-                <div className="mt-5 rounded-[10px] border border-border bg-surface-panel p-4">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">What they don't realise</p>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{a.insight}</p>
-                </div>
-                <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
-                  <div><span className="text-xs text-muted-foreground">Example path: </span><span className="text-foreground/90">{a.path}</span></div>
-                  <div className="flex gap-6">
-                    <span><span className="text-xs text-muted-foreground">Day rate: </span><span className="font-medium text-primary">{a.rate}</span></span>
-                    <span><span className="text-xs text-muted-foreground">First client: </span><span className="font-medium text-foreground/90">{a.time}</span></span>
-                  </div>
-                </div>
-              </motion.div>
+              <ScrollReveal key={a.title} delay={i * 0.15}>
+                <motion.div
+                  whileHover={{ y: -4, boxShadow: "0 8px 30px rgba(0,0,0,0.08)" }}
+                  transition={{ duration: 0.2 }}
+                  className={i === 0 ? "w-full" : ""}
+                >
+                  <GlassCard className={`p-6 sm:p-8 transition-all ${i > 0 ? "" : ""}`}>
+                    <h3 className="font-display mb-4 text-lg font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>{a.title}</h3>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">Who</p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">{a.who}</p>
+                      </div>
+                      <div>
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">What they have</p>
+                        <p className="text-sm leading-relaxed text-muted-foreground">{a.have}</p>
+                      </div>
+                    </div>
+                    <div className="mt-5 rounded-[10px] border border-border bg-surface-panel p-4">
+                      <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">What they don't realise</p>
+                      <p className="text-sm leading-relaxed text-muted-foreground">{a.insight}</p>
+                    </div>
+                    <div className="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm">
+                      <div><span className="text-xs text-muted-foreground">Example path: </span><span className="text-foreground/90">{a.path}</span></div>
+                      <div className="flex gap-6">
+                        <span><span className="text-xs text-muted-foreground">Day rate: </span><span className="font-medium text-primary">{a.rate}</span></span>
+                        <span><span className="text-xs text-muted-foreground">First client: </span><span className="font-medium text-foreground/90">{a.time}</span></span>
+                      </div>
+                    </div>
+                  </GlassCard>
+                </motion.div>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -92,19 +102,27 @@ export default function WhoItsFor() {
       {/* WHO IT'S NOT FOR */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl">
-          <motion.div className="rounded-[10px] border border-border bg-surface-card p-6 sm:p-8" initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-60px" }} variants={fadeUp} custom={0}>
-            <h2 className="font-display mb-4 text-xl font-semibold">Who Solo isn't designed for</h2>
-            <p className="mb-5 text-sm leading-relaxed text-muted-foreground">Solo is built around a specific model: experienced white-collar professionals with transferable expertise, selling knowledge-based services to business clients. It is not designed for:</p>
-            <ul className="mb-5 flex flex-col gap-2">
-              {notFor.map((item) => (
-                <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <p className="text-xs" style={{ color: "#A09A92" }}>If that's you, Solo probably isn't the right tool. We'd rather be honest than overpromise.</p>
-          </motion.div>
+          <ScrollReveal>
+            <div
+              className="rounded-[10px] border border-border p-6 sm:p-8"
+              style={{
+                background: "#F3F1ED",
+                boxShadow: "inset 0 2px 8px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h2 className="font-display mb-4 text-xl font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>Who Solo isn't designed for</h2>
+              <p className="mb-5 text-sm leading-relaxed text-muted-foreground">Solo is built around a specific model: experienced white-collar professionals with transferable expertise, selling knowledge-based services to business clients. It is not designed for:</p>
+              <ul className="mb-5 flex flex-col gap-2">
+                {notFor.map((item) => (
+                  <li key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/40" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs" style={{ color: "#A09A92" }}>If that's you, Solo probably isn't the right tool. We'd rather be honest than overpromise.</p>
+            </div>
+          </ScrollReveal>
         </div>
       </PanelLayout>
 

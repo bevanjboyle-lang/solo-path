@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import GlassCard from "@/components/ui/GlassCard";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -199,9 +200,9 @@ export default function AskSolo() {
         <div className="mx-auto max-w-3xl px-6 py-6 space-y-4">
           {/* Context cue banner */}
           {contextCue && (
-            <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 mb-2">
+            <GlassCard className="metallic-border px-4 py-3 mb-2">
               <p className="text-xs text-primary/80">{contextCue}</p>
-            </div>
+            </GlassCard>
           )}
 
           <AnimatePresence initial={false}>
@@ -217,12 +218,24 @@ export default function AskSolo() {
                   <div
                     className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                       msg.role === "user"
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-card border border-border/50 text-card-foreground rounded-bl-md"
+                        ? "rounded-br-md"
+                        : "rounded-bl-md"
                     }`}
+                    style={
+                      msg.role === "user"
+                        ? { background: "#F3F1ED", color: "#1D2025" }
+                        : {
+                            background: "rgba(250,249,247,0.7)",
+                            backdropFilter: "blur(20px)",
+                            border: "1px solid rgba(229,226,220,0.5)",
+                            boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
+                            // subtle mint tint
+                            backgroundImage: "linear-gradient(135deg, rgba(46,205,176,0.03), transparent)",
+                          }
+                    }
                   >
                     {msg.role === "assistant" ? (
-                      <div className="prose prose-sm prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0">
+                      <div className="prose prose-sm max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0" style={{ color: "#1D2025" }}>
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                       </div>
                     ) : (
@@ -237,17 +250,25 @@ export default function AskSolo() {
             ))}
           </AnimatePresence>
 
+          {/* Typing indicator - three pulsing mint dots */}
           {sending && (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex justify-start"
             >
-              <div className="rounded-2xl rounded-bl-md bg-card border border-border/50 px-4 py-3">
+              <div
+                className="rounded-2xl rounded-bl-md px-4 py-3"
+                style={{
+                  background: "rgba(250,249,247,0.7)",
+                  backdropFilter: "blur(20px)",
+                  border: "1px solid rgba(229,226,220,0.5)",
+                }}
+              >
                 <div className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-primary/60 animate-pulse" />
-                  <span className="h-2 w-2 rounded-full bg-primary/60 animate-pulse [animation-delay:150ms]" />
-                  <span className="h-2 w-2 rounded-full bg-primary/60 animate-pulse [animation-delay:300ms]" />
+                  <span className="h-[6px] w-[6px] rounded-full animate-typing-dot" style={{ background: "#2ECDB0", animationDelay: "0ms" }} />
+                  <span className="h-[6px] w-[6px] rounded-full animate-typing-dot" style={{ background: "#2ECDB0", animationDelay: "200ms" }} />
+                  <span className="h-[6px] w-[6px] rounded-full animate-typing-dot" style={{ background: "#2ECDB0", animationDelay: "400ms" }} />
                 </div>
               </div>
             </motion.div>
@@ -258,7 +279,13 @@ export default function AskSolo() {
       </main>
 
       {/* Input bar */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-border/50 bg-background/95 backdrop-blur-xl">
+      <div
+        className="fixed bottom-0 left-0 right-0 border-t border-border/50"
+        style={{
+          backdropFilter: "blur(12px)",
+          background: "rgba(250,249,247,0.8)",
+        }}
+      >
         <div className="mx-auto flex max-w-3xl items-end gap-3 px-6 py-4">
           <textarea
             ref={inputRef}
@@ -267,8 +294,19 @@ export default function AskSolo() {
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-border/50 bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 max-h-32"
-            style={{ minHeight: "44px" }}
+            className="flex-1 resize-none rounded-xl border border-border/50 bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground max-h-32 transition-all"
+            style={{
+              minHeight: "44px",
+              outline: "none",
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 2px rgba(46,205,176,0.4)";
+              e.currentTarget.style.borderColor = "#2ECDB0";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+              e.currentTarget.style.borderColor = "";
+            }}
             disabled={sending}
           />
           <button

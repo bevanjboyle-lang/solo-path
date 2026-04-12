@@ -6,7 +6,10 @@ import PanelLayout from "@/components/PanelLayout";
 import Footer from "@/components/Footer";
 import SoloLogo from "@/components/SoloLogo";
 import { Button } from "@/components/ui/button";
-import { Check, Circle, CheckCircle2 } from "lucide-react";
+import { Check, Circle, CheckCircle2, FileText, HelpCircle, Brain, FileCheck, CreditCard, Calendar, BarChart3, Lock } from "lucide-react";
+import ScrollReveal from "@/components/ui/ScrollReveal";
+import GlassCard from "@/components/ui/GlassCard";
+import AnimatedCounter from "@/components/ui/AnimatedCounter";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -17,11 +20,25 @@ const fadeUp = {
   }),
 };
 
+const STEP_ICONS: Record<number, React.ElementType> = {
+  1: FileText,
+  2: HelpCircle,
+  3: CreditCard,
+  4: Brain,
+  5: Calendar,
+  6: Lock,
+};
+
 export default function HowItWorks() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div
+      className="min-h-screen bg-background text-foreground"
+      style={{
+        backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(0,0,0,0.02) 40px, rgba(0,0,0,0.02) 41px)",
+      }}
+    >
       <MintTopBar />
       <Navbar />
 
@@ -69,81 +86,91 @@ export default function HowItWorks() {
       {/* ─── CHATGPT COMPARISON ─── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-4xl">
-          <motion.div className="mb-10 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <h2 className="font-display text-2xl font-bold sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>Why not just ask ChatGPT?</h2>
-            <p className="mt-3 text-muted-foreground">Fair question. Here is what changes when the model is built specifically for your situation.</p>
-          </motion.div>
-
-          <motion.div className="grid gap-5 md:grid-cols-2" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
-            {/* Left - generic */}
-            <div className="rounded-[10px] border border-border bg-surface-card p-6">
-              <h3 className="mb-5 text-sm font-semibold text-muted-foreground">A general AI assistant</h3>
-              <ul className="space-y-4">
-                {[
-                  "Suggests consulting or fractional work without scoring whether that fits your specific experience, seniority, or sector",
-                  "Cannot tell you realistic pricing for someone of your seniority, or how long it actually takes to land a first client",
-                  "Gives you a list of ideas. Does not help you do the awkward bit, actually contacting the first person",
-                  "The output lives in a chat window. Nothing is structured, tracked, or there when you need to pick it back up",
-                ].map((t, i) => (
-                  <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
-                    <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40" strokeWidth={2} />
-                    <span>{t}</span>
-                  </li>
-                ))}
-              </ul>
+          <ScrollReveal>
+            <div className="mb-10 text-center">
+              <h2 className="font-display text-2xl font-bold sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>Why not just ask ChatGPT?</h2>
+              <p className="mt-3 text-muted-foreground">Fair question. Here is what changes when the model is built specifically for your situation.</p>
             </div>
+          </ScrollReveal>
 
-            {/* Right - Solo */}
-            <div className="rounded-[10px] border border-primary/30 bg-surface-mint-tint p-6">
-              <h3 className="mb-5 text-sm font-semibold text-primary">Solo</h3>
-              <ul className="space-y-4">
-                {[
-                  "Solo classifies your career against 95 professional profiles and scores 480 business models to find which ones are a genuine fit for your background",
-                  "Day rates, project fees, and time-to-first-revenue are calibrated to your level, not taken from generic market data",
-                  "For every outreach task in your plan, Solo writes the actual message, ready to send, personalised to your situation and the specific person you are reaching",
-                  "Your plan is saved, tracked, and adapts as you go. Solo checks in daily and adjusts the plan if things slip, it does not just sit in a history window",
-                ].map((t, i) => (
-                  <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
-                    <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary">
-                      <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3} />
-                    </div>
-                    <span>{t}</span>
-                  </li>
-                ))}
-              </ul>
+          <ScrollReveal delay={0.1}>
+            <div className="grid gap-5 md:grid-cols-2">
+              <div className="rounded-[10px] border border-border bg-surface-card p-6">
+                <h3 className="mb-5 text-sm font-semibold text-muted-foreground">A general AI assistant</h3>
+                <ul className="space-y-4">
+                  {[
+                    "Suggests consulting or fractional work without scoring whether that fits your specific experience, seniority, or sector",
+                    "Cannot tell you realistic pricing for someone of your seniority, or how long it actually takes to land a first client",
+                    "Gives you a list of ideas. Does not help you do the awkward bit, actually contacting the first person",
+                    "The output lives in a chat window. Nothing is structured, tracked, or there when you need to pick it back up",
+                  ].map((t, i) => (
+                    <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+                      <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/40" strokeWidth={2} />
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-[10px] border border-primary/30 bg-surface-mint-tint p-6">
+                <h3 className="mb-5 text-sm font-semibold text-primary">Solo</h3>
+                <ul className="space-y-4">
+                  {[
+                    "Solo classifies your career against 95 professional profiles and scores 480 business models to find which ones are a genuine fit for your background",
+                    "Day rates, project fees, and time-to-first-revenue are calibrated to your level, not taken from generic market data",
+                    "For every outreach task in your plan, Solo writes the actual message, ready to send, personalised to your situation and the specific person you are reaching",
+                    "Your plan is saved, tracked, and adapts as you go. Solo checks in daily and adjusts the plan if things slip, it does not just sit in a history window",
+                  ].map((t, i) => (
+                    <li key={i} className="flex gap-3 text-sm leading-relaxed text-muted-foreground">
+                      <div className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary">
+                        <Check className="h-2.5 w-2.5 text-primary-foreground" strokeWidth={3} />
+                      </div>
+                      <span>{t}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </motion.div>
+          </ScrollReveal>
         </div>
       </PanelLayout>
 
       {/* ─── STATS STRIP ─── */}
       <PanelLayout className="px-6 py-14 sm:px-10">
-        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
-          {[
-            { num: "95", label: "professional profiles Solo classifies against" },
-            { num: "480", label: "business models scored for fit with your background" },
-            { num: "30", label: "days of guided execution built into every plan" },
-            { num: "<10", label: "minutes to your first look at what Solo finds" },
-          ].map((s, i) => (
-            <motion.div key={i} className="text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={i}>
-              <p className="font-display text-3xl font-bold text-primary sm:text-4xl">{s.num}</p>
-              <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">{s.label}</p>
-            </motion.div>
-          ))}
-        </div>
+        <ScrollReveal>
+          <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
+            {[
+              { num: 95, label: "professional profiles Solo classifies against", suffix: "" },
+              { num: 480, label: "business models scored for fit with your background", suffix: "" },
+              { num: 30, label: "days of guided execution built into every plan", suffix: "" },
+              { num: 10, label: "minutes to your first look at what Solo finds", prefix: "<" },
+            ].map((s, i) => (
+              <ScrollReveal key={i} delay={i * 0.1}>
+                <div className="text-center">
+                  <p className="font-display text-3xl font-bold text-primary sm:text-4xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    {s.prefix || ""}<AnimatedCounter target={s.num} />
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">{s.label}</p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+        </ScrollReveal>
       </PanelLayout>
 
-      {/* ─── 6 STEPS ─── */}
+      {/* ─── 6 STEPS (TIMELINE) ─── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl">
-          <motion.div className="mb-14 text-center" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-            <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">The process</span>
-            <h2 className="font-display text-2xl font-bold sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>Six steps from your current career to an active Plan&nbsp;B</h2>
-          </motion.div>
+          <ScrollReveal>
+            <div className="mb-14 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">The process</span>
+              <h2 className="font-display text-2xl font-bold sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>Six steps from your current career to an active Plan&nbsp;B</h2>
+            </div>
+          </ScrollReveal>
 
           <div className="relative">
-            {/* vertical connector line */}
-            <div className="absolute left-[21px] top-6 bottom-6 w-px bg-primary/20 sm:left-[23px]" />
+            {/* vertical timeline line */}
+            <div className="absolute left-[21px] top-6 bottom-6 w-[2px] sm:left-[23px]" style={{ background: "rgba(46,205,176,0.3)" }} />
 
             <div className="flex flex-col gap-16">
               <Step num={1} tag="Step one" heading="Tell Solo about your career" badge="Around 8-10 minutes" index={0}>
@@ -195,10 +222,10 @@ export default function HowItWorks() {
                     { title: "AI impact read", desc: "Honest assessment of AI risk to your current role, AI resilience of your Plan B, and specific tools that strengthen it" },
                     { title: "30-day tracker", desc: "Included at no extra cost. Guided daily execution for the length of your plan, not just a document you file away" },
                   ].map((tile, i) => (
-                    <div key={i} className="rounded-[10px] border border-border bg-surface-card p-4">
+                    <GlassCard key={i} className="p-4">
                       <p className="text-xs font-semibold text-primary">{tile.title}</p>
                       <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{tile.desc}</p>
-                    </div>
+                    </GlassCard>
                   ))}
                 </div>
                 <div className="mt-5 rounded-[10px] border-l-4 border-primary bg-surface-mint-tint p-5">
@@ -281,11 +308,11 @@ export default function HowItWorks() {
                     { emoji: "💬", title: "Ask Solo", desc: "A persistent advisory conversation that knows your full plan and history. Not a generic chatbot, an advisor who knows your situation" },
                     { emoji: "📈", title: "Extended tracker", desc: "Continued daily check-ins, plan adaptation, and progress tracking beyond day 30, for as long as you need it" },
                   ].map((c, i) => (
-                    <div key={i} className="rounded-[10px] border border-border bg-surface-card p-5 text-center">
+                    <GlassCard key={i} className="p-5 text-center">
                       <span className="text-2xl">{c.emoji}</span>
                       <p className="mt-2 text-sm font-semibold">{c.title}</p>
                       <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{c.desc}</p>
-                    </div>
+                    </GlassCard>
                   ))}
                 </div>
               </Step>
@@ -335,7 +362,7 @@ export default function HowItWorks() {
   );
 }
 
-/* ─── Step wrapper component ─── */
+/* ─── Step wrapper component with timeline ─── */
 function Step({
   num,
   tag,
@@ -353,46 +380,49 @@ function Step({
   index: number;
   children: React.ReactNode;
 }) {
-  return (
-    <motion.div
-      className="relative flex gap-5 sm:gap-6"
-      variants={fadeUp}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-60px" }}
-      custom={index}
-    >
-      <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-surface-panel text-sm font-bold text-primary sm:h-12 sm:w-12">
-        {num}
-      </div>
+  const Icon = STEP_ICONS[num] || FileText;
 
-      <div className="min-w-0 flex-1 pb-2">
-        {priceBadge && (
-          <span className="mb-2 inline-block rounded-md bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-            {priceBadge}
-          </span>
-        )}
-        <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-          {tag}
-        </span>
-        <h3 className="font-display mb-3 text-lg font-semibold leading-snug sm:text-xl">
-          {heading}
-          {badge && (
-            <span className="ml-3 inline-block rounded-md bg-surface-inset px-3 py-1 align-middle text-xs font-medium text-muted-foreground">
-              {badge}
+  return (
+    <ScrollReveal delay={index * 0.1}>
+      <div className="relative flex gap-5 sm:gap-6">
+        {/* Timeline node */}
+        <div className="relative z-10 flex flex-col items-center">
+          {/* Mint filled circle node */}
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-primary bg-surface-panel sm:h-12 sm:w-12"
+            style={{ boxShadow: "0 0 0 4px rgba(46,205,176,0.1)" }}
+          >
+            <Icon className="h-5 w-5" style={{ color: "#2ECDB0" }} />
+          </div>
+        </div>
+
+        <div className="min-w-0 flex-1 pb-2">
+          {priceBadge && (
+            <span className="mb-2 inline-block rounded-md bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
+              {priceBadge}
             </span>
           )}
-        </h3>
-        {children}
+          <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+            {tag}
+          </span>
+          <h3 className="font-display mb-3 text-lg font-semibold leading-snug sm:text-xl">
+            {heading}
+            {badge && (
+              <span className="ml-3 inline-block rounded-md bg-surface-inset px-3 py-1 align-middle text-xs font-medium text-muted-foreground">
+                {badge}
+              </span>
+            )}
+          </h3>
+          {children}
+        </div>
       </div>
-    </motion.div>
+    </ScrollReveal>
   );
 }
 
 /* ─── Detail card with bullets ─── */
 function DetailCard({ bullets }: { bullets: string[] }) {
   return (
-    <div className="mt-5 rounded-[10px] border border-border bg-surface-card p-5">
+    <GlassCard className="mt-5 p-5">
       <ul className="space-y-2.5">
         {bullets.map((b, i) => (
           <li key={i} className="flex gap-2.5 text-sm leading-relaxed text-muted-foreground">
@@ -401,6 +431,6 @@ function DetailCard({ bullets }: { bullets: string[] }) {
           </li>
         ))}
       </ul>
-    </div>
+    </GlassCard>
   );
 }
