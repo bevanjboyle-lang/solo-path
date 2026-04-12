@@ -44,7 +44,7 @@ export default function HowItWorks() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.05 }}
             >
-              From career to credible Plan&nbsp;B
+              Translating Your Career Into a Credible Plan&nbsp;B
             </motion.h1>
             <motion.p
               className="mx-auto mt-6 max-w-[560px] text-base leading-relaxed text-muted-foreground sm:text-lg"
