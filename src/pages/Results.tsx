@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap } from "lucide-react";
+import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
@@ -180,8 +181,37 @@ export default function Results() {
 
   if (checking) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-background">
+        <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+          <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
+            <SoloLogo width={100} height={28} />
+          </div>
+        </nav>
+        <div className="mx-auto max-w-3xl px-6 py-16 space-y-8">
+          <ShimmerSkeleton width="60%" height={32} />
+          <ShimmerSkeleton width="80%" height={16} />
+          {/* Gauge skeleton */}
+          <GlassCard className="flex items-center gap-6 p-6">
+            <ShimmerSkeleton width={140} height={140} borderRadius="50%" />
+            <div className="space-y-2 flex-1">
+              <ShimmerSkeleton width="50%" height={18} />
+              <ShimmerSkeleton width="90%" height={14} />
+              <ShimmerSkeleton width="70%" height={14} />
+            </div>
+          </GlassCard>
+          {/* Chart skeleton */}
+          <GlassCard className="p-6">
+            <ShimmerSkeleton width={160} height={16} className="mb-4" />
+            <ShimmerSkeleton width="100%" height={200} borderRadius={8} />
+          </GlassCard>
+          {/* Text block skeletons */}
+          <GlassCard className="p-6 space-y-3">
+            <ShimmerSkeleton width="40%" height={16} />
+            <ShimmerSkeleton width="100%" height={12} />
+            <ShimmerSkeleton width="85%" height={12} />
+            <ShimmerSkeleton width="60%" height={12} />
+          </GlassCard>
+        </div>
       </div>
     );
   }
