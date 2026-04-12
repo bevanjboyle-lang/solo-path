@@ -322,12 +322,7 @@ export default function Results() {
             )}
           </AnimatePresence>
 
-              {/* AI Impact */}
-              {report?.ai_impact_section && (
-                <AIImpactSection data={report.ai_impact_section} />
-              )}
-            </div>
-          )}
+
 
           {/* PHASE 2: Plan Display */}
           {showPlanPhase && !generating && !genError && (
