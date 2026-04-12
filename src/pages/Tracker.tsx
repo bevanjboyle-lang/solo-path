@@ -260,8 +260,7 @@ function getStrandsFromPlan(workingPlan: any): string[] {
 function PortfolioReviewCard({ session, navigate }: { session: any; navigate: (path: string) => void }) {
   const strands = getStrandsFromPlan(session.working_plan);
   const isPortfolio = strands.length > 1;
-  const reviewDay = 15;
-  const showReview = isPortfolio && session.current_day >= reviewDay && session.current_day <= reviewDay + 2;
+  const showReview = isPortfolio && (session.current_day === 19 || session.current_day === 26);
 
   if (!showReview) return null;
 
