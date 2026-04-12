@@ -158,15 +158,15 @@ export default function Questionnaire() {
     setCurrent((c) => c - 1);
   };
 
-  // CV upload step — shown before questionnaire starts
+  // CV upload step — shown as first post-auth screen before Q1
   if (showCvStep) {
     return (
       <div className="flex min-h-screen flex-col bg-background text-foreground items-center justify-center px-6">
         <div className="w-full max-w-lg space-y-6 text-center">
           <div className="space-y-2">
-            <h1 className="text-2xl font-semibold text-foreground">Before we start</h1>
+            <h1 className="text-2xl font-semibold text-foreground">Before we start: upload your CV (optional)</h1>
             <p className="text-muted-foreground">
-              Do you have a CV to hand? Uploading it lets us skip most of the basic questions — we'll read your work history directly and only ask the things a CV can't tell us.
+              If you upload your CV, we can skip most of the setup questions and read your work history directly. Your CV is used only to generate your report and is not stored beyond that.
             </p>
           </div>
           <div className="rounded-xl border-2 border-dashed border-border bg-surface/50 p-8 space-y-4">
@@ -182,7 +182,7 @@ export default function Questionnaire() {
                   <label className="cursor-pointer">
                     <span className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
                       <Upload className="h-4 w-4" />
-                      Upload CV — PDF or Word
+                      Upload CV
                     </span>
                     <input
                       type="file"
@@ -202,9 +202,9 @@ export default function Questionnaire() {
           {!cvUploading && (
             <button
               onClick={() => setShowCvStep(false)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-foreground hover:bg-surface transition-colors"
             >
-              Continue without CV →
+              Skip: I'll answer the questions
             </button>
           )}
         </div>
