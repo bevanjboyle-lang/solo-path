@@ -63,13 +63,13 @@ const steps = [
   {
     num: "03",
     title: "Get your tailored Plan B report",
-    desc: "A full report with 3 business options, a clear recommendation, realistic income projections, a 30-day activation plan, and a local market snapshot.",
+    desc: "A full report with up to 5 business paths explored in parallel, a clear recommendation, realistic income projections, a 30-day activation plan, and a local market snapshot.",
   },
 ];
 
 const reportSections = [
   { icon: Search, title: "Profile interpretation", desc: "What you look like commercially, not just professionally" },
-  { icon: FileText, title: "Three business options", desc: "Ranked, realistic paths built from your background" },
+  { icon: FileText, title: "Up to 5 business paths", desc: "Explored in parallel so you're not locked in before you know what has traction" },
   { icon: Star, title: "Our recommendation", desc: "One clear answer on which path makes most sense for you" },
   { icon: AlertTriangle, title: "Reality check", desc: "What's likely to go wrong, and why that matters" },
   { icon: CalendarCheck, title: "30-day activation plan", desc: "A day-by-day action sequence tailored to your situation" },
@@ -155,15 +155,7 @@ export default function Landing() {
             <p className="text-sm leading-relaxed text-muted-foreground">
               Solo specialises in helping structured, experienced professionals establish a credible independent income stream, whether you're ready to make the move, or simply want to know what your options are.
             </p>
-            <Button
-              size="lg"
-              className="mt-6 rounded-lg bg-primary px-8 py-4 text-sm font-medium text-primary-foreground hover:bg-[#1FAF97]"
-              onClick={() => navigate("/questionnaire")}
-            >
-              Take the test, it's free to see your profile →
-            </Button>
           </motion.div>
-
 
           <motion.div
             className="mt-10 flex flex-col items-center gap-3"
