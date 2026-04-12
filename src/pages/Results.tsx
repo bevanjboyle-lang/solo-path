@@ -41,11 +41,13 @@ export default function Results() {
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
-  // Allow returning to selection after plan generated (before tracker started)
   const [forceSelection, setForceSelection] = useState(false);
+  const [showRemaining, setShowRemaining] = useState(false);
+  const [recommendedLoaded, setRecommendedLoaded] = useState(false);
+  const [selectionChanged, setSelectionChanged] = useState(false);
 
-  const MIN_SELECTIONS = 1;
-  const MAX_SELECTIONS = 3;
+  const MIN_SELECTIONS = 2;
+  const MAX_SELECTIONS = 5;
 
   const reportId = searchParams.get("report_id");
   const fromPayment = searchParams.get("from") === "payment";
@@ -59,7 +61,18 @@ export default function Results() {
       .eq("id", reportId)
       .single()
       .then(({ data }) => {
-        if (data) setReport(data as ReportData);
+        if (data) {
+          setReport(data as ReportData);
+          // Pre-load recommended_selection
+          const cr = (data as ReportData).core_report;
+          if (cr?.recommended_selection && !recommendedLoaded) {
+            const ranks = (cr.recommended_selection.ranks || []) as number[];
+            if (ranks.length > 0) {
+              setSelectedRanks(new Set(ranks));
+              setRecommendedLoaded(true);
+            }
+          }
+        }
       });
   }, [reportId]);
 
@@ -122,6 +135,7 @@ export default function Results() {
       }
       return next;
     });
+    setSelectionChanged(true);
   };
 
   const handleGeneratePlan = async () => {
@@ -272,12 +286,18 @@ export default function Results() {
 
               {/* Options Card Grid */}
               <div>
-                <h2 className="text-lg font-semibold text-foreground mb-1">Build Your Portfolio</h2>
-                <p className="text-sm text-muted-foreground mb-4">Select 1–{MAX_SELECTIONS} options to build a portfolio plan — or pick 1 if you have a clear preference. We recommend 3.</p>
+                <h2 className="text-lg font-semibold text-foreground mb-1">We suggest starting with these options. Change anything you like.</h2>
+                <p className="text-sm text-muted-foreground mb-2">You can select 2 to 5 options. The recommendation is based on your capability profile and income risk spread.</p>
+                {cr.recommended_selection?.rationale && (
+                  <p className="text-sm text-muted-foreground/80 mb-4 italic">{cr.recommended_selection.rationale}</p>
+                )}
+
+                {/* Top 5 — expanded */}
                 <div className="space-y-4">
                   {(cr.options || [])
                     .slice()
                     .sort((a: any, b: any) => a.rank - b.rank)
+                    .filter((opt: any) => opt.rank <= 5)
                     .map((opt: any) => (
                       <SelectionOptionCard
                         key={opt.rank}
@@ -289,6 +309,36 @@ export default function Results() {
                     ))}
                 </div>
 
+                {/* Remaining 6-10 — collapsed */}
+                {(cr.options || []).some((o: any) => o.rank > 5) && (
+                  <div className="mt-4">
+                    {!showRemaining ? (
+                      <button
+                        onClick={() => setShowRemaining(true)}
+                        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                        Show remaining {(cr.options || []).filter((o: any) => o.rank > 5).length} options
+                      </button>
+                    ) : (
+                      <div className="space-y-2">
+                        {(cr.options || [])
+                          .slice()
+                          .sort((a: any, b: any) => a.rank - b.rank)
+                          .filter((opt: any) => opt.rank > 5)
+                          .map((opt: any) => (
+                            <CompactOptionCard
+                              key={opt.rank}
+                              option={opt}
+                              selected={selectedRanks.has(opt.rank)}
+                              onToggle={() => toggleRank(opt.rank)}
+                              selectionFull={selectedRanks.size >= MAX_SELECTIONS}
+                            />
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* AI Impact */}
@@ -309,29 +359,26 @@ export default function Results() {
               >
                 <div className="mx-auto max-w-3xl">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-foreground">
-                      {selectedRanks.size === 1 ? (
-                        <>
-                          <span className="font-semibold">1</span> option selected
-                        </>
-                      ) : (
-                        <>
-                          <span className="font-semibold">{selectedRanks.size}</span> strands selected — building a portfolio
-                        </>
+                    <div>
+                      <p className="text-sm text-foreground">
+                        <span className="font-semibold">{selectedRanks.size}</span> option{selectedRanks.size !== 1 ? "s" : ""} selected
+                      </p>
+                      {selectedRanks.size < MIN_SELECTIONS && (
+                        <p className="text-xs text-muted-foreground">Select at least {MIN_SELECTIONS} options</p>
                       )}
-                    </p>
+                    </div>
                     <Button
                       disabled={selectedRanks.size < MIN_SELECTIONS}
                       onClick={() => setShowConfirm(true)}
                       style={{ background: "#2ECDB0" }}
                       className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
                     >
-                      {selectedRanks.size === 1 ? "Build my plan →" : "Build my portfolio plan →"}
+                      Build my plan with these {selectedRanks.size} options →
                     </Button>
                   </div>
                   {selectedRanks.size >= MAX_SELECTIONS && (
                     <p className="text-xs text-muted-foreground mt-2 text-center">
-                      You've reached the maximum. Deselect one to add a different option.
+                      You've reached the maximum of {MAX_SELECTIONS}. Deselect one to add a different option.
                     </p>
                   )}
                 </div>
@@ -529,16 +576,10 @@ export default function Results() {
       <Dialog open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {selectedRanks.size === 1 ? "Build your plan" : "Build your portfolio plan"}
-            </DialogTitle>
+            <DialogTitle>Build your portfolio plan</DialogTitle>
             <DialogDescription asChild>
               <div className="space-y-3 text-sm text-muted-foreground">
-                {selectedRanks.size === 1 ? (
-                  <p>Build your personalised 30-day plan for:</p>
-                ) : (
-                  <p>You're building a parallel pursuit plan across {selectedRanks.size} strands:</p>
-                )}
+                <p>You're building a parallel pursuit plan across {selectedRanks.size} strands:</p>
                 <ul className="space-y-1.5 text-left">
                   {cr && (cr.options || [])
                     .filter((o: any) => selectedRanks.has(o.rank))
@@ -552,9 +593,14 @@ export default function Results() {
                       </li>
                     ))}
                 </ul>
-                {selectedRanks.size > 1 && (
+                {selectionChanged && (
                   <p className="text-xs text-muted-foreground/80">
-                    Solo will create one integrated 30-day plan with strand-specific tasks for each path. You'll run them in parallel and narrow down as you gather evidence.
+                    Rebuilding your plan for your chosen options. Usually under 20 seconds.
+                  </p>
+                )}
+                {!selectionChanged && (
+                  <p className="text-xs text-muted-foreground/80">
+                    Solo will create one integrated 30-day plan with strand-specific tasks for each path.
                   </p>
                 )}
               </div>
@@ -567,7 +613,7 @@ export default function Results() {
               style={{ background: "#2ECDB0" }}
               className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
             >
-              {selectedRanks.size === 1 ? "Build my plan" : "Build portfolio plan"}
+              Build my plan with these {selectedRanks.size} options
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -666,6 +712,36 @@ function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { op
         )}
       </div>
     </motion.div>
+  );
+}
+
+function CompactOptionCard({ option, selected, onToggle, selectionFull }: { option: any; selected: boolean; onToggle: () => void; selectionFull: boolean }) {
+  const dc = diffColors[option.difficulty_rating] || diffColors.moderate;
+  const disabled = !selected && selectionFull;
+
+  return (
+    <div
+      onClick={() => !disabled && onToggle()}
+      className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-all ${
+        selected ? "border-primary bg-primary/5" : disabled ? "border-border opacity-40 cursor-not-allowed" : "border-border hover:border-primary/30"
+      }`}
+    >
+      <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
+        selected ? "bg-primary border-primary" : "border-muted-foreground/30"
+      }`}>
+        {selected && <Check className="h-3 w-3 text-primary-foreground" />}
+      </div>
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground text-[10px] font-bold">
+        {option.rank}
+      </span>
+      <span className="text-sm font-medium text-foreground flex-1">{option.model_name}</span>
+      <Badge className={`text-[10px] px-2 py-0.5 border ${dc}`}>
+        {option.difficulty_rating}
+      </Badge>
+      {option.fit_score != null && (
+        <span className="text-xs text-muted-foreground">{option.fit_score}/10</span>
+      )}
+    </div>
   );
 }
 

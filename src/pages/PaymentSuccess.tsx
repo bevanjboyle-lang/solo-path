@@ -1,24 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle, Loader2, Copy, Check, ArrowRight, Zap } from "lucide-react";
+import { CheckCircle, Loader2, Copy, Check, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import SoloLogo from "@/components/SoloLogo";
 
-interface OutreachDraft {
-  format: string;
-  subject?: string;
-  body: string;
-  tone_note?: string;
-  personalisation_instructions?: string;
-}
-
-interface FirstMove {
-  action: string;
-  window: string;
+interface ProvisionalFirstMove {
+  action_text: string;
   why_first: string;
-  outreach_draft: OutreachDraft;
+  draft_message: {
+    format?: string;
+    subject?: string;
+    body: string;
+  };
   follow_up_prompt: string;
 }
 
@@ -26,10 +21,10 @@ export default function PaymentSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState(false);
-  const [firstMove, setFirstMove] = useState<FirstMove | null>(null);
+  const [provisionalFirstMove, setProvisionalFirstMove] = useState<ProvisionalFirstMove | null>(null);
   const [resultsUrl, setResultsUrl] = useState<string>("");
   const [copied, setCopied] = useState(false);
-  const [showDraft, setShowDraft] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   useEffect(() => {
     const sessionId = searchParams.get("session_id");
@@ -49,25 +44,44 @@ export default function PaymentSuccess() {
           const savedReportId = localStorage.getItem("solo_report_id");
           const reportParam = savedReportId ? `report_id=${savedReportId}&` : "";
           const url = `/results?${reportParam}from=payment`;
+          setResultsUrl(url);
+          setVerified(true);
 
-          // Try to surface First Move from the already-generated report
+          // Try to load provisional_first_move from report
           if (savedReportId) {
             const { data: report } = await supabase
+              .from("reports")
+              .select("core_report")
+              .eq("id", savedReportId)
+              .single();
+
+            const pfm = (report?.core_report as any)?.provisional_first_move;
+            if (pfm?.action_text && pfm?.draft_message) {
+              setProvisionalFirstMove(pfm);
+              return;
+            }
+
+            // Also check activation_plan.first_move as fallback
+            const { data: report2 } = await supabase
               .from("reports")
               .select("activation_plan")
               .eq("id", savedReportId)
               .single();
-
-            const fm = (report?.activation_plan as any)?.first_move;
+            const fm = (report2?.activation_plan as any)?.first_move;
             if (fm?.action && fm?.outreach_draft) {
-              setFirstMove(fm);
-              setResultsUrl(url);
+              setProvisionalFirstMove({
+                action_text: fm.action,
+                why_first: fm.why_first || "",
+                draft_message: {
+                  format: fm.outreach_draft.format,
+                  subject: fm.outreach_draft.subject,
+                  body: fm.outreach_draft.body,
+                },
+                follow_up_prompt: fm.follow_up_prompt || "We'll ask you about this tomorrow.",
+              });
               return;
             }
           }
-
-          // Fallback: no first_move, navigate directly
-          setTimeout(() => navigate(url), 1500);
         } else {
           setError(true);
         }
@@ -80,17 +94,17 @@ export default function PaymentSuccess() {
   }, [navigate, searchParams]);
 
   const handleCopy = () => {
-    if (!firstMove?.outreach_draft?.body) return;
-    const text = firstMove.outreach_draft.subject
-      ? `Subject: ${firstMove.outreach_draft.subject}\n\n${firstMove.outreach_draft.body}`
-      : firstMove.outreach_draft.body;
+    if (!provisionalFirstMove?.draft_message?.body) return;
+    const text = provisionalFirstMove.draft_message.subject
+      ? `Subject: ${provisionalFirstMove.draft_message.subject}\n\n${provisionalFirstMove.draft_message.body}`
+      : provisionalFirstMove.draft_message.body;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
 
-  // ── First Move view ──────────────────────────────────────────────────────────
-  if (firstMove && resultsUrl) {
+  // Error state
+  if (error) {
     return (
       <div className="min-h-screen bg-background text-foreground">
         <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -98,93 +112,38 @@ export default function PaymentSuccess() {
             <SoloLogo width={100} height={28} />
           </div>
         </nav>
-
-        <div className="mx-auto max-w-2xl px-6 py-12">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col gap-8"
-          >
-            {/* Header */}
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Zap className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-widest text-primary">Your First Move</p>
-                <h1 className="text-xl font-semibold tracking-tight">Do this in the next 24 hours</h1>
-              </div>
+        <div className="mx-auto max-w-lg px-6 py-24 text-center">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+              <CheckCircle className="h-8 w-8 text-destructive" />
             </div>
-
-            {/* Action card */}
-            <div className="rounded-xl border border-border/60 bg-card p-6 flex flex-col gap-4">
-              <p className="text-base font-medium leading-snug">{firstMove.action}</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">{firstMove.why_first}</p>
-
-              {/* Outreach draft toggle */}
-              <button
-                onClick={() => setShowDraft(!showDraft)}
-                className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors w-fit"
-              >
-                {showDraft
-                  ? "Hide draft"
-                  : `See the ${firstMove.outreach_draft.format === "email" ? "email" : "message"} draft`}
-                <ArrowRight
-                  className={`h-3.5 w-3.5 transition-transform duration-200 ${showDraft ? "rotate-90" : ""}`}
-                />
-              </button>
-
-              {showDraft && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  transition={{ duration: 0.2 }}
-                  className="flex flex-col gap-3 border-t border-border/40 pt-4"
-                >
-                  {firstMove.outreach_draft.subject && (
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">Subject</p>
-                      <p className="text-sm">{firstMove.outreach_draft.subject}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">Message</p>
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{firstMove.outreach_draft.body}</p>
-                  </div>
-                  {firstMove.outreach_draft.personalisation_instructions && (
-                    <p className="text-xs text-muted-foreground italic border-l-2 border-primary/30 pl-3">
-                      {firstMove.outreach_draft.personalisation_instructions}
-                    </p>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleCopy}
-                    className="self-start gap-2"
-                  >
-                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copied ? "Copied!" : "Copy draft"}
-                  </Button>
-                </motion.div>
-              )}
-            </div>
-
-            {/* Continue to full report */}
-            <Button
-              onClick={() => navigate(resultsUrl)}
-              className="self-start gap-2"
-            >
-              View your full report
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+            <h1 className="text-2xl font-semibold tracking-tight">Something went wrong</h1>
+            <p className="text-sm leading-relaxed text-muted-foreground">We couldn't verify your payment. Please contact support.</p>
           </motion.div>
         </div>
       </div>
     );
   }
 
-  // ── Default payment confirmation (while verifying / fallback) ────────────────
+  // Still verifying
+  if (!verified) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+          <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
+            <SoloLogo width={100} height={28} />
+          </div>
+        </nav>
+        <div className="mx-auto max-w-lg px-6 py-24 text-center">
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-6">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Verifying payment...</p>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -193,25 +152,76 @@ export default function PaymentSuccess() {
         </div>
       </nav>
 
-      <div className="mx-auto max-w-lg px-6 py-24 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col items-center gap-6"
-        >
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <CheckCircle className="h-8 w-8 text-primary" />
+      <div className="mx-auto max-w-2xl px-6 py-12">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-col gap-8">
+          {/* Section 1: Confirmation */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <CheckCircle className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight">Payment confirmed. Your full report is ready.</h1>
+            </div>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            {error ? "Something went wrong" : "Payment successful"}
-          </h1>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {error
-              ? "We couldn't verify your payment. Please contact support."
-              : "Redirecting to your full report..."}
-          </p>
-          {!error && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
+
+          {/* Section 2: Provisional First Move (if available) */}
+          {provisionalFirstMove && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.4 }}
+              className="space-y-4"
+            >
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Before you read your report: do this one thing.</h2>
+                <p className="mt-1 text-sm text-muted-foreground">The best time to act is before the planning starts. This is based on your top-ranked option.</p>
+              </div>
+
+              {/* Action text */}
+              <div className="rounded-xl border border-border/60 bg-card p-6 space-y-4">
+                <p className="text-base font-medium leading-snug text-foreground">{provisionalFirstMove.action_text}</p>
+                {provisionalFirstMove.why_first && (
+                  <p className="text-sm text-muted-foreground leading-relaxed">{provisionalFirstMove.why_first}</p>
+                )}
+
+                {/* Draft message card */}
+                <div className="rounded-lg border border-border bg-surface/50 p-4 space-y-3">
+                  {provisionalFirstMove.draft_message.subject && (
+                    <div>
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70 mb-1">Subject</p>
+                      <p className="text-sm text-foreground">{provisionalFirstMove.draft_message.subject}</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70 mb-1">Message</p>
+                    <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">{provisionalFirstMove.draft_message.body}</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
+                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? "Copied!" : "Copy message"}
+                  </Button>
+                </div>
+
+                <p className="text-xs text-muted-foreground italic">We'll ask you about this tomorrow.</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Section 3: CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: provisionalFirstMove ? 0.4 : 0.2, duration: 0.4 }}
+          >
+            <Button
+              onClick={() => navigate(resultsUrl)}
+              className="gap-2"
+              style={{ background: "var(--gradient-cta)" }}
+            >
+              View your full report
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </motion.div>
         </motion.div>
       </div>
     </div>
