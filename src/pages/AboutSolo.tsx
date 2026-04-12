@@ -33,7 +33,7 @@ export default function AboutSolo() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              We Built Solo For A Reason
+              Our Mission Comes From Experience
             </motion.span>
             <motion.h1
               className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl"
@@ -42,7 +42,7 @@ export default function AboutSolo() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.05 }}
             >
-              Build income outside your job. Before you need to.
+              We Built Solo For A Reason
             </motion.h1>
           </div>
         </section>
