@@ -104,7 +104,7 @@ export default function Tracker() {
           </div>
 
           {/* Strand Status Cards — per-strand progress for portfolio plans */}
-          <StrandStatusCards phases={phases} completedTasks={completedTasks} />
+          <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
 
           {/* Portfolio Review — mid-plan check-in for multi-strand plans */}
           <PortfolioReviewCard session={session} navigate={navigate} />
@@ -311,8 +311,33 @@ const STRAND_CARD_COLORS = [
   { dot: "bg-[hsl(340,70%,55%)]", bar: "bg-[hsl(340,70%,55%)]" },   // rose
 ];
 
-function StrandStatusCards({ phases, completedTasks }: { phases: any[]; completedTasks: Set<string> }) {
-  // Build per-strand stats
+type StrandStatus = "active" | "watching" | "paused" | "graduated";
+
+const STATUS_BADGES: Record<StrandStatus, { label: string; className: string }> = {
+  active:    { label: "ACTIVE",       className: "bg-[hsl(168,70%,45%)]/15 text-[hsl(168,70%,45%)] border-[hsl(168,70%,45%)]/20" },
+  watching:  { label: "WATCHING",     className: "bg-muted text-muted-foreground border-border" },
+  paused:    { label: "PAUSED",       className: "bg-muted/50 text-muted-foreground/60 border-border/50" },
+  graduated: { label: "GRADUATED ★",  className: "bg-[hsl(142,70%,40%)]/15 text-[hsl(142,70%,40%)] border-[hsl(142,70%,40%)]/20 font-bold" },
+};
+
+function SignalDots({ score }: { score: number }) {
+  const filled = Math.round(Math.max(0, Math.min(10, score)) / 2);
+  return (
+    <div className="flex items-center gap-1" title={`Signal: ${score}/10`}>
+      {Array.from({ length: 5 }).map((_, i) => (
+        <span
+          key={i}
+          className={`inline-block h-1.5 w-1.5 rounded-full transition-colors ${
+            i < filled ? "bg-primary" : "bg-muted-foreground/20"
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function StrandStatusCards({ phases, completedTasks, session, navigate }: { phases: any[]; completedTasks: Set<string>; session: any; navigate: (path: string) => void }) {
+  // Build per-strand stats from tasks
   const strandStats = new Map<string, { total: number; done: number; colorIdx: number }>();
   let colorIdx = 0;
 
@@ -333,27 +358,67 @@ function StrandStatusCards({ phases, completedTasks }: { phases: any[]; complete
 
   if (strandStats.size < 2) return null;
 
+  // Strand metadata from working_plan (status, signal_score)
+  const strandMeta: Record<string, { status: StrandStatus; signal_score: number }> =
+    session?.working_plan?.strand_status || {};
+
+  const reviewDay = 15;
+  const isReviewDay = session?.current_day >= reviewDay && session?.current_day <= reviewDay + 2;
+
   return (
-    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-      {Array.from(strandStats.entries()).map(([strand, stats]) => {
-        const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
-        const c = STRAND_CARD_COLORS[stats.colorIdx % STRAND_CARD_COLORS.length];
-        return (
-          <div key={strand} className="rounded-xl border border-border bg-card p-4 shadow-card">
-            <div className="flex items-center gap-2 mb-3">
-              <span className={`inline-block h-2 w-2 rounded-full ${c.dot}`} />
-              <span className="text-sm font-medium text-foreground truncate">{strand}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
-                <div className={`h-full rounded-full ${c.bar} transition-all`} style={{ width: `${pct}%` }} />
+    <div className="mt-6 space-y-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {Array.from(strandStats.entries()).map(([strand, stats]) => {
+          const pct = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
+          const c = STRAND_CARD_COLORS[stats.colorIdx % STRAND_CARD_COLORS.length];
+          const meta = strandMeta[strand] || { status: "active" as StrandStatus, signal_score: 0 };
+          const badge = STATUS_BADGES[meta.status] || STATUS_BADGES.active;
+
+          return (
+            <div key={strand} className="rounded-xl border border-border bg-card p-4 shadow-card">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${c.dot}`} />
+                  <span className="text-sm font-medium text-foreground truncate">{strand}</span>
+                </div>
+                <span className={`shrink-0 inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${badge.className}`}>
+                  {badge.label}
+                </span>
               </div>
-              <span className="text-xs font-medium text-muted-foreground w-8 text-right">{pct}%</span>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                  <div className={`h-full rounded-full ${c.bar} transition-all`} style={{ width: `${pct}%` }} />
+                </div>
+                <span className="text-xs font-medium text-muted-foreground w-8 text-right">{pct}%</span>
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-[11px] text-muted-foreground">{stats.done} of {stats.total} tasks</p>
+                {meta.signal_score > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-muted-foreground/70">Signal</span>
+                    <SignalDots score={meta.signal_score} />
+                  </div>
+                )}
+              </div>
             </div>
-            <p className="mt-1.5 text-[11px] text-muted-foreground">{stats.done} of {stats.total} tasks</p>
+          );
+        })}
+      </div>
+
+      {/* Portfolio Review Today prompt */}
+      {isReviewDay && (
+        <button
+          onClick={() => navigate(`/checkin/${session.id}?review=portfolio`)}
+          className="w-full rounded-xl border-2 border-primary/30 bg-card p-4 shadow-card text-left hover:bg-card/80 transition-colors flex items-center gap-3"
+        >
+          <span className="text-lg">🗓</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-foreground">Portfolio Review Today</p>
+            <p className="text-xs text-muted-foreground">Review which strands are showing signal and decide where to focus</p>
           </div>
-        );
-      })}
+          <span className="text-xs text-primary font-medium">Start →</span>
+        </button>
+      )}
     </div>
   );
 }
