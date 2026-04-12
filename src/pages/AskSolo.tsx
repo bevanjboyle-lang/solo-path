@@ -7,11 +7,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import SoloLogo from "@/components/SoloLogo";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  timestamp: Date;
 }
 
 export default function AskSolo() {
@@ -22,10 +22,13 @@ export default function AskSolo() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [contextCue, setContextCue] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Check subscription
+  // Check subscription + start session
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -38,19 +41,33 @@ export default function AskSolo() {
       setSubscriptionActive(active);
 
       if (active) {
-        const firstName = user.user_metadata?.full_name?.split(" ")[0]
-          || user.email?.split("@")[0]
-          || "there";
-        setMessages([
-          {
-            role: "assistant",
-            content: `Hi ${firstName}! I am your Solo advisory companion. What do you want to work through today?`,
-          },
-        ]);
+        try {
+          const { data: sessionData } = await supabase.functions.invoke("ask-solo", {
+            body: { call_type: "start_session" },
+          });
+          if (sessionData) {
+            setSessionId(sessionData.session_id);
+            setConversationId(sessionData.conversation_id);
+            setContextCue(sessionData.context_cue);
+          }
+        } catch (err) {
+          console.error("Failed to start session:", err);
+        }
       }
       setLoading(false);
     })();
   }, [user]);
+
+  // End session on unmount
+  useEffect(() => {
+    return () => {
+      if (conversationId) {
+        supabase.functions.invoke("ask-solo", {
+          body: { call_type: "end_session", conversation_id: conversationId },
+        });
+      }
+    };
+  }, [conversationId]);
 
   // Auto-scroll
   useEffect(() => {
@@ -61,39 +78,40 @@ export default function AskSolo() {
     const text = input.trim();
     if (!text || sending || !user) return;
 
-    const userMsg: ChatMessage = { role: "user", content: text };
+    const userMsg: ChatMessage = { role: "user", content: text, timestamp: new Date() };
     const updated = [...messages, userMsg];
     setMessages(updated);
     setInput("");
     setSending(true);
 
     try {
-      const res = await fetch(
-        `https://dnnxmjazillhktwttkux.supabase.co/functions/v1/ask-solo`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: user.id,
-            message: text,
-            conversationHistory: updated,
-          }),
-        }
-      );
-      const data = await res.json();
+      const { data, error } = await supabase.functions.invoke("ask-solo", {
+        body: {
+          call_type: "conversation",
+          session_id: sessionId,
+          conversation_id: conversationId,
+          message: text,
+          history: updated.map((m) => ({ role: m.role, content: m.content })),
+        },
+      });
+      if (error) throw error;
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: data.response || "Sorry, I couldn't generate a response. Please try again." },
+        {
+          role: "assistant",
+          content: data?.response || "Sorry, I couldn't generate a response. Please try again.",
+          timestamp: new Date(),
+        },
       ]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Something went wrong. Please try again." },
+        { role: "assistant", content: "Something went wrong. Please try again.", timestamp: new Date() },
       ]);
     }
     setSending(false);
     inputRef.current?.focus();
-  }, [input, sending, user, messages]);
+  }, [input, sending, user, messages, sessionId, conversationId]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -101,6 +119,9 @@ export default function AskSolo() {
       handleSend();
     }
   };
+
+  const formatTime = (d: Date) =>
+    d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   if (loading) {
     return (
@@ -138,22 +159,13 @@ export default function AskSolo() {
               <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
                 Ask Solo is your AI advisory companion, available to Solo subscribers. Upgrade to start a conversation.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Button
-                  onClick={() => navigate("/pricing")}
-                  className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  <Zap className="h-4 w-4 mr-1.5" />
-                  View Plans
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate("/pricing")}
-                  className="w-full sm:w-auto"
-                >
-                  Compare Options
-                </Button>
-              </div>
+              <Button
+                onClick={() => navigate("/pricing")}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <Zap className="h-4 w-4 mr-1.5" />
+                View Plans
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -185,6 +197,13 @@ export default function AskSolo() {
       {/* Messages */}
       <main className="flex-1 overflow-y-auto pt-14 pb-[88px]">
         <div className="mx-auto max-w-3xl px-6 py-6 space-y-4">
+          {/* Context cue banner */}
+          {contextCue && (
+            <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 mb-2">
+              <p className="text-xs text-primary/80">{contextCue}</p>
+            </div>
+          )}
+
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
               <motion.div
@@ -194,20 +213,25 @@ export default function AskSolo() {
                 transition={{ duration: 0.25 }}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "bg-primary text-primary-foreground rounded-br-md"
-                      : "bg-card border border-border/50 text-card-foreground rounded-bl-md"
-                  }`}
-                >
-                  {msg.role === "assistant" ? (
-                    <div className="prose prose-sm prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
-                    </div>
-                  ) : (
-                    <span className="whitespace-pre-wrap">{msg.content}</span>
-                  )}
+                <div className="flex flex-col gap-1">
+                  <div
+                    className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      msg.role === "user"
+                        ? "bg-primary text-primary-foreground rounded-br-md"
+                        : "bg-card border border-border/50 text-card-foreground rounded-bl-md"
+                    }`}
+                  >
+                    {msg.role === "assistant" ? (
+                      <div className="prose prose-sm prose-invert max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
+                    ) : (
+                      <span className="whitespace-pre-wrap">{msg.content}</span>
+                    )}
+                  </div>
+                  <span className={`text-[10px] text-muted-foreground/50 ${msg.role === "user" ? "text-right" : "text-left"}`}>
+                    {formatTime(msg.timestamp)}
+                  </span>
                 </div>
               </motion.div>
             ))}
