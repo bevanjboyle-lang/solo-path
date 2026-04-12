@@ -271,7 +271,7 @@ export default function Results() {
               {/* Options Card Grid */}
               <div>
                 <h2 className="text-lg font-semibold text-foreground mb-1">Build Your Portfolio</h2>
-                <p className="text-sm text-muted-foreground mb-4">Select {MIN_SELECTIONS}–{MAX_SELECTIONS} models to pursue in parallel. We'll build a combined plan.</p>
+                <p className="text-sm text-muted-foreground mb-4">Select 1–{MAX_SELECTIONS} options to build a portfolio plan — or pick 1 if you have a clear preference. We recommend 3.</p>
                 <div className="space-y-4">
                   {(cr.options || [])
                     .slice()
