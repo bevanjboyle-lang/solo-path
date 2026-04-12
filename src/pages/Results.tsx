@@ -519,18 +519,28 @@ export default function Results() {
       </div>
 
       {/* Confirmation Dialog */}
-      <Dialog open={!!confirmOption} onOpenChange={(open) => !open && setConfirmOption(null)}>
+      <Dialog open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Build your 30-day plan</DialogTitle>
+            <DialogTitle>Build your portfolio plan</DialogTitle>
             <DialogDescription>
-              Build your 30-day plan for <span className="font-semibold text-foreground">{confirmOption?.model_name}</span>?
+              Generate a combined 30-day plan for {selectedRanks.size} selected models?
+              <ul className="mt-2 space-y-1 text-left">
+                {cr && (cr.options || [])
+                  .filter((o: any) => selectedRanks.has(o.rank))
+                  .sort((a: any, b: any) => a.rank - b.rank)
+                  .map((o: any) => (
+                    <li key={o.rank} className="text-sm text-foreground">
+                      <span className="font-semibold">#{o.rank}</span> {o.model_name}
+                    </li>
+                  ))}
+              </ul>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setConfirmOption(null)}>Back to options</Button>
+            <Button variant="outline" onClick={() => setShowConfirm(false)}>Back to options</Button>
             <Button
-              onClick={() => confirmOption && handleGeneratePlan(confirmOption)}
+              onClick={handleGeneratePlan}
               style={{ background: "var(--gradient-cta)" }}
               className="text-primary-foreground border-0"
             >
