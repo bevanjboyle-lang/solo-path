@@ -55,7 +55,7 @@ export default function WhySolo() {
               The Solo Manifesto
             </motion.span>
             <motion.h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl" style={{ letterSpacing: "-0.02em" }} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.05 }}>
-              Professional independence used to be a niche choice. Increasingly, it is the smart preparation.
+              Professional independence used to be a niche choice. Increasingly, it is the attractive option.
             </motion.h1>
             <motion.p className="mx-auto mt-6 max-w-[580px] text-base leading-relaxed text-muted-foreground sm:text-lg" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
               This isn't a prediction. It's already happening. Solo exists to help capable, experienced professionals build a credible path that doesn't depend entirely on an employer.
