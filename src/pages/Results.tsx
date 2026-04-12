@@ -359,7 +359,21 @@ export default function Results() {
               </div>
 
               {/* Selected model header */}
-              {cr.selected_model && (
+              {cr.selected_models && cr.selected_models.length > 1 ? (
+                <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
+                  <p className="font-medium text-foreground">Your Portfolio Plan</p>
+                  <div className="flex flex-wrap gap-2">
+                    {cr.selected_models.map((m: any, i: number) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold">
+                          {m.rank}
+                        </span>
+                        {m.model_name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : cr.selected_model && (
                 <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 flex items-center gap-3">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
                     #{cr.selected_rank || "✓"}
@@ -430,32 +444,7 @@ export default function Results() {
               {/* 30-Day Activation Plan */}
               <ReportSection title="30-Day Activation Plan" icon={CalendarCheck}>
                 {ap?.activation_plan && (
-                  <div className="space-y-4">
-                    <p>{ap.activation_plan.summary}</p>
-                    {ap.activation_plan.pacing_note && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div className="rounded-lg bg-surface p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Pacing</p>
-                          <p className="text-xs">{ap.activation_plan.pacing_note}</p>
-                        </div>
-                        <div className="rounded-lg bg-surface p-3">
-                          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Network</p>
-                          <p className="text-xs">{ap.activation_plan.network_note}</p>
-                        </div>
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      {ap.activation_plan.phases?.map((phase: any, i: number) => (
-                        <PhaseSection key={i} phase={phase} />
-                      ))}
-                    </div>
-                    {ap.activation_plan.success_metric && (
-                      <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Success Metric</p>
-                        <p className="text-xs">{ap.activation_plan.success_metric}</p>
-                      </div>
-                    )}
-                  </div>
+                  <ActivationPlanDisplay plan={ap.activation_plan} />
                 )}
               </ReportSection>
 
@@ -727,10 +716,16 @@ function OutreachDraftPanel({ draft }: { draft: any }) {
   );
 }
 
-function OutreachTaskItem({ task }: { task: any }) {
+function OutreachTaskItem({ task, strandColorMap }: { task: any; strandColorMap?: Map<string, number> }) {
+  const strand = task.strand;
   return (
     <li className="space-y-1">
-      <span>{task.task}</span>
+      <span className="flex items-center gap-1.5 flex-wrap">
+        <span>{task.task}</span>
+        {strand && strandColorMap?.has(strand) && (
+          <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} />
+        )}
+      </span>
       {task.outreach_draft && <OutreachDraftPanel draft={task.outreach_draft} />}
     </li>
   );
@@ -781,7 +776,80 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
   );
 }
 
-function PhaseSection({ phase }: { phase: any }) {
+// Strand color palette — auto-assigned by index
+const STRAND_COLORS = [
+  { bg: "bg-[hsl(168,70%,45%)]/15", dot: "bg-[hsl(168,70%,45%)]", text: "text-[hsl(168,70%,45%)]" },   // mint
+  { bg: "bg-[hsl(38,90%,55%)]/15",  dot: "bg-[hsl(38,90%,55%)]",  text: "text-[hsl(38,90%,55%)]" },    // amber
+  { bg: "bg-[hsl(270,60%,60%)]/15", dot: "bg-[hsl(270,60%,60%)]", text: "text-[hsl(270,60%,60%)]" },   // violet
+  { bg: "bg-[hsl(200,70%,50%)]/15", dot: "bg-[hsl(200,70%,50%)]", text: "text-[hsl(200,70%,50%)]" },   // blue
+  { bg: "bg-[hsl(340,70%,55%)]/15", dot: "bg-[hsl(340,70%,55%)]", text: "text-[hsl(340,70%,55%)]" },   // rose
+];
+
+function StrandPill({ strand, colorIdx }: { strand: string; colorIdx: number }) {
+  const c = STRAND_COLORS[colorIdx % STRAND_COLORS.length];
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full ${c.bg} px-2 py-0.5 text-[10px] font-medium ${c.text}`}>
+      <span className={`inline-block h-1.5 w-1.5 rounded-full ${c.dot}`} />
+      {strand}
+    </span>
+  );
+}
+
+function ActivationPlanDisplay({ plan }: { plan: any }) {
+  // Build strand color map from all tasks
+  const strandColorMap = new Map<string, number>();
+  let colorIdx = 0;
+  plan.phases?.forEach((phase: any) => {
+    phase.days_detail?.forEach((d: any) => {
+      d.tasks?.forEach((t: any) => {
+        const strand = typeof t === 'object' && t !== null ? t.strand : null;
+        if (strand && !strandColorMap.has(strand)) {
+          strandColorMap.set(strand, colorIdx++);
+        }
+      });
+    });
+  });
+
+  const hasStrands = strandColorMap.size > 1;
+
+  return (
+    <div className="space-y-4">
+      <p>{plan.summary}</p>
+      {hasStrands && (
+        <div className="flex flex-wrap gap-2">
+          {Array.from(strandColorMap.entries()).map(([strand, idx]) => (
+            <StrandPill key={strand} strand={strand} colorIdx={idx} />
+          ))}
+        </div>
+      )}
+      {plan.pacing_note && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="rounded-lg bg-surface p-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Pacing</p>
+            <p className="text-xs">{plan.pacing_note}</p>
+          </div>
+          <div className="rounded-lg bg-surface p-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Network</p>
+            <p className="text-xs">{plan.network_note}</p>
+          </div>
+        </div>
+      )}
+      <div className="space-y-2">
+        {plan.phases?.map((phase: any, i: number) => (
+          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} />
+        ))}
+      </div>
+      {plan.success_metric && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1">Success Metric</p>
+          <p className="text-xs">{plan.success_metric}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PhaseSection({ phase, strandColorMap }: { phase: any; strandColorMap: Map<string, number> }) {
   return (
     <Collapsible>
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg bg-surface p-4 text-left hover:bg-surface/80 transition-colors group">
@@ -797,12 +865,23 @@ function PhaseSection({ phase }: { phase: any }) {
           {phase.days_detail?.map((d: any, i: number) => (
             <div key={i}>
               <p className="text-xs font-semibold text-foreground">{d.day}</p>
-              <ul className="list-disc list-inside text-xs space-y-0.5 ml-1">
-                {d.tasks?.map((t: any, j: number) => (
-                  typeof t === 'object' && t !== null && t.outreach_draft
-                    ? <OutreachTaskItem key={j} task={t} />
-                    : <li key={j}>{typeof t === 'string' ? t : (t?.task || '')}</li>
-                ))}
+              <ul className="list-disc list-inside text-xs space-y-1 ml-1">
+                {d.tasks?.map((t: any, j: number) => {
+                  const taskText = typeof t === 'string' ? t : (t?.task || '');
+                  const strand = typeof t === 'object' && t !== null ? t.strand : null;
+                  const hasOutreach = typeof t === 'object' && t !== null && t.outreach_draft;
+                  
+                  return hasOutreach ? (
+                    <OutreachTaskItem key={j} task={t} strandColorMap={strandColorMap} />
+                  ) : (
+                    <li key={j} className="flex items-center gap-1.5 flex-wrap">
+                      <span>{taskText}</span>
+                      {strand && strandColorMap.has(strand) && (
+                        <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} />
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}
