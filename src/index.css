@@ -96,3 +96,24 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+/* Metallic border utility */
+.metallic-border {
+  position: relative;
+}
+.metallic-border::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-image: linear-gradient(90deg, transparent 0%, rgba(46,205,176,0.3) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Shimmer animation */
+@keyframes shimmer-sweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
