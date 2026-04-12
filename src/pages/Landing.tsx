@@ -35,8 +35,8 @@ const fadeUp = {
 const problems = [
   {
     icon: Briefcase,
-    title: "AI is compressing white-collar work",
-    desc: "Middle-management coordination, compliance process-following, and structured analytical work are becoming more automatable. Not gone, but compressed.",
+    title: "Professional roles are becoming less predictable",
+    desc: "Middle-management, analytical, and process roles are being restructured faster than most professionals expected. Not eliminated — but less stable, less numerous, and less guaranteed than a decade ago.",
   },
   {
     icon: User,
@@ -114,8 +114,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05, ease: [0.25, 0.46, 0.45, 0.94] }}
           >
-            <span className="block">Could AI be coming for your role?</span>
-            <span className="mt-3 block">"I'll update my LinkedIn" isn't a Plan&nbsp;B.</span>
+            Build your Plan B before you need one.
           </motion.h1>
 
           <motion.p
@@ -124,7 +123,7 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
           >
-            Solo builds you a specific plan for independent income: the paths, the clients, the first 30 days, based on your actual career. <span className="font-bold text-foreground">So if AI does come for your role, you already know what you're doing next.</span>
+            Solo takes what you've built over your career and turns it into a realistic, executable path to independent income: the paths, the clients, the first 30 days, based on your actual experience. <span className="font-bold text-foreground">So whatever changes — whether it's AI, restructuring, or simply wanting more options — you already know what you're doing next.</span>
           </motion.p>
 
           {/* ── Stat strip ── */}
@@ -171,8 +170,6 @@ export default function Landing() {
         </div>
       </section>
 
-      <IndustryRiskSection />
-      <ExpertSaysSection />
       <WaitingRoomSection />
       <TestimonialsSection />
 
