@@ -17,6 +17,7 @@ import Tracker from "./pages/Tracker";
 import Checkin from "./pages/Checkin";
 import HowItWorks from "./pages/HowItWorks";
 import WhySolo from "./pages/WhySolo";
+import AboutSolo from "./pages/AboutSolo";
 import Pricing from "./pages/Pricing";
 import WhoItsFor from "./pages/WhoItsFor";
 import SampleReport from "./pages/SampleReport";
