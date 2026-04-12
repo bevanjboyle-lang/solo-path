@@ -148,7 +148,7 @@ export default function HowItWorks() {
               <ScrollReveal key={i} delay={i * 0.1}>
                 <div className="text-center">
                   <p className="font-display text-3xl font-bold text-primary sm:text-4xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    {s.prefix || ""}<AnimatedCounter end={s.num} duration={1.5} />
+                    {s.prefix || ""}<AnimatedCounter target={s.num} />
                   </p>
                   <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">{s.label}</p>
                 </div>
