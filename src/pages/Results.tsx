@@ -61,7 +61,18 @@ export default function Results() {
       .eq("id", reportId)
       .single()
       .then(({ data }) => {
-        if (data) setReport(data as ReportData);
+        if (data) {
+          setReport(data as ReportData);
+          // Pre-load recommended_selection
+          const cr = (data as ReportData).core_report;
+          if (cr?.recommended_selection && !recommendedLoaded) {
+            const ranks = (cr.recommended_selection.ranks || []) as number[];
+            if (ranks.length > 0) {
+              setSelectedRanks(new Set(ranks));
+              setRecommendedLoaded(true);
+            }
+          }
+        }
       });
   }, [reportId]);
 
