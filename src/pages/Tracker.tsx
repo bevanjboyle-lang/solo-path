@@ -237,3 +237,65 @@ export default function Tracker() {
     </div>
   );
 }
+
+// Extract unique strand names from the working plan
+function getStrandsFromPlan(workingPlan: any): string[] {
+  const strands = new Set<string>();
+  const phases = workingPlan?.activation_plan?.phases || workingPlan?.phases || [];
+  phases.forEach((phase: any) => {
+    phase.days_detail?.forEach((d: any) => {
+      d.tasks?.forEach((t: any) => {
+        if (typeof t === 'object' && t !== null && t.strand) {
+          strands.add(t.strand);
+        }
+      });
+    });
+  });
+  return Array.from(strands);
+}
+
+function PortfolioReviewCard({ session, navigate }: { session: any; navigate: (path: string) => void }) {
+  const strands = getStrandsFromPlan(session.working_plan);
+  const isPortfolio = strands.length > 1;
+  const reviewDay = 15;
+  const showReview = isPortfolio && session.current_day >= reviewDay && session.current_day <= reviewDay + 2;
+
+  if (!showReview) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mt-6 rounded-xl border-2 border-primary/30 bg-card p-6 shadow-card"
+    >
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+          <ClipboardList className="h-5 w-5 text-primary" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-foreground">
+            📋 Portfolio Review — Day {session.current_day}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            This is your mid-plan check-in. You'll review which strands are showing signal and decide where to focus your final stretch.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {strands.map((s, i) => (
+              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                {s}
+              </span>
+            ))}
+          </div>
+          <button
+            onClick={() => navigate(`/checkin/${session.id}?review=portfolio`)}
+            className="mt-4 inline-flex items-center gap-2 rounded-lg px-5 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
+            style={{ background: "var(--gradient-cta)" }}
+          >
+            Start portfolio review →
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
