@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, Zap, TrendingUp, Lightbulb, ArrowRight } from "lucide-react";
+import { Eye, Zap, TrendingUp, Lightbulb } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
@@ -67,24 +67,24 @@ export default function AboutSolo() {
         </section>
       </PanelLayout>
 
-      {/* Opening statement - large quote style */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <motion.div
-          className="mx-auto max-w-3xl text-center"
-          initial={{ opacity: 0, scale: 0.97 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.7 }}
-        >
-          <p className="font-display text-xl font-semibold leading-relaxed tracking-tight text-foreground sm:text-2xl lg:text-3xl" style={{ letterSpacing: "-0.01em" }}>
-            "Solo came out of something I couldn't really ignore anymore."
-          </p>
-        </motion.div>
-      </PanelLayout>
-
-      {/* The context */}
+      {/* ALL narrative content in one continuous panel */}
       <PanelLayout className="px-6 py-12 sm:px-10">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-3xl space-y-16">
+
+          {/* Opening quote */}
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0, scale: 0.97 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.7 }}
+          >
+            <p className="font-display text-xl font-semibold leading-relaxed tracking-tight text-foreground sm:text-2xl lg:text-3xl" style={{ letterSpacing: "-0.01em" }}>
+              "Solo came out of something I couldn't really ignore anymore."
+            </p>
+          </motion.div>
+
+          {/* Context paragraphs */}
           <motion.div
             className="space-y-5 text-[15px] leading-[1.85] text-muted-foreground sm:text-base"
             initial="hidden"
@@ -103,7 +103,7 @@ export default function AboutSolo() {
 
           {/* Dramatic transition */}
           <motion.div
-            className="my-12 text-center"
+            className="text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
@@ -116,7 +116,7 @@ export default function AboutSolo() {
 
           {/* Observation cards */}
           <motion.div
-            className="my-10 grid gap-4 sm:grid-cols-3"
+            className="grid gap-4 sm:grid-cols-3"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
@@ -138,6 +138,7 @@ export default function AboutSolo() {
             ))}
           </motion.div>
 
+          {/* Continuation */}
           <motion.div
             className="space-y-5 text-[15px] leading-[1.85] text-muted-foreground sm:text-base"
             initial="hidden"
@@ -159,7 +160,7 @@ export default function AboutSolo() {
 
           {/* Highlighted question */}
           <motion.div
-            className="my-12 rounded-xl border-2 border-primary/20 bg-primary/5 px-8 py-8 text-center"
+            className="rounded-xl border-2 border-primary/20 bg-primary/5 px-8 py-8 text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
@@ -173,14 +174,10 @@ export default function AboutSolo() {
               The answer is often far less certain than you'd expect.
             </p>
           </motion.div>
-        </div>
-      </PanelLayout>
 
-      {/* The flip - not just risk */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-3xl">
+          {/* Section heading: not just risk */}
           <motion.h2
-            className="font-display mb-8 text-2xl font-semibold tracking-tight sm:text-3xl"
+            className="font-display text-2xl font-semibold tracking-tight sm:text-3xl"
             style={{ letterSpacing: "-0.02em" }}
             initial="hidden"
             whileInView="visible"
@@ -208,9 +205,9 @@ export default function AboutSolo() {
             <p>But there's also something else:</p>
           </motion.div>
 
-          {/* The three feelings - horizontal highlight strip */}
+          {/* Three feelings */}
           <motion.div
-            className="my-10 grid gap-4 sm:grid-cols-3"
+            className="grid gap-4 sm:grid-cols-3"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
@@ -246,25 +243,19 @@ export default function AboutSolo() {
 
           {/* Two-column tension */}
           <motion.div
-            className="my-10 grid gap-4 sm:grid-cols-2"
+            className="grid gap-4 sm:grid-cols-2"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
             variants={staggerChildren}
           >
-            <motion.div
-              className="rounded-xl border border-border bg-surface-card p-6"
-              variants={fadeChild}
-            >
+            <motion.div className="rounded-xl border border-border bg-surface-card p-6" variants={fadeChild}>
               <span className="mb-2 inline-block text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">On one hand</span>
               <p className="text-sm font-medium leading-relaxed text-foreground">
                 A growing awareness that traditional career paths are becoming less predictable.
               </p>
             </motion.div>
-            <motion.div
-              className="rounded-xl border border-primary/20 bg-primary/5 p-6"
-              variants={fadeChild}
-            >
+            <motion.div className="rounded-xl border border-primary/20 bg-primary/5 p-6" variants={fadeChild}>
               <span className="mb-2 inline-block text-xs font-semibold uppercase tracking-[0.15em] text-primary">On the other</span>
               <p className="text-sm font-medium leading-relaxed text-foreground">
                 A belief that operating independently - even in a small way - is not just a defensive move, but a genuinely positive one.
@@ -285,14 +276,10 @@ export default function AboutSolo() {
               But having a second path - something you've built yourself, even at a modest level - changes how you relate to your work, your decisions, and your future.
             </p>
           </motion.div>
-        </div>
-      </PanelLayout>
 
-      {/* The gap Solo fills */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-3xl">
+          {/* The gap Solo fills */}
           <motion.h2
-            className="font-display mb-8 text-2xl font-semibold tracking-tight sm:text-3xl"
+            className="font-display text-2xl font-semibold tracking-tight sm:text-3xl"
             style={{ letterSpacing: "-0.02em" }}
             initial="hidden"
             whileInView="visible"
@@ -317,9 +304,9 @@ export default function AboutSolo() {
             </p>
           </motion.div>
 
-          {/* Solo's answer - standout card */}
+          {/* Solo's answer */}
           <motion.div
-            className="my-10 rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 p-8"
+            className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 p-8"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
@@ -333,12 +320,8 @@ export default function AboutSolo() {
               Not by promising anything unrealistic, and not by pushing people into big, risky moves. But by giving a structured way to start - a way to take someone who knows they should probably do something, and help them move into actually doing it, step by step.
             </p>
           </motion.div>
-        </div>
-      </PanelLayout>
 
-      {/* What Solo actually does */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-3xl">
+          {/* What Solo does */}
           <motion.div
             className="space-y-5 text-[15px] leading-[1.85] text-muted-foreground sm:text-base"
             initial="hidden"
@@ -354,7 +337,7 @@ export default function AboutSolo() {
 
           {/* Three attributes */}
           <motion.div
-            className="my-10 flex flex-col gap-3 sm:flex-row sm:gap-4"
+            className="flex flex-col gap-3 sm:flex-row sm:gap-4"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-60px" }}
@@ -371,8 +354,9 @@ export default function AboutSolo() {
             ))}
           </motion.div>
 
+          {/* Closing */}
           <motion.div
-            className="text-center"
+            className="text-center pb-4"
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
@@ -386,6 +370,7 @@ export default function AboutSolo() {
               Because the earlier you start, the more options you create for yourself - whether you ever need them or not.
             </p>
           </motion.div>
+
         </div>
       </PanelLayout>
 
