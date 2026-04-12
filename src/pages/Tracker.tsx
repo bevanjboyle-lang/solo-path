@@ -104,7 +104,7 @@ export default function Tracker() {
           </div>
 
           {/* Strand Status Cards — per-strand progress for portfolio plans */}
-          <StrandStatusCards phases={phases} completedTasks={completedTasks} />
+          <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
 
           {/* Portfolio Review — mid-plan check-in for multi-strand plans */}
           <PortfolioReviewCard session={session} navigate={navigate} />
