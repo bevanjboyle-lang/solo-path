@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { questions, Question } from "@/data/questions";
-import { ArrowLeft, Check, LogOut, Upload, FileText } from "lucide-react";
+import { ArrowLeft, Check, LogOut, Upload, FileText, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -53,8 +53,8 @@ export default function Questionnaire() {
     [user]
   );
 
-  const currentQuestion = questions[current] ?? questions[0]!;
-
+  const cvWasUploaded = cvExtract !== null;
+  const displayTotal = cvWasUploaded ? 12 : questions.length;
   const total = questions.length;
   const progress = ((current + 1) / total) * 100;
   const answer = answers[currentQuestion.id];
