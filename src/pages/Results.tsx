@@ -34,12 +34,16 @@ export default function Results() {
   const [paid, setPaid] = useState(false);
   const [report, setReport] = useState<ReportData | null>(null);
   const [searchParams] = useSearchParams();
-  const [confirmOption, setConfirmOption] = useState<any | null>(null);
+  const [selectedRanks, setSelectedRanks] = useState<Set<number>>(new Set());
+  const [showConfirm, setShowConfirm] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
   // Allow returning to selection after plan generated (before tracker started)
   const [forceSelection, setForceSelection] = useState(false);
+
+  const MIN_SELECTIONS = 2;
+  const MAX_SELECTIONS = 5;
 
   const reportId = searchParams.get("report_id");
   const fromPayment = searchParams.get("from") === "payment";
@@ -106,17 +110,29 @@ export default function Results() {
     }
   };
 
-  const handleGeneratePlan = async (option: any) => {
-    setConfirmOption(null);
+  const toggleRank = (rank: number) => {
+    setSelectedRanks((prev) => {
+      const next = new Set(prev);
+      if (next.has(rank)) {
+        next.delete(rank);
+      } else if (next.size < MAX_SELECTIONS) {
+        next.add(rank);
+      }
+      return next;
+    });
+  };
+
+  const handleGeneratePlan = async () => {
+    setShowConfirm(false);
     setGenerating(true);
     setGenError(null);
     setLoadingMsgIdx(0);
     try {
+      const ranks = Array.from(selectedRanks).sort((a, b) => a - b);
       const { data, error } = await supabase.functions.invoke("generate-plan", {
-        body: { report_id: reportId, selected_rank: option.rank },
+        body: { report_id: reportId, selected_ranks: ranks },
       });
       if (error) throw error;
-      // Update local report state with returned data
       setReport((prev) => {
         if (!prev) return prev;
         return {
@@ -254,7 +270,8 @@ export default function Results() {
 
               {/* Options Card Grid */}
               <div>
-                <h2 className="text-lg font-semibold text-foreground mb-4">Your Options</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-1">Build Your Portfolio</h2>
+                <p className="text-sm text-muted-foreground mb-4">Select {MIN_SELECTIONS}–{MAX_SELECTIONS} models to pursue in parallel. We'll build a combined plan.</p>
                 <div className="space-y-4">
                   {(cr.options || [])
                     .slice()
@@ -263,10 +280,36 @@ export default function Results() {
                       <SelectionOptionCard
                         key={opt.rank}
                         option={opt}
-                        onSelect={() => setConfirmOption(opt)}
+                        selected={selectedRanks.has(opt.rank)}
+                        onToggle={() => toggleRank(opt.rank)}
+                        selectionFull={selectedRanks.size >= MAX_SELECTIONS}
                       />
                     ))}
                 </div>
+
+                {/* Floating selection bar */}
+                {selectedRanks.size > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="sticky bottom-6 mt-6 rounded-xl border border-primary/30 bg-card/95 backdrop-blur-lg p-4 flex items-center justify-between shadow-lg"
+                  >
+                    <p className="text-sm text-foreground">
+                      <span className="font-semibold">{selectedRanks.size}</span> of {MAX_SELECTIONS} selected
+                      {selectedRanks.size < MIN_SELECTIONS && (
+                        <span className="text-muted-foreground ml-2">(min {MIN_SELECTIONS})</span>
+                      )}
+                    </p>
+                    <Button
+                      disabled={selectedRanks.size < MIN_SELECTIONS}
+                      onClick={() => setShowConfirm(true)}
+                      style={{ background: "var(--gradient-cta)" }}
+                      className="text-primary-foreground border-0"
+                    >
+                      Build my portfolio plan →
+                    </Button>
+                  </motion.div>
+                )}
               </div>
 
               {/* AI Impact */}
@@ -476,18 +519,28 @@ export default function Results() {
       </div>
 
       {/* Confirmation Dialog */}
-      <Dialog open={!!confirmOption} onOpenChange={(open) => !open && setConfirmOption(null)}>
+      <Dialog open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Build your 30-day plan</DialogTitle>
+            <DialogTitle>Build your portfolio plan</DialogTitle>
             <DialogDescription>
-              Build your 30-day plan for <span className="font-semibold text-foreground">{confirmOption?.model_name}</span>?
+              Generate a combined 30-day plan for {selectedRanks.size} selected models?
+              <ul className="mt-2 space-y-1 text-left">
+                {cr && (cr.options || [])
+                  .filter((o: any) => selectedRanks.has(o.rank))
+                  .sort((a: any, b: any) => a.rank - b.rank)
+                  .map((o: any) => (
+                    <li key={o.rank} className="text-sm text-foreground">
+                      <span className="font-semibold">#{o.rank}</span> {o.model_name}
+                    </li>
+                  ))}
+              </ul>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setConfirmOption(null)}>Back to options</Button>
+            <Button variant="outline" onClick={() => setShowConfirm(false)}>Back to options</Button>
             <Button
-              onClick={() => confirmOption && handleGeneratePlan(confirmOption)}
+              onClick={handleGeneratePlan}
               style={{ background: "var(--gradient-cta)" }}
               className="text-primary-foreground border-0"
             >
@@ -508,21 +561,27 @@ const diffColors: Record<string, string> = {
   hard: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
-function SelectionOptionCard({ option, onSelect }: { option: any; onSelect: () => void }) {
+function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { option: any; selected: boolean; onToggle: () => void; selectionFull: boolean }) {
   const isTop3 = option.rank <= 3;
   const dc = diffColors[option.difficulty_rating] || diffColors.moderate;
+  const disabled = !selected && selectionFull;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={`rounded-xl border bg-card shadow-card ${option.rank === 1 ? "border-primary/30" : "border-border"} ${isTop3 ? "p-6" : "p-4"}`}
+      onClick={() => !disabled && onToggle()}
+      className={`rounded-xl border bg-card shadow-card cursor-pointer transition-all ${
+        selected ? "border-primary ring-1 ring-primary/30" : disabled ? "border-border opacity-50" : "border-border hover:border-primary/40"
+      } ${isTop3 ? "p-6" : "p-4"}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-bold mt-0.5">
-            #{option.rank}
+          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold mt-0.5 ${
+            selected ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
+          }`}>
+            {selected ? <Check className="h-3.5 w-3.5" /> : `#${option.rank}`}
           </span>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -581,14 +640,6 @@ function SelectionOptionCard({ option, onSelect }: { option: any; onSelect: () =
           </>
         )}
       </div>
-
-      <button
-        onClick={onSelect}
-        className="mt-4 inline-flex items-center gap-1.5 rounded-lg px-5 py-2 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
-        style={{ background: "var(--gradient-cta)" }}
-      >
-        Choose this path →
-      </button>
     </motion.div>
   );
 }
