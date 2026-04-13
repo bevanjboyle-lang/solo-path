@@ -70,7 +70,7 @@ export default function BusinessPaths() {
           </div>
         </div>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Create structured training programmes for mid-market firms that need regulatory upskilling but</p>
-        <p className="text-sm text-muted-foreground" style={{ filter: "blur(2px)" }}>can't justify hiring a full-time compliance lead. Your ability to translate complex frameworks into plain language is the differentiator.</p>
+        <p className="text-sm text-muted-foreground" style={{ filter: "blur(1px)" }}>can't justify hiring a full-time compliance lead. Your ability to translate complex frameworks into plain language is the differentiator.</p>
         <LockedOverlay label="Unlock full path - £19.99" />
       </div>
 
@@ -88,7 +88,7 @@ export default function BusinessPaths() {
           </div>
         </div>
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">Join a fast-growing company part-time as an embedded operational leader bringing</p>
-        <p className="text-sm text-muted-foreground" style={{ filter: "blur(2px)" }}>structured process and governance to teams that have outgrown their startup ways of working. Your audit background makes you unusually effective at this.</p>
+        <p className="text-sm text-muted-foreground" style={{ filter: "blur(1px)" }}>structured process and governance to teams that have outgrown their startup ways of working. Your audit background makes you unusually effective at this.</p>
         <LockedOverlay label="Unlock full path - £19.99" />
       </div>
 

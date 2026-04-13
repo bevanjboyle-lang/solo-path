@@ -12,9 +12,9 @@ export default function LockedOverlay({ label = "Unlock full report - £19.99" }
     <div
       className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-md"
       style={{
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
-        background: "rgba(250,249,247,0.3)",
+        backdropFilter: "blur(4px)",
+        WebkitBackdropFilter: "blur(4px)",
+        background: "rgba(250,249,247,0.12)",
       }}
     >
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-inset/80">
