@@ -1075,13 +1075,15 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
   );
 }
 
-// Strand color palette
+// Strand color palette — hex values for inline styles
+const STRAND_HEX = ["#2ECDB0", "#6366F1", "#F59E0B", "#EF4444", "#8B5CF6"];
+
 const STRAND_COLORS = [
-  { bg: "bg-[hsl(168,70%,45%)]/15", dot: "bg-[hsl(168,70%,45%)]", text: "text-[hsl(168,70%,45%)]" },
-  { bg: "bg-[hsl(38,90%,55%)]/15",  dot: "bg-[hsl(38,90%,55%)]",  text: "text-[hsl(38,90%,55%)]" },
-  { bg: "bg-[hsl(270,60%,60%)]/15", dot: "bg-[hsl(270,60%,60%)]", text: "text-[hsl(270,60%,60%)]" },
-  { bg: "bg-[hsl(200,70%,50%)]/15", dot: "bg-[hsl(200,70%,50%)]", text: "text-[hsl(200,70%,50%)]" },
-  { bg: "bg-[hsl(340,70%,55%)]/15", dot: "bg-[hsl(340,70%,55%)]", text: "text-[hsl(340,70%,55%)]" },
+  { bg: "bg-[#2ECDB0]/15", dot: "bg-[#2ECDB0]", text: "text-[#2ECDB0]" },
+  { bg: "bg-[#6366F1]/15", dot: "bg-[#6366F1]", text: "text-[#6366F1]" },
+  { bg: "bg-[#F59E0B]/15", dot: "bg-[#F59E0B]", text: "text-[#F59E0B]" },
+  { bg: "bg-[#EF4444]/15", dot: "bg-[#EF4444]", text: "text-[#EF4444]" },
+  { bg: "bg-[#8B5CF6]/15", dot: "bg-[#8B5CF6]", text: "text-[#8B5CF6]" },
 ];
 
 const STRAND_SINGLE = { bg: "bg-destructive/15", dot: "bg-destructive", text: "text-destructive" };
