@@ -254,7 +254,7 @@ export default function Landing() {
           </div>
 
           {/* Mobile: horizontal scroll with snap */}
-          <div className="flex sm:hidden gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-2 px-2" style={{ scrollbarWidth: "none" }}>
+          <div className="flex sm:hidden gap-4 overflow-x-auto snap-x snap-mandatory pb-4" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
             {[
               {
                 quote: "I spent an entire Sunday feeding ChatGPT my CV and trying to get it to suggest a realistic Plan B. After six hours I had a generic list. Solo took eight minutes and told me things I hadn't considered.",
