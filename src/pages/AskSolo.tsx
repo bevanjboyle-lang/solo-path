@@ -225,12 +225,8 @@ export default function AskSolo() {
                       msg.role === "user"
                         ? { background: "#F3F1ED", color: "#1D2025" }
                         : {
-                            background: "rgba(250,249,247,0.7)",
-                            backdropFilter: "blur(20px)",
-                            border: "1px solid rgba(229,226,220,0.5)",
-                            boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
-                            // subtle mint tint
-                            backgroundImage: "linear-gradient(135deg, rgba(46,205,176,0.03), transparent)",
+                            background: "#FAF9F7",
+                            border: "1px solid #D1CEC7",
                           }
                     }
                   >
