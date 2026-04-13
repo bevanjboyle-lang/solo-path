@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "-apple-system", "sans-serif"],
-        display: ["Plus Jakarta Sans", "system-ui", "-apple-system", "sans-serif"],
+        sans: ["-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "sans-serif"],
+        display: ["-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -78,10 +78,10 @@ export default {
         "2xl": "20px",
       },
       boxShadow: {
-        card: "var(--shadow-card)",
-        "card-hover": "var(--shadow-card-hover)",
-        panel: "var(--shadow-panel)",
-        elevated: "var(--shadow-panel)",
+        card: "none",
+        "card-hover": "none",
+        panel: "none",
+        elevated: "none",
       },
       keyframes: {
         "accordion-down": {
