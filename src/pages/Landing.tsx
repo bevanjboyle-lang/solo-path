@@ -1,5 +1,4 @@
 import { useNavigate, Link } from "react-router-dom";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, LabelList } from "recharts";
 import SoloLogo from "@/components/SoloLogo";
 import { motion } from "framer-motion";
 import {
@@ -23,12 +22,10 @@ import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import WaitingRoomSection from "@/components/landing/WaitingRoomSection";
-import TestimonialsSection from "@/components/landing/TestimonialsSection";
-import ExpertSaysSection from "@/components/landing/ExpertSaysSection";
 import GlassCard from "@/components/ui/GlassCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
+import TestimonialsSection from "@/components/landing/TestimonialsSection";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -86,31 +83,6 @@ const reportSections = [
   { icon: ClipboardList, title: "Outreach drafts", desc: "Ready-to-send email templates for your first 3 target contacts, written from your profile." },
 ];
 
-const howSoloWorksSteps = [
-  {
-    icon: FileText,
-    title: "Upload your CV or answer 15 questions",
-    number: 15,
-    suffix: " questions",
-    desc: "We ask about your role, experience depth, network, and location.",
-  },
-  {
-    icon: Brain,
-    title: "Get matched against archetypes and business models",
-    number: 480,
-    suffix: " models",
-    desc: "Your profile is scored across 95 archetypes and 480 business models.",
-  },
-  {
-    icon: CalendarCheck,
-    title: "Receive your 30-day activation plan",
-    number: 30,
-    suffix: "-day plan",
-    desc: "A tailored day-by-day action sequence built from your actual experience.",
-  },
-];
-
-
 export default function Landing() {
   const navigate = useNavigate();
 
@@ -123,9 +95,8 @@ export default function Landing() {
       <MintTopBar />
       <Navbar />
 
-      {/* ── SECTION 1: HERO ── */}
+      {/* ── 1. HERO ── */}
       <PanelLayout className="mt-20 px-6 py-16 sm:px-10 relative overflow-hidden">
-        {/* Subtle mint radial glow behind hero */}
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -234,173 +205,7 @@ export default function Landing() {
         </section>
       </PanelLayout>
 
-      {/* ── CHARTS: Combined Macro Trend + AI Exposure ── */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <ScrollReveal>
-          <div className="mx-auto max-w-3xl">
-            <GlassCard noHover className="p-8">
-              {/* Chart 1: Rise of Independent Work */}
-              <div className="mb-4 text-center">
-                <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                  The Macro Trend
-                </span>
-                <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                  Independent work is accelerating
-                </h2>
-                <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
-                  Millions of people working independently in the UK, 2000–2025. The shift from employment to self-directed careers is accelerating.
-                </p>
-              </div>
-              <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={[
-                  { year: '2000', value: 3.2 }, { year: '2004', value: 3.4 },
-                  { year: '2008', value: 3.8 }, { year: '2012', value: 4.1 },
-                  { year: '2016', value: 4.8 }, { year: '2019', value: 5.0 },
-                  { year: '2023', value: 4.3 }, { year: '2025', value: 4.6 },
-                ]} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="mintGradientFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#2ECDB0" stopOpacity={0.2} />
-                      <stop offset="100%" stopColor="#2ECDB0" stopOpacity={0.02} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="year" tick={{ fontSize: 13, fill: '#5A5650' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 13, fill: '#5A5650' }} axisLine={false} tickLine={false} domain={[2.5, 5.5]} tickFormatter={(v: number) => `${v}M`} />
-                  <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`${value}M`, 'Workers']} />
-                  <Area type="monotone" dataKey="value" stroke="#2ECDB0" strokeWidth={2.5} fill="url(#mintGradientFill)" dot={{ r: 3, fill: '#2ECDB0', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#2ECDB0' }} />
-                </AreaChart>
-              </ResponsiveContainer>
-              <p className="mt-3 text-center text-xs text-muted-foreground">
-                Source: ONS Labour Force Survey, McKinsey Global Institute
-              </p>
-
-              {/* Divider */}
-              <div className="my-8 h-px w-full bg-border" />
-
-              {/* Chart 2: AI Exposure by Sector */}
-              <div className="mb-4 text-center">
-                <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                  Why Now
-                </span>
-                <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                  AI is reshaping every white-collar sector
-                </h2>
-                <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
-                  Percentage of roles in each sector exposed to AI-driven automation. The higher the exposure, the greater the urgency to build independent options.
-                </p>
-              </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  layout="vertical"
-                  data={[
-                    { sector: 'Finance', exposure: 54 },
-                    { sector: 'Admin', exposure: 46 },
-                    { sector: 'Legal', exposure: 44 },
-                    { sector: 'HR', exposure: 42 },
-                    { sector: 'Marketing', exposure: 37 },
-                    { sector: 'Consulting', exposure: 35 },
-                    { sector: 'Tech', exposure: 32 },
-                  ]}
-                  margin={{ top: 5, right: 50, left: 80, bottom: 5 }}
-                >
-                  <XAxis type="number" domain={[0, 60]} tick={{ fontSize: 13, fill: '#5A5650' }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `${v}%`} />
-                  <YAxis type="category" dataKey="sector" tick={{ fontSize: 13, fill: '#5A5650', fontWeight: 500 }} axisLine={false} tickLine={false} width={75} />
-                  <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`${value}%`, '% of roles exposed']} />
-                  <Bar dataKey="exposure" fill="#2ECDB0" radius={[0, 4, 4, 0]} barSize={24}>
-                    <LabelList dataKey="exposure" position="right" formatter={(v: number) => `${v}%`} style={{ fontSize: 13, fill: '#5A5650', fontWeight: 600 }} />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              <p className="mt-3 text-center text-xs text-muted-foreground">
-                Source: World Economic Forum Future of Jobs Report 2025, Goldman Sachs Research
-              </p>
-            </GlassCard>
-          </div>
-        </ScrollReveal>
-      </PanelLayout>
-
-
-      {/* ── STAT STRIP ── */}
-      <PanelLayout className="px-6 py-12 sm:px-10">
-        <ScrollReveal>
-          <div className="mx-auto max-w-xl flex flex-col gap-6 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
-            {[
-              { num: 95, label: "archetypes", desc: "professional profiles mapped" },
-              { num: 480, label: "models", desc: "business models scored" },
-              { num: 2694, label: "combinations", desc: "unique path combinations" },
-            ].map((stat, i) => (
-              <div key={i} className="flex-1 text-center sm:px-4 sm:first:pl-0 sm:last:pr-0">
-                <span className="block font-display text-2xl font-bold text-foreground">
-                  <AnimatedCounter target={stat.num} />
-                </span>
-                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                  {stat.label}
-                </span>
-                <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{stat.desc}</p>
-              </div>
-            ))}
-          </div>
-        </ScrollReveal>
-      </PanelLayout>
-
-      {/* 2. INDUSTRY TILES */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <ScrollReveal>
-          <div className="mx-auto max-w-5xl">
-            <div className="mb-16 text-center">
-              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                Market Opportunity
-              </span>
-              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                Where independent operators are growing fastest
-              </h2>
-            </div>
-
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                { badge: "STRONG DEMAND", badgeStyle: "bg-accent text-accent-foreground border-primary/30", title: "Financial Services", body: "Fractional CFOs, FP&A directors, and finance business partners are among the most sought-after independent hires, particularly in PE-backed and growth businesses." },
-                { badge: "STRONG DEMAND", badgeStyle: "bg-accent text-accent-foreground border-primary/30", title: "Legal", body: "Experienced lawyers and compliance specialists are building highly profitable advisory and fractional in-house practices, often at day rates that exceed employment." },
-                { badge: "HIGH GROWTH", badgeStyle: "bg-[#FDF8E8] text-[#D4940A] border-[#D4940A]/30", title: "Strategy and Consulting", body: "Former Big Four and strategy professionals are establishing independent advisory practices at rates significantly above their salaried packages." },
-                { badge: "HIGH GROWTH", badgeStyle: "bg-[#FDF8E8] text-[#D4940A] border-[#D4940A]/30", title: "Marketing and Communications", body: "Fractional CMO and senior brand roles are multiplying as companies seek senior expertise without full-time headcount cost." },
-                { badge: "GROWING", badgeStyle: "bg-surface-card text-muted-foreground border-border", title: "HR and People", body: "Fractional HR directors and L&D specialists are finding strong demand from mid-market businesses that need senior people expertise by the day." },
-                { badge: "STRONG DEMAND", badgeStyle: "bg-accent text-accent-foreground border-primary/30", title: "Technology and Change", body: "Technical and programme leaders are increasingly in demand as fractional CTOs, digital transformation advisors, and delivery leads." },
-              ].map((tile, i) => (
-                <ScrollReveal key={tile.title} delay={i * 0.08}>
-                  <div className="rounded-[10px] border border-border bg-surface-card p-5 transition-all hover:border-primary hover:shadow-card-hover h-full">
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <h3 className="text-sm font-semibold">{tile.title}</h3>
-                      <Badge variant="outline" className={`shrink-0 text-[10px] font-semibold rounded-md ${tile.badgeStyle}`}>
-                        {tile.badge}
-                      </Badge>
-                    </div>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{tile.body}</p>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-
-            <p className="mt-8 text-center text-xs italic text-muted-foreground">
-              Sources: Solo knowledge bank, 480 business models across 16 professional domains.
-            </p>
-          </div>
-        </ScrollReveal>
-      </PanelLayout>
-
-      {/* 3. EXPERT SAYS / NEWS ARTICLES */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <ScrollReveal>
-          <ExpertSaysSection />
-        </ScrollReveal>
-      </PanelLayout>
-
-      {/* 4. THE OPTIONALITY GAP */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <ScrollReveal>
-          <WaitingRoomSection />
-        </ScrollReveal>
-      </PanelLayout>
-
-      {/* 5. PROBLEM STATEMENT */}
+      {/* ── 2. THE PROBLEM ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <ScrollReveal>
@@ -428,7 +233,7 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* 6. HOW IT WORKS */}
+      {/* ── 3. HOW IT WORKS (numbered 3-step) ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl">
           <ScrollReveal>
@@ -478,40 +283,7 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* ── NEW: HOW SOLO WORKS – 3 column GlassCard section ── */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-5xl">
-          <ScrollReveal>
-            <div className="mb-16 text-center">
-              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                Three Steps
-              </span>
-              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                How Solo works
-              </h2>
-            </div>
-          </ScrollReveal>
-
-          <div className="grid gap-6 sm:grid-cols-3">
-            {howSoloWorksSteps.map((step, i) => (
-              <ScrollReveal key={step.title} delay={i * 0.15}>
-                <GlassCard className="p-6 h-full flex flex-col items-center text-center">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent">
-                    <step.icon className="h-5 w-5 text-primary" strokeWidth={1.5} />
-                  </div>
-                  <span className="mb-2 block font-display text-3xl font-bold text-foreground">
-                    <AnimatedCounter target={step.number} suffix={step.suffix} />
-                  </span>
-                  <h3 className="mb-2 text-sm font-semibold text-foreground">{step.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{step.desc}</p>
-                </GlassCard>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </PanelLayout>
-
-      {/* 7. WHAT'S IN YOUR REPORT */}
+      {/* ── 4. WHAT'S IN YOUR REPORT ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
           <ScrollReveal>
@@ -543,14 +315,35 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* 8. TESTIMONIALS */}
+      {/* ── 5. SAMPLE REPORT TEASER ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <ScrollReveal>
-          <TestimonialsSection />
+          <div className="mx-auto max-w-2xl">
+            <GlassCard noHover className="p-8 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                See For Yourself
+              </span>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                See what a Solo report looks like
+              </h2>
+              <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                Every Solo report is built around your specific experience, skills, and professional profile. Here's what Sarah Chen's report revealed.
+              </p>
+              <div className="mt-8">
+                <Button
+                  size="lg"
+                  className="rounded-md bg-primary px-8 py-4 text-sm font-medium text-primary-foreground hover:bg-[#26B89D] transition-all hover:-translate-y-px hover:shadow-card-hover"
+                  onClick={() => navigate("/sample-report")}
+                >
+                  View sample report →
+                </Button>
+              </div>
+            </GlassCard>
+          </div>
         </ScrollReveal>
       </PanelLayout>
 
-      {/* 9. WHO IT'S FOR */}
+      {/* ── 6. WHO SOLO IS FOR ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-3xl">
           <ScrollReveal>
@@ -636,30 +429,37 @@ export default function Landing() {
         </div>
       </PanelLayout>
 
-      {/* 10. EARLY USERS QUOTE */}
+      {/* ── 7. TESTIMONIALS ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <ScrollReveal>
-          <div className="mx-auto max-w-3xl">
-            <div className="mb-12 text-center">
-              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                Early Users Say
-              </span>
-            </div>
+          <TestimonialsSection />
+        </ScrollReveal>
+      </PanelLayout>
 
-            <blockquote className="relative rounded-[10px] border border-border bg-surface-card p-8 text-center">
-              <Quote className="mx-auto mb-4 h-6 w-6 text-primary/40" strokeWidth={1.5} />
-              <p className="font-display text-base leading-relaxed text-foreground/90 sm:text-lg">
-                "I'd been meaning to think through my options for two years. Solo gave me a concrete answer in under 10 minutes. The activation plan alone was worth £19.99."
-              </p>
-              <footer className="mt-4 text-xs text-muted-foreground">
-                Risk Manager, Financial Services, London
-              </footer>
-            </blockquote>
+      {/* ── 8. STAT STRIP ── */}
+      <PanelLayout className="px-6 py-12 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-xl flex flex-col gap-6 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
+            {[
+              { num: 95, label: "archetypes", desc: "professional profiles mapped" },
+              { num: 480, label: "models", desc: "business models scored" },
+              { num: 2694, label: "combinations", desc: "unique path combinations" },
+            ].map((stat, i) => (
+              <div key={i} className="flex-1 text-center sm:px-4 sm:first:pl-0 sm:last:pr-0">
+                <span className="block font-display text-2xl font-bold text-foreground">
+                  <AnimatedCounter target={stat.num} />
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                  {stat.label}
+                </span>
+                <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{stat.desc}</p>
+              </div>
+            ))}
           </div>
         </ScrollReveal>
       </PanelLayout>
 
-      {/* 11. FINAL CTA */}
+      {/* ── 9. FINAL CTA ── */}
       <PanelLayout className="overflow-hidden">
         <ScrollReveal>
           <section className="bg-primary py-24 rounded-2xl">
@@ -687,6 +487,7 @@ export default function Landing() {
         </ScrollReveal>
       </PanelLayout>
 
+      {/* 10. FOOTER */}
       <Footer />
     </div>
   );
