@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import officeBg from "@/assets/office-bg.png";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -89,6 +90,13 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      {/* Global background image with warm overlay */}
+      <div className="fixed inset-0 -z-10">
+        <img src={officeBg} alt="" className="h-full w-full object-cover" style={{ filter: "blur(2px)" }} />
+        <div className="absolute inset-0" style={{
+          background: "linear-gradient(to bottom, hsla(30, 8%, 88%, 0.68), hsla(30, 8%, 88%, 0.76))",
+        }} />
+      </div>
       <BrowserRouter>
         <AuthProvider>
           <AnimatedRoutes />
