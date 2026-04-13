@@ -491,18 +491,24 @@ export default function Results() {
 
               {/* Selected model header */}
               <ScrollReveal>
-                {cr.selected_models && cr.selected_models.length > 1 ? (
-                  <div className="rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-2">
+              {cr.selected_models && cr.selected_models.length > 1 ? (
+                  <div className="rounded-xl border border-border bg-card p-5 space-y-2 shadow-card">
                     <p className="font-medium text-foreground">Your Portfolio Plan</p>
                     <div className="flex flex-wrap gap-2">
-                      {cr.selected_models.map((m: any, i: number) => (
-                        <span key={i} className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 text-[10px] font-bold">
-                            {m.rank}
+                      {cr.selected_models.map((m: any, i: number) => {
+                        const hex = STRAND_HEX[i % STRAND_HEX.length];
+                        const alloc = m.allocation_pct;
+                        return (
+                          <span
+                            key={i}
+                            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium"
+                            style={{ background: `${hex}15`, color: hex }}
+                          >
+                            <span className="inline-block h-2 w-2 rounded-full" style={{ background: hex }} />
+                            {m.model_name}{alloc ? ` — ${alloc}%` : ""}
                           </span>
-                          {m.model_name}
-                        </span>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 ) : cr.selected_model && (
@@ -701,6 +707,16 @@ export default function Results() {
               <ScrollReveal delay={0.1}>
                 <MarketSnapshotSection report={report} ap={ap} />
               </ScrollReveal>
+
+              {/* Traction Signals (portfolio only) */}
+              {ap?.activation_plan?.plan_type === "portfolio" && ap?.activation_plan?.traction_signals && (
+                <ScrollReveal delay={0.1}>
+                  <TractionSignalsSection
+                    tractionSignals={ap.activation_plan.traction_signals}
+                    strandColorMap={buildStrandColorMap(ap.activation_plan)}
+                  />
+                </ScrollReveal>
+              )}
 
               {/* AI Impact */}
               {report?.ai_impact_section && (
@@ -1075,13 +1091,15 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
   );
 }
 
-// Strand color palette
+// Strand color palette — hex values for inline styles
+const STRAND_HEX = ["#2ECDB0", "#6366F1", "#F59E0B", "#EF4444", "#8B5CF6"];
+
 const STRAND_COLORS = [
-  { bg: "bg-[hsl(168,70%,45%)]/15", dot: "bg-[hsl(168,70%,45%)]", text: "text-[hsl(168,70%,45%)]" },
-  { bg: "bg-[hsl(38,90%,55%)]/15",  dot: "bg-[hsl(38,90%,55%)]",  text: "text-[hsl(38,90%,55%)]" },
-  { bg: "bg-[hsl(270,60%,60%)]/15", dot: "bg-[hsl(270,60%,60%)]", text: "text-[hsl(270,60%,60%)]" },
-  { bg: "bg-[hsl(200,70%,50%)]/15", dot: "bg-[hsl(200,70%,50%)]", text: "text-[hsl(200,70%,50%)]" },
-  { bg: "bg-[hsl(340,70%,55%)]/15", dot: "bg-[hsl(340,70%,55%)]", text: "text-[hsl(340,70%,55%)]" },
+  { bg: "bg-[#2ECDB0]/15", dot: "bg-[#2ECDB0]", text: "text-[#2ECDB0]" },
+  { bg: "bg-[#6366F1]/15", dot: "bg-[#6366F1]", text: "text-[#6366F1]" },
+  { bg: "bg-[#F59E0B]/15", dot: "bg-[#F59E0B]", text: "text-[#F59E0B]" },
+  { bg: "bg-[#EF4444]/15", dot: "bg-[#EF4444]", text: "text-[#EF4444]" },
+  { bg: "bg-[#8B5CF6]/15", dot: "bg-[#8B5CF6]", text: "text-[#8B5CF6]" },
 ];
 
 const STRAND_SINGLE = { bg: "bg-destructive/15", dot: "bg-destructive", text: "text-destructive" };
@@ -1094,6 +1112,20 @@ function StrandPill({ strand, colorIdx, grey }: { strand: string; colorIdx: numb
       {strand}
     </span>
   );
+}
+
+function buildStrandColorMap(plan: any): Map<string, number> {
+  const map = new Map<string, number>();
+  let idx = 0;
+  plan.phases?.forEach((phase: any) => {
+    phase.days_detail?.forEach((d: any) => {
+      d.tasks?.forEach((t: any) => {
+        const strand = typeof t === 'object' && t !== null ? t.strand : null;
+        if (strand && !map.has(strand)) map.set(strand, idx++);
+      });
+    });
+  });
+  return map;
 }
 
 function ActivationPlanDisplay({ plan }: { plan: any }) {
@@ -1110,8 +1142,9 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
     });
   });
 
+  const isPortfolio = plan.plan_type === "portfolio";
   const hasStrands = strandColorMap.size > 1;
-  const isSingleStrand = strandColorMap.size === 1;
+  const isSingleStrand = strandColorMap.size === 1 && !isPortfolio;
 
   return (
     <div className="space-y-4">
@@ -1137,7 +1170,7 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
       )}
       <div className="space-y-2">
         {plan.phases?.map((phase: any, i: number) => (
-          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} greyStrands={isSingleStrand} />
+          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} greyStrands={isSingleStrand} isPortfolio={isPortfolio} />
         ))}
       </div>
       {plan.success_metric && (
@@ -1150,7 +1183,7 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
   );
 }
 
-function PhaseSection({ phase, strandColorMap, greyStrands }: { phase: any; strandColorMap: Map<string, number>; greyStrands?: boolean }) {
+function PhaseSection({ phase, strandColorMap, greyStrands, isPortfolio }: { phase: any; strandColorMap: Map<string, number>; greyStrands?: boolean; isPortfolio?: boolean }) {
   return (
     <Collapsible>
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg bg-surface p-4 text-left hover:bg-surface/80 transition-colors group">
@@ -1163,32 +1196,110 @@ function PhaseSection({ phase, strandColorMap, greyStrands }: { phase: any; stra
       <CollapsibleContent className="px-4 pb-3">
         <p className="text-xs text-muted-foreground/70 mt-2 mb-3">{phase.goal}</p>
         <div className="space-y-2">
-          {phase.days_detail?.map((d: any, i: number) => (
-            <div key={i}>
-              <p className="text-xs font-semibold text-foreground">{d.day}</p>
-              <ul className="list-disc list-inside text-xs space-y-1 ml-1">
-                {d.tasks?.map((t: any, j: number) => {
-                  const taskText = typeof t === 'string' ? t : (t?.task || '');
-                  const strand = typeof t === 'object' && t !== null ? t.strand : null;
-                  const hasOutreach = typeof t === 'object' && t !== null && t.outreach_draft;
-                  
-                  return hasOutreach ? (
-                    <OutreachTaskItem key={j} task={t} strandColorMap={strandColorMap} greyStrands={greyStrands} />
-                  ) : (
-                    <li key={j} className="flex items-center gap-1.5 flex-wrap">
-                      <span>{taskText}</span>
-                      {strand && strandColorMap.has(strand) && (
-                        <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} grey={greyStrands} />
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+          {phase.days_detail?.map((d: any, i: number) => {
+            const dayNum = parseDayNumber(d.day);
+            const isReviewDay = isPortfolio && (dayNum === 19 || dayNum === 26);
+            return (
+              <div key={i}>
+                <p className="text-xs font-semibold text-foreground">{d.day}</p>
+                {isReviewDay && (
+                  <div className="rounded-lg border border-primary/20 p-3 my-2" style={{ background: "rgba(46,205,176,0.08)" }}>
+                    <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      <Target className="h-3 w-3 text-primary" />
+                      Portfolio Review — assess strand progress and adjust focus
+                    </p>
+                  </div>
+                )}
+                <ul className="list-disc list-inside text-xs space-y-1 ml-1">
+                  {d.tasks?.map((t: any, j: number) => {
+                    const taskText = typeof t === 'string' ? t : (t?.task || '');
+                    const strandId = typeof t === 'object' && t !== null ? t.strand_id : null;
+                    const strand = typeof t === 'object' && t !== null ? t.strand : null;
+                    const hasOutreach = typeof t === 'object' && t !== null && t.outreach_draft;
+
+                    // For portfolio plans, show strand_id-based pills
+                    const pillStrand = strand;
+                    const isShared = isPortfolio && (!strandId || strandId === "shared");
+
+                    return hasOutreach ? (
+                      <OutreachTaskItem key={j} task={t} strandColorMap={strandColorMap} greyStrands={greyStrands} />
+                    ) : (
+                      <li key={j} className="flex items-center gap-1.5 flex-wrap">
+                        <span>{taskText}</span>
+                        {isPortfolio && isShared && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+                            Shared
+                          </span>
+                        )}
+                        {pillStrand && strandColorMap.has(pillStrand) && !isShared && (
+                          <StrandPill strand={pillStrand} colorIdx={strandColorMap.get(pillStrand)!} grey={greyStrands} />
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+function parseDayNumber(dayStr: string): number {
+  const match = dayStr?.match(/(\d+)/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+const TRACTION_WEIGHT_COLORS: Record<string, string> = {
+  negative: "bg-red-500/10 text-red-500 border-red-500/20",
+  neutral: "bg-muted text-muted-foreground border-border",
+  moderate: "bg-muted text-muted-foreground border-border",
+  strong: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+  very_strong: "bg-[#2ECDB0]/10 text-[#2ECDB0] border-[#2ECDB0]/20",
+};
+
+function TractionSignalsSection({ tractionSignals, strandColorMap }: { tractionSignals: any; strandColorMap: Map<string, number> }) {
+  if (!tractionSignals || typeof tractionSignals !== 'object') return null;
+  const strandIds = Object.keys(tractionSignals);
+  if (strandIds.length === 0) return null;
+
+  return (
+    <ReportSection title="Traction Signals" icon={Target}>
+      <div className="space-y-2">
+        {strandIds.map((strandId) => {
+          const signals = tractionSignals[strandId];
+          const colorIdx = strandColorMap.get(strandId) ?? 0;
+          const hex = STRAND_HEX[colorIdx % STRAND_HEX.length];
+          return (
+            <Collapsible key={strandId}>
+              <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg bg-surface p-3 text-left hover:bg-surface/80 transition-colors group">
+                <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: hex }} />
+                  {strandId}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-3 pb-3">
+                <ul className="space-y-2 mt-2">
+                  {(Array.isArray(signals) ? signals : []).map((sig: any, i: number) => {
+                    const wc = TRACTION_WEIGHT_COLORS[sig.weight] || TRACTION_WEIGHT_COLORS.neutral;
+                    return (
+                      <li key={i} className="flex items-start justify-between gap-2 text-xs">
+                        <span className="text-foreground/90">{sig.signal}</span>
+                        <Badge className={`text-[9px] px-1.5 py-0 border shrink-0 ${wc}`}>{sig.weight?.replace("_", " ")}</Badge>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </CollapsibleContent>
+            </Collapsible>
+          );
+        })}
+      </div>
+    </ReportSection>
   );
 }
 
@@ -1238,19 +1349,25 @@ function MarketSnapshotSection({ report, ap }: { report: ReportData | null; ap: 
       <div className="space-y-4">
         {strandIds.length > 1 && (
           <div className="flex flex-wrap gap-1.5">
-            {strandIds.map((id) => (
-              <button
-                key={id}
-                onClick={() => setActiveStrand(id)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  activeStrand === id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-surface text-muted-foreground hover:text-foreground hover:bg-surface-elevated"
-                }`}
-              >
-                {id}
-              </button>
-            ))}
+            {strandIds.map((id, i) => {
+              const hex = STRAND_HEX[i % STRAND_HEX.length];
+              const isActive = activeStrand === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActiveStrand(id)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    isActive
+                      ? "text-white"
+                      : "bg-surface text-muted-foreground hover:text-foreground"
+                  }`}
+                  style={isActive ? { background: hex } : undefined}
+                >
+                  <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: isActive ? "#fff" : hex }} />
+                  {id}
+                </button>
+              );
+            })}
           </div>
         )}
         <MarketSnapshotRenderer text={marketSnapshots[activeStrand] || ""} />
