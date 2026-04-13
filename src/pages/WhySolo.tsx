@@ -146,6 +146,107 @@ export default function WhySolo() {
         </div>
       </PanelLayout>
 
+      {/* ── CHART 1: Career Change Intent ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-8 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">The Reality</span>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                Half of all professionals are already thinking about it
+              </h2>
+            </div>
+            <GlassCard noHover className="flex flex-col items-center p-8">
+              <div className="relative" style={{ width: 200, height: 200 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadialBarChart cx="50%" cy="50%" innerRadius="70%" outerRadius="100%" startAngle={90} endAngle={-270} data={[{ value: 49, fill: '#2ECDB0' }]}>
+                    <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                    <RadialBar background={{ fill: '#E5E2DC' }} dataKey="value" angleAxisId={0} cornerRadius={8} />
+                  </RadialBarChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="font-display text-4xl font-bold text-foreground">49%</span>
+                </div>
+              </div>
+              <p className="mt-4 max-w-xs text-center text-sm leading-relaxed text-muted-foreground">
+                of professionals are actively considering a career change in the next 12 months
+              </p>
+            </GlassCard>
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Source: Randstad Workmonitor 2025, PwC Workforce Hopes &amp; Fears Survey
+            </p>
+          </div>
+        </ScrollReveal>
+      </PanelLayout>
+
+      {/* ── CHART 2: Skills That Transfer ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-8 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">Your Experience Translates</span>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                The skills you have are the skills you need
+              </h2>
+            </div>
+            <GlassCard noHover className="p-6">
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart data={[
+                  { skill: 'Client Mgmt', employed: 65, independent: 90 },
+                  { skill: 'Project Delivery', employed: 80, independent: 85 },
+                  { skill: 'Stakeholder Comms', employed: 75, independent: 88 },
+                  { skill: 'Financial Planning', employed: 40, independent: 82 },
+                  { skill: 'Domain Expertise', employed: 85, independent: 90 },
+                  { skill: 'Business Dev', employed: 30, independent: 95 },
+                ]}>
+                  <PolarGrid stroke="#E5E2DC" />
+                  <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: '#5A5650' }} />
+                  <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+                  <Radar name="Employed" dataKey="employed" stroke="#9B9B9B" fill="#E5E2DC" fillOpacity={0.4} />
+                  <Radar name="Independent" dataKey="independent" stroke="#2ECDB0" fill="#2ECDB0" fillOpacity={0.4} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </GlassCard>
+          </div>
+        </ScrollReveal>
+      </PanelLayout>
+
+      {/* ── CHART 3: Income Potential ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-8 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">The Economics</span>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                What independent professionals actually earn
+              </h2>
+            </div>
+            <GlassCard noHover className="p-6">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={[
+                  { experience: '5-7 yrs', consulting: 55, freelance: 42, portfolio: 38 },
+                  { experience: '8-10 yrs', consulting: 85, freelance: 62, portfolio: 55 },
+                  { experience: '11-15 yrs', consulting: 120, freelance: 80, portfolio: 72 },
+                  { experience: '15+ yrs', consulting: 160, freelance: 95, portfolio: 88 },
+                ]} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <XAxis dataKey="experience" tick={{ fontSize: 11, fill: '#5A5650' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#5A5650' }} axisLine={false} tickLine={false} label={{ value: '£k annual income', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#7A7670', dx: -5 }} />
+                  <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`£${value}k`, undefined]} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Bar dataKey="consulting" name="Consulting" fill="#2ECDB0" radius={[4, 4, 0, 0]} barSize={20} />
+                  <Bar dataKey="freelance" name="Freelance" fill="#25A896" radius={[4, 4, 0, 0]} barSize={20} />
+                  <Bar dataKey="portfolio" name="Portfolio" fill="#1D8477" radius={[4, 4, 0, 0]} barSize={20} />
+                </BarChart>
+              </ResponsiveContainer>
+            </GlassCard>
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Source: Glassdoor UK independent contractor data, Indeed Salary Research 2024
+            </p>
+          </div>
+        </ScrollReveal>
+      </PanelLayout>
+
       {/* CTA */}
       <PanelLayout className="overflow-hidden">
         <section className="bg-primary py-24 rounded-2xl">
