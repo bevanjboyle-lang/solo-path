@@ -305,7 +305,7 @@ export default function Results() {
                   exit={{ opacity: 0, y: -8 }}
                   className="text-sm text-foreground font-medium"
                 >
-                  {LOADING_MESSAGES[loadingMsgIdx]}
+                  {(selectedRanks.size > 1 ? PORTFOLIO_LOADING_MESSAGES : LOADING_MESSAGES)[loadingMsgIdx % (selectedRanks.size > 1 ? PORTFOLIO_LOADING_MESSAGES.length : LOADING_MESSAGES.length)]}
                 </motion.p>
               </motion.div>
             )}
