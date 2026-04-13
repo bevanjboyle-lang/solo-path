@@ -133,7 +133,7 @@ export interface SampleOption {
     model: "retainer" | "project" | "day rate" | "productised";
     range_low_gbp: number;
     range_high_gbp: number;
-    cadence: "per month" | "per project" | "per day";
+    cadence: "per month" | "per project" | "per day" | "per article";
   };
   time_to_first_revenue: string;
   difficulty_rating: "easy" | "moderate" | "hard";
