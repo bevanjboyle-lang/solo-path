@@ -8,7 +8,7 @@ export default function HookInsight() {
         Your Big Four compliance experience is worth more outside financial services than inside it.
       </p>
       <div className="relative mt-3">
-        <p className="text-sm leading-relaxed text-muted-foreground" style={{ filter: "blur(2px)" }}>
+        <p className="text-sm leading-relaxed text-muted-foreground" style={{ filter: "blur(1px)" }}>
           The regulatory expertise you've built over nine years commands a premium in sectors that need it but haven't historically had access to Big Four talent. FinTechs, scale-ups, and RegTech firms are actively looking for exactly this profile.
         </p>
         <div className="absolute inset-0 flex items-center justify-center gap-2">
