@@ -235,11 +235,21 @@ export default function Tracker() {
                 </GlassCard>
               </ScrollReveal>
 
-              {/* Strand Status Cards */}
-              <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
+              {/* Strand Status Cards — only when strand_status exists */}
+              {session.strand_status && Object.keys(session.strand_status).length > 0 && (
+                <>
+                  <PortfolioReviewBanner session={session} navigate={navigate} />
+                  <StrandStatusSection strandStatus={session.strand_status} />
+                </>
+              )}
 
-              {/* Portfolio Review */}
-              <PortfolioReviewCard session={session} navigate={navigate} />
+              {/* Legacy strand cards from working_plan (no strand_status column) */}
+              {!session.strand_status && (
+                <>
+                  <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
+                  <PortfolioReviewCard session={session} navigate={navigate} />
+                </>
+              )}
 
               {/* Phase cards */}
               <div className="mt-6 space-y-4">
@@ -399,21 +409,23 @@ function PortfolioReviewCard({ session, navigate }: { session: any; navigate: (p
   );
 }
 
+const STRAND_HEX = ["#2ECDB0", "#6366F1", "#F59E0B", "#EF4444", "#8B5CF6"];
+
 const STRAND_CARD_COLORS = [
-  { dot: "bg-[hsl(168,70%,45%)]", bar: "bg-[hsl(168,70%,45%)]" },
-  { dot: "bg-[hsl(38,90%,55%)]",  bar: "bg-[hsl(38,90%,55%)]" },
-  { dot: "bg-[hsl(270,60%,60%)]", bar: "bg-[hsl(270,60%,60%)]" },
-  { dot: "bg-[hsl(200,70%,50%)]", bar: "bg-[hsl(200,70%,50%)]" },
-  { dot: "bg-[hsl(340,70%,55%)]", bar: "bg-[hsl(340,70%,55%)]" },
+  { dot: "bg-[#2ECDB0]", bar: "bg-[#2ECDB0]" },
+  { dot: "bg-[#6366F1]", bar: "bg-[#6366F1]" },
+  { dot: "bg-[#F59E0B]", bar: "bg-[#F59E0B]" },
+  { dot: "bg-[#EF4444]", bar: "bg-[#EF4444]" },
+  { dot: "bg-[#8B5CF6]", bar: "bg-[#8B5CF6]" },
 ];
 
 type StrandStatus = "active" | "watching" | "paused" | "graduated";
 
 const STATUS_BADGES: Record<StrandStatus, { label: string; className: string }> = {
-  active:    { label: "ACTIVE",       className: "bg-[hsl(168,70%,45%)]/15 text-[hsl(168,70%,45%)] border-[hsl(168,70%,45%)]/20" },
-  watching:  { label: "WATCHING",     className: "bg-muted text-muted-foreground border-border" },
+  active:    { label: "ACTIVE",       className: "bg-[#2ECDB0]/15 text-[#2ECDB0] border-[#2ECDB0]/20" },
+  watching:  { label: "WATCHING",     className: "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/20" },
   paused:    { label: "PAUSED",       className: "bg-muted/50 text-muted-foreground/60 border-border/50" },
-  graduated: { label: "GRADUATED ★",  className: "bg-[hsl(142,70%,40%)]/15 text-[hsl(142,70%,40%)] border-[hsl(142,70%,40%)]/20 font-bold" },
+  graduated: { label: "GRADUATED ★",  className: "bg-[#6366F1]/15 text-[#6366F1] border-[#6366F1]/20 font-bold" },
 };
 
 function SignalDots({ score }: { score: number }) {
@@ -429,6 +441,71 @@ function SignalDots({ score }: { score: number }) {
         />
       ))}
     </div>
+  );
+}
+function PortfolioReviewBanner({ session, navigate }: { session: any; navigate: (path: string) => void }) {
+  const isReviewDay = session.current_day === 19 || session.current_day === 26;
+  if (!isReviewDay) return null;
+
+  return (
+    <ScrollReveal delay={0.25}>
+      <div className="mt-6 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4" style={{ background: "#2ECDB0" }}>
+        <div className="flex-1">
+          <p className="text-sm font-bold text-white">Portfolio Review Today — Day {session.current_day}</p>
+          <p className="text-xs text-white/80 mt-1">Time to assess which strands are gaining traction and where to focus your energy.</p>
+        </div>
+        <button
+          onClick={() => navigate(`/checkin/${session.id}?review=portfolio`)}
+          className="shrink-0 rounded-lg bg-white/20 backdrop-blur px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-colors"
+        >
+          Open check-in
+        </button>
+      </div>
+    </ScrollReveal>
+  );
+}
+
+function StrandStatusSection({ strandStatus }: { strandStatus: Record<string, { status: string; model_name: string; focus_percentage?: number }> }) {
+  const strandIds = Object.keys(strandStatus);
+  if (strandIds.length === 0) return null;
+
+  return (
+    <ScrollReveal delay={0.3}>
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">Your Strands</h3>
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-2" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+          {strandIds.map((id, i) => {
+            const strand = strandStatus[id];
+            const hex = STRAND_HEX[i % STRAND_HEX.length];
+            const status = (strand.status || "active") as StrandStatus;
+            const badge = STATUS_BADGES[status] || STATUS_BADGES.active;
+
+            return (
+              <GlassCard
+                key={id}
+                className="snap-start shrink-0 w-[200px] p-4"
+                style={{ borderLeft: `3px solid ${hex}`, background: status === "active" ? `${hex}08` : undefined }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: hex }} />
+                  <span className="text-xs font-medium text-foreground truncate">{strand.model_name}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${badge.className}`}>
+                    {badge.label}
+                  </span>
+                  {strand.focus_percentage != null && (
+                    <span className="text-2xl font-bold" style={{ color: hex }}>{strand.focus_percentage}%</span>
+                  )}
+                </div>
+              </GlassCard>
+            );
+          })}
+          {/* Spacer to hint at scrollability */}
+          <div className="shrink-0 w-2" />
+        </div>
+      </div>
+    </ScrollReveal>
   );
 }
 

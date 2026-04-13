@@ -1,0 +1,1 @@
+ALTER TABLE public.tracker_sessions ADD COLUMN IF NOT EXISTS strand_status jsonb DEFAULT NULL;
