@@ -205,6 +205,100 @@ export default function Landing() {
         </section>
       </PanelLayout>
 
+      {/* ── TESTIMONIAL STRIP (after hero) ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl">
+          {/* Desktop: 3-column staggered grid */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              {
+                quote: "I spent an entire Sunday feeding ChatGPT my CV and trying to get it to suggest a realistic Plan B. After six hours I had a generic list. Solo took eight minutes and told me things I hadn't considered.",
+                name: "James W.",
+                role: "Head of Operations, 14 years in logistics",
+              },
+              {
+                quote: "I'd been copying prompt templates off LinkedIn for weeks. The output was always vague. Solo gave me pricing benchmarks, a named buyer type, and a 30-day plan before I'd finished my coffee.",
+                name: "Rachel M.",
+                role: "Senior Product Manager, 11 years in SaaS",
+              },
+              {
+                quote: "The difference isn't the AI — it's the context. Solo already knows which business models work for someone with my background. I couldn't teach ChatGPT that in a hundred prompts.",
+                name: "David K.",
+                role: "Finance Director, 16 years in professional services",
+              },
+              {
+                quote: "I asked ChatGPT to write me a plan. It gave me motivational fluff. Solo told me my most likely failure mode and what my first email to a prospective client should actually say.",
+                name: "Priya S.",
+                role: "Strategy Consultant, 9 years in advisory",
+              },
+              {
+                quote: "Eight minutes. That's how long it took to get a report I'd been trying to build myself for three months. And it was more honest than anything I'd written.",
+                name: "Tom H.",
+                role: "Engineering Manager, 12 years in tech",
+              },
+            ].map((t, i) => (
+              <ScrollReveal key={i} delay={i * 0.08}>
+                <div
+                  className="rounded-lg bg-muted/50 p-6 h-full"
+                  style={{ borderLeft: "4px solid #2ECDB0" }}
+                >
+                  <p className="text-[15px] leading-relaxed text-foreground/90 italic">
+                    "{t.quote}"
+                  </p>
+                  <p className="mt-4 text-xs text-muted-foreground">
+                    — {t.name}, {t.role}
+                  </p>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+
+          {/* Mobile: horizontal scroll with snap */}
+          <div className="flex sm:hidden gap-4 overflow-x-auto snap-x snap-mandatory pb-4 -mx-2 px-2" style={{ scrollbarWidth: "none" }}>
+            {[
+              {
+                quote: "I spent an entire Sunday feeding ChatGPT my CV and trying to get it to suggest a realistic Plan B. After six hours I had a generic list. Solo took eight minutes and told me things I hadn't considered.",
+                name: "James W.",
+                role: "Head of Operations, 14 years in logistics",
+              },
+              {
+                quote: "I'd been copying prompt templates off LinkedIn for weeks. The output was always vague. Solo gave me pricing benchmarks, a named buyer type, and a 30-day plan before I'd finished my coffee.",
+                name: "Rachel M.",
+                role: "Senior Product Manager, 11 years in SaaS",
+              },
+              {
+                quote: "The difference isn't the AI — it's the context. Solo already knows which business models work for someone with my background. I couldn't teach ChatGPT that in a hundred prompts.",
+                name: "David K.",
+                role: "Finance Director, 16 years in professional services",
+              },
+              {
+                quote: "I asked ChatGPT to write me a plan. It gave me motivational fluff. Solo told me my most likely failure mode and what my first email to a prospective client should actually say.",
+                name: "Priya S.",
+                role: "Strategy Consultant, 9 years in advisory",
+              },
+              {
+                quote: "Eight minutes. That's how long it took to get a report I'd been trying to build myself for three months. And it was more honest than anything I'd written.",
+                name: "Tom H.",
+                role: "Engineering Manager, 12 years in tech",
+              },
+            ].map((t, i) => (
+              <div
+                key={i}
+                className="min-w-[85vw] snap-center rounded-lg bg-muted/50 p-6 shrink-0"
+                style={{ borderLeft: "4px solid #2ECDB0" }}
+              >
+                <p className="text-[15px] leading-relaxed text-foreground/90 italic">
+                  "{t.quote}"
+                </p>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  — {t.name}, {t.role}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </PanelLayout>
+
       {/* ── 2. THE PROBLEM ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <div className="mx-auto max-w-5xl">
