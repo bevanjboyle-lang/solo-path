@@ -1114,6 +1114,20 @@ function StrandPill({ strand, colorIdx, grey }: { strand: string; colorIdx: numb
   );
 }
 
+function buildStrandColorMap(plan: any): Map<string, number> {
+  const map = new Map<string, number>();
+  let idx = 0;
+  plan.phases?.forEach((phase: any) => {
+    phase.days_detail?.forEach((d: any) => {
+      d.tasks?.forEach((t: any) => {
+        const strand = typeof t === 'object' && t !== null ? t.strand : null;
+        if (strand && !map.has(strand)) map.set(strand, idx++);
+      });
+    });
+  });
+  return map;
+}
+
 function ActivationPlanDisplay({ plan }: { plan: any }) {
   const strandColorMap = new Map<string, number>();
   let colorIdx = 0;
