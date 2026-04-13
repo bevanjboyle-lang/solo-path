@@ -37,7 +37,8 @@ export default function Teaser() {
     try {
       const { data, error } = await supabase.functions.invoke("create-payment");
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      const redirectUrl = data?.sessionUrl || data?.url;
+      if (redirectUrl) window.location.href = redirectUrl;
     } catch (err) {
       console.error("Payment error:", err);
     } finally {
