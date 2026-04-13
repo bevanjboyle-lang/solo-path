@@ -67,6 +67,8 @@ export default function Results() {
   const [showRemaining, setShowRemaining] = useState(false);
   const [recommendedLoaded, setRecommendedLoaded] = useState(false);
   const [selectionChanged, setSelectionChanged] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const MIN_SELECTIONS = 2;
   const MAX_SELECTIONS = 5;
