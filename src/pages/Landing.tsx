@@ -130,7 +130,7 @@ export default function Landing() {
         />
 
         <section className="relative flex min-h-[70vh] flex-col items-center justify-center">
-          <GlassCard className="mx-auto max-w-2xl px-8 py-12 sm:px-12 sm:py-16">
+          <GlassCard className="mx-auto max-w-2xl px-8 py-12 sm:px-12 sm:py-16 hover:!translate-y-0" onMouseEnter={undefined} onMouseLeave={undefined}>
             <div className="text-center">
               <motion.div
                 className="mb-8 flex justify-center"
