@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
-import Footer from "@/components/Footer";
 import {
   Accordion,
   AccordionContent,
@@ -124,7 +123,6 @@ export default function FAQ() {
         </ScrollReveal>
       </PanelLayout>
 
-      <Footer />
     </div>
   );
 }

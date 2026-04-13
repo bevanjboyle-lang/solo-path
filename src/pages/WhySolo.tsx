@@ -12,7 +12,6 @@ import {
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import ScrollReveal from "@/components/ui/ScrollReveal";
@@ -335,7 +334,6 @@ export default function WhySolo() {
         </ScrollReveal>
       </PanelLayout>
 
-      <Footer />
     </div>
   );
 }
