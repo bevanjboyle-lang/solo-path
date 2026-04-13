@@ -40,7 +40,7 @@ export default function Guidance() {
             Practical Guidance
           </h1>
           <p className="text-sm mb-8" style={{ color: "#5A5650" }}>
-            Nine modules to help you navigate going independent.
+            25 modules across 5 tracks to help you navigate going independent.
           </p>
         </ScrollReveal>
 
