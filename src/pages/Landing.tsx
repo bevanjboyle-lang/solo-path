@@ -172,29 +172,6 @@ export default function Landing() {
                 Solo takes what you've built over your career and turns it into a realistic, executable path to independent income: the paths, the clients, the first 30 days, based on your actual experience. <span className="font-bold text-foreground">So whatever changes - whether it's AI, restructuring, or simply wanting more options - you already know what you're doing next.</span>
               </motion.p>
 
-              {/* ── Stat strip with AnimatedCounter ── */}
-              <motion.div
-                className="mx-auto mt-8 flex max-w-xl flex-col gap-6 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.22 }}
-              >
-                {[
-                  { num: 95, label: "archetypes", desc: "professional profiles mapped" },
-                  { num: 480, label: "models", desc: "business models scored" },
-                  { num: 2694, label: "combinations", desc: "unique path combinations" },
-                ].map((stat, i) => (
-                  <div key={i} className="flex-1 text-center sm:px-4 sm:first:pl-0 sm:last:pr-0">
-                    <span className="block font-display text-2xl font-bold text-foreground">
-                      <AnimatedCounter target={stat.num} />
-                    </span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                      {stat.label}
-                    </span>
-                    <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{stat.desc}</p>
-                  </div>
-                ))}
-              </motion.div>
 
               <motion.div
                 className="mt-10 max-w-xl mx-auto text-center"
