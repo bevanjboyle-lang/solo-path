@@ -1,4 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList, Cell } from "recharts";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
@@ -319,6 +320,52 @@ export default function HowItWorks() {
             </div>
           </div>
         </div>
+      </PanelLayout>
+
+      {/* ── CHART: Time to First Revenue ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-8 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">The Solo Difference</span>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                From experience to income in 30 days, not 18 months
+              </h2>
+            </div>
+            <GlassCard noHover className="p-6">
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart
+                  layout="vertical"
+                  data={[
+                    { method: 'Unstructured (no plan)', months: 18, fill: '#E5E2DC' },
+                    { method: 'Online course', months: 12, fill: '#9B9B9B' },
+                    { method: 'Career coach', months: 9, fill: '#B8B5B0' },
+                    { method: 'With Solo', months: 1, fill: '#2ECDB0' },
+                  ]}
+                  margin={{ top: 5, right: 60, left: 10, bottom: 5 }}
+                >
+                  <XAxis type="number" domain={[0, 20]} tick={{ fontSize: 11, fill: '#5A5650' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} />
+                  <YAxis type="category" dataKey="method" tick={{ fontSize: 12, fill: '#1D2025', fontWeight: 500 }} axisLine={false} tickLine={false} width={150} />
+                  <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`${value} month${value !== 1 ? 's' : ''}`, 'Time to revenue']} />
+                  <Bar dataKey="months" radius={[0, 4, 4, 0]} barSize={28}>
+                    {[
+                      { fill: '#E5E2DC' },
+                      { fill: '#9B9B9B' },
+                      { fill: '#B8B5B0' },
+                      { fill: '#2ECDB0' },
+                    ].map((entry, index) => (
+                      <Cell key={index} fill={entry.fill} style={index === 3 ? { filter: 'drop-shadow(0 0 6px rgba(46,205,176,0.5))' } : undefined} />
+                    ))}
+                    <LabelList dataKey="months" position="right" formatter={(v: number) => `${v} month${v !== 1 ? 's' : ''}`} style={{ fontSize: 11, fill: '#5A5650', fontWeight: 500 }} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </GlassCard>
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Based on industry average timelines for career transition to independent income generation
+            </p>
+          </div>
+        </ScrollReveal>
       </PanelLayout>
 
       {/* ─── BOTTOM CTA ─── */}
