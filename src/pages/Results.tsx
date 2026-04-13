@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw } from "lucide-react";
+import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw, Download } from "lucide-react";
 import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -67,6 +67,8 @@ export default function Results() {
   const [showRemaining, setShowRemaining] = useState(false);
   const [recommendedLoaded, setRecommendedLoaded] = useState(false);
   const [selectionChanged, setSelectionChanged] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const MIN_SELECTIONS = 2;
   const MAX_SELECTIONS = 5;
@@ -142,6 +144,44 @@ export default function Results() {
       console.error("Payment error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!reportId) return;
+    setPdfLoading(true);
+    setPdfError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-pdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ report_id: reportId }),
+        }
+      );
+      if (!res.ok) throw new Error("PDF generation failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const today = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `Solo-Plan-${today}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF download error:", err);
+      setPdfError("PDF generation failed. Please try again.");
+    } finally {
+      setPdfLoading(false);
     }
   };
 
@@ -244,7 +284,34 @@ export default function Results() {
 
       <div className="mx-auto max-w-3xl px-6 py-16">
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your Solo Plan B Report</h1>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your Solo Plan B Report</h1>
+            {report && paid && (
+              <div className="flex flex-col items-start sm:items-end gap-1">
+                <Button
+                  onClick={handleDownloadPdf}
+                  disabled={pdfLoading}
+                  className="w-full sm:w-auto text-white"
+                  style={{ backgroundColor: pdfLoading ? undefined : "#2ECDB0" }}
+                >
+                  {pdfLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Download as PDF
+                    </>
+                  )}
+                </Button>
+                {pdfError && (
+                  <p className="text-xs text-destructive">{pdfError}</p>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Free preview - always visible */}
           <ScrollReveal>
