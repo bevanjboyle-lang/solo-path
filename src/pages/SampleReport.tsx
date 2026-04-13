@@ -25,7 +25,7 @@ import Footer from "@/components/Footer";
 
 export default function SampleReport() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <MintTopBar />
       <Navbar />
 
@@ -58,7 +58,7 @@ export default function SampleReport() {
         </div>
       </PanelLayout>
 
-      <Footer />
+      
     </div>
   );
 }
