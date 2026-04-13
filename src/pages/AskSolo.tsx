@@ -256,9 +256,8 @@ export default function AskSolo() {
               <div
                 className="rounded-2xl rounded-bl-md px-4 py-3"
                 style={{
-                  background: "rgba(250,249,247,0.7)",
-                  backdropFilter: "blur(20px)",
-                  border: "1px solid rgba(229,226,220,0.5)",
+                  background: "#FAF9F7",
+                  border: "1px solid #D1CEC7",
                 }}
               >
                 <div className="flex items-center gap-1.5">
@@ -278,8 +277,8 @@ export default function AskSolo() {
       <div
         className="fixed bottom-0 left-0 right-0 border-t border-border/50"
         style={{
-          backdropFilter: "blur(12px)",
-          background: "rgba(250,249,247,0.8)",
+          background: "#FAF9F7",
+          borderTop: "1px solid #D1CEC7",
         }}
       >
         <div className="mx-auto flex max-w-3xl items-end gap-3 px-6 py-4">
