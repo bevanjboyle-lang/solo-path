@@ -1,5 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
-
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, LabelList } from "recharts";
 import SoloLogo from "@/components/SoloLogo";
 import { motion } from "framer-motion";
 import {
@@ -232,6 +232,89 @@ export default function Landing() {
               </motion.div>
             </div>
         </section>
+      </PanelLayout>
+
+      {/* ── CHART 1: Rise of Independent Work ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-8 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                The Macro Trend
+              </span>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                Independent work is accelerating
+              </h2>
+            </div>
+            <GlassCard noHover className="p-6">
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={[
+                  { year: '2000', value: 3.2 }, { year: '2004', value: 3.4 },
+                  { year: '2008', value: 3.8 }, { year: '2012', value: 4.1 },
+                  { year: '2016', value: 4.8 }, { year: '2019', value: 5.0 },
+                  { year: '2023', value: 4.3 }, { year: '2025', value: 4.6 },
+                ]} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="mintGradientFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2ECDB0" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="#2ECDB0" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#5A5650' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#5A5650' }} axisLine={false} tickLine={false} domain={[2.5, 5.5]} label={{ value: 'Millions', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#7A7670', dx: -5 }} />
+                  <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} />
+                  <Area type="monotone" dataKey="value" stroke="#2ECDB0" strokeWidth={2.5} fill="url(#mintGradientFill)" dot={{ r: 3, fill: '#2ECDB0', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#2ECDB0' }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </GlassCard>
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Source: ONS Labour Force Survey, McKinsey Global Institute
+            </p>
+          </div>
+        </ScrollReveal>
+      </PanelLayout>
+
+      {/* ── CHART 2: AI Exposure by Sector ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-8 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                Why Now
+              </span>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                AI is reshaping every white-collar sector
+              </h2>
+            </div>
+            <GlassCard noHover className="p-6">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  layout="vertical"
+                  data={[
+                    { sector: 'Finance', exposure: 54 },
+                    { sector: 'Admin', exposure: 46 },
+                    { sector: 'Legal', exposure: 44 },
+                    { sector: 'HR', exposure: 42 },
+                    { sector: 'Marketing', exposure: 37 },
+                    { sector: 'Consulting', exposure: 35 },
+                    { sector: 'Tech', exposure: 32 },
+                  ]}
+                  margin={{ top: 5, right: 40, left: 70, bottom: 5 }}
+                >
+                  <XAxis type="number" domain={[0, 60]} tick={{ fontSize: 11, fill: '#5A5650' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
+                  <YAxis type="category" dataKey="sector" tick={{ fontSize: 12, fill: '#1D2025', fontWeight: 500 }} axisLine={false} tickLine={false} width={65} />
+                  <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`${value}%`, 'AI Exposure']} />
+                  <Bar dataKey="exposure" fill="#2ECDB0" radius={[0, 4, 4, 0]} barSize={24}>
+                    <LabelList dataKey="exposure" position="right" formatter={(v: number) => `${v}%`} style={{ fontSize: 11, fill: '#5A5650', fontWeight: 500 }} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </GlassCard>
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Source: World Economic Forum Future of Jobs Report 2025, Goldman Sachs Research
+            </p>
+          </div>
+        </ScrollReveal>
       </PanelLayout>
 
 
