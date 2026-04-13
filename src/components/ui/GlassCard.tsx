@@ -2,12 +2,13 @@ import { cn } from "@/lib/utils";
 
 interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
+  noHover?: boolean;
 }
 
-export default function GlassCard({ className, children, ...props }: GlassCardProps) {
+export default function GlassCard({ className, children, noHover, ...props }: GlassCardProps) {
   return (
     <div
-      className={cn("rounded-2xl transition-all duration-200 ease-out hover:-translate-y-[2px]", className)}
+      className={cn("rounded-2xl transition-all duration-200 ease-out", !noHover && "hover:-translate-y-[2px]", className)}
       style={{
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
@@ -17,11 +18,11 @@ export default function GlassCard({ className, children, ...props }: GlassCardPr
         boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.1)";
+        if (!noHover) e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.1)";
         props.onMouseEnter?.(e);
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)";
+        if (!noHover) e.currentTarget.style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)";
         props.onMouseLeave?.(e);
       }}
       {...props}
