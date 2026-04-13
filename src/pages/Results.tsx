@@ -708,6 +708,16 @@ export default function Results() {
                 <MarketSnapshotSection report={report} ap={ap} />
               </ScrollReveal>
 
+              {/* Traction Signals (portfolio only) */}
+              {ap?.activation_plan?.plan_type === "portfolio" && ap?.activation_plan?.traction_signals && (
+                <ScrollReveal delay={0.1}>
+                  <TractionSignalsSection
+                    tractionSignals={ap.activation_plan.traction_signals}
+                    strandColorMap={buildStrandColorMap(ap.activation_plan)}
+                  />
+                </ScrollReveal>
+              )}
+
               {/* AI Impact */}
               {report?.ai_impact_section && (
                 <ScrollReveal delay={0.1}>
