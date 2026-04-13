@@ -409,12 +409,14 @@ function PortfolioReviewCard({ session, navigate }: { session: any; navigate: (p
   );
 }
 
+const STRAND_HEX = ["#2ECDB0", "#6366F1", "#F59E0B", "#EF4444", "#8B5CF6"];
+
 const STRAND_CARD_COLORS = [
-  { dot: "bg-[hsl(168,70%,45%)]", bar: "bg-[hsl(168,70%,45%)]" },
-  { dot: "bg-[hsl(38,90%,55%)]",  bar: "bg-[hsl(38,90%,55%)]" },
-  { dot: "bg-[hsl(270,60%,60%)]", bar: "bg-[hsl(270,60%,60%)]" },
-  { dot: "bg-[hsl(200,70%,50%)]", bar: "bg-[hsl(200,70%,50%)]" },
-  { dot: "bg-[hsl(340,70%,55%)]", bar: "bg-[hsl(340,70%,55%)]" },
+  { dot: "bg-[#2ECDB0]", bar: "bg-[#2ECDB0]" },
+  { dot: "bg-[#6366F1]", bar: "bg-[#6366F1]" },
+  { dot: "bg-[#F59E0B]", bar: "bg-[#F59E0B]" },
+  { dot: "bg-[#EF4444]", bar: "bg-[#EF4444]" },
+  { dot: "bg-[#8B5CF6]", bar: "bg-[#8B5CF6]" },
 ];
 
 type StrandStatus = "active" | "watching" | "paused" | "graduated";
