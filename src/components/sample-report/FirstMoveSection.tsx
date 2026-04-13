@@ -18,21 +18,21 @@ export default function FirstMoveSection() {
 
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-white mb-6">Your First Move</h2>
-      <div className="rounded-lg bg-[#15191E] border-l-[6px] border-[#2ECDB0] p-6 sm:p-10">
-        <span className="inline-block rounded-full bg-[#2ECDB0] px-4 py-1.5 text-xs font-bold text-[#0F1117] mb-4">
+      <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your First Move</h2>
+      <div className="rounded-lg bg-card border-l-[6px] border-primary p-6 sm:p-10">
+        <span className="inline-block rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground mb-4">
           {fm.window}
         </span>
-        <h3 className="text-[1.3rem] font-bold text-white mb-4">{fm.action}</h3>
+        <h3 className="text-[1.3rem] font-bold text-foreground mb-4">{fm.action}</h3>
 
-        <div className="rounded-md bg-[#1A1F28] p-5 mb-5">
+        <div className="rounded-md bg-muted p-5 mb-5">
           <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Why This First</h4>
-          <p className="text-sm leading-relaxed text-[#E8E8E8]">{fm.why_first}</p>
+          <p className="text-sm leading-relaxed text-secondary-foreground">{fm.why_first}</p>
         </div>
 
         {/* Email draft */}
-        <div className="rounded-lg border border-border bg-[#1F2430] overflow-hidden">
-          <div className="flex items-center justify-between border-b border-border px-4 py-2.5 bg-muted/30">
+        <div className="rounded-lg border border-border bg-muted overflow-hidden">
+          <div className="flex items-center justify-between border-b border-border px-4 py-2.5 bg-card">
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-muted-foreground" />
               <span className="text-xs font-semibold text-foreground">Draft Email</span>
@@ -44,7 +44,7 @@ export default function FirstMoveSection() {
           </div>
           <div className="px-4 py-3">
             {fm.outreach_draft.subject && (
-              <p className="text-xs font-semibold text-[#2ECDB0] italic mb-2">Subject: {fm.outreach_draft.subject}</p>
+              <p className="text-xs font-semibold text-primary italic mb-2">Subject: {fm.outreach_draft.subject}</p>
             )}
             <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line font-mono">{fm.outreach_draft.body}</p>
           </div>
