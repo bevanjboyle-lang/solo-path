@@ -91,7 +91,7 @@ export default function GuidanceLibrary() {
       <ScrollReveal>
         <GlassCard className="mb-8 p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+            <span className="text-sm font-semibold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
               {completedIds.length} of {totalModules} modules completed
             </span>
             <span className="text-xs font-medium" style={{ color: "#2ECDB0" }}>
@@ -130,7 +130,7 @@ export default function GuidanceLibrary() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-sm font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+                      <h3 className="text-sm font-bold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
                         {track.name}
                       </h3>
                       <span className="text-[10px] text-muted-foreground">{trackModules.length} modules</span>
@@ -209,7 +209,7 @@ export default function GuidanceLibrary() {
                                 {mod.id}
                               </span>
                               <div className="flex-1 min-w-0">
-                                <span className="text-sm font-semibold block" style={{ color: disabled ? "#9E9A93" : "#1D2025", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                <span className="text-sm font-semibold block" style={{ color: disabled ? "#9E9A93" : "#1D2025", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
                                   {mod.name}
                                 </span>
                                 {mod.description && (

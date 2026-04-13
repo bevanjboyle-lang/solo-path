@@ -163,7 +163,7 @@ export default function Tracker() {
               <ScrollReveal>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your Tracker</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>Your Tracker</h1>
                   </div>
                 </div>
               </ScrollReveal>
@@ -175,7 +175,7 @@ export default function Tracker() {
                     <CircularGauge value={Math.round((session.current_day / 30) * 100)} size={180} strokeWidth={14} color="#2ECDB0" />
                   </div>
                   <div className="mt-[-100px] flex flex-col items-center z-10">
-                    <span className="text-4xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+                    <span className="text-4xl font-extrabold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
                       {session.current_day}
                     </span>
                     <span className="text-sm mt-1" style={{ color: "#5A5650" }}>of 30 days</span>
@@ -188,7 +188,7 @@ export default function Tracker() {
               {/* Weekly Momentum Chart */}
               <ScrollReveal delay={0.2}>
                 <GlassCard className="mt-6 p-6">
-                  <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+                  <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
                     Your Momentum
                   </h3>
                   <ResponsiveContainer width="100%" height={160}>
@@ -277,7 +277,7 @@ export default function Tracker() {
                                     background: "linear-gradient(135deg, #1D2025 0%, #2ECDB0 50%, #1D2025 100%)",
                                     WebkitBackgroundClip: "text",
                                     WebkitTextFillColor: "transparent",
-                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                                     fontWeight: 700,
                                   }}
                                 >

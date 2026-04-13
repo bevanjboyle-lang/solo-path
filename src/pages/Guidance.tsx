@@ -36,7 +36,7 @@ export default function Guidance() {
       <Navbar />
       <main className="mx-auto max-w-5xl px-6 pt-24 pb-16">
         <ScrollReveal>
-          <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+          <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
             Practical Guidance
           </h1>
           <p className="text-sm mb-8" style={{ color: "#5A5650" }}>

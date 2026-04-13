@@ -64,7 +64,7 @@ function HowItWorksSection() {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-widest text-primary">How it works</p>
-      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
         Guidance that knows your situation
       </h2>
       <p className="mt-2 max-w-xl text-sm" style={{ color: "#5A5650" }}>
@@ -197,7 +197,7 @@ function LibraryViewSection() {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-widest text-primary">Your library</p>
-      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
         What you'll see in your guidance library
       </h2>
       <p className="mt-2 max-w-xl text-sm" style={{ color: "#5A5650" }}>
@@ -292,7 +292,7 @@ function ExampleOutputSection() {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-widest text-primary">Example output</p>
-      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
         What you get back
       </h2>
       <p className="mt-2 max-w-xl text-sm" style={{ color: "#5A5650" }}>
@@ -304,7 +304,7 @@ function ExampleOutputSection() {
         {/* Output header */}
         <div className="px-6 py-6 sm:px-8" style={{ background: "#1D2025" }}>
           <p className="text-xs" style={{ color: "#9B9893" }}>Pricing &amp; commercial strategy · Generated 14 Apr 2026</p>
-          <h3 className="mt-2 text-xl font-bold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <h3 className="mt-2 text-xl font-bold text-white" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
             Your day rate and pricing strategy
           </h3>
           <p className="mt-1 text-sm" style={{ color: "#B0ADA8" }}>
