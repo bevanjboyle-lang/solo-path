@@ -35,6 +35,15 @@ const LOADING_MESSAGES = [
   "Finalising your plan...",
 ];
 
+const PORTFOLIO_LOADING_MESSAGES = [
+  "Building your portfolio plan...",
+  "Designing shared foundations for your first week...",
+  "Creating strand-specific outreach for each path...",
+  "Analysing your local market for each option...",
+  "Building your integrated 30-day plan...",
+  "Almost there...",
+];
+
 const incomeProjectionData = [
   { name: "Consulting", month3: 2500, month6: 5500, month12: 8500 },
   { name: "Fractional CFO", month3: 4000, month6: 7500, month12: 12000 },
@@ -296,7 +305,7 @@ export default function Results() {
                   exit={{ opacity: 0, y: -8 }}
                   className="text-sm text-foreground font-medium"
                 >
-                  {LOADING_MESSAGES[loadingMsgIdx]}
+                  {(selectedRanks.size > 1 ? PORTFOLIO_LOADING_MESSAGES : LOADING_MESSAGES)[loadingMsgIdx % (selectedRanks.size > 1 ? PORTFOLIO_LOADING_MESSAGES.length : LOADING_MESSAGES.length)]}
                 </motion.p>
               </motion.div>
             )}
@@ -752,44 +761,42 @@ export default function Results() {
       <Dialog open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Build your portfolio plan</DialogTitle>
+            <DialogTitle>{selectedRanks.size <= 1 ? "Build your plan" : "Build your portfolio plan"}</DialogTitle>
             <DialogDescription asChild>
               <div className="space-y-3 text-sm text-muted-foreground">
-                <p>You're building a parallel pursuit plan across {selectedRanks.size} strands:</p>
-                <ul className="space-y-1.5 text-left">
-                  {cr && (cr.options || [])
-                    .filter((o: any) => selectedRanks.has(o.rank))
-                    .sort((a: any, b: any) => a.rank - b.rank)
-                    .map((o: any) => (
-                      <li key={o.rank} className="flex items-center gap-2 text-sm text-foreground">
-                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
-                          {o.rank}
-                        </span>
-                        {o.model_name}
-                      </li>
-                    ))}
-                </ul>
-                {selectionChanged && (
-                  <p className="text-xs text-muted-foreground/80">
-                    Rebuilding your plan for your chosen options. Usually under 20 seconds.
-                  </p>
-                )}
-                {!selectionChanged && (
-                  <p className="text-xs text-muted-foreground/80">
-                    Solo will create one integrated 30-day plan with strand-specific tasks for each path.
-                  </p>
+                {selectedRanks.size <= 1 ? (
+                  <p>Solo will generate your personalised 30-day activation plan.</p>
+                ) : (
+                  <>
+                    <ol className="space-y-1.5 text-left list-none p-0 m-0">
+                      {cr && (cr.options || [])
+                        .filter((o: any) => selectedRanks.has(o.rank))
+                        .sort((a: any, b: any) => a.rank - b.rank)
+                        .map((o: any) => (
+                          <li key={o.rank} className="flex items-center gap-2 text-sm text-foreground">
+                            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                              {o.rank}
+                            </span>
+                            {o.model_name}
+                          </li>
+                        ))}
+                    </ol>
+                    <p className="text-xs text-muted-foreground/80">
+                      Solo will create one integrated 30-day plan with strand-specific tasks, market snapshots for each path, and traction signals to track your progress.
+                    </p>
+                  </>
                 )}
               </div>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShowConfirm(false)}>Back to options</Button>
+            <Button variant="ghost" onClick={() => setShowConfirm(false)}>Back to options</Button>
             <Button
               onClick={handleGeneratePlan}
               style={{ background: "#2ECDB0" }}
               className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
             >
-              Build my plan with these {selectedRanks.size} options
+              {selectedRanks.size <= 1 ? "Build my plan" : "Build portfolio plan"}
             </Button>
           </DialogFooter>
         </DialogContent>
