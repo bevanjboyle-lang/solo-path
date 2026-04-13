@@ -596,7 +596,12 @@ export default function Landing() {
               </div>
             </GlassCard>
           </div>
-        </ScrollReveal>
+        <p className="mt-6 text-center">
+          <Link to="/sample-report" className="text-sm font-medium text-primary hover:underline">
+            See a sample report →
+          </Link>
+        </p>
+      </ScrollReveal>
       </PanelLayout>
 
       {/* ── 9. FINAL CTA ── */}
