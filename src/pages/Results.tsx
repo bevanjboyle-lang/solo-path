@@ -357,8 +357,8 @@ export default function Results() {
               {/* Options Card Grid */}
               <ScrollReveal delay={0.1}>
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground mb-1">We suggest starting with these options. Change anything you like.</h2>
-                  <p className="text-sm text-muted-foreground mb-2">You can select 2 to 5 options. The recommendation is based on your capability profile and income risk spread.</p>
+              <h2 className="text-lg font-semibold text-foreground mb-1">Select your options</h2>
+                  <p className="text-sm text-muted-foreground mb-2">Choose 2–3 options to build a portfolio plan — or pick 1 if you have a clear preference. We recommend 3.</p>
                   {cr.recommended_selection?.rationale && (
                     <p className="text-sm text-muted-foreground/80 mb-4 italic">{cr.recommended_selection.rationale}</p>
                   )}
@@ -429,32 +429,36 @@ export default function Results() {
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 40 }}
-                className="fixed bottom-0 left-0 right-0 z-50 border-t border-primary/30 bg-card/95 backdrop-blur-lg px-6 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]"
+                className="fixed bottom-0 left-0 right-0 z-50 px-6 py-4"
+                style={{ background: "#1a1a2e", borderTop: "1px solid rgba(46,205,176,0.3)" }}
               >
                 <div className="mx-auto max-w-3xl">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-foreground">
-                        <span className="font-semibold">{selectedRanks.size}</span> option{selectedRanks.size !== 1 ? "s" : ""} selected
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="text-center sm:text-left">
+                      <p className="text-sm text-white">
+                        <span className="font-semibold">{selectedRanks.size}</span>
+                        {selectedRanks.size === 1
+                          ? " option selected"
+                          : selectedRanks.size >= MAX_SELECTIONS
+                          ? ` strands selected (maximum)`
+                          : " strands selected — building a portfolio"}
                       </p>
                       {selectedRanks.size < MIN_SELECTIONS && (
-                        <p className="text-xs text-muted-foreground">Select at least {MIN_SELECTIONS} options</p>
+                        <p className="text-xs text-white/50">Select at least {MIN_SELECTIONS} options</p>
+                      )}
+                      {selectedRanks.size >= MAX_SELECTIONS && (
+                        <p className="text-xs text-white/50 mt-0.5">Deselect one to add a different option.</p>
                       )}
                     </div>
                     <Button
                       disabled={selectedRanks.size < MIN_SELECTIONS}
                       onClick={() => setShowConfirm(true)}
                       style={{ background: "#2ECDB0" }}
-                      className="text-[#0D0D12] font-semibold border-0 hover:opacity-90"
+                      className="text-[#0D0D12] font-semibold border-0 hover:opacity-90 w-full sm:w-auto"
                     >
-                      Build my plan with these {selectedRanks.size} options →
+                      {selectedRanks.size <= 1 ? "Build my plan →" : "Build my portfolio plan →"}
                     </Button>
                   </div>
-                  {selectedRanks.size >= MAX_SELECTIONS && (
-                    <p className="text-xs text-muted-foreground mt-2 text-center">
-                      You've reached the maximum of {MAX_SELECTIONS}. Deselect one to add a different option.
-                    </p>
-                  )}
                 </div>
               </motion.div>
             )}
@@ -815,11 +819,12 @@ function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { op
       onClick={() => !disabled && onToggle()}
       className={`relative rounded-xl border bg-card shadow-card cursor-pointer transition-all duration-200 ${
         selected
-          ? "border-primary ring-1 ring-primary/30 metallic-border"
+          ? "border-primary/30 ring-0"
           : disabled
           ? "border-border opacity-50 cursor-not-allowed"
           : "border-border hover:border-primary/40 hover:bg-[rgba(46,205,176,0.05)]"
       } ${isTop3 ? "p-6" : "p-4"}`}
+      style={selected ? { borderLeft: "4px solid #2ECDB0", background: "rgba(46, 205, 176, 0.05)" } : undefined}
     >
       {/* Checkbox top-right */}
       <div className={`absolute top-4 right-4 flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
@@ -923,8 +928,9 @@ function CompactOptionCard({ option, selected, onToggle, selectionFull }: { opti
     <div
       onClick={() => !disabled && onToggle()}
       className={`flex items-center gap-3 rounded-lg border p-3 cursor-pointer transition-all ${
-        selected ? "border-primary bg-primary/5" : disabled ? "border-border opacity-40 cursor-not-allowed" : "border-border hover:border-primary/30 hover:bg-[rgba(46,205,176,0.05)]"
+        selected ? "border-primary/30" : disabled ? "border-border opacity-40 cursor-not-allowed" : "border-border hover:border-primary/30 hover:bg-[rgba(46,205,176,0.05)]"
       }`}
+      style={selected ? { borderLeft: "4px solid #2ECDB0", background: "rgba(46, 205, 176, 0.05)" } : undefined}
     >
       <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border transition-colors ${
         selected ? "bg-primary border-primary" : "border-muted-foreground/30"
