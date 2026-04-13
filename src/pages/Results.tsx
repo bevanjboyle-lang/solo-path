@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap } from "lucide-react";
+import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw } from "lucide-react";
 import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -744,6 +744,29 @@ export default function Results() {
                   </div>
                 </ScrollReveal>
               )}
+
+              {/* Refine Report */}
+              {reportId && (
+                <ScrollReveal delay={0.1}>
+                  <RefineReportSection
+                    reportId={reportId}
+                    refinementCount={cr?.refinement_count || 0}
+                    onReportUpdated={(updatedReport, newCount) => {
+                      setReport((prev) => {
+                        if (!prev) return prev;
+                        return {
+                          ...prev,
+                          core_report: updatedReport.core_report ?? prev.core_report,
+                          activation_plan: updatedReport.activation_plan ?? prev.activation_plan,
+                          market_snapshot: updatedReport.market_snapshot ?? prev.market_snapshot,
+                          ai_impact_section: updatedReport.ai_impact_section ?? prev.ai_impact_section,
+                          status: updatedReport.status ?? prev.status,
+                        };
+                      });
+                    }}
+                  />
+                </ScrollReveal>
+              )}
             </div>
           )}
 
@@ -1460,5 +1483,94 @@ function AIImpactSection({ data }: { data: any }) {
         )}
       </div>
     </ReportSection>
+  );
+}
+
+function RefineReportSection({
+  reportId,
+  refinementCount: initialCount,
+  onReportUpdated,
+}: {
+  reportId: string;
+  refinementCount: number;
+  onReportUpdated: (updatedReport: any, newCount: number) => void;
+}) {
+  const [feedback, setFeedback] = useState("");
+  const [refining, setRefining] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [count, setCount] = useState(initialCount);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const remaining = Math.max(0, 3 - count);
+  const exhausted = remaining <= 0;
+
+  useEffect(() => { setCount(initialCount); }, [initialCount]);
+
+  const handleRefine = async () => {
+    if (!feedback.trim() || exhausted) return;
+    setRefining(true);
+    setError(null);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("refine-report", {
+        body: { report_id: reportId, feedback_text: feedback.trim() },
+      });
+      if (fnError) throw fnError;
+      if (!data?.success) throw new Error(data?.error || "Refinement failed");
+      const newCount = data.refinement_count ?? count + 1;
+      setCount(newCount);
+      setFeedback("");
+      onReportUpdated(data.report, newCount);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
+    } finally {
+      setRefining(false);
+    }
+  };
+
+  return (
+    <GlassCard className="mx-auto max-w-[600px] p-6">
+      <div className="flex items-center gap-2.5 mb-1">
+        <RefreshCw className="h-4 w-4 text-primary" strokeWidth={1.5} />
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Refine your report</h3>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">
+        {exhausted
+          ? "You've used all 3 refinements for this report."
+          : "Something doesn't feel right? Tell us and we'll adjust the analysis. Up to 3 refinements included."}
+      </p>
+      <textarea
+        value={feedback}
+        onChange={(e) => setFeedback(e.target.value)}
+        disabled={refining || exhausted}
+        placeholder="e.g., I think Option 2 is more realistic than Option 1 because..."
+        rows={3}
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 resize-y focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+      />
+      {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
+      <div className="mt-3 flex items-center justify-between gap-4">
+        <p className="text-xs text-muted-foreground">{remaining} of 3 refinement{remaining !== 1 ? "s" : ""} remaining</p>
+        <Button
+          onClick={handleRefine}
+          disabled={refining || exhausted || !feedback.trim()}
+          style={{ background: "#2ECDB0" }}
+          className="text-white font-semibold border-0 hover:opacity-90 disabled:opacity-40 min-w-[90px]"
+        >
+          {refining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refine"}
+        </Button>
+      </div>
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.p
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="mt-2 text-xs text-primary font-medium"
+          >
+            ✓ Report updated.
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </GlassCard>
   );
 }
