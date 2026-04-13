@@ -147,6 +147,44 @@ export default function Results() {
     }
   };
 
+  const handleDownloadPdf = async () => {
+    if (!reportId) return;
+    setPdfLoading(true);
+    setPdfError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-pdf`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ report_id: reportId }),
+        }
+      );
+      if (!res.ok) throw new Error("PDF generation failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const today = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `Solo-Plan-${today}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF download error:", err);
+      setPdfError("PDF generation failed. Please try again.");
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   const toggleRank = (rank: number) => {
     setSelectedRanks((prev) => {
       const next = new Set(prev);
