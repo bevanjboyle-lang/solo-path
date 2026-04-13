@@ -93,7 +93,7 @@ export default function Landing() {
       <div className="fixed inset-0 -z-10">
         <img src={officeBg} alt="" className="h-full w-full object-cover" style={{ filter: "blur(2px)" }} />
         <div className="absolute inset-0" style={{
-          background: "linear-gradient(to bottom, hsla(30, 8%, 88%, 0.78), hsla(30, 8%, 88%, 0.84))",
+          background: "linear-gradient(to bottom, hsla(30, 8%, 88%, 0.68), hsla(30, 8%, 88%, 0.76))",
         }} />
       </div>
       <MintTopBar />
