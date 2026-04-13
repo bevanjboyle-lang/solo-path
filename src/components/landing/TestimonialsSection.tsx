@@ -11,6 +11,11 @@ const fadeUp = {
 
 const testimonials = [
   {
+    quote: "I would never have done the outreach I did if Solo hadn't encouraged me to do it — and that outreach is exactly what has landed me my first independent contract.",
+    name: "Priya S., 41, Senior Operations Manager",
+    bold: true,
+  },
+  {
     quote: "I'd been vaguely aware my role was changing for two years. Solo gave me three concrete paths I'd never seriously considered, and I'm already six months into pursuing one of them.",
     name: "James T., 44, Senior Account Director",
   },
@@ -21,6 +26,14 @@ const testimonials = [
   {
     quote: "The 30-day plan was the thing that made it real. It wasn't just ideas, it was actual first steps. I sent my first outreach email in week two and had a conversation within days.",
     name: "David K., 51, ex-Director of Strategy, Retail",
+  },
+  {
+    quote: "I'd always thought of myself as 'not entrepreneurial.' Solo reframed what I already knew how to do as something people would pay for. That shift in perspective changed everything.",
+    name: "Laura H., 46, Programme Director, Public Sector",
+  },
+  {
+    quote: "What surprised me most was how specific the recommendations were. It wasn't generic career advice — it felt like someone who actually understood my industry had sat down and mapped it out.",
+    name: "Tom W., 39, Head of Product, SaaS",
   },
 ];
 
@@ -44,16 +57,24 @@ export default function TestimonialsSection() {
           </p>
         </motion.div>
 
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {testimonials.map((t, i) => (
             <motion.div
               key={t.name}
-              className="rounded-[10px] border border-border bg-surface-card p-6 transition-all hover:border-primary hover:shadow-card-hover"
+              className={`rounded-[10px] border p-6 transition-all hover:shadow-card-hover ${
+                (t as any).bold
+                  ? "border-primary bg-primary/5 hover:border-primary"
+                  : "border-border bg-surface-card hover:border-primary"
+              }`}
               variants={fadeUp} initial="hidden" whileInView="visible"
               viewport={{ once: true, margin: "-60px" }} custom={i}
             >
               <Quote className="mb-3 h-5 w-5 text-primary/40" strokeWidth={1.5} />
-              <p className="mb-4 text-sm italic leading-relaxed text-foreground/90">
+              <p className={`mb-4 leading-relaxed ${
+                (t as any).bold
+                  ? "text-sm font-semibold not-italic text-foreground"
+                  : "text-sm italic text-foreground/90"
+              }`}>
                 "{t.quote}"
               </p>
               <span className="text-xs text-muted-foreground">{t.name}</span>
