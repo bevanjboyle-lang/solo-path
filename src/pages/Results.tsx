@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap } from "lucide-react";
+import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw } from "lucide-react";
 import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -742,6 +742,29 @@ export default function Results() {
                       Start your 30-day plan →
                     </button>
                   </div>
+                </ScrollReveal>
+              )}
+
+              {/* Refine Report */}
+              {reportId && (
+                <ScrollReveal delay={0.1}>
+                  <RefineReportSection
+                    reportId={reportId}
+                    refinementCount={cr?.refinement_count || 0}
+                    onReportUpdated={(updatedReport, newCount) => {
+                      setReport((prev) => {
+                        if (!prev) return prev;
+                        return {
+                          ...prev,
+                          core_report: updatedReport.core_report ?? prev.core_report,
+                          activation_plan: updatedReport.activation_plan ?? prev.activation_plan,
+                          market_snapshot: updatedReport.market_snapshot ?? prev.market_snapshot,
+                          ai_impact_section: updatedReport.ai_impact_section ?? prev.ai_impact_section,
+                          status: updatedReport.status ?? prev.status,
+                        };
+                      });
+                    }}
+                  />
                 </ScrollReveal>
               )}
             </div>
