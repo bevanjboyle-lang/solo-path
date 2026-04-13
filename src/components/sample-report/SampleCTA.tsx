@@ -11,7 +11,7 @@ export default function SampleCTA() {
       <p className="mx-auto mt-3 max-w-lg text-sm text-primary-foreground/80">
         Yours will be built from your experience, your sector, your network.
       </p>
-      <div className="mt-8">
+      <div className="mt-8 flex flex-col items-center gap-3">
         <Button
           size="lg"
           className="rounded-md bg-white px-8 py-4 text-base font-medium text-primary hover:bg-white/90"
@@ -19,6 +19,12 @@ export default function SampleCTA() {
         >
           Get your report — £19.99
         </Button>
+        <button
+          onClick={() => navigate("/guidance-library")}
+          className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+        >
+          See your guidance library →
+        </button>
       </div>
     </div>
   );
