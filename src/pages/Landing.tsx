@@ -172,6 +172,26 @@ export default function Landing() {
                 Solo takes what you've built over your career and turns it into a realistic, executable path to independent income: the paths, the clients, the first 30 days, based on your actual experience. <span className="font-bold text-foreground">So whatever changes - whether it's AI, restructuring, or simply wanting more options - you already know what you're doing next.</span>
               </motion.p>
 
+              {/* Three statement cards */}
+              <motion.div
+                className="mx-auto mt-8 grid max-w-xl grid-cols-1 gap-3 sm:grid-cols-3"
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.22 }}
+              >
+                {[
+                  "Most managers couldn't name a single person who'd pay them outside an employer.",
+                  "The average professional spends 18 months thinking before acting.",
+                  "Generic AI gives you ideas. Solo gives you your answer.",
+                ].map((text, i) => (
+                  <div
+                    key={i}
+                    className="rounded-lg border border-border bg-surface-card px-4 py-3"
+                  >
+                    <p className="text-xs leading-relaxed text-muted-foreground">{text}</p>
+                  </div>
+                ))}
+              </motion.div>
 
               <motion.div
                 className="mt-10 max-w-xl mx-auto text-center"
@@ -214,25 +234,6 @@ export default function Landing() {
         </section>
       </PanelLayout>
 
-      {/* ── THREE STATEMENTS ── */}
-      <PanelLayout className="px-6 py-12 sm:px-10">
-        <ScrollReveal>
-          <div className="mx-auto max-w-xl flex flex-col gap-4 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
-            {[
-              "Most managers couldn't name a single person who'd pay them outside an employer.",
-              "The average professional spends 18 months thinking before acting.",
-              "Generic AI gives you ideas. Solo gives you your answer.",
-            ].map((stat, i) => (
-              <div
-                key={i}
-                className="metallic-border relative rounded-lg border border-border bg-surface-card px-4 py-4 sm:border-0 sm:rounded-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover cursor-default"
-              >
-                <p className="text-xs leading-relaxed text-muted-foreground">{stat}</p>
-              </div>
-            ))}
-          </div>
-        </ScrollReveal>
-      </PanelLayout>
 
       {/* ── STAT STRIP ── */}
       <PanelLayout className="px-6 py-12 sm:px-10">
