@@ -1199,7 +1199,7 @@ function StrandPill({ strand, colorIdx, grey }: { strand: string; colorIdx: numb
   return (
     <span className={`inline-flex items-center gap-1 rounded-full ${c.bg} px-2 py-0.5 text-[10px] font-medium ${c.text}`}>
       <span className={`inline-block h-1.5 w-1.5 rounded-full ${c.dot}`} />
-      {strand}
+      <span className="hidden sm:inline">{strand}</span>
     </span>
   );
 }
