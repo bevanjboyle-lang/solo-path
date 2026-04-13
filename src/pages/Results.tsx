@@ -1368,10 +1368,6 @@ function MarketSnapshotSection({ report, ap }: { report: ReportData | null; ap: 
                 </button>
               );
             })}
-              >
-                {id}
-              </button>
-            ))}
           </div>
         )}
         <MarketSnapshotRenderer text={marketSnapshots[activeStrand] || ""} />
