@@ -1,5 +1,10 @@
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import {
+  RadialBarChart, RadialBar, PolarAngleAxis,
+  RadarChart, Radar, PolarGrid, PolarRadiusAxis,
+  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,
+} from "recharts";
 import SoloLogo from "@/components/SoloLogo";
 import {
   Scale,
