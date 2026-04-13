@@ -87,7 +87,7 @@ export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen text-foreground" style={{
+    <div className="min-h-screen text-foreground overflow-x-hidden" style={{
       backgroundColor: "rgba(46, 205, 176, 0.04)",
       backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)",
       backgroundSize: "20px 20px",
