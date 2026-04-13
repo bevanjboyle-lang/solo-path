@@ -422,10 +422,10 @@ const STRAND_CARD_COLORS = [
 type StrandStatus = "active" | "watching" | "paused" | "graduated";
 
 const STATUS_BADGES: Record<StrandStatus, { label: string; className: string }> = {
-  active:    { label: "ACTIVE",       className: "bg-[hsl(168,70%,45%)]/15 text-[hsl(168,70%,45%)] border-[hsl(168,70%,45%)]/20" },
-  watching:  { label: "WATCHING",     className: "bg-muted text-muted-foreground border-border" },
+  active:    { label: "ACTIVE",       className: "bg-[#2ECDB0]/15 text-[#2ECDB0] border-[#2ECDB0]/20" },
+  watching:  { label: "WATCHING",     className: "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/20" },
   paused:    { label: "PAUSED",       className: "bg-muted/50 text-muted-foreground/60 border-border/50" },
-  graduated: { label: "GRADUATED ★",  className: "bg-[hsl(142,70%,40%)]/15 text-[hsl(142,70%,40%)] border-[hsl(142,70%,40%)]/20 font-bold" },
+  graduated: { label: "GRADUATED ★",  className: "bg-[#6366F1]/15 text-[#6366F1] border-[#6366F1]/20 font-bold" },
 };
 
 function SignalDots({ score }: { score: number }) {
