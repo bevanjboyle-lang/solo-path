@@ -22,7 +22,7 @@ export function RecommendationTeaser() {
   return (
     <LockedCard title="Solo's Recommendation">
       <p className="text-sm text-muted-foreground">Based on your profile, Path 1 is the strongest fit because -</p>
-      <p className="text-sm text-muted-foreground" style={{ filter: "blur(4px)" }}>
+      <p className="text-sm text-muted-foreground" style={{ filter: "blur(2px)" }}>
         your regulatory fluency combined with stakeholder management experience maps directly to the fractional risk consulting model. The demand signal in Edinburgh's FinTech corridor is strong enough to support a pipeline within 8 weeks.
       </p>
     </LockedCard>
@@ -39,7 +39,7 @@ export function IncomeOutlookTeaser() {
   return (
     <div className="relative overflow-hidden rounded-md border border-border bg-surface-card p-6">
       <h2 className="mb-3 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>Reality Check &amp; Income Outlook</h2>
-      <div style={{ filter: "blur(5px)" }}>
+      <div style={{ filter: "blur(3px)" }}>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={data} barGap={2} barCategoryGap="20%">
             <XAxis
@@ -126,7 +126,7 @@ export function ActivationPlanTeaser() {
       </div>
 
       {/* Blurred rest */}
-      <div style={{ filter: "blur(4px)" }} className="mt-2 flex flex-col gap-2">
+      <div style={{ filter: "blur(2px)" }} className="mt-2 flex flex-col gap-2">
         <div className="flex items-start gap-2 text-sm text-muted-foreground"><span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />Day 4: Draft your 60-second consulting pitch</div>
         <div className="flex items-start gap-2 text-sm text-muted-foreground"><span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />Day 5: Identify and join 3 relevant Slack communities</div>
       </div>
@@ -143,7 +143,7 @@ export function FirstMoveTeaser() {
     <div className="relative overflow-hidden rounded-md border border-border bg-surface-mint-tint p-6">
       <h2 className="mb-2 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>Your First Move - Do This Within 24 Hours</h2>
       <p className="text-sm text-muted-foreground">Send this exact message to [specific contact type]...</p>
-      <p className="mt-1 text-sm text-muted-foreground" style={{ filter: "blur(4px)" }}>
+      <p className="mt-1 text-sm text-muted-foreground" style={{ filter: "blur(2px)" }}>
         "Hi [Name], I'm moving into independent consulting focused on regulatory risk for growth-stage companies. Given your experience at [Company], I'd value 15 minutes of your perspective on the market."
       </p>
       <p className="mt-2 text-[10px] italic text-muted-foreground">Includes a complete ready-to-send draft personalised to your profile.</p>
@@ -180,13 +180,13 @@ export function AIImpactTeaser() {
         {["1. AI risk to your current role", "2. AI resilience of your Plan B", "3. Your adaptation path"].map((h) => (
           <div key={h}>
             <p className="text-sm font-medium text-foreground">{h}</p>
-            <p className="mt-1 text-sm text-muted-foreground" style={{ filter: "blur(4px)" }}>Detailed analysis of how AI capabilities intersect with your specific skill profile and recommended positioning adjustments.</p>
+            <p className="mt-1 text-sm text-muted-foreground" style={{ filter: "blur(2px)" }}>Detailed analysis of how AI capabilities intersect with your specific skill profile and recommended positioning adjustments.</p>
           </div>
         ))}
       </div>
 
       {/* Radar chart */}
-      <div className="mt-4" style={{ filter: "blur(5px)" }}>
+      <div className="mt-4" style={{ filter: "blur(3px)" }}>
         <ResponsiveContainer width="100%" height={220}>
           <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
             <PolarGrid stroke="#E5E2DC" />
