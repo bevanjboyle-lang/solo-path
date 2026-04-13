@@ -21,9 +21,9 @@ function LockedCard({ title, children }: { title: string; children: React.ReactN
 export function RecommendationTeaser() {
   return (
     <LockedCard title="Solo's Recommendation">
-      <p className="text-sm text-muted-foreground">Based on your profile, Path 1 is the strongest fit because -</p>
+      <p className="text-sm text-muted-foreground">Based on your profile, Path 1 is the strongest fit. Your regulatory fluency combined with nine years of stakeholder management maps directly to the independent risk consulting model.</p>
       <p className="text-sm text-muted-foreground" style={{ filter: "blur(2px)" }}>
-        your regulatory fluency combined with stakeholder management experience maps directly to the fractional risk consulting model. The demand signal in Edinburgh's FinTech corridor is strong enough to support a pipeline within 8 weeks.
+        The demand signal in Edinburgh's FinTech corridor is strong — three Series B companies raised in the last quarter alone.
       </p>
     </LockedCard>
   );
@@ -83,9 +83,9 @@ export function ActivationPlanTeaser() {
   ];
 
   const tasks = [
-    "Day 1: Update LinkedIn headline to signal consulting availability",
-    "Day 2: Write your war story post from your Big Four achievement",
-    "Day 3: Send 3 reconnect messages to former colleagues",
+    "Day 1: Update LinkedIn headline: 'Regulatory Risk Consultant | Helping FinTechs & Scale-ups Navigate Compliance'",
+    "Day 2: Write your war story post — the audit finding that saved a client from a regulatory fine",
+    "Day 3: Send 3 reconnect messages to former Big Four colleagues now in FinTech or consulting",
   ];
 
   return (
@@ -127,8 +127,8 @@ export function ActivationPlanTeaser() {
 
       {/* Blurred rest */}
       <div style={{ filter: "blur(2px)" }} className="mt-2 flex flex-col gap-2">
-        <div className="flex items-start gap-2 text-sm text-muted-foreground"><span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />Day 4: Draft your 60-second consulting pitch</div>
-        <div className="flex items-start gap-2 text-sm text-muted-foreground"><span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />Day 5: Identify and join 3 relevant Slack communities</div>
+        <div className="flex items-start gap-2 text-sm text-muted-foreground"><span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />Day 4: Draft your 60-second pitch for fractional regulatory risk consulting</div>
+        <div className="flex items-start gap-2 text-sm text-muted-foreground"><span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />Day 5: Join 3 communities: RegTech London/Edinburgh Slack, FinTech Scotland, and one compliance forum</div>
       </div>
 
       <p className="mt-3 text-[10px] italic text-muted-foreground">Includes ready-to-send outreach drafts for every contact task</p>
@@ -142,9 +142,9 @@ export function FirstMoveTeaser() {
   return (
     <div className="relative overflow-hidden rounded-md border border-border bg-surface-mint-tint p-6">
       <h2 className="mb-2 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>Your First Move - Do This Within 24 Hours</h2>
-      <p className="text-sm text-muted-foreground">Send this exact message to [specific contact type]...</p>
+      <p className="text-sm text-muted-foreground">Send this exact message to a former Big Four colleague now at a FinTech...</p>
       <p className="mt-1 text-sm text-muted-foreground" style={{ filter: "blur(2px)" }}>
-        "Hi [Name], I'm moving into independent consulting focused on regulatory risk for growth-stage companies. Given your experience at [Company], I'd value 15 minutes of your perspective on the market."
+        "Hi [Name], I'm moving into independent consulting focused on regulatory risk for growth-stage companies. Given your experience at [their FinTech/scale-up], I'd value 15 minutes of your perspective on the market."
       </p>
       <p className="mt-2 text-[10px] italic text-muted-foreground">Includes a complete ready-to-send draft personalised to your profile.</p>
       <LockedOverlay />

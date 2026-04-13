@@ -43,9 +43,9 @@ export default function BusinessPaths() {
           <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">Your first three moves</p>
           <div className="flex flex-col gap-2">
             {[
-              "Identify 15 FinTechs in your city that have raised Series A/B in the last 18 months.",
-              "Write one LinkedIn post about a risk challenge you solved, no jargon.",
-              "DM three founders directly. Skip recruiters at this stage.",
+              "Identify 15 FinTechs in Edinburgh that have raised Series A/B in the last 18 months.",
+              "Write one LinkedIn post about a regulatory challenge you navigated at the Big Four — no jargon, just the story.",
+              "DM three Edinburgh FinTech founders directly. Skip recruiters at this stage.",
             ].map((text, i) => (
               <div key={i} className="flex gap-3 text-sm">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">{i + 1}</span>
