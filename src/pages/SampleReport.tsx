@@ -161,7 +161,7 @@ export default function SampleReport() {
                       <span className="ml-auto text-xs font-bold text-primary">Score: {o.score}</span>
                     </div>
                     <p className="text-xs leading-relaxed text-muted-foreground mb-3">{o.positioning}</p>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
                       <div><span className="font-semibold text-foreground">Pricing:</span> <span className="text-muted-foreground">{o.pricing}</span></div>
                       <div><span className="font-semibold text-foreground">Target buyer:</span> <span className="text-muted-foreground">{o.buyer}</span></div>
                       <div><span className="font-semibold text-foreground">Time to revenue:</span> <span className="text-muted-foreground">{o.timeToRevenue}</span></div>
@@ -174,12 +174,14 @@ export default function SampleReport() {
               {/* Compact 4-10 */}
               <div className="mt-4 space-y-2">
                 {compactOptions.map((o) => (
-                  <div key={o.rank} className="flex items-center gap-3 rounded-md border border-border/60 bg-background/30 px-4 py-2.5">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
-                      {o.rank}
-                    </span>
-                    <span className="text-xs font-medium text-foreground flex-1">{o.name}</span>
-                    <span className="text-[11px] text-muted-foreground whitespace-nowrap">{o.pricing}</span>
+                  <div key={o.rank} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 rounded-md border border-border/60 bg-background/30 px-4 py-2.5">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+                        {o.rank}
+                      </span>
+                      <span className="text-xs font-medium text-foreground">{o.name}</span>
+                    </div>
+                    <span className="text-[11px] text-muted-foreground sm:whitespace-nowrap ml-8 sm:ml-0">{o.pricing}</span>
                   </div>
                 ))}
               </div>
