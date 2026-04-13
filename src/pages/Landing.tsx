@@ -241,10 +241,16 @@ export default function Landing() {
             ].map((t, i) => (
               <ScrollReveal key={i} delay={i * 0.08}>
                 <div
-                  className="rounded-lg bg-muted/50 p-6 h-full"
-                  style={{ borderLeft: "4px solid #2ECDB0" }}
+                  className={`rounded-lg p-6 h-full ${
+                    (t as any).bold ? "bg-primary/10" : "bg-muted/50"
+                  }`}
+                  style={{ borderLeft: `4px solid ${(t as any).bold ? "#2ECDB0" : "#2ECDB0"}` }}
                 >
-                  <p className="text-[15px] leading-relaxed text-foreground/90 italic">
+                  <p className={`text-[15px] leading-relaxed ${
+                    (t as any).bold
+                      ? "font-semibold text-foreground"
+                      : "italic text-foreground/90"
+                  }`}>
                     "{t.quote}"
                   </p>
                   <p className="mt-4 text-xs text-muted-foreground">
@@ -258,6 +264,12 @@ export default function Landing() {
           {/* Mobile: horizontal scroll with snap */}
           <div className="flex sm:hidden gap-4 overflow-x-auto snap-x snap-mandatory pb-4" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
             {[
+              {
+                quote: "I would never have done the outreach I did if Solo hadn't encouraged me to do it — and that outreach is exactly what has landed me my first independent contract.",
+                name: "Natasha K.",
+                role: "Programme Manager, 13 years in consulting",
+                bold: true,
+              },
               {
                 quote: "I spent an entire Sunday feeding ChatGPT my CV and trying to get it to suggest a realistic Plan B. After six hours I had a generic list. Solo took eight minutes and told me things I hadn't considered.",
                 name: "James W.",
@@ -286,10 +298,16 @@ export default function Landing() {
             ].map((t, i) => (
               <div
                 key={i}
-                className="min-w-[85vw] snap-center rounded-lg bg-muted/50 p-6 shrink-0"
+                className={`min-w-[85vw] snap-center rounded-lg p-6 shrink-0 ${
+                  (t as any).bold ? "bg-primary/10" : "bg-muted/50"
+                }`}
                 style={{ borderLeft: "4px solid #2ECDB0" }}
               >
-                <p className="text-[15px] leading-relaxed text-foreground/90 italic">
+                <p className={`text-[15px] leading-relaxed ${
+                  (t as any).bold
+                    ? "font-semibold text-foreground"
+                    : "italic text-foreground/90"
+                }`}>
                   "{t.quote}"
                 </p>
                 <p className="mt-4 text-xs text-muted-foreground">
