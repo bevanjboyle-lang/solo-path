@@ -21,10 +21,11 @@ import NetworkToolkitSection from "@/components/sample-report/NetworkToolkitSect
 import MarketSnapshotSection from "@/components/sample-report/MarketSnapshotSection";
 import PortfolioSummarySection from "@/components/sample-report/PortfolioSummarySection";
 import SampleCTA from "@/components/sample-report/SampleCTA";
+import Footer from "@/components/Footer";
 
 export default function SampleReport() {
   return (
-    <div className="min-h-screen bg-[#0F1117] text-[#E8E8E8]">
+    <div className="min-h-screen bg-background text-foreground">
       <MintTopBar />
       <Navbar />
 
@@ -56,6 +57,8 @@ export default function SampleReport() {
           <ScrollReveal delay={0.05}><SampleCTA /></ScrollReveal>
         </div>
       </PanelLayout>
+
+      <Footer />
     </div>
   );
 }
