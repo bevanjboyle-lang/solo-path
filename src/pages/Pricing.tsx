@@ -170,10 +170,8 @@ export default function Pricing() {
                     : ""
                 }`}
                 style={card.highlighted ? {
-                  border: "none",
-                  background: "rgba(232,247,243,0.85)",
-                  backdropFilter: "blur(20px)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+                  background: "#e8faf6",
+                  border: "1px solid #c5f0e8",
                 } : undefined}
               >
                 {/* Metallic top border for highlighted card */}
