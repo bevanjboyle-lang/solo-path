@@ -68,7 +68,7 @@ export default function WhoItsFor() {
                   className={i === 0 ? "w-full" : ""}
                 >
                   <GlassCard className={`p-6 sm:p-8 transition-all ${i > 0 ? "" : ""}`}>
-                    <h3 className="font-display mb-4 text-lg font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>{a.title}</h3>
+                    <h3 className="font-display mb-4 text-lg font-semibold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>{a.title}</h3>
                     <div className="grid gap-5 sm:grid-cols-2">
                       <div>
                         <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-primary">Who</p>
@@ -109,7 +109,7 @@ export default function WhoItsFor() {
                 boxShadow: "inset 0 2px 8px rgba(0,0,0,0.06)",
               }}
             >
-              <h2 className="font-display mb-4 text-xl font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>Who Solo isn't designed for</h2>
+              <h2 className="font-display mb-4 text-xl font-semibold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>Who Solo isn't designed for</h2>
               <p className="mb-5 text-sm leading-relaxed text-muted-foreground">Solo is built around a specific model: experienced white-collar professionals with transferable expertise, selling knowledge-based services to business clients. It is not designed for:</p>
               <ul className="mb-5 flex flex-col gap-2">
                 {notFor.map((item) => (

@@ -163,7 +163,7 @@ export default function Tracker() {
               <ScrollReveal>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Your Tracker</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>Your Tracker</h1>
                   </div>
                 </div>
               </ScrollReveal>
@@ -175,10 +175,10 @@ export default function Tracker() {
                     <CircularGauge value={Math.round((session.current_day / 30) * 100)} size={180} strokeWidth={14} color="#2ECDB0" />
                   </div>
                   <div className="mt-[-100px] flex flex-col items-center z-10">
-                    <span className="text-4xl font-extrabold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+                    <span className="text-4xl font-extrabold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
                       {session.current_day}
                     </span>
-                    <span className="text-sm mt-1" style={{ color: "#5A5650" }}>of 30 days</span>
+                    <span className="text-sm mt-1" style={{ color: "#3D4048" }}>of 30 days</span>
                   </div>
                   <div className="mt-14" />
                   <p className="text-xs text-muted-foreground">{completedCount} of {totalTasks} tasks completed · {progressPct}%</p>
@@ -188,7 +188,7 @@ export default function Tracker() {
               {/* Weekly Momentum Chart */}
               <ScrollReveal delay={0.2}>
                 <GlassCard className="mt-6 p-6">
-                  <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+                  <h3 className="text-sm font-semibold mb-4" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
                     Your Momentum
                   </h3>
                   <ResponsiveContainer width="100%" height={160}>
@@ -199,7 +199,7 @@ export default function Tracker() {
                           <stop offset="100%" stopColor="#2ECDB0" stopOpacity={0.02} />
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#5A5650" }} />
+                      <XAxis dataKey="week" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: "#3D4048" }} />
                       <YAxis hide />
                       <Tooltip
                         contentStyle={{ background: "#FAF9F7", border: "1px solid #E5E2DC", borderRadius: 8, fontSize: 12 }}
@@ -229,7 +229,7 @@ export default function Tracker() {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold" style={{ color: "#1D2025" }}>Check in for today</p>
-                      <p className="text-xs" style={{ color: "#5A5650" }}>Log progress and get your next steps</p>
+                      <p className="text-xs" style={{ color: "#3D4048" }}>Log progress and get your next steps</p>
                     </div>
                   </button>
                 </GlassCard>
@@ -277,13 +277,13 @@ export default function Tracker() {
                                     background: "linear-gradient(135deg, #1D2025 0%, #2ECDB0 50%, #1D2025 100%)",
                                     WebkitBackgroundClip: "text",
                                     WebkitTextFillColor: "transparent",
-                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                                     fontWeight: 700,
                                   }}
                                 >
                                   {phase.phase || phaseLabels[pi] || `Phase ${pi + 1}`}
                                 </span>
-                                <span className="text-xs" style={{ color: "#5A5650" }}>
+                                <span className="text-xs" style={{ color: "#3D4048" }}>
                                   {phase.days || phaseRanges[pi] || ""}
                                 </span>
                               </div>

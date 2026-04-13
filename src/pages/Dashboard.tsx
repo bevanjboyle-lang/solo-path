@@ -27,7 +27,7 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen flex-col text-foreground">
       <MintTopBar />
-      <nav className="fixed top-1 left-0 right-0 z-50 border-b bg-surface-panel/95 backdrop-blur-lg" style={{ borderColor: "#D5D0C8" }}>
+      <nav className="fixed top-1 left-0 right-0 z-50 border-b bg-surface-panel/95 backdrop-blur-lg" style={{ borderColor: "#D1CEC7" }}>
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
           <SoloLogo />
           <div className="flex items-center gap-4">

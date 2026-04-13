@@ -321,7 +321,7 @@ export default function HowItWorks() {
                   ]}
                   margin={{ top: 5, right: 60, left: 10, bottom: 5 }}
                 >
-                  <XAxis type="number" domain={[0, 20]} tick={{ fontSize: 11, fill: '#5A5650' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} />
+                  <XAxis type="number" domain={[0, 20]} tick={{ fontSize: 11, fill: '#3D4048' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}m`} />
                   <YAxis type="category" dataKey="method" tick={{ fontSize: 12, fill: '#1D2025', fontWeight: 500 }} axisLine={false} tickLine={false} width={150} />
                   <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`${value} month${value !== 1 ? 's' : ''}`, 'Time to revenue']} />
                   <Bar dataKey="months" radius={[0, 4, 4, 0]} barSize={28}>
@@ -333,7 +333,7 @@ export default function HowItWorks() {
                     ].map((entry, index) => (
                       <Cell key={index} fill={entry.fill} style={index === 3 ? { filter: 'drop-shadow(0 0 6px rgba(46,205,176,0.5))' } : undefined} />
                     ))}
-                    <LabelList dataKey="months" position="right" formatter={(v: number) => `${v} month${v !== 1 ? 's' : ''}`} style={{ fontSize: 11, fill: '#5A5650', fontWeight: 500 }} />
+                    <LabelList dataKey="months" position="right" formatter={(v: number) => `${v} month${v !== 1 ? 's' : ''}`} style={{ fontSize: 11, fill: '#3D4048', fontWeight: 500 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

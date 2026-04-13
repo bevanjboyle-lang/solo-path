@@ -40,7 +40,7 @@ export default function Auth() {
   return (
     <div className="flex min-h-screen flex-col text-foreground">
       <MintTopBar />
-      <nav className="fixed left-0 right-0 top-1 z-50 border-b bg-surface-panel/95 backdrop-blur-lg" style={{ borderColor: "#D5D0C8" }}>
+      <nav className="fixed left-0 right-0 top-1 z-50 border-b bg-surface-panel/95 backdrop-blur-lg" style={{ borderColor: "#D1CEC7" }}>
         <div className="mx-auto flex h-14 max-w-5xl items-center px-6">
           <a href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
@@ -69,7 +69,7 @@ export default function Auth() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="w-full rounded-md border bg-surface-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                style={{ borderColor: "#D5D0C8" }}
+                style={{ borderColor: "#D1CEC7" }}
               />
             </div>
             <div>
@@ -79,7 +79,7 @@ export default function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
                 className="w-full rounded-md border bg-surface-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                style={{ borderColor: "#D5D0C8" }}
+                style={{ borderColor: "#D1CEC7" }}
               />
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}

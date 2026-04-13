@@ -29,7 +29,7 @@ function HeroSection() {
         Personalised to your situation
       </span>
 
-      <h1 className="mx-auto mt-6 max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em" }}>
+      <h1 className="mx-auto mt-6 max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl" style={{ letterSpacing: "-1px", lineHeight: 1.15 }}>
         Practical guidance, built around <em className="not-italic" style={{ color: "#2ECDB0" }}>your</em> career move
       </h1>
 
@@ -64,10 +64,10 @@ function HowItWorksSection() {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-widest text-primary">How it works</p>
-      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
         Guidance that knows your situation
       </h2>
-      <p className="mt-2 max-w-xl text-sm" style={{ color: "#5A5650" }}>
+      <p className="mt-2 max-w-xl text-sm" style={{ color: "#3D4048" }}>
         Each module is built around you — your background, your plan, where you are in your first 30 days. You're not reading generic advice. You're getting a specific plan.
       </p>
 
@@ -78,7 +78,7 @@ function HowItWorksSection() {
               <s.icon className="h-4 w-4 text-primary" />
             </div>
             <h3 className="text-sm font-semibold" style={{ color: "#1D2025" }}>{s.title}</h3>
-            <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#5A5650" }}>{s.desc}</p>
+            <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#3D4048" }}>{s.desc}</p>
           </GlassCard>
         ))}
       </div>
@@ -86,13 +86,13 @@ function HowItWorksSection() {
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div className="rounded-xl p-5" style={{ background: "rgba(46,205,176,0.06)", border: "1px solid rgba(46,205,176,0.15)" }}>
           <p className="text-xs font-semibold text-primary">Included with your report</p>
-          <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#5A5650" }}>
+          <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#3D4048" }}>
             The first 3 modules are unlocked immediately — covering your opening moves, first conversations, and how to present yourself before you've made anything official.
           </p>
         </div>
         <div className="rounded-xl p-5" style={{ background: "rgba(217,168,60,0.06)", border: "1px solid rgba(217,168,60,0.15)" }}>
           <p className="text-xs font-semibold" style={{ color: "#B8860B" }}>Full library with subscription</p>
-          <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#5A5650" }}>
+          <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#3D4048" }}>
             All 25 modules unlock with a Solo subscription. Covers clients, pricing, contracts, pipeline, positioning, long-term growth, and sector-specific guidance.
           </p>
         </div>
@@ -197,15 +197,15 @@ function LibraryViewSection() {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-widest text-primary">Your library</p>
-      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
         What you'll see in your guidance library
       </h2>
-      <p className="mt-2 max-w-xl text-sm" style={{ color: "#5A5650" }}>
+      <p className="mt-2 max-w-xl text-sm" style={{ color: "#3D4048" }}>
         Modules are organised by stage of the journey. Your progress is tracked as you work through them.
       </p>
 
       {/* Context bar */}
-      <div className="mt-6 rounded-lg px-4 py-2.5 text-xs" style={{ background: "rgba(46,205,176,0.06)", border: "1px solid rgba(46,205,176,0.15)", color: "#5A5650" }}>
+      <div className="mt-6 rounded-lg px-4 py-2.5 text-xs" style={{ background: "rgba(46,205,176,0.06)", border: "1px solid rgba(46,205,176,0.15)", color: "#3D4048" }}>
         Sarah Okafor · Finance Business Partner · 11 years · FTSE 100 retail banking · <em>Example output</em>
       </div>
 
@@ -292,10 +292,10 @@ function ExampleOutputSection() {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-widest text-primary">Example output</p>
-      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", letterSpacing: "-0.02em", color: "#1D2025" }}>
         What you get back
       </h2>
-      <p className="mt-2 max-w-xl text-sm" style={{ color: "#5A5650" }}>
+      <p className="mt-2 max-w-xl text-sm" style={{ color: "#3D4048" }}>
         Specific, structured, and built around your actual background. Here's Sarah Okafor's pricing module output — Finance Business Partner, 11 years, FTSE 100 retail banking.
       </p>
 
@@ -304,7 +304,7 @@ function ExampleOutputSection() {
         {/* Output header */}
         <div className="px-6 py-6 sm:px-8" style={{ background: "#1D2025" }}>
           <p className="text-xs" style={{ color: "#9B9893" }}>Pricing &amp; commercial strategy · Generated 14 Apr 2026</p>
-          <h3 className="mt-2 text-xl font-bold text-white" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <h3 className="mt-2 text-xl font-bold text-white" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
             Your day rate and pricing strategy
           </h3>
           <p className="mt-1 text-sm" style={{ color: "#B0ADA8" }}>
@@ -371,14 +371,14 @@ function ExampleOutputSection() {
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl p-5" style={{ background: "rgba(243,241,237,0.8)", border: "1px solid rgba(229,226,220,0.5)" }}>
                 <p className="text-xs font-semibold" style={{ color: "#1D2025" }}>For project work</p>
-                <p className="mt-2 text-xs italic leading-relaxed" style={{ color: "#5A5650" }}>
+                <p className="mt-2 text-xs italic leading-relaxed" style={{ color: "#3D4048" }}>
                   "Based on the scope, I'm quoting this as a fixed fee of £X — that covers delivery through to sign-off, so you have cost certainty."
                 </p>
                 <p className="mt-3 text-[10px]" style={{ color: "#9B9893" }}>Use when: scope is defined, client prefers predictability</p>
               </div>
               <div className="rounded-xl p-5" style={{ background: "rgba(243,241,237,0.8)", border: "1px solid rgba(229,226,220,0.5)" }}>
                 <p className="text-xs font-semibold" style={{ color: "#1D2025" }}>For ongoing retainers</p>
-                <p className="mt-2 text-xs italic leading-relaxed" style={{ color: "#5A5650" }}>
+                <p className="mt-2 text-xs italic leading-relaxed" style={{ color: "#3D4048" }}>
                   "For an ongoing arrangement, I work on a monthly retainer of £7,500 for 8 committed days — with additional days at £850."
                 </p>
                 <p className="mt-3 text-[10px]" style={{ color: "#9B9893" }}>Use when: client wants embedded support, not project delivery</p>
@@ -416,7 +416,7 @@ function ExampleOutputSection() {
                     <p className="text-xs font-semibold" style={{ color: "#1D2025" }}>
                       {row.label} <span className="font-normal" style={{ color: "#9B9893" }}>— {row.sublabel}</span>
                     </p>
-                    <p className="mt-1 text-xs leading-relaxed" style={{ color: "#5A5650" }}>{row.items}</p>
+                    <p className="mt-1 text-xs leading-relaxed" style={{ color: "#3D4048" }}>{row.items}</p>
                   </div>
                 </div>
               ))}
@@ -455,7 +455,7 @@ function ExampleOutputSection() {
                 <div key={i} className="flex gap-4 py-3" style={{ borderLeft: "2px solid #2ECDB0", marginLeft: 6, paddingLeft: 16 }}>
                   <div>
                     <p className="text-xs font-semibold" style={{ color: "#1D2025" }}>
-                      {item.time} <span className="font-normal" style={{ color: "#5A5650" }}>— {item.action}</span>
+                      {item.time} <span className="font-normal" style={{ color: "#3D4048" }}>— {item.action}</span>
                     </p>
                     <p className="mt-1 text-[11px] leading-relaxed" style={{ color: "#9B9893" }}>{item.detail}</p>
                   </div>
@@ -467,7 +467,7 @@ function ExampleOutputSection() {
           {/* Block 7 — Caveat */}
           <div className="mx-6 sm:mx-8 mb-6 rounded-xl p-5" style={{ background: "rgba(217,168,60,0.06)", border: "1px solid rgba(217,168,60,0.15)" }}>
             <p className="text-xs font-semibold" style={{ color: "#B8860B" }}>These figures are a starting point, not a guarantee</p>
-            <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#5A5650" }}>
+            <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "#3D4048" }}>
               Rates vary by client, engagement type, and timing. What matters is that you have a principled basis for your number — not that you pick the right one first time. The floor protects you; the process refines the rest.
             </p>
           </div>
@@ -477,7 +477,7 @@ function ExampleOutputSection() {
             <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#9B9893" }}>Connects to</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {["Managing your cash flow in year one", "What goes in a client contract", "Holding your rate under pressure"].map((t) => (
-                <span key={t} className="rounded-full px-3 py-1 text-[10px] font-medium" style={{ background: "rgba(243,241,237,0.8)", border: "1px solid rgba(229,226,220,0.5)", color: "#5A5650" }}>
+                <span key={t} className="rounded-full px-3 py-1 text-[10px] font-medium" style={{ background: "rgba(243,241,237,0.8)", border: "1px solid rgba(229,226,220,0.5)", color: "#3D4048" }}>
                   {t}
                 </span>
               ))}

@@ -96,8 +96,8 @@ export default function WhySolo() {
                       <stop offset="100%" stopColor="#2ECDB0" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="year" tick={{ fontSize: 13, fill: '#5A5650' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 13, fill: '#5A5650' }} axisLine={false} tickLine={false} domain={[2.5, 5.5]} tickFormatter={(v: number) => `${v}M`} />
+                  <XAxis dataKey="year" tick={{ fontSize: 13, fill: '#3D4048' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 13, fill: '#3D4048' }} axisLine={false} tickLine={false} domain={[2.5, 5.5]} tickFormatter={(v: number) => `${v}M`} />
                   <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`${value}M`, 'Workers']} />
                   <Area type="monotone" dataKey="value" stroke="#2ECDB0" strokeWidth={2.5} fill="url(#mintGradWhySolo)" dot={{ r: 3, fill: '#2ECDB0', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#2ECDB0' }} />
                 </AreaChart>
@@ -128,11 +128,11 @@ export default function WhySolo() {
                   { sector: 'Consulting', exposure: 35 },
                   { sector: 'Tech', exposure: 32 },
                 ]} margin={{ top: 5, right: 50, left: 80, bottom: 5 }}>
-                  <XAxis type="number" domain={[0, 60]} tick={{ fontSize: 13, fill: '#5A5650' }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `${v}%`} />
-                  <YAxis type="category" dataKey="sector" tick={{ fontSize: 13, fill: '#5A5650', fontWeight: 500 }} axisLine={false} tickLine={false} width={75} />
+                  <XAxis type="number" domain={[0, 60]} tick={{ fontSize: 13, fill: '#3D4048' }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `${v}%`} />
+                  <YAxis type="category" dataKey="sector" tick={{ fontSize: 13, fill: '#3D4048', fontWeight: 500 }} axisLine={false} tickLine={false} width={75} />
                   <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`${value}%`, '% of roles exposed']} />
                   <Bar dataKey="exposure" fill="#2ECDB0" radius={[0, 4, 4, 0]} barSize={24}>
-                    <LabelList dataKey="exposure" position="right" formatter={(v: number) => `${v}%`} style={{ fontSize: 13, fill: '#5A5650', fontWeight: 600 }} />
+                    <LabelList dataKey="exposure" position="right" formatter={(v: number) => `${v}%`} style={{ fontSize: 13, fill: '#3D4048', fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -242,7 +242,7 @@ export default function WhySolo() {
                   { skill: 'Business Dev', employed: 30, independent: 95 },
                 ]}>
                   <PolarGrid stroke="#E5E2DC" />
-                  <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: '#5A5650' }} />
+                  <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: '#3D4048' }} />
                   <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
                   <Radar name="Employed" dataKey="employed" stroke="#9B9B9B" fill="#E5E2DC" fillOpacity={0.4} />
                   <Radar name="Independent" dataKey="independent" stroke="#2ECDB0" fill="#2ECDB0" fillOpacity={0.4} />
@@ -271,8 +271,8 @@ export default function WhySolo() {
                   { experience: '11-15 yrs', consulting: 120, freelance: 80, portfolio: 72 },
                   { experience: '15+ yrs', consulting: 160, freelance: 95, portfolio: 88 },
                 ]} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <XAxis dataKey="experience" tick={{ fontSize: 11, fill: '#5A5650' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#5A5650' }} axisLine={false} tickLine={false} label={{ value: '£k annual income', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#7A7670', dx: -5 }} />
+                  <XAxis dataKey="experience" tick={{ fontSize: 11, fill: '#3D4048' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#3D4048' }} axisLine={false} tickLine={false} label={{ value: '£k annual income', angle: -90, position: 'insideLeft', fontSize: 11, fill: '#7A7670', dx: -5 }} />
                   <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`£${value}k`, undefined]} />
                   <Legend wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="consulting" name="Consulting" fill="#2ECDB0" radius={[4, 4, 0, 0]} barSize={20} />

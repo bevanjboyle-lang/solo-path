@@ -170,10 +170,8 @@ export default function Pricing() {
                     : ""
                 }`}
                 style={card.highlighted ? {
-                  border: "none",
-                  background: "rgba(232,247,243,0.85)",
-                  backdropFilter: "blur(20px)",
-                  boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+                  background: "#e8faf6",
+                  border: "1px solid #c5f0e8",
                 } : undefined}
               >
                 {/* Metallic top border for highlighted card */}
@@ -189,7 +187,7 @@ export default function Pricing() {
                 {/* Recommended badge */}
                 {card.recommended && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-block rounded-full bg-primary px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-sm">
+                    <span className="inline-block rounded-full bg-primary px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
                       Recommended
                     </span>
                   </div>
@@ -243,7 +241,7 @@ export default function Pricing() {
                   className={`mt-6 w-full rounded-md text-sm font-medium transition-all hover:-translate-y-px ${
                     card.ctaVariant === "filled"
                       ? "bg-primary text-primary-foreground hover:bg-[#26B89D] hover:shadow-card-hover"
-                      : "border-[1.5px] border-[#D5D0C8] bg-transparent text-foreground hover:border-primary"
+                      : "border-[1.5px] border-[#D1CEC7] bg-transparent text-foreground hover:border-primary"
                   }`}
                   onClick={() => navigate(card.href)}
                 >

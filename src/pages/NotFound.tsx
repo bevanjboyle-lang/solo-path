@@ -12,8 +12,8 @@ const NotFound = () => {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <MintTopBar />
-      <div className="rounded-2xl bg-surface-panel p-12 shadow-panel text-center">
-        <h1 className="mb-4 font-display text-4xl font-bold text-foreground">404</h1>
+      <div className="rounded-xl p-12 text-center" style={{ background: "#FAF9F7", border: "1px solid #D1CEC7" }}>
+        <h1 className="mb-4 text-4xl font-bold text-foreground">404</h1>
         <p className="mb-4 text-xl text-muted-foreground">Oops! Page not found</p>
         <a href="/" className="text-primary underline hover:text-primary/90">
           Return to Home

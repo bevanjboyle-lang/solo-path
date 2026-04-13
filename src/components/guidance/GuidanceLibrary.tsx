@@ -91,7 +91,7 @@ export default function GuidanceLibrary() {
       <ScrollReveal>
         <GlassCard className="mb-8 p-5">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+            <span className="text-sm font-semibold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
               {completedIds.length} of {totalModules} modules completed
             </span>
             <span className="text-xs font-medium" style={{ color: "#2ECDB0" }}>
@@ -130,7 +130,7 @@ export default function GuidanceLibrary() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-sm font-bold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>
+                      <h3 className="text-sm font-bold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
                         {track.name}
                       </h3>
                       <span className="text-[10px] text-muted-foreground">{trackModules.length} modules</span>
@@ -150,7 +150,7 @@ export default function GuidanceLibrary() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs mt-0.5" style={{ color: "#5A5650" }}>{track.description}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#3D4048" }}>{track.description}</p>
                   </div>
                   {isExpanded ? (
                     <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -171,7 +171,7 @@ export default function GuidanceLibrary() {
                     >
                       <div className="px-5 pb-4 space-y-2">
                         {needsSub && (
-                          <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs" style={{ background: "rgba(46,205,176,0.06)", color: "#5A5650" }}>
+                          <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs" style={{ background: "rgba(46,205,176,0.06)", color: "#3D4048" }}>
                             <Lock className="h-3.5 w-3.5 shrink-0" style={{ color: "#2ECDB0" }} />
                             <span>Continue your plan to unlock these modules.</span>
                             <button
@@ -209,7 +209,7 @@ export default function GuidanceLibrary() {
                                 {mod.id}
                               </span>
                               <div className="flex-1 min-w-0">
-                                <span className="text-sm font-semibold block" style={{ color: disabled ? "#9E9A93" : "#1D2025", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                <span className="text-sm font-semibold block" style={{ color: disabled ? "#9E9A93" : "#1D2025", fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
                                   {mod.name}
                                 </span>
                                 {mod.description && (

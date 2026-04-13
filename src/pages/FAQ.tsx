@@ -65,7 +65,7 @@ export default function FAQ() {
           {/* About the Report */}
           <ScrollReveal>
             <GlassCard className="metallic-border p-6">
-              <h2 className="font-display mb-6 text-lg font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>About the Report</h2>
+              <h2 className="font-display mb-6 text-lg font-semibold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>About the Report</h2>
               <Accordion type="single" collapsible className="w-full">
                 {reportFaqs.map((faq, i) => (
                   <ScrollReveal key={i} delay={i * 0.05}>
@@ -85,7 +85,7 @@ export default function FAQ() {
           {/* About the Product */}
           <ScrollReveal delay={0.1}>
             <GlassCard className="metallic-border p-6">
-              <h2 className="font-display mb-6 text-lg font-semibold" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: "#1D2025" }}>About the Product</h2>
+              <h2 className="font-display mb-6 text-lg font-semibold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>About the Product</h2>
               <Accordion type="single" collapsible className="w-full">
                 {productFaqs.map((faq, i) => (
                   <ScrollReveal key={i} delay={i * 0.05}>
