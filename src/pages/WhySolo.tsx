@@ -1,38 +1,29 @@
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
+  ResponsiveContainer, CartesianGrid, LabelList, Cell,
   RadialBarChart, RadialBar, PolarAngleAxis,
   RadarChart, Radar, PolarGrid, PolarRadiusAxis,
-  BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
-import SoloLogo from "@/components/SoloLogo";
 import {
-  Scale,
-  Crosshair,
-  Gem,
-  Heart,
-  Shield,
-  Cpu,
-  Zap,
-  Target,
-  Users,
-  TrendingUp,
-  Brain,
+  Scale, Crosshair, Gem, Heart, Shield, Cpu,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import GlassCard from "@/components/ui/GlassCard";
-import AnimatedCounter from "@/components/ui/AnimatedCounter";
+import WaitingRoomSection from "@/components/landing/WaitingRoomSection";
+import ExpertSaysSection from "@/components/landing/ExpertSaysSection";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
+    opacity: 1, y: 0,
     transition: { delay: i * 0.1, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
   }),
 };
@@ -46,12 +37,6 @@ const principles = [
   { icon: Cpu, title: "Better than asking ChatGPT", desc: "Generic AI gives generic answers. Solo's value is in the structure: the questions, the classification, the scoring, the commercial translation. That's the product." },
 ];
 
-const stats = [
-  { value: "5–12 years", desc: "The experience range where professionals have the most transferable commercial value - but the least practice selling it." },
-  { value: "£0", desc: "What most mid-career professionals have earned outside employment. The translation problem is almost universal." },
-  { value: "8 minutes", desc: "How long it takes Solo to map your background to a realistic independent income path." },
-];
-
 export default function WhySolo() {
   const navigate = useNavigate();
 
@@ -60,93 +45,151 @@ export default function WhySolo() {
       <MintTopBar />
       <Navbar />
 
-      {/* HERO */}
+      {/* ── 1. HERO ── */}
       <PanelLayout className="mt-20 px-6 py-16 sm:px-10">
         <section className="flex min-h-[50vh] flex-col items-center justify-center">
           <div className="mx-auto max-w-2xl text-center">
             <motion.span className="mb-6 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              The Solo Manifesto
+              Why Solo
             </motion.span>
             <motion.h1 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl" style={{ letterSpacing: "-0.02em" }} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.05 }}>
-              Professional independence used to be a niche choice. Increasingly, it is the attractive option.
+              Why career optionality matters now
             </motion.h1>
             <motion.p className="mx-auto mt-6 max-w-[580px] text-base leading-relaxed text-muted-foreground sm:text-lg" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.15 }}>
-              This isn't a prediction. It's already happening. Solo exists to help capable, experienced professionals build a credible path that doesn't depend entirely on an employer.
+              The professional landscape is shifting. Solo exists because most mid-career professionals have built a career but not an alternative.
             </motion.p>
           </div>
         </section>
       </PanelLayout>
 
-      {/* THE SHIFT */}
+      {/* ── 2. THE OPTIONALITY GAP (long-form essay) ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-3xl">
-          <ScrollReveal>
-            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl mb-10" style={{ letterSpacing: "-0.02em" }}>
-              Why having independent income options matters
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal delay={0.1}>
-            <div className="space-y-6 text-sm leading-[1.8] text-muted-foreground sm:text-base">
-              <p>Artificial intelligence is doing to cognitive work what mechanisation did to physical work over the last two centuries - not eliminating it wholesale, but restructuring it. The middle layers of professional organisations - the managers, analysts, coordinators, and process specialists who translate strategy into execution - are increasingly caught between automation at the task level and consolidation at the organisational level.</p>
-              <p>This doesn't mean these roles disappear overnight. It means they become less predictable, less numerous, and less valuable as a proportion of what organisations need to pay for. The professionals in these roles are often highly capable. They are not, however, well-equipped to work outside the structures that have employed them. Most have never had to sell their services directly. Most couldn't tell you exactly what they'd charge, or who would pay them, or why.</p>
-              <p>That gap - between genuine capability and commercial self-sufficiency - is the problem Solo is built to close.</p>
-            </div>
-          </ScrollReveal>
-        </div>
+        <ScrollReveal>
+          <WaitingRoomSection />
+        </ScrollReveal>
       </PanelLayout>
 
-      {/* THE SOLO THESIS */}
+      {/* ── 3. DATA VISUALISATIONS (Macro Trend + AI Exposure) ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-5xl">
-          <ScrollReveal>
-            <h2 className="font-display mb-14 text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-              We believe the direction of travel is clear
-            </h2>
-          </ScrollReveal>
-          <div className="grid gap-12 lg:grid-cols-2">
-            <ScrollReveal delay={0.1}>
-              <div className="text-sm leading-[1.8] text-muted-foreground sm:text-base">
-                <p className="mb-6">The long arc of work points toward more individual agency. Not the gig economy - that model trades security for availability, which helps platforms more than workers. Something different: experienced professionals who work directly with clients, own their relationships, set their terms, and aren't dependent on a single employer for their livelihood.</p>
-                <p>AI doesn't just threaten that path. It enables it. The research, drafting, analysis, and coordination work that used to require support staff or full-time employment can increasingly be done by one capable person with the right tools. The question isn't whether this transition is coming. It's whether you're prepared for it.</p>
+        <ScrollReveal>
+          <div className="mx-auto max-w-3xl">
+            <GlassCard noHover className="p-8">
+              {/* Chart A: Rise of Independent Work */}
+              <div className="mb-4 text-center">
+                <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">The Macro Trend</span>
+                <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                  Independent work is accelerating
+                </h2>
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                  Millions of people working independently in the UK, 2000–2025. The shift from employment to self-directed careers is accelerating.
+                </p>
               </div>
-            </ScrollReveal>
-            <div className="flex flex-col gap-4">
-              {stats.map((s, i) => (
-                <ScrollReveal key={s.value} delay={i * 0.1}>
-                  <GlassCard className="p-5 transition-all hover:shadow-lg">
-                    <span className="mb-1 block font-display text-2xl font-bold text-primary" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.value}</span>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{s.desc}</p>
-                  </GlassCard>
+              <ResponsiveContainer width="100%" height={250}>
+                <AreaChart data={[
+                  { year: '2000', value: 3.2 }, { year: '2004', value: 3.4 },
+                  { year: '2008', value: 3.8 }, { year: '2012', value: 4.1 },
+                  { year: '2016', value: 4.8 }, { year: '2019', value: 5.0 },
+                  { year: '2023', value: 4.3 }, { year: '2025', value: 4.6 },
+                ]} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="mintGradWhySolo" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2ECDB0" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="#2ECDB0" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="year" tick={{ fontSize: 13, fill: '#5A5650' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 13, fill: '#5A5650' }} axisLine={false} tickLine={false} domain={[2.5, 5.5]} tickFormatter={(v: number) => `${v}M`} />
+                  <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`${value}M`, 'Workers']} />
+                  <Area type="monotone" dataKey="value" stroke="#2ECDB0" strokeWidth={2.5} fill="url(#mintGradWhySolo)" dot={{ r: 3, fill: '#2ECDB0', strokeWidth: 0 }} activeDot={{ r: 5, fill: '#2ECDB0' }} />
+                </AreaChart>
+              </ResponsiveContainer>
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                Source: ONS Labour Force Survey, McKinsey Global Institute
+              </p>
+
+              <div className="my-8 h-px w-full bg-border" />
+
+              {/* Chart B: AI Exposure by Sector */}
+              <div className="mb-4 text-center">
+                <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">Why Now</span>
+                <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                  AI is reshaping every white-collar sector
+                </h2>
+                <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                  Percentage of roles in each sector exposed to AI-driven automation. The higher the exposure, the greater the urgency to build independent options.
+                </p>
+              </div>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart layout="vertical" data={[
+                  { sector: 'Finance', exposure: 54 },
+                  { sector: 'Admin', exposure: 46 },
+                  { sector: 'Legal', exposure: 44 },
+                  { sector: 'HR', exposure: 42 },
+                  { sector: 'Marketing', exposure: 37 },
+                  { sector: 'Consulting', exposure: 35 },
+                  { sector: 'Tech', exposure: 32 },
+                ]} margin={{ top: 5, right: 50, left: 80, bottom: 5 }}>
+                  <XAxis type="number" domain={[0, 60]} tick={{ fontSize: 13, fill: '#5A5650' }} axisLine={false} tickLine={false} tickFormatter={(v: number) => `${v}%`} />
+                  <YAxis type="category" dataKey="sector" tick={{ fontSize: 13, fill: '#5A5650', fontWeight: 500 }} axisLine={false} tickLine={false} width={75} />
+                  <Tooltip contentStyle={{ background: '#FAF9F7', border: '1px solid #E5E2DC', borderRadius: 8, fontSize: 12 }} formatter={(value: number) => [`${value}%`, '% of roles exposed']} />
+                  <Bar dataKey="exposure" fill="#2ECDB0" radius={[0, 4, 4, 0]} barSize={24}>
+                    <LabelList dataKey="exposure" position="right" formatter={(v: number) => `${v}%`} style={{ fontSize: 13, fill: '#5A5650', fontWeight: 600 }} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                Source: World Economic Forum Future of Jobs Report 2025, Goldman Sachs Research
+              </p>
+            </GlassCard>
+          </div>
+        </ScrollReveal>
+      </PanelLayout>
+
+      {/* ── 4. THE SHIFT (publication cards) ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ScrollReveal>
+          <ExpertSaysSection />
+        </ScrollReveal>
+      </PanelLayout>
+
+      {/* ── 5. MARKET OPPORTUNITY (sector cards) ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-16 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">Market Opportunity</span>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                Where independent operators are growing fastest
+              </h2>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { badge: "STRONG DEMAND", badgeStyle: "bg-accent text-accent-foreground border-primary/30", title: "Financial Services", body: "Fractional CFOs, FP&A directors, and finance business partners are among the most sought-after independent hires, particularly in PE-backed and growth businesses." },
+                { badge: "STRONG DEMAND", badgeStyle: "bg-accent text-accent-foreground border-primary/30", title: "Legal", body: "Experienced lawyers and compliance specialists are building highly profitable advisory and fractional in-house practices, often at day rates that exceed employment." },
+                { badge: "HIGH GROWTH", badgeStyle: "bg-[#FDF8E8] text-[#D4940A] border-[#D4940A]/30", title: "Strategy and Consulting", body: "Former Big Four and strategy professionals are establishing independent advisory practices at rates significantly above their salaried packages." },
+                { badge: "HIGH GROWTH", badgeStyle: "bg-[#FDF8E8] text-[#D4940A] border-[#D4940A]/30", title: "Marketing and Communications", body: "Fractional CMO and senior brand roles are multiplying as companies seek senior expertise without full-time headcount cost." },
+                { badge: "GROWING", badgeStyle: "bg-surface-card text-muted-foreground border-border", title: "HR and People", body: "Fractional HR directors and L&D specialists are finding strong demand from mid-market businesses that need senior people expertise by the day." },
+                { badge: "STRONG DEMAND", badgeStyle: "bg-accent text-accent-foreground border-primary/30", title: "Technology and Change", body: "Technical and programme leaders are increasingly in demand as fractional CTOs, digital transformation advisors, and delivery leads." },
+              ].map((tile, i) => (
+                <ScrollReveal key={tile.title} delay={i * 0.08}>
+                  <div className="rounded-[10px] border border-border bg-surface-card p-5 transition-all hover:border-primary hover:shadow-card-hover h-full">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <h3 className="text-sm font-semibold">{tile.title}</h3>
+                      <Badge variant="outline" className={`shrink-0 text-[10px] font-semibold rounded-md ${tile.badgeStyle}`}>{tile.badge}</Badge>
+                    </div>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{tile.body}</p>
+                  </div>
                 </ScrollReveal>
               ))}
             </div>
+            <p className="mt-8 text-center text-xs italic text-muted-foreground">
+              Sources: Solo knowledge bank, 480 business models across 16 professional domains.
+            </p>
           </div>
-        </div>
+        </ScrollReveal>
       </PanelLayout>
 
-      {/* OUR PRINCIPLES */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-5xl">
-          <ScrollReveal>
-            <h2 className="font-display mb-14 text-center text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-              How we think about this
-            </h2>
-          </ScrollReveal>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {principles.map((p, i) => (
-              <ScrollReveal key={p.title} delay={i * 0.08}>
-                <GlassCard className="p-6 transition-all hover:shadow-lg h-full">
-                  <p.icon className="mb-4 h-8 w-8" style={{ color: "#2ECDB0" }} strokeWidth={1.5} />
-                  <h3 className="mb-2 text-sm font-semibold">{p.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
-                </GlassCard>
-              </ScrollReveal>
-            ))}
-          </div>
-        </div>
-      </PanelLayout>
-
-      {/* ── CHART 1: Career Change Intent ── */}
+      {/* ── 6. KEY STATISTICS (Career Change Intent) ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <ScrollReveal>
           <div className="mx-auto max-w-3xl">
@@ -179,7 +222,7 @@ export default function WhySolo() {
         </ScrollReveal>
       </PanelLayout>
 
-      {/* ── CHART 2: Skills That Transfer ── */}
+      {/* ── 7. INCOME POTENTIAL + SKILLS TRANSFER ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <ScrollReveal>
           <div className="mx-auto max-w-3xl">
@@ -212,7 +255,6 @@ export default function WhySolo() {
         </ScrollReveal>
       </PanelLayout>
 
-      {/* ── CHART 3: Income Potential ── */}
       <PanelLayout className="px-6 py-16 sm:px-10">
         <ScrollReveal>
           <div className="mx-auto max-w-3xl">
@@ -247,23 +289,50 @@ export default function WhySolo() {
         </ScrollReveal>
       </PanelLayout>
 
-      {/* CTA */}
-      <PanelLayout className="overflow-hidden">
-        <section className="bg-primary py-24 rounded-2xl">
-          <div className="mx-auto max-w-2xl px-6 text-center">
-            <motion.h2 className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl" style={{ letterSpacing: "-0.02em" }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={0}>
-              If this resonates, the test takes 8 minutes.
-            </motion.h2>
-            <motion.p className="mt-4 text-base text-primary-foreground/70" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={1}>
-              You'll get a free preview immediately, and a full report - including your 30-day activation plan - for £19.99.
-            </motion.p>
-            <motion.div className="mt-8" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} custom={2}>
-              <Button size="lg" className="rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90" onClick={() => navigate("/auth")}>
-                Take the test →
-              </Button>
-            </motion.div>
+      {/* ── 8. SOLO'S PRINCIPLES ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-5xl">
+          <ScrollReveal>
+            <div className="mb-14 text-center">
+              <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">Our Principles</span>
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                How we think about this
+              </h2>
+            </div>
+          </ScrollReveal>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {principles.map((p, i) => (
+              <ScrollReveal key={p.title} delay={i * 0.08}>
+                <GlassCard className="p-6 transition-all hover:shadow-lg h-full">
+                  <p.icon className="mb-4 h-8 w-8 text-primary" strokeWidth={1.5} />
+                  <h3 className="mb-2 text-sm font-semibold">{p.title}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{p.desc}</p>
+                </GlassCard>
+              </ScrollReveal>
+            ))}
           </div>
-        </section>
+        </div>
+      </PanelLayout>
+
+      {/* ── 9. CTA ── */}
+      <PanelLayout className="overflow-hidden">
+        <ScrollReveal>
+          <section className="bg-primary py-24 rounded-2xl">
+            <div className="mx-auto max-w-2xl px-6 text-center">
+              <h2 className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl" style={{ letterSpacing: "-0.02em" }}>
+                See what Solo finds for your profile
+              </h2>
+              <p className="mt-4 text-base text-primary-foreground/70">
+                8 minutes. £19.99. A report built from your actual experience.
+              </p>
+              <div className="mt-8">
+                <Button size="lg" className="rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90" onClick={() => navigate("/questionnaire")}>
+                  See what Solo finds for your profile →
+                </Button>
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
       </PanelLayout>
 
       <Footer />
