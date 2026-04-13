@@ -292,6 +292,7 @@ export type Database = {
           plan_state: string
           report_id: string
           running_narrative: string
+          strand_status: Json | null
           stripe_subscription_id: string | null
           subscription_status: string | null
           updated_at: string
@@ -308,6 +309,7 @@ export type Database = {
           plan_state?: string
           report_id: string
           running_narrative?: string
+          strand_status?: Json | null
           stripe_subscription_id?: string | null
           subscription_status?: string | null
           updated_at?: string
@@ -324,6 +326,7 @@ export type Database = {
           plan_state?: string
           report_id?: string
           running_narrative?: string
+          strand_status?: Json | null
           stripe_subscription_id?: string | null
           subscription_status?: string | null
           updated_at?: string
