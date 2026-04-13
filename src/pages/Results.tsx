@@ -1349,15 +1349,25 @@ function MarketSnapshotSection({ report, ap }: { report: ReportData | null; ap: 
       <div className="space-y-4">
         {strandIds.length > 1 && (
           <div className="flex flex-wrap gap-1.5">
-            {strandIds.map((id) => (
-              <button
-                key={id}
-                onClick={() => setActiveStrand(id)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                  activeStrand === id
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-surface text-muted-foreground hover:text-foreground hover:bg-surface-elevated"
-                }`}
+            {strandIds.map((id, i) => {
+              const hex = STRAND_HEX[i % STRAND_HEX.length];
+              const isActive = activeStrand === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActiveStrand(id)}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    isActive
+                      ? "text-white"
+                      : "bg-surface text-muted-foreground hover:text-foreground"
+                  }`}
+                  style={isActive ? { background: hex } : undefined}
+                >
+                  <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: isActive ? "#fff" : hex }} />
+                  {id}
+                </button>
+              );
+            })}
               >
                 {id}
               </button>
