@@ -187,7 +187,7 @@ export default function Pricing() {
                 {/* Recommended badge */}
                 {card.recommended && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="inline-block rounded-full bg-primary px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-sm">
+                    <span className="inline-block rounded-full bg-primary px-4 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
                       Recommended
                     </span>
                   </div>
