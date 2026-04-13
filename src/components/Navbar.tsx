@@ -20,8 +20,15 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-1 left-0 right-0 z-50 border-b bg-surface-panel/95 backdrop-blur-lg" style={{ borderColor: "#D5D0C8" }}>
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+    <nav
+      className="fixed top-1 left-0 right-0 z-50"
+      style={{
+        background: "#FAF9F7",
+        borderBottom: "1px solid #D1CEC7",
+        padding: "0 40px",
+      }}
+    >
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center no-underline">
           <SoloLogo width={140} height={40} />
@@ -33,8 +40,8 @@ export default function Navbar() {
             <Link
               key={l.to}
               to={l.to}
-              className="nav-link-mint text-sm transition-colors hover:text-foreground"
-              style={{ color: "#5A5650" }}
+              className="nav-link-mint transition-colors hover:text-foreground"
+              style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
             >
               {l.label}
             </Link>
@@ -43,18 +50,21 @@ export default function Navbar() {
             <>
               <Link
                 to="/guidance"
-                className="nav-link-mint text-sm transition-colors hover:text-foreground"
-                style={{ color: "#5A5650" }}
+                className="nav-link-mint transition-colors hover:text-foreground"
+                style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
               >
                 Guidance
               </Link>
               <Link
                 to="/ask-solo"
-                className="nav-link-mint inline-flex items-center gap-1.5 text-sm transition-colors hover:text-foreground"
-                style={{ color: "#5A5650" }}
+                className="nav-link-mint inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+                style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
               >
                 Ask Solo
-                <span className="rounded-full bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent-foreground">
+                <span
+                  className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                  style={{ background: "#e8faf6", color: "#2ECDB0", border: "1px solid #c5f0e8" }}
+                >
                   Beta
                 </span>
               </Link>
@@ -67,32 +77,44 @@ export default function Navbar() {
           {user ? (
             <button
               onClick={signOut}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="transition-colors hover:text-foreground"
+              style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
             >
               Sign out
             </button>
           ) : (
             <Link
               to="/auth"
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="transition-colors hover:text-foreground"
+              style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
             >
               Sign in
             </Link>
           )}
-          <Button
-            size="sm"
-            className="mint-btn rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-[#26B89D]"
+          <button
+            className="mint-btn text-white"
+            style={{
+              background: "#2ECDB0",
+              fontSize: 13,
+              fontWeight: 600,
+              padding: "8px 18px",
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              letterSpacing: "0.1px",
+            }}
             onClick={() => navigate("/auth")}
           >
             Take the test →
-          </Button>
+          </button>
         </div>
 
         {/* Mobile hamburger */}
         <button
-          className="md:hidden text-foreground"
+          className="md:hidden"
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
+          style={{ color: "#1D2025" }}
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -100,14 +122,22 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="border-t bg-surface-panel px-6 py-4 md:hidden" style={{ borderColor: "#D5D0C8" }}>
+        <div
+          className="md:hidden"
+          style={{
+            background: "#FAF9F7",
+            borderTop: "1px solid #D1CEC7",
+            padding: "16px 24px",
+          }}
+        >
           <div className="flex flex-col gap-3">
             {navLinks.map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
                 onClick={() => setOpen(false)}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="transition-colors hover:text-foreground"
+                style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
               >
                 {l.label}
               </Link>
@@ -117,27 +147,33 @@ export default function Navbar() {
                 <Link
                   to="/guidance"
                   onClick={() => setOpen(false)}
-                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  className="transition-colors hover:text-foreground"
+                  style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
                 >
                   Guidance
                 </Link>
                 <Link
                   to="/ask-solo"
                   onClick={() => setOpen(false)}
-                  className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
+                  style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
                 >
                   Ask Solo
-                  <span className="rounded-full bg-accent px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent-foreground">
+                  <span
+                    className="rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
+                    style={{ background: "#e8faf6", color: "#2ECDB0", border: "1px solid #c5f0e8" }}
+                  >
                     Beta
                   </span>
                 </Link>
               </>
             )}
-            <hr style={{ borderColor: "#D5D0C8" }} />
+            <hr style={{ borderColor: "#D1CEC7" }} />
             {user ? (
               <button
                 onClick={() => { signOut(); setOpen(false); }}
-                className="text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="text-left transition-colors hover:text-foreground"
+                style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
               >
                 Sign out
               </button>
@@ -145,18 +181,27 @@ export default function Navbar() {
               <Link
                 to="/auth"
                 onClick={() => setOpen(false)}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="transition-colors hover:text-foreground"
+                style={{ color: "#6B7280", fontSize: 13, fontWeight: 500 }}
               >
                 Sign in
               </Link>
             )}
-            <Button
-              size="sm"
-              className="mint-btn w-full rounded-md bg-primary text-sm font-medium text-primary-foreground hover:bg-[#26B89D]"
+            <button
+              className="mint-btn w-full text-white"
+              style={{
+                background: "#2ECDB0",
+                fontSize: 13,
+                fontWeight: 600,
+                padding: "10px 20px",
+                borderRadius: 8,
+                border: "none",
+                cursor: "pointer",
+              }}
               onClick={() => { navigate("/auth"); setOpen(false); }}
             >
               Take the test →
-            </Button>
+            </button>
           </div>
         </div>
       )}
