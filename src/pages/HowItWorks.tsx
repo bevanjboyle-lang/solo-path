@@ -136,28 +136,6 @@ export default function HowItWorks() {
         </div>
       </PanelLayout>
 
-      {/* ─── STATS STRIP ─── */}
-      <PanelLayout className="px-6 py-14 sm:px-10">
-        <ScrollReveal>
-          <div className="mx-auto grid max-w-4xl grid-cols-2 gap-8 sm:grid-cols-4">
-            {[
-              { num: 95, label: "professional profiles Solo classifies against", suffix: "" },
-              { num: 480, label: "business models scored for fit with your background", suffix: "" },
-              { num: 30, label: "days of guided execution built into every plan", suffix: "" },
-              { num: 10, label: "minutes to your first look at what Solo finds", prefix: "<" },
-            ].map((s, i) => (
-              <ScrollReveal key={i} delay={i * 0.1}>
-                <div className="text-center">
-                  <p className="font-display text-3xl font-bold text-primary sm:text-4xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    {s.prefix || ""}<AnimatedCounter target={s.num} />
-                  </p>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">{s.label}</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-        </ScrollReveal>
-      </PanelLayout>
 
       {/* ─── 6 STEPS (TIMELINE) ─── */}
       <PanelLayout className="px-6 py-16 sm:px-10">

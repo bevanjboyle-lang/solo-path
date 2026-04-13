@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 import SoloLogo from "@/components/SoloLogo";
 
 const navLinks = [
+  { label: "Sample Report", to: "/sample-report" },
   { label: "How it works", to: "/how-it-works" },
   { label: "Why Solo", to: "/why-solo" },
-  { label: "About Us", to: "/about" },
   { label: "Pricing", to: "/pricing" },
-  { label: "Sample Report", to: "/sample-report" },
   { label: "FAQ", to: "/faq" },
 ];
 
