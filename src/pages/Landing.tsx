@@ -208,6 +208,12 @@ export default function Landing() {
           <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {
+                quote: "I would never have done the outreach I did if Solo hadn't encouraged me to do it — and that outreach is exactly what has landed me my first independent contract.",
+                name: "Natasha K.",
+                role: "Programme Manager, 13 years in consulting",
+                bold: true,
+              },
+              {
                 quote: "I spent an entire Sunday feeding ChatGPT my CV and trying to get it to suggest a realistic Plan B. After six hours I had a generic list. Solo took eight minutes and told me things I hadn't considered.",
                 name: "James W.",
                 role: "Head of Operations, 14 years in logistics",
