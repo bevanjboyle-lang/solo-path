@@ -39,7 +39,7 @@ export default function Guidance() {
           <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
             Practical Guidance
           </h1>
-          <p className="text-sm mb-8" style={{ color: "#5A5650" }}>
+          <p className="text-sm mb-8" style={{ color: "#3D4048" }}>
             25 modules across 5 tracks to help you navigate going independent.
           </p>
         </ScrollReveal>

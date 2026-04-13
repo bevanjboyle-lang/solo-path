@@ -150,7 +150,7 @@ export default function GuidanceLibrary() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs mt-0.5" style={{ color: "#5A5650" }}>{track.description}</p>
+                    <p className="text-xs mt-0.5" style={{ color: "#3D4048" }}>{track.description}</p>
                   </div>
                   {isExpanded ? (
                     <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -171,7 +171,7 @@ export default function GuidanceLibrary() {
                     >
                       <div className="px-5 pb-4 space-y-2">
                         {needsSub && (
-                          <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs" style={{ background: "rgba(46,205,176,0.06)", color: "#5A5650" }}>
+                          <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs" style={{ background: "rgba(46,205,176,0.06)", color: "#3D4048" }}>
                             <Lock className="h-3.5 w-3.5 shrink-0" style={{ color: "#2ECDB0" }} />
                             <span>Continue your plan to unlock these modules.</span>
                             <button
