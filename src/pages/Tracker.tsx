@@ -235,11 +235,21 @@ export default function Tracker() {
                 </GlassCard>
               </ScrollReveal>
 
-              {/* Strand Status Cards */}
-              <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
+              {/* Strand Status Cards — only when strand_status exists */}
+              {session.strand_status && Object.keys(session.strand_status).length > 0 && (
+                <>
+                  <PortfolioReviewBanner session={session} navigate={navigate} />
+                  <StrandStatusSection strandStatus={session.strand_status} />
+                </>
+              )}
 
-              {/* Portfolio Review */}
-              <PortfolioReviewCard session={session} navigate={navigate} />
+              {/* Legacy strand cards from working_plan (no strand_status column) */}
+              {!session.strand_status && (
+                <>
+                  <StrandStatusCards phases={phases} completedTasks={completedTasks} session={session} navigate={navigate} />
+                  <PortfolioReviewCard session={session} navigate={navigate} />
+                </>
+              )}
 
               {/* Phase cards */}
               <div className="mt-6 space-y-4">
