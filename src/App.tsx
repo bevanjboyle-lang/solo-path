@@ -23,6 +23,7 @@ import AboutSolo from "./pages/AboutSolo";
 import Pricing from "./pages/Pricing";
 import WhoItsFor from "./pages/WhoItsFor";
 import SampleReport from "./pages/SampleReport";
+import GuidanceLibrary from "./pages/GuidanceLibrary";
 import FAQ from "./pages/FAQ";
 import Dashboard from "./pages/Dashboard";
 import Subscribe from "./pages/Subscribe";
@@ -60,6 +61,7 @@ function AnimatedRoutes() {
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/who-its-for" element={<WhoItsFor />} />
           <Route path="/sample-report" element={<SampleReport />} />
+          <Route path="/guidance-library" element={<GuidanceLibrary />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
