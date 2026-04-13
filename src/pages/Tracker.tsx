@@ -443,8 +443,73 @@ function SignalDots({ score }: { score: number }) {
     </div>
   );
 }
+function PortfolioReviewBanner({ session, navigate }: { session: any; navigate: (path: string) => void }) {
+  const isReviewDay = session.current_day === 19 || session.current_day === 26;
+  if (!isReviewDay) return null;
 
-function StrandStatusCards({ phases, completedTasks, session, navigate }: { phases: any[]; completedTasks: Set<string>; session: any; navigate: (path: string) => void }) {
+  return (
+    <ScrollReveal delay={0.25}>
+      <div className="mt-6 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4" style={{ background: "#2ECDB0" }}>
+        <div className="flex-1">
+          <p className="text-sm font-bold text-white">Portfolio Review Today — Day {session.current_day}</p>
+          <p className="text-xs text-white/80 mt-1">Time to assess which strands are gaining traction and where to focus your energy.</p>
+        </div>
+        <button
+          onClick={() => navigate(`/checkin/${session.id}?review=portfolio`)}
+          className="shrink-0 rounded-lg bg-white/20 backdrop-blur px-4 py-2 text-sm font-medium text-white hover:bg-white/30 transition-colors"
+        >
+          Open check-in
+        </button>
+      </div>
+    </ScrollReveal>
+  );
+}
+
+function StrandStatusSection({ strandStatus }: { strandStatus: Record<string, { status: string; model_name: string; focus_percentage?: number }> }) {
+  const strandIds = Object.keys(strandStatus);
+  if (strandIds.length === 0) return null;
+
+  return (
+    <ScrollReveal delay={0.3}>
+      <div className="mt-6">
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">Your Strands</h3>
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-2 px-2" style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
+          {strandIds.map((id, i) => {
+            const strand = strandStatus[id];
+            const hex = STRAND_HEX[i % STRAND_HEX.length];
+            const status = (strand.status || "active") as StrandStatus;
+            const badge = STATUS_BADGES[status] || STATUS_BADGES.active;
+
+            return (
+              <GlassCard
+                key={id}
+                className="snap-start shrink-0 w-[200px] p-4"
+                style={{ borderLeft: `3px solid ${hex}`, background: status === "active" ? `${hex}08` : undefined }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ background: hex }} />
+                  <span className="text-xs font-medium text-foreground truncate">{strand.model_name}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${badge.className}`}>
+                    {badge.label}
+                  </span>
+                  {strand.focus_percentage != null && (
+                    <span className="text-2xl font-bold" style={{ color: hex }}>{strand.focus_percentage}%</span>
+                  )}
+                </div>
+              </GlassCard>
+            );
+          })}
+          {/* Spacer to hint at scrollability */}
+          <div className="shrink-0 w-2" />
+        </div>
+      </div>
+    </ScrollReveal>
+  );
+}
+
+
   const strandStatusArr: Array<{
     model_name: string;
     status: StrandStatus;
