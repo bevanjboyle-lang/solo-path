@@ -68,7 +68,7 @@ const cards: PricingCard[] = [
     recommended: true,
     features: [
       { text: "First Move - your named post-payment action, ready immediately" },
-      { text: "Hook insight - full paragraph" },
+      
       { text: "Up to 10 business paths scored and ranked for your profile - select up to 5 to explore in parallel" },
       { text: "Portfolio approach - pursue multiple paths at once instead of betting on one" },
       { text: "Reality check - what's likely to go wrong" },
