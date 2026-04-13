@@ -128,6 +128,160 @@ export const SAMPLE_OPTIONS: SampleOption[] = [
       "Best as a complementary income stream to Option 1 — not as a primary path from standing start",
     ],
   },
+  {
+    rank: 4,
+    title: "Financial Due Diligence Consultant",
+    metrics: {
+      day_rate: "£800–£1,100",
+      first_revenue: "5–8 months",
+      first_revenue_rating: "medium",
+      credibility_gap: "Medium",
+      credibility_gap_rating: "medium",
+      sales_complexity: "High",
+      sales_complexity_rating: "hard",
+    },
+    what_selling: [
+      "Buy-side or sell-side financial due diligence for PE firms, acquirers, and corporate development teams. Includes quality of earnings analysis, working capital normalisation, and financial risk identification ahead of transactions.",
+    ],
+    assessment_title: "Assessment",
+    assessment_points: [
+      "Your commercial modelling background translates well, but dedicated FDD requires transaction-specific methodology you'd need to build",
+      "PE firms typically use Big 4 or specialist FDD houses — breaking in as an independent requires a strong referral or a niche angle",
+      "Higher barrier to entry than Option 1, but once established the deal flow creates recurring engagement patterns",
+    ],
+  },
+  {
+    rank: 5,
+    title: "Investor Relations & Capital Markets Advisory",
+    metrics: {
+      day_rate: "£900–£1,200",
+      first_revenue: "8–14 months",
+      first_revenue_rating: "hard",
+      credibility_gap: "High",
+      credibility_gap_rating: "hard",
+      sales_complexity: "High",
+      sales_complexity_rating: "hard",
+    },
+    what_selling: [
+      "Preparing businesses for investor scrutiny — equity story development, investor deck creation, financial narrative for fundraising rounds, and ongoing investor communication strategy for growth-stage and pre-IPO companies.",
+    ],
+    assessment_title: "Assessment",
+    assessment_points: [
+      "Your board communication skills are directly relevant, but investor relations is a distinct discipline with its own conventions",
+      "The credibility gap is real — IR buyers expect sector-specific capital markets experience you'd need to demonstrate",
+      "Better positioned as an evolution from Option 1 after 12–18 months of visible independent work with PE-backed clients",
+    ],
+  },
+  {
+    rank: 6,
+    title: "Finance Function Transformation Consultant",
+    metrics: {
+      day_rate: "£700–£950",
+      first_revenue: "4–7 months",
+      first_revenue_rating: "medium",
+      credibility_gap: "Low-Medium",
+      credibility_gap_rating: "good",
+      sales_complexity: "Medium",
+      sales_complexity_rating: "medium",
+    },
+    what_selling: [
+      "Helping mid-market businesses redesign their finance function — moving from backward-looking reporting to forward-looking commercial partnering. Process design, team structure, technology selection, and implementation oversight.",
+    ],
+    assessment_title: "Assessment",
+    assessment_points: [
+      "You've lived inside a well-structured finance function at scale — that experience is the product for businesses still running on spreadsheets",
+      "The market is broad but competitive — the big consultancies own the enterprise end, leaving the £15M–£80M segment more accessible",
+      "Engagements tend to be longer (3–6 months) which is good for income stability but slower to close",
+    ],
+  },
+  {
+    rank: 7,
+    title: "Non-Executive Director (Finance)",
+    metrics: {
+      day_rate: "£500–£800",
+      first_revenue: "12–18 months",
+      first_revenue_rating: "hard",
+      credibility_gap: "High",
+      credibility_gap_rating: "hard",
+      sales_complexity: "High",
+      sales_complexity_rating: "hard",
+    },
+    what_selling: [
+      "Board-level governance and financial oversight for SMEs and scaling businesses. Typically 1–2 days per month providing independent financial challenge, audit committee participation, and strategic financial guidance.",
+    ],
+    assessment_title: "Assessment",
+    assessment_points: [
+      "NED roles require an established independent profile — boards hire people with visible track records, not first-time independents",
+      "The compensation per day is lower and the sales cycle is very long — this is a portfolio addition, not a primary income source",
+      "Realistic target: pursue your first NED role in Year 2, once Option 1 has built your independent credibility",
+    ],
+  },
+  {
+    rank: 8,
+    title: "Expert Witness & Litigation Support (Financial)",
+    metrics: {
+      day_rate: "£1,200–£2,000",
+      first_revenue: "12–24 months",
+      first_revenue_rating: "hard",
+      credibility_gap: "High",
+      credibility_gap_rating: "hard",
+      sales_complexity: "High",
+      sales_complexity_rating: "hard",
+    },
+    what_selling: [
+      "Providing independent financial expert opinion for commercial litigation, regulatory proceedings, and dispute resolution. Includes financial loss quantification, forensic analysis of commercial decisions, and expert reports for court proceedings.",
+    ],
+    assessment_title: "Assessment",
+    assessment_points: [
+      "The day rates are the highest on this list, but the barrier to entry is substantial — solicitors hire experts with published credentials and prior testimony",
+      "Your analytical rigour is strong, but you'd need formal expert witness training and accreditation before law firms would instruct you",
+      "A realistic long-term addition to the portfolio once you have 2–3 years of independent practice and sector recognition",
+    ],
+  },
+  {
+    rank: 9,
+    title: "Financial Content & Thought Leadership",
+    metrics: {
+      day_rate: "£300–£600",
+      first_revenue: "3–6 months",
+      first_revenue_rating: "good",
+      credibility_gap: "Low",
+      credibility_gap_rating: "good",
+      sales_complexity: "Low",
+      sales_complexity_rating: "good",
+    },
+    what_selling: [
+      "Writing and producing commercial finance content — articles, white papers, newsletter content, and podcast appearances for financial services firms, PE houses, and B2B platforms that need credible finance voices.",
+    ],
+    assessment_title: "Assessment",
+    assessment_points: [
+      "Low barrier to entry and fast to first revenue, but the rates are significantly below your capability ceiling",
+      "Works best as a visibility-building activity that feeds into Options 1–3, not as a standalone income stream",
+      "The real value is the positioning effect — being a visible voice in commercial finance opens doors that cold outreach cannot",
+    ],
+  },
+  {
+    rank: 10,
+    title: "SaaS / Fintech Product Advisory",
+    metrics: {
+      day_rate: "£600–£900",
+      first_revenue: "6–12 months",
+      first_revenue_rating: "medium",
+      credibility_gap: "Medium-High",
+      credibility_gap_rating: "medium",
+      sales_complexity: "Medium",
+      sales_complexity_rating: "medium",
+    },
+    what_selling: [
+      "Advising fintech startups and SaaS companies building financial products — acting as a domain expert who understands how finance teams actually work. Product advisory, user research facilitation, go-to-market strategy for finance-facing tools.",
+    ],
+    assessment_title: "Assessment",
+    assessment_points: [
+      "Your practitioner perspective is genuinely valuable to product teams building for finance — they rarely have access to senior FBPs",
+      "The fintech advisory market is growing but finding the right startups requires a different network than your current one",
+      "Compensation often includes equity or retainer structures rather than pure day rates — different risk-reward profile",
+    ],
+  },
 ];
 
 export const SAMPLE_RECOMMENDATION = {
