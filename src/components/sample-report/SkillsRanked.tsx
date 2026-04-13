@@ -3,11 +3,11 @@ import { motion, useInView } from "framer-motion";
 
 const skills = [
   { rank: 1, title: "Regulatory & Compliance Fluency", desc: "You can translate complex requirements into business language. This is rare and valuable outside financial services.", pct: 95 },
-  { rank: 2, title: "Structured Risk Assessment", desc: "You think in frameworks. Consultants and insurtech firms pay a premium for this.", pct: 88 },
+  { rank: 2, title: "Structured Risk Assessment", desc: "You think in frameworks. InsurTech firms and scale-ups building their first risk function pay a premium for this.", pct: 88 },
   { rank: 3, title: "Senior Stakeholder Management", desc: "Nine years navigating partner-level relationships is a credential in itself.", pct: 82 },
   { rank: 4, title: "Process Documentation & Controls", desc: "Undervalued internally. Extremely valuable to scale-ups and ops-heavy businesses.", pct: 75 },
   { rank: 5, title: "Project Governance", desc: "You've run enough audits to know what good looks like. That's a consulting superpower.", pct: 70 },
-  { rank: 6, title: "Data Interpretation (non-technical)", desc: "You can read a dataset and tell a story. Rare in risk roles.", pct: 65 },
+  { rank: 6, title: "Data Interpretation (non-technical)", desc: "You can read a dataset and tell a board-level story. Rare outside analytics teams.", pct: 65 },
 ];
 
 export default function SkillsRanked() {
