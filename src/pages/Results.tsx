@@ -230,8 +230,8 @@ export default function Results() {
 
   if (checking) {
     return (
-      <div className="min-h-screen bg-background">
-        <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="min-h-screen">
+        <nav className="border-b border-border/50/80 backdrop-blur-xl">
           <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
             <SoloLogo width={100} height={28} />
           </div>
@@ -271,8 +271,8 @@ export default function Results() {
   const showPlanPhase = paid && cr && !isPendingSelection && ap;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <div className="min-h-screen text-foreground">
+      <nav className="border-b border-border/50/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
           <SoloLogo width={100} height={28} />
           <button onClick={() => signOut()} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -1612,7 +1612,7 @@ function RefineReportSection({
         disabled={refining || exhausted}
         placeholder="e.g., I think Option 2 is more realistic than Option 1 because..."
         rows={3}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 resize-y focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-lg border border-border px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 resize-y focus:outline-none focus:ring-2 focus:ring-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
       />
       {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
       <div className="mt-3 flex items-center justify-between gap-4">

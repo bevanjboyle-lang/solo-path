@@ -30,7 +30,7 @@ export default function Guidance() {
 
   return (
     <div
-      className="min-h-screen bg-background text-foreground"
+      className="min-h-screen text-foreground"
       style={{ background: "linear-gradient(180deg, rgba(46,205,176,0.03) 0%, transparent 30%)" }}
     >
       <Navbar />

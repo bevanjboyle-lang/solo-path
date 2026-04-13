@@ -96,8 +96,8 @@ export default function Tracker() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="min-h-screen">
+        <nav className="border-b border-border/50/80 backdrop-blur-xl">
           <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
             <SoloLogo width={100} height={28} />
           </div>
@@ -136,8 +136,8 @@ export default function Tracker() {
   const phaseGradientNames = ["Foundation", "Build", "Launch", "Grow"];
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <div className="min-h-screen text-foreground">
+      <nav className="border-b border-border/50/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
           <SoloLogo width={100} height={28} />
           <button onClick={() => signOut()} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">

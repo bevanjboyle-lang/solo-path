@@ -25,8 +25,8 @@ export default function ModuleDetail() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <div className="flex min-h-screen flex-col text-foreground">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-5xl items-center px-6">
           <button
             onClick={() => navigate("/modules")}

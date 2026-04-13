@@ -41,7 +41,7 @@ const productFaqs = [
 
 export default function FAQ() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <MintTopBar />
       <Navbar />
 

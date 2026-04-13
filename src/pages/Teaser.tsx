@@ -47,7 +47,7 @@ export default function Teaser() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center">
         <motion.div
           className="h-8 w-8 rounded-full border-2 border-border border-t-primary"
           animate={{ rotate: 360 }}
@@ -67,9 +67,9 @@ export default function Teaser() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col text-foreground">
       {/* Top bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
+      <div className="fixed top-0 left-0 right-0 z-50/80 backdrop-blur-xl border-b border-border/50">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-6">
           <SoloLogo width={100} height={28} />
           <button
