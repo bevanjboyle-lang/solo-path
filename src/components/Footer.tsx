@@ -3,7 +3,7 @@ import SoloLogo from "@/components/SoloLogo";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border py-8 bg-surface-card">
+    <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-border py-3 bg-surface-card/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6">
         <SoloLogo width={80} height={22} />
         <div className="flex gap-6 text-xs text-muted-foreground">

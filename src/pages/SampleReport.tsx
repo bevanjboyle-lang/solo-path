@@ -5,7 +5,6 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
-import Footer from "@/components/Footer";
 import GlassCard from "@/components/ui/GlassCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { Button } from "@/components/ui/button";
@@ -327,7 +326,6 @@ export default function SampleReport() {
         </div>
       </PanelLayout>
 
-      <Footer />
     </div>
   );
 }

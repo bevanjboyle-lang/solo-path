@@ -21,7 +21,6 @@ import { Badge } from "@/components/ui/badge";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import GlassCard from "@/components/ui/GlassCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
@@ -630,7 +629,6 @@ export default function Landing() {
       </PanelLayout>
 
       {/* 10. FOOTER */}
-      <Footer />
     </div>
   );
 }

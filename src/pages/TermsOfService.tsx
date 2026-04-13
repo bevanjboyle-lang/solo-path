@@ -1,7 +1,6 @@
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
-import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 
 const sections = [
@@ -52,7 +51,6 @@ export default function TermsOfService() {
         </main>
       </PanelLayout>
 
-      <Footer />
     </div>
   );
 }

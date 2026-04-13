@@ -33,6 +33,7 @@ import ModuleDetail from "./pages/ModuleDetail";
 import AskSolo from "./pages/AskSolo";
 import Guidance from "./pages/Guidance";
 import NotFound from "./pages/NotFound";
+import Footer from "@/components/Footer";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 
@@ -45,6 +46,7 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <motion.div
         key={location.pathname}
+        className="pb-14"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -100,6 +102,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <AnimatedRoutes />
+          <Footer />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

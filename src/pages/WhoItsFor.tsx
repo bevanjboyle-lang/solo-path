@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import MintTopBar from "@/components/MintTopBar";
 import PanelLayout from "@/components/PanelLayout";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import GlassCard from "@/components/ui/GlassCard";
@@ -145,7 +144,6 @@ export default function WhoItsFor() {
         </section>
       </PanelLayout>
 
-      <Footer />
     </div>
   );
 }
