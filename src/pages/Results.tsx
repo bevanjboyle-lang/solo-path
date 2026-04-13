@@ -1118,8 +1118,9 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
     });
   });
 
+  const isPortfolio = plan.plan_type === "portfolio";
   const hasStrands = strandColorMap.size > 1;
-  const isSingleStrand = strandColorMap.size === 1;
+  const isSingleStrand = strandColorMap.size === 1 && !isPortfolio;
 
   return (
     <div className="space-y-4">
@@ -1145,7 +1146,7 @@ function ActivationPlanDisplay({ plan }: { plan: any }) {
       )}
       <div className="space-y-2">
         {plan.phases?.map((phase: any, i: number) => (
-          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} greyStrands={isSingleStrand} />
+          <PhaseSection key={i} phase={phase} strandColorMap={strandColorMap} greyStrands={isSingleStrand} isPortfolio={isPortfolio} />
         ))}
       </div>
       {plan.success_metric && (
