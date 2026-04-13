@@ -241,7 +241,7 @@ export default function Pricing() {
                   className={`mt-6 w-full rounded-md text-sm font-medium transition-all hover:-translate-y-px ${
                     card.ctaVariant === "filled"
                       ? "bg-primary text-primary-foreground hover:bg-[#26B89D] hover:shadow-card-hover"
-                      : "border-[1.5px] border-[#D5D0C8] bg-transparent text-foreground hover:border-primary"
+                      : "border-[1.5px] border-[#D1CEC7] bg-transparent text-foreground hover:border-primary"
                   }`}
                   onClick={() => navigate(card.href)}
                 >
