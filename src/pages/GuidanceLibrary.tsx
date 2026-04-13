@@ -29,7 +29,7 @@ function HeroSection() {
         Personalised to your situation
       </span>
 
-      <h1 className="mx-auto mt-6 max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: "-0.02em" }}>
+      <h1 className="mx-auto mt-6 max-w-2xl text-3xl font-bold tracking-tight text-white sm:text-4xl" style={{ letterSpacing: "-1px", lineHeight: 1.15 }}>
         Practical guidance, built around <em className="not-italic" style={{ color: "#2ECDB0" }}>your</em> career move
       </h1>
 
