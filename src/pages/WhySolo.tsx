@@ -40,7 +40,7 @@ export default function WhySolo() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <MintTopBar />
       <Navbar />
 

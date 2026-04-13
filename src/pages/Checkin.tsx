@@ -197,7 +197,7 @@ export default function Checkin() {
 
   if (sessionLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
@@ -213,7 +213,7 @@ export default function Checkin() {
     const lastDate = new Date(session.last_checkin_date!);
     const daysSince = Math.round((new Date().getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
     return (
-      <div className="flex min-h-screen flex-col bg-background text-foreground items-center justify-center px-6">
+      <div className="flex min-h-screen flex-col text-foreground items-center justify-center px-6">
         <div className="w-full max-w-lg space-y-6 text-center">
           <h1 className="text-2xl font-semibold text-foreground">Welcome back. Let's take stock.</h1>
           <p className="text-muted-foreground">
@@ -232,8 +232,8 @@ export default function Checkin() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <div className="flex min-h-screen flex-col text-foreground">
+      <nav className="border-b border-border/50/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/tracker")} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -283,7 +283,7 @@ export default function Checkin() {
         </div>
       </div>
 
-      <div className="border-t border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="border-t border-border/50/80 backdrop-blur-xl">
         <div className="mx-auto max-w-2xl px-6 py-4">
           {complete ? (
             <button

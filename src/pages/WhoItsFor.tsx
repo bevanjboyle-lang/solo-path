@@ -35,7 +35,7 @@ export default function WhoItsFor() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <MintTopBar />
       <Navbar />
 

@@ -17,7 +17,7 @@ export default function SubscriptionSuccess() {
   }, []);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground px-6">
+    <div className="flex min-h-screen flex-col items-center justify-center text-foreground px-6">
       <MintTopBar />
       <motion.div
         className="w-full max-w-sm rounded-2xl bg-surface-panel p-10 shadow-panel text-center"

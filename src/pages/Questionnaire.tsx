@@ -161,7 +161,7 @@ export default function Questionnaire() {
   // CV upload step - shown as first post-auth screen before Q1
   if (showCvStep) {
     return (
-      <div className="flex min-h-screen flex-col bg-background text-foreground items-center justify-center px-6">
+      <div className="flex min-h-screen flex-col text-foreground items-center justify-center px-6">
         <div className="w-full max-w-lg space-y-6 text-center">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold text-foreground">Before we start: upload your CV (optional)</h1>
@@ -214,9 +214,9 @@ export default function Questionnaire() {
 
   
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col text-foreground">
       {/* Top bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
+      <div className="fixed top-0 left-0 right-0 z-50/80 backdrop-blur-xl border-b border-border/50">
         <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-6">
           <button onClick={back} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
@@ -274,7 +274,7 @@ export default function Questionnaire() {
       </div>
 
       {/* Bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="fixed bottom-0 left-0 right-0 border-t border-border/50/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-2xl items-center justify-end px-6">
           <button
             onClick={next}

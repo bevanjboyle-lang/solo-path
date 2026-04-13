@@ -106,8 +106,8 @@ export default function PaymentSuccess() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="min-h-screen text-foreground">
+        <nav className="border-b border-border/50/80 backdrop-blur-xl">
           <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
             <SoloLogo width={100} height={28} />
           </div>
@@ -128,8 +128,8 @@ export default function PaymentSuccess() {
   // Still verifying
   if (!verified) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
-        <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="min-h-screen text-foreground">
+        <nav className="border-b border-border/50/80 backdrop-blur-xl">
           <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
             <SoloLogo width={100} height={28} />
           </div>
@@ -145,8 +145,8 @@ export default function PaymentSuccess() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <div className="min-h-screen text-foreground">
+      <nav className="border-b border-border/50/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
           <SoloLogo width={100} height={28} />
         </div>

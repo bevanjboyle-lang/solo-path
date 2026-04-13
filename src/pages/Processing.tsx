@@ -42,7 +42,7 @@ export default function Processing() {
   }, [generate]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-6 text-center">
+    <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
       {error ? (
         <motion.div
           initial={{ opacity: 0, y: 12 }}

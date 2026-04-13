@@ -22,7 +22,7 @@ const sections = [
 
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <MintTopBar />
       <Navbar />
 

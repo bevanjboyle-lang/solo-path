@@ -17,7 +17,7 @@ const sections = [
 
 export default function PrivacyPolicy() {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground">
       <MintTopBar />
       <Navbar />
 
