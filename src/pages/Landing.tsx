@@ -553,6 +553,52 @@ export default function Landing() {
         </ScrollReveal>
       </PanelLayout>
 
+      {/* ── WHAT YOU GET (feature card) ── */}
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-2xl">
+            <GlassCard noHover className="p-8 sm:p-10">
+              <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                What you get
+              </h2>
+              <p className="mt-3 text-2xl font-bold text-foreground">
+                £19.99 — <span className="font-normal text-muted-foreground text-lg">one-time</span>
+              </p>
+
+              <div className="mt-8 space-y-6">
+                {[
+                  {
+                    title: "Your personalised report",
+                    desc: "10 scored business options matched to your experience, sector, seniority, and professional network. Each option includes target buyers, pricing benchmarks, and a difficulty rating.",
+                  },
+                  {
+                    title: "Ready-to-send outreach",
+                    desc: "A 30-day activation plan with specific daily tasks, a first-move email draft you can send immediately, and a network toolkit calibrated to the strength of your professional connections.",
+                  },
+                  {
+                    title: "Refine until it's right",
+                    desc: "Up to 3 rounds of AI-powered refinement. Tell us what doesn't feel realistic and we'll adjust the analysis. Your report gets sharper each time.",
+                  },
+                  {
+                    title: "Download anytime",
+                    desc: "Export your complete plan as a presentation-ready PDF. Your report, your options, your plan — all in one document you own.",
+                  },
+                  {
+                    title: "Built to evolve",
+                    desc: "Your plan adapts as your situation changes. Track your progress, check in daily, and get re-planned guidance when circumstances shift.",
+                  },
+                ].map((f, i) => (
+                  <div key={i}>
+                    <h3 className="text-sm font-bold text-foreground">{f.title}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+        </ScrollReveal>
+      </PanelLayout>
+
       {/* ── 9. FINAL CTA ── */}
       <PanelLayout className="overflow-hidden">
         <ScrollReveal>
