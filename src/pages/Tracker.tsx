@@ -509,7 +509,7 @@ function StrandStatusSection({ strandStatus }: { strandStatus: Record<string, { 
   );
 }
 
-
+function StrandStatusCards({ phases, completedTasks, session, navigate }: { phases: any[]; completedTasks: Set<string>; session: any; navigate: (path: string) => void }) {
   const strandStatusArr: Array<{
     model_name: string;
     status: StrandStatus;
