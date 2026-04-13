@@ -24,7 +24,7 @@ export default function AnimatedCounter({ target, prefix = "", suffix = "" }: An
 
   return (
     <span ref={ref}>
-      {prefix}{display}{suffix}
+      {prefix}{display.toLocaleString()}{suffix}
     </span>
   );
 }

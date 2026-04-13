@@ -115,7 +115,11 @@ export default function Landing() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen text-foreground" style={{
+      backgroundColor: "rgba(46, 205, 176, 0.04)",
+      backgroundImage: "radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px)",
+      backgroundSize: "20px 20px",
+    }}>
       <MintTopBar />
       <Navbar />
 
@@ -130,8 +134,7 @@ export default function Landing() {
         />
 
         <section className="relative flex min-h-[70vh] flex-col items-center justify-center">
-          <GlassCard noHover className="mx-auto max-w-2xl px-8 py-12 sm:px-12 sm:py-16">
-            <div className="text-center">
+            <div className="mx-auto max-w-2xl text-center">
               <motion.div
                 className="mb-8 flex justify-center"
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -169,29 +172,6 @@ export default function Landing() {
                 Solo takes what you've built over your career and turns it into a realistic, executable path to independent income: the paths, the clients, the first 30 days, based on your actual experience. <span className="font-bold text-foreground">So whatever changes - whether it's AI, restructuring, or simply wanting more options - you already know what you're doing next.</span>
               </motion.p>
 
-              {/* ── Stat strip with AnimatedCounter ── */}
-              <motion.div
-                className="mx-auto mt-8 flex max-w-xl flex-col gap-6 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.22 }}
-              >
-                {[
-                  { num: 95, label: "archetypes", desc: "professional profiles mapped" },
-                  { num: 480, label: "models", desc: "business models scored" },
-                  { num: 2694, label: "combinations", desc: "unique path combinations" },
-                ].map((stat, i) => (
-                  <div key={i} className="flex-1 text-center sm:px-4 sm:first:pl-0 sm:last:pr-0">
-                    <span className="block font-display text-2xl font-bold text-foreground">
-                      <AnimatedCounter target={stat.num} />
-                    </span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-                      {stat.label}
-                    </span>
-                    <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{stat.desc}</p>
-                  </div>
-                ))}
-              </motion.div>
 
               <motion.div
                 className="mt-10 max-w-xl mx-auto text-center"
@@ -231,11 +211,10 @@ export default function Landing() {
                 </span>
               </motion.div>
             </div>
-          </GlassCard>
         </section>
       </PanelLayout>
 
-      {/* ── FEATURE STAT CARDS ── */}
+      {/* ── THREE STATEMENTS ── */}
       <PanelLayout className="px-6 py-12 sm:px-10">
         <ScrollReveal>
           <div className="mx-auto max-w-xl flex flex-col gap-4 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
@@ -249,6 +228,29 @@ export default function Landing() {
                 className="metallic-border relative rounded-lg border border-border bg-surface-card px-4 py-4 sm:border-0 sm:rounded-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover cursor-default"
               >
                 <p className="text-xs leading-relaxed text-muted-foreground">{stat}</p>
+              </div>
+            ))}
+          </div>
+        </ScrollReveal>
+      </PanelLayout>
+
+      {/* ── STAT STRIP ── */}
+      <PanelLayout className="px-6 py-12 sm:px-10">
+        <ScrollReveal>
+          <div className="mx-auto max-w-xl flex flex-col gap-6 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
+            {[
+              { num: 95, label: "archetypes", desc: "professional profiles mapped" },
+              { num: 480, label: "models", desc: "business models scored" },
+              { num: 2694, label: "combinations", desc: "unique path combinations" },
+            ].map((stat, i) => (
+              <div key={i} className="flex-1 text-center sm:px-4 sm:first:pl-0 sm:last:pr-0">
+                <span className="block font-display text-2xl font-bold text-foreground">
+                  <AnimatedCounter target={stat.num} />
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                  {stat.label}
+                </span>
+                <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">{stat.desc}</p>
               </div>
             ))}
           </div>
