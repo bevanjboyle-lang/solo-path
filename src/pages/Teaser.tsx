@@ -35,7 +35,9 @@ export default function Teaser() {
   const handleCheckout = async () => {
     setPayLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-payment");
+      const { data, error } = await supabase.functions.invoke("create-payment", {
+        body: { report_id: reportId },
+      });
       if (error) throw error;
       const redirectUrl = data?.sessionUrl || data?.url;
       if (redirectUrl) window.location.href = redirectUrl;

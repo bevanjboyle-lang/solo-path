@@ -30,7 +30,14 @@ export default function Processing() {
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
 
-      navigate(`/teaser?report_id=${data.report_id}`);
+      const reportId = data?.reportId || data?.report_id;
+      if (!reportId || reportId === 'undefined') {
+        console.error('generate-report did not return a valid reportId:', data);
+        setError(true);
+        return;
+      }
+
+      navigate(`/teaser?report_id=${reportId}`);
     } catch (err) {
       console.error("Report generation failed:", err);
       setError(true);
