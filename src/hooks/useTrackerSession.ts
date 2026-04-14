@@ -17,7 +17,7 @@ export interface TrackerSession {
   user_id: string;
   created_at: string;
   updated_at: string;
-  strand_status: Record<string, { status: string; model_name: string; focus_percentage?: number }> | null;
+  strand_status: Record<string, { status: string; model_name: string; focus_percentage?: number; primary_move_type?: string }> | null;
 }
 
 interface UseTrackerSessionOptions {
