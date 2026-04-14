@@ -1186,8 +1186,8 @@ function DrafterModal({ firstMove, open, onOpenChange }: { firstMove: any; open:
   const [contactRole, setContactRole] = useState("");
   const [contactCompany, setContactCompany] = useState("");
   const [relationship, setRelationship] = useState("");
-  const [format, setFormat] = useState<string>("email");
-  const [purpose, setPurpose] = useState<string>("reconnect");
+  const [format, setFormat] = useState<string>("cold_email");
+  const [sharedContext, setSharedContext] = useState("");
   const [notes, setNotes] = useState("");
   const [drafting, setDrafting] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -1213,10 +1213,11 @@ function DrafterModal({ firstMove, open, onOpenChange }: { firstMove: any; open:
             role: contactRole,
             company: contactCompany,
             relationship,
+            any_shared_context: sharedContext || undefined,
           },
           request: {
             format,
-            purpose,
+            purpose: relationship === "new_contact" ? "cold_outreach" : "reconnect",
             any_specific_notes: notes || undefined,
           },
         },
@@ -1271,31 +1272,31 @@ function DrafterModal({ firstMove, open, onOpenChange }: { firstMove: any; open:
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Relationship</label>
-                <input value={relationship} onChange={(e) => setRelationship(e.target.value)} placeholder="Former colleague" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Format</label>
-                <select value={format} onChange={(e) => setFormat(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  <option value="email">Email</option>
-                  <option value="linkedin_dm">LinkedIn DM</option>
-                  <option value="verbal">Verbal script</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-xs font-medium text-muted-foreground">Purpose</label>
-                <select value={purpose} onChange={(e) => setPurpose(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                  <option value="reconnect">Reconnect</option>
-                  <option value="cold_outreach">Cold outreach</option>
-                  <option value="referral_ask">Referral ask</option>
+                <select value={relationship} onChange={(e) => setRelationship(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                  <option value="">Select…</option>
+                  <option value="former_colleague">Former colleague</option>
+                  <option value="current_contact">Current contact</option>
+                  <option value="new_contact">New contact</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-medium text-muted-foreground">Any specific notes</label>
+              <label className="text-xs font-medium text-muted-foreground">Format</label>
+              <select value={format} onChange={(e) => setFormat(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <option value="cold_email">Cold email</option>
+                <option value="warm_email">Warm email</option>
+                <option value="linkedin_dm">LinkedIn DM</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Shared context <span className="text-muted-foreground/50">(optional)</span></label>
+              <input value={sharedContext} onChange={(e) => setSharedContext(e.target.value)} placeholder="e.g. Met at a conference last year" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Any specific notes <span className="text-muted-foreground/50">(optional)</span></label>
               <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional context..." rows={2} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground resize-y focus:outline-none focus:ring-2 focus:ring-primary/30" />
             </div>
 
