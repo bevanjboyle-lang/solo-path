@@ -101,9 +101,30 @@ export default function Results() {
 
   const checkPayment = useCallback(async () => {
     try {
-      const { data } = await supabase.functions.invoke("check-payment");
-      return data?.paid === true;
-    } catch { return false; }
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return false;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const stripeSessionId = urlParams.get('session_id') || localStorage.getItem('stripe_session_id') || '';
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/check-payment`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(stripeSessionId ? { session_id: stripeSessionId } : {}),
+        }
+      );
+
+      const result = await response.json();
+      return result.paid === true || result.is_complete === true;
+    } catch (err) {
+      console.error('check-payment error:', err);
+      return false;
+    }
   }, []);
 
   useEffect(() => {
