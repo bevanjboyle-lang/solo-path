@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import Navbar from "@/components/Navbar";
+import MintTopBar from "@/components/MintTopBar";
+import PanelLayout from "@/components/PanelLayout";
 import GuidanceLibrary from "@/components/guidance/GuidanceLibrary";
-import { Lock } from "lucide-react";
+import { Lock, LogOut } from "lucide-react";
 import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
 import GlassCard from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import SoloLogo from "@/components/SoloLogo";
 
 export default function Guidance() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [hasAccess, setHasAccess] = useState<boolean | null>(null);
 
@@ -29,11 +31,16 @@ export default function Guidance() {
   }, [user]);
 
   return (
-    <div
-      className="min-h-screen text-foreground"
-      style={{ background: "linear-gradient(180deg, rgba(46,205,176,0.03) 0%, transparent 30%)" }}
-    >
-      <Navbar />
+    <div className="min-h-screen text-foreground">
+      <MintTopBar />
+      <nav className="fixed top-1 left-0 right-0 z-50 border-b bg-surface-panel/95 backdrop-blur-lg" style={{ borderColor: "#D1CEC7" }}>
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+          <SoloLogo width={100} height={28} />
+          <button onClick={async () => { await signOut(); navigate("/"); }} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <LogOut className="h-3.5 w-3.5" /> Sign out
+          </button>
+        </div>
+      </nav>
       <main className="mx-auto max-w-5xl px-6 pt-24 pb-16">
         <ScrollReveal>
           <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
