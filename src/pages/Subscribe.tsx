@@ -13,7 +13,7 @@ const plans = [
   {
     id: "monthly" as const,
     name: "Monthly",
-    price: "\u00a39.99",
+    price: "\u00a319",
     period: "/month",
     description: "Flexible, cancel anytime.",
     features: [
@@ -26,9 +26,9 @@ const plans = [
   {
     id: "annual" as const,
     name: "Annual",
-    price: "\u00a389",
+    price: "\u00a3149",
     period: "/year",
-    savings: "Save 26%",
+    savings: "Save \u00a379/year",
     description: "Best value for committed professionals.",
     features: [
       "Everything in Monthly",
@@ -166,7 +166,7 @@ export default function Subscribe() {
               ) : (
                 <>
                   <Zap className="h-4 w-4 mr-1.5" />
-                  {selected === "annual" ? "Full year of support" : "Keep your plan active"} - {selected === "annual" ? "£149" : "£9.99/month"}
+                  {selected === "annual" ? "Full year of support" : "Keep your plan active"} - {selected === "annual" ? "£149" : "£19/month"}
                 </>
               )}
             </Button>
