@@ -1175,17 +1175,39 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
     const text = d.format === 'email' && d.subject ? `Subject: ${d.subject}\n\n${d.body}` : d.body;
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   };
+
+  const moveType = firstMove.move_type as string | undefined;
+  const mt = moveType ? moveTypeStyles[moveType] : undefined;
+
+  // Accent colours per move type for border/bg tinting
+  const accentMap: Record<string, { border: string; bg: string; text: string }> = {
+    leverage: { border: "border-blue-500/30", bg: "bg-blue-500/5", text: "text-blue-400" },
+    moonshot: { border: "border-purple-500/30", bg: "bg-purple-500/5", text: "text-purple-400" },
+    anchor: { border: "border-emerald-500/30", bg: "bg-emerald-500/5", text: "text-emerald-400" },
+    growth: { border: "border-amber-500/30", bg: "bg-amber-500/5", text: "text-amber-400" },
+    pivot: { border: "border-rose-500/30", bg: "bg-rose-500/5", text: "text-rose-400" },
+  };
+  const accent = moveType ? accentMap[moveType] : undefined;
+  const borderCls = accent?.border ?? "border-primary/30";
+  const bgCls = accent?.bg ?? "bg-primary/5";
+  const iconCls = accent?.text ?? "text-primary";
+
   return (
-    <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 space-y-3">
-      <div className="flex items-center gap-2">
-        <Zap className="w-4 h-4 text-primary" />
-        <span className="text-sm font-semibold text-foreground">Your First Move - do this today</span>
+    <div className={`rounded-lg border ${borderCls} ${bgCls} p-4 space-y-3`}>
+      <div className="flex items-center gap-2 flex-wrap">
+        <Zap className={`w-4 h-4 ${iconCls}`} />
+        <span className="text-sm font-semibold text-foreground">Your First Move — do this today</span>
+        {mt && (
+          <Badge className={`text-[10px] px-2 py-0.5 border ${mt.bg}`}>
+            {mt.label}
+          </Badge>
+        )}
       </div>
       <p className="text-sm text-foreground/90">{firstMove.action}</p>
       {firstMove.why_first && <p className="text-xs text-muted-foreground">{firstMove.why_first}</p>}
       {firstMove.outreach_draft && (
         <div className="space-y-2">
-          <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
+          <button onClick={() => setOpen(!open)} className={`flex items-center gap-1.5 text-xs font-medium ${iconCls} hover:opacity-80 transition-colors`}>
             <MessageSquare className="w-3 h-3" />{open ? 'Hide draft message' : 'View ready-to-send draft'}
             {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
