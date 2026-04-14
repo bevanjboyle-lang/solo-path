@@ -940,6 +940,14 @@ const diffColors: Record<string, string> = {
   hard: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
+const moveTypeStyles: Record<string, { bg: string; label: string }> = {
+  leverage: { bg: "bg-blue-500/10 text-blue-400 border-blue-500/20", label: "Leverage" },
+  moonshot: { bg: "bg-purple-500/10 text-purple-400 border-purple-500/20", label: "Moonshot" },
+  anchor: { bg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", label: "Anchor" },
+  growth: { bg: "bg-amber-500/10 text-amber-400 border-amber-500/20", label: "Growth" },
+  pivot: { bg: "bg-rose-500/10 text-rose-400 border-rose-500/20", label: "Pivot" },
+};
+
 function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { option: any; selected: boolean; onToggle: () => void; selectionFull: boolean }) {
   const isTop3 = option.rank <= 3;
   const dc = diffColors[option.difficulty_rating] || diffColors.moderate;
