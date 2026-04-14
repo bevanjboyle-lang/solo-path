@@ -1123,9 +1123,17 @@ function ReportSection({ title, icon: Icon, children }: { title: string; icon: R
   );
 }
 
-function OutreachDraftPanel({ draft }: { draft: any }) {
+function OutreachDraftPanel({ draft, moveType }: { draft: any; moveType?: string }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const triggerLabel = (() => {
+    switch (moveType) {
+      case "platform": return "Get platform setup guide";
+      case "visibility": return "Draft post for this task";
+      case "community": return "Get contribution prompt";
+      default: return "Draft message for this contact";
+    }
+  })();
   const handleCopy = () => {
     const text = draft.format === 'email' && draft.subject ? `Subject: ${draft.subject}\n\n${draft.body}` : draft.body;
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
@@ -1134,7 +1142,8 @@ function OutreachDraftPanel({ draft }: { draft: any }) {
     <div className="mt-2 ml-4">
       <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors">
         <MessageSquare className="w-3 h-3" />
-        {open ? 'Hide draft' : 'View draft message'}
+        {open ? 'Hide draft' : triggerLabel}
+        {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
       </button>
       {open && (
@@ -1171,7 +1180,7 @@ function OutreachTaskItem({ task, strandColorMap, greyStrands }: { task: any; st
       {strand && strandColorMap.has(strand) && (
         <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} grey={greyStrands} />
       )}
-      {task.outreach_draft && <OutreachDraftPanel draft={task.outreach_draft} />}
+      {task.outreach_draft && <OutreachDraftPanel draft={task.outreach_draft} moveType={task.move_type} />}
     </li>
   );
 }
