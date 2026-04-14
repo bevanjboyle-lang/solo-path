@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { moveTypeStyles } from "@/components/MoveTypeBadge";
 import { Button } from "@/components/ui/button";
 import SoloLogo from "@/components/SoloLogo";
 import GlassCard from "@/components/ui/GlassCard";
@@ -955,7 +956,7 @@ const diffColors: Record<string, string> = {
   hard: "bg-red-500/10 text-red-400 border-red-500/20",
 };
 
-import { moveTypeStyles } from "@/components/MoveTypeBadge";
+
 
 function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { option: any; selected: boolean; onToggle: () => void; selectionFull: boolean }) {
   const isTop3 = option.rank <= 3;
