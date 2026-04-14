@@ -13,6 +13,7 @@ import TrackerProgress from "@/components/tracker/TrackerProgress";
 import GlassCard from "@/components/ui/GlassCard";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import CircularGauge from "@/components/ui/CircularGauge";
+import MoveTypeBadge from "@/components/MoveTypeBadge";
 
 const momentumData = [
   { week: 'W1', completed: 3, total: 7 },
@@ -465,7 +466,7 @@ function PortfolioReviewBanner({ session, navigate }: { session: any; navigate: 
   );
 }
 
-function StrandStatusSection({ strandStatus }: { strandStatus: Record<string, { status: string; model_name: string; focus_percentage?: number }> }) {
+function StrandStatusSection({ strandStatus }: { strandStatus: Record<string, { status: string; model_name: string; focus_percentage?: number; primary_move_type?: string }> }) {
   const strandIds = Object.keys(strandStatus);
   if (strandIds.length === 0) return null;
 
