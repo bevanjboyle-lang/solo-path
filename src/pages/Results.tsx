@@ -1186,8 +1186,8 @@ function DrafterModal({ firstMove, open, onOpenChange }: { firstMove: any; open:
   const [contactRole, setContactRole] = useState("");
   const [contactCompany, setContactCompany] = useState("");
   const [relationship, setRelationship] = useState("");
-  const [format, setFormat] = useState<string>("email");
-  const [purpose, setPurpose] = useState<string>("reconnect");
+  const [format, setFormat] = useState<string>("cold_email");
+  const [sharedContext, setSharedContext] = useState("");
   const [notes, setNotes] = useState("");
   const [drafting, setDrafting] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -1213,10 +1213,11 @@ function DrafterModal({ firstMove, open, onOpenChange }: { firstMove: any; open:
             role: contactRole,
             company: contactCompany,
             relationship,
+            any_shared_context: sharedContext || undefined,
           },
           request: {
             format,
-            purpose,
+            purpose: relationship === "new_contact" ? "cold_outreach" : "reconnect",
             any_specific_notes: notes || undefined,
           },
         },
