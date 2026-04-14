@@ -490,6 +490,7 @@ function StrandStatusSection({ strandStatus }: { strandStatus: Record<string, { 
                 <div className="flex items-center gap-2 mb-2">
                   <span className="inline-block h-2 w-2 rounded-full" style={{ background: hex }} />
                   <span className="text-xs font-medium text-foreground truncate">{strand.model_name}</span>
+                  <MoveTypeBadge moveType={strand.primary_move_type} />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider ${badge.className}`}>

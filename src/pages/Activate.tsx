@@ -60,6 +60,7 @@ export default function Activate() {
           activated_at: new Date().toISOString(),
           current_day: 1,
           plan_state: "active",
+          strand_status: plan.initialStrandStatus ?? null,
         })
         .select("id")
         .single();
