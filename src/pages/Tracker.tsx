@@ -172,7 +172,7 @@ export default function Tracker() {
               <ScrollReveal delay={0.1}>
                 <GlassCard className="mt-8 flex flex-col items-center py-8">
                   <div style={{ filter: "drop-shadow(0 0 8px rgba(46,205,176,0.3))" }}>
-                    <CircularGauge value={Math.round((session.current_day / 30) * 100)} size={180} strokeWidth={14} color="#2ECDB0" />
+                    <CircularGauge value={Math.round((session.current_day / 30) * 100)} size={180} strokeWidth={14} color="#2ECDB0" hideLabel />
                   </div>
                   <div className="mt-[-100px] flex flex-col items-center z-10">
                     <span className="text-4xl font-extrabold" style={{ fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", color: "#1D2025" }}>
