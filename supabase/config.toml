@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.ask-solo]
 verify_jwt = false
+
+[functions.draft-outreach]
+verify_jwt = false
