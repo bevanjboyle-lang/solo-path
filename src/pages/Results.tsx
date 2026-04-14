@@ -721,11 +721,26 @@ export default function Results() {
                 </ScrollReveal>
               )}
 
-              {/* First Move */}
-              {ap?.first_move && (
+              {/* First Move(s) — supports single or per-strand array */}
+              {(ap?.first_moves?.length > 0 || ap?.first_move) && (
                 <ScrollReveal delay={0.1}>
-                  <ReportSection title="Your First Move" icon={Zap}>
-                    <FirstMoveCard firstMove={ap.first_move} />
+                  <ReportSection title={ap?.first_moves?.length > 1 ? "Your First Moves" : "Your First Move"} icon={Zap}>
+                    {ap?.first_moves?.length > 0 ? (
+                      <div className="space-y-4">
+                        {ap.first_moves.map((fm: any, i: number) => (
+                          <div key={i}>
+                            {fm.strand_name && (
+                              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-2">
+                                {fm.strand_name}
+                              </p>
+                            )}
+                            <FirstMoveCard firstMove={fm} />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <FirstMoveCard firstMove={ap.first_move} />
+                    )}
                   </ReportSection>
                 </ScrollReveal>
               )}
