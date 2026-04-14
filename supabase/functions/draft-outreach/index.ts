@@ -59,7 +59,7 @@ ${contact.any_shared_context ? "- Shared context: " + contact.any_shared_context
 REQUEST:
 - Format: ${draftRequest.format || "email"}
 - Purpose: ${draftRequest.purpose || "reconnect"}
-${draftRequest.any_specific_notes ? "- Notes: " + draftRequest.any_specific_notes : ""}
+${draftRequest.specific_notes ? "- Notes: " + draftRequest.specific_notes : ""}
 
 Return ONLY this JSON:
 {
