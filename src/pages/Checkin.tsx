@@ -66,6 +66,7 @@ export default function Checkin() {
             current_day: session.current_day,
             working_plan: session.working_plan,
             running_narrative: session.running_narrative,
+            strand_status: session.strand_status,
             exchange_count: 0,
           },
         });
@@ -75,7 +76,8 @@ export default function Checkin() {
         setCheckinState(result.state || "open");
       } catch (err) {
         console.error("Opening check-in error:", err);
-        setExchanges([{ role: "assistant", text: "Hi. Let's check in on today's plan. How did it go?" }]);
+        const fallback = getTypeAwareFallback(session.strand_status);
+        setExchanges([{ role: "assistant", text: fallback }]);
       }
     })();
   }, [session, user, openingDone, showCatchUp]);
