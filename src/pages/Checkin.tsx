@@ -118,6 +118,7 @@ export default function Checkin() {
           current_day: session.current_day,
           working_plan: session.working_plan,
           running_narrative: session.running_narrative,
+          strand_status: session.strand_status,
           user_message: userMsg,
           exchange_count: exchangeCount,
           previous_state: checkinState,
