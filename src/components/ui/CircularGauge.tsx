@@ -6,9 +6,10 @@ interface CircularGaugeProps {
   size?: number;
   strokeWidth?: number;
   color?: string;
+  hideLabel?: boolean;
 }
 
-export default function CircularGauge({ value, size = 120, strokeWidth = 8, color = "#2ECDB0" }: CircularGaugeProps) {
+export default function CircularGauge({ value, size = 120, strokeWidth = 8, color = "#2ECDB0", hideLabel = false }: CircularGaugeProps) {
   const ref = useRef<SVGSVGElement>(null);
   const inView = useInView(ref, { once: true, margin: "-50px" });
   const [progress, setProgress] = useState(0);
@@ -49,16 +50,18 @@ export default function CircularGauge({ value, size = 120, strokeWidth = 8, colo
         strokeDashoffset={offset}
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
       />
-      <text
-        x={size / 2}
-        y={size / 2}
-        textAnchor="middle"
-        dominantBaseline="central"
-        className="fill-foreground font-bold"
-        style={{ fontSize: size * 0.22 }}
-      >
-        {Math.round(progress)}
-      </text>
+      {!hideLabel && (
+        <text
+          x={size / 2}
+          y={size / 2}
+          textAnchor="middle"
+          dominantBaseline="central"
+          className="fill-foreground font-bold"
+          style={{ fontSize: size * 0.22 }}
+        >
+          {Math.round(progress)}
+        </text>
+      )}
     </svg>
   );
 }
