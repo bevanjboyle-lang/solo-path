@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw, Download } from "lucide-react";
+import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw, Download, Send, Mail, MessageCircle, Mic } from "lucide-react";
 import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -1181,9 +1181,197 @@ function OutreachTaskItem({ task, strandColorMap, greyStrands }: { task: any; st
   );
 }
 
+function DrafterModal({ firstMove, open, onOpenChange }: { firstMove: any; open: boolean; onOpenChange: (v: boolean) => void }) {
+  const [contactName, setContactName] = useState("");
+  const [contactRole, setContactRole] = useState("");
+  const [contactCompany, setContactCompany] = useState("");
+  const [relationship, setRelationship] = useState("");
+  const [format, setFormat] = useState<string>("email");
+  const [purpose, setPurpose] = useState<string>("reconnect");
+  const [notes, setNotes] = useState("");
+  const [drafting, setDrafting] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleDraft = async () => {
+    setDrafting(true);
+    setError(null);
+    setResult(null);
+    try {
+      const { data, error: fnErr } = await supabase.functions.invoke("draft-outreach", {
+        body: {
+          user_context: {
+            first_name: "",
+            archetype: firstMove?.strand_name || "",
+            recommended_model: firstMove?.strand_name || "",
+            q6_achievement: "",
+            tracker_day: 0,
+          },
+          contact: {
+            name: contactName || "[Name]",
+            role: contactRole,
+            company: contactCompany,
+            relationship,
+          },
+          request: {
+            format,
+            purpose,
+            any_specific_notes: notes || undefined,
+          },
+        },
+      });
+      if (fnErr) throw fnErr;
+      if (!data?.success) throw new Error(data?.error || "Draft failed");
+      setResult(data);
+    } catch (err: any) {
+      setError(err.message || "Something went wrong");
+    } finally {
+      setDrafting(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (!result?.draft) return;
+    const d = result.draft;
+    const text = d.format === "email" && d.subject ? `Subject: ${d.subject}\n\n${d.body}` : d.body;
+    navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  };
+
+  const formatIcon = { email: Mail, linkedin_dm: MessageCircle, verbal: Mic }[result?.draft?.format || format] || Mail;
+  const FormatIcon = formatIcon;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Send className="h-4 w-4 text-primary" />
+            Draft outreach message
+          </DialogTitle>
+          <DialogDescription>
+            {firstMove?.strand_name ? `For: ${firstMove.strand_name}` : "Generate a personalised outreach draft"}
+          </DialogDescription>
+        </DialogHeader>
+
+        {!result ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Contact name</label>
+                <input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Jane Smith" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Role</label>
+                <input value={contactRole} onChange={(e) => setContactRole(e.target.value)} placeholder="Head of Strategy" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Company</label>
+                <input value={contactCompany} onChange={(e) => setContactCompany(e.target.value)} placeholder="Acme Ltd" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Relationship</label>
+                <input value={relationship} onChange={(e) => setRelationship(e.target.value)} placeholder="Former colleague" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Format</label>
+                <select value={format} onChange={(e) => setFormat(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                  <option value="email">Email</option>
+                  <option value="linkedin_dm">LinkedIn DM</option>
+                  <option value="verbal">Verbal script</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Purpose</label>
+                <select value={purpose} onChange={(e) => setPurpose(e.target.value)} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                  <option value="reconnect">Reconnect</option>
+                  <option value="cold_outreach">Cold outreach</option>
+                  <option value="referral_ask">Referral ask</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-medium text-muted-foreground">Any specific notes</label>
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optional context..." rows={2} className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground resize-y focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            </div>
+
+            {error && <p className="text-xs text-destructive">{error}</p>}
+
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+              <Button onClick={handleDraft} disabled={drafting} style={{ background: "#2ECDB0" }} className="text-[#0D0D12] font-semibold border-0 hover:opacity-90">
+                {drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Generate draft"}
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Per-type output display */}
+            <div className="flex items-center gap-2 mb-2">
+              <FormatIcon className="h-4 w-4 text-primary" />
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {result.draft.format === "email" ? "Email" : result.draft.format === "linkedin_dm" ? "LinkedIn DM" : "Verbal Script"}
+              </span>
+              <span className="text-[10px] text-muted-foreground/60 ml-auto">{result.draft.word_count} words</span>
+            </div>
+
+            <div
+              className="rounded-lg border border-border p-4 space-y-2"
+              style={{
+                borderLeft: `3px solid ${result.draft.format === "email" ? "#2ECDB0" : result.draft.format === "linkedin_dm" ? "#6366F1" : "#F59E0B"}`,
+                background: "hsl(var(--surface-card))",
+                backgroundImage: result.draft.format === "verbal" ? "none" : "repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.03) 28px)",
+              }}
+            >
+              {/* Email: subject + body */}
+              {result.draft.format === "email" && result.draft.subject && (
+                <p className="text-xs font-semibold text-foreground">Subject: {result.draft.subject}</p>
+              )}
+
+              {/* Verbal: larger, quote-style */}
+              {result.draft.format === "verbal" ? (
+                <blockquote className="text-sm text-foreground/90 italic border-l-2 border-amber-500/30 pl-3">
+                  {result.draft.body}
+                </blockquote>
+              ) : (
+                <pre className="text-xs whitespace-pre-wrap font-sans leading-relaxed text-foreground/90">{result.draft.body}</pre>
+              )}
+            </div>
+
+            {result.tone_note && (
+              <p className="text-xs text-muted-foreground"><span className="font-medium">Tone:</span> {result.tone_note}</p>
+            )}
+            {result.personalisation_instructions && (
+              <p className="text-xs text-amber-500/80">⚠ {result.personalisation_instructions}</p>
+            )}
+            {result.alternative_approach && (
+              <p className="text-xs text-muted-foreground/70 italic">💡 {result.alternative_approach}</p>
+            )}
+
+            <DialogFooter className="gap-2">
+              <Button variant="ghost" onClick={() => setResult(null)}>
+                ← New draft
+              </Button>
+              <Button onClick={handleCopy} variant="outline" className="gap-1.5">
+                {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                {copied ? "Copied" : "Copy"}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function FirstMoveCard({ firstMove }: { firstMove: any }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [drafterOpen, setDrafterOpen] = useState(false);
   const handleCopy = () => {
     if (!firstMove.outreach_draft) return;
     const d = firstMove.outreach_draft;
@@ -1194,7 +1382,6 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
   const moveType = firstMove.move_type as string | undefined;
   const mt = moveType ? moveTypeStyles[moveType] : undefined;
 
-  // Accent colours per move type for border/bg tinting
   const accentMap: Record<string, { border: string; bg: string; text: string }> = {
     leverage: { border: "border-blue-500/30", bg: "bg-blue-500/5", text: "text-blue-400" },
     moonshot: { border: "border-purple-500/30", bg: "bg-purple-500/5", text: "text-purple-400" },
@@ -1220,6 +1407,16 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
       </div>
       <p className="text-sm text-foreground/90">{firstMove.action}</p>
       {firstMove.why_first && <p className="text-xs text-muted-foreground">{firstMove.why_first}</p>}
+
+      {/* Draft outreach button */}
+      <button
+        onClick={() => setDrafterOpen(true)}
+        className={`flex items-center gap-1.5 text-xs font-medium ${iconCls} hover:opacity-80 transition-colors`}
+      >
+        <Send className="w-3 h-3" />
+        Draft outreach message
+      </button>
+
       {firstMove.outreach_draft && (
         <div className="space-y-2">
           <button onClick={() => setOpen(!open)} className={`flex items-center gap-1.5 text-xs font-medium ${iconCls} hover:opacity-80 transition-colors`}>
@@ -1251,6 +1448,8 @@ function FirstMoveCard({ firstMove }: { firstMove: any }) {
           )}
         </div>
       )}
+
+      <DrafterModal firstMove={firstMove} open={drafterOpen} onOpenChange={setDrafterOpen} />
     </div>
   );
 }
