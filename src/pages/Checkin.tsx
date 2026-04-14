@@ -6,6 +6,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTrackerSession } from "@/hooks/useTrackerSession";
 
+function getTypeAwareFallback(strandStatus: any): string {
+  if (!strandStatus) return "Hi. Let's check in on today's plan. Have you made any moves this week?";
+  const types = Object.values(strandStatus)
+    .map((s: any) => s?.primary_move_type)
+    .filter(Boolean);
+  const primary = types[0] as string | undefined;
+  switch (primary) {
+    case "direct": return "Hi. Let's check in on today's plan. Have you sent any messages this week?";
+    case "platform": return "Hi. Let's check in on today's plan. Have you taken any platform steps this week?";
+    case "visibility": return "Hi. Let's check in on today's plan. Have you published anything this week?";
+    case "community": return "Hi. Let's check in on today's plan. Have you made any community contributions this week?";
+    default: return "Hi. Let's check in on today's plan. Have you made any moves this week?";
+  }
+}
+
 interface Exchange {
   role: "assistant" | "user";
   text: string;
