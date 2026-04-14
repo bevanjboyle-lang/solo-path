@@ -992,9 +992,12 @@ function SelectionOptionCard({ option, selected, onToggle, selectionFull }: { op
             <Badge className={`text-[10px] px-2 py-0.5 border ${dc}`}>
               {option.difficulty_rating}
             </Badge>
+            {option.move_type && moveTypeStyles[option.move_type] && (
+              <Badge className={`text-[10px] px-2 py-0.5 border ${moveTypeStyles[option.move_type].bg}`}>
+                {moveTypeStyles[option.move_type].label}
+              </Badge>
+            )}
           </div>
-
-          {/* Difficulty & Speed gauges */}
           {(option.difficulty_score != null || option.speed_score != null) && (
             <div className="flex gap-4 mt-3">
               {option.difficulty_score != null && (
@@ -1086,6 +1089,11 @@ function CompactOptionCard({ option, selected, onToggle, selectionFull }: { opti
       <Badge className={`text-[10px] px-2 py-0.5 border ${dc}`}>
         {option.difficulty_rating}
       </Badge>
+      {option.move_type && moveTypeStyles[option.move_type] && (
+        <Badge className={`text-[10px] px-2 py-0.5 border ${moveTypeStyles[option.move_type].bg}`}>
+          {moveTypeStyles[option.move_type].label}
+        </Badge>
+      )}
       {option.fit_score != null && (
         <span className="text-xs text-muted-foreground">{option.fit_score}/10</span>
       )}
