@@ -1218,7 +1218,7 @@ function DrafterModal({ firstMove, open, onOpenChange }: { firstMove: any; open:
           request: {
             format,
             purpose: relationship === "new_contact" ? "cold_outreach" : "reconnect",
-            any_specific_notes: notes || undefined,
+            specific_notes: notes || undefined,
           },
         },
       });
