@@ -1239,8 +1239,73 @@ function DrafterModal({ firstMove, open, onOpenChange }: { firstMove: any; open:
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   };
 
-  const formatIcon = { email: Mail, linkedin_dm: MessageCircle, verbal: Mic }[result?.draft?.format || format] || Mail;
-  const FormatIcon = formatIcon;
+  const moveType = firstMove?.move_type as string | undefined;
+  const moveTypeBadge = moveType ? moveTypeStyles[moveType] : undefined;
+  const requestedFormat = result?.draft?.format === "email" ? format : (result?.draft?.format || format);
+  const FormatIcon = requestedFormat === "linkedin_dm" ? MessageCircle : requestedFormat === "verbal" ? Mic : Mail;
+  const formatLabel = requestedFormat === "cold_email"
+    ? "Cold email"
+    : requestedFormat === "warm_email"
+    ? "Warm email"
+    : requestedFormat === "linkedin_dm"
+    ? "LinkedIn DM"
+    : requestedFormat === "verbal"
+    ? "Verbal script"
+    : "Email";
+
+  const moveTypeDisplay = moveType === "leverage"
+    ? {
+        title: "Leverage move",
+        kicker: "Lead with existing trust and proof.",
+        panelClass: "border-blue-500/30 bg-blue-500/5",
+        accentClass: "text-blue-400",
+        backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.03) 28px)",
+        bodyClass: "text-xs whitespace-pre-wrap font-sans leading-relaxed text-foreground/90",
+      }
+    : moveType === "anchor"
+    ? {
+        title: "Anchor move",
+        kicker: "Keep it steady, practical, and easy to answer.",
+        panelClass: "border-emerald-500/30 bg-emerald-500/5",
+        accentClass: "text-emerald-400",
+        backgroundImage: "linear-gradient(180deg, rgba(0,0,0,0.02), transparent 40%)",
+        bodyClass: "text-xs whitespace-pre-wrap font-sans leading-relaxed text-foreground/90",
+      }
+    : moveType === "growth"
+    ? {
+        title: "Growth move",
+        kicker: "Build on momentum and show a credible next step.",
+        panelClass: "border-amber-500/30 bg-amber-500/5",
+        accentClass: "text-amber-400",
+        backgroundImage: "linear-gradient(135deg, rgba(0,0,0,0.025), transparent 60%)",
+        bodyClass: "text-xs whitespace-pre-wrap font-sans leading-relaxed text-foreground/90",
+      }
+    : moveType === "pivot"
+    ? {
+        title: "Pivot move",
+        kicker: "Reframe your background for a new lane without overexplaining.",
+        panelClass: "border-rose-500/30 bg-rose-500/5",
+        accentClass: "text-rose-400",
+        backgroundImage: "linear-gradient(90deg, rgba(0,0,0,0.02), transparent 45%)",
+        bodyClass: "text-xs whitespace-pre-wrap font-sans leading-relaxed text-foreground/90 italic",
+      }
+    : moveType === "moonshot"
+    ? {
+        title: "Moonshot move",
+        kicker: "Go bolder and make the upside feel worth the reach.",
+        panelClass: "border-purple-500/30 bg-purple-500/5",
+        accentClass: "text-purple-400",
+        backgroundImage: "radial-gradient(circle at top left, rgba(0,0,0,0.04), transparent 55%)",
+        bodyClass: "text-sm whitespace-pre-wrap font-sans leading-relaxed text-foreground",
+      }
+    : {
+        title: "Drafted outreach",
+        kicker: "Tailored to this move and recipient.",
+        panelClass: "border-primary/20 bg-primary/5",
+        accentClass: "text-primary",
+        backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.03) 28px)",
+        bodyClass: "text-xs whitespace-pre-wrap font-sans leading-relaxed text-foreground/90",
+      };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -1311,36 +1376,30 @@ function DrafterModal({ firstMove, open, onOpenChange }: { firstMove: any; open:
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Per-type output display */}
-            <div className="flex items-center gap-2 mb-2">
-              <FormatIcon className="h-4 w-4 text-primary" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {result.draft.format === "email" ? "Email" : result.draft.format === "linkedin_dm" ? "LinkedIn DM" : "Verbal Script"}
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {moveTypeBadge && (
+                <Badge className={`text-[10px] px-2 py-0.5 border ${moveTypeBadge.bg}`}>
+                  {moveTypeBadge.label}
+                </Badge>
+              )}
+              <span className={`inline-flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider ${moveTypeDisplay.accentClass}`}>
+                <FormatIcon className="h-3 w-3" />
+                {formatLabel}
               </span>
-              <span className="text-[10px] text-muted-foreground/60 ml-auto">{result.draft.word_count} words</span>
+              <span className="text-[10px] text-muted-foreground/60 sm:ml-auto">{result.draft.word_count} words</span>
             </div>
 
-            <div
-              className="rounded-lg border border-border p-4 space-y-2"
-              style={{
-                borderLeft: `3px solid ${result.draft.format === "email" ? "#2ECDB0" : result.draft.format === "linkedin_dm" ? "#6366F1" : "#F59E0B"}`,
-                background: "hsl(var(--surface-card))",
-                backgroundImage: result.draft.format === "verbal" ? "none" : "repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.03) 28px)",
-              }}
-            >
-              {/* Email: subject + body */}
-              {result.draft.format === "email" && result.draft.subject && (
+            <div className={`rounded-lg border p-4 space-y-3 ${moveTypeDisplay.panelClass}`} style={{ backgroundImage: moveTypeDisplay.backgroundImage }}>
+              <div>
+                <p className="text-xs font-semibold text-foreground">{moveTypeDisplay.title}</p>
+                <p className="text-[11px] text-muted-foreground">{moveTypeDisplay.kicker}</p>
+              </div>
+
+              {result.draft.subject && (
                 <p className="text-xs font-semibold text-foreground">Subject: {result.draft.subject}</p>
               )}
 
-              {/* Verbal: larger, quote-style */}
-              {result.draft.format === "verbal" ? (
-                <blockquote className="text-sm text-foreground/90 italic border-l-2 border-amber-500/30 pl-3">
-                  {result.draft.body}
-                </blockquote>
-              ) : (
-                <pre className="text-xs whitespace-pre-wrap font-sans leading-relaxed text-foreground/90">{result.draft.body}</pre>
-              )}
+              <pre className={moveTypeDisplay.bodyClass}>{result.draft.body}</pre>
             </div>
 
             {result.tone_note && (
