@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useSearchParams, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Lock, ChevronRight, X, Filter, Loader2 } from "lucide-react";
+import { BookOpen, Lock, ChevronRight, X, Check, Clock, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
+import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
 import PanelLayout from "@/components/PanelLayout";
 import Banner from "@/components/Banner";
@@ -15,64 +16,69 @@ import { Skeleton } from "@/components/ui/skeleton";
 import GlassCard from "@/components/ui/GlassCard";
 
 /* ── Types ── */
-interface LibraryItem {
-  id: string;
+interface FeaturedModule {
+  module_id: number;
   title: string;
-  description: string;
   track: string;
-  body?: string;
-  relatedIds?: string[];
+  track_name: string;
+  description: string;
+  estimated_minutes: number;
+  access_tier: "tranche_1" | "subscription";
+  tag: "up_next" | "recommended";
+  is_completed: boolean;
+  is_unlocked: boolean;
 }
 
-interface ModuleData {
-  id: number;
+interface TodayData {
+  featured: FeaturedModule[];
+  progress: {
+    completed: number;
+    unlocked: number;
+    message: string;
+    tracker_day: number | null;
+  };
+}
+
+interface BrowseModule extends FeaturedModule {
+  is_sector_relevant?: boolean;
+}
+
+interface TrackData {
+  track_id: string;
+  name: string;
+  description: string;
+  modules: BrowseModule[];
+  completed_count: number;
+  total_count: number;
+}
+
+interface BrowseData {
+  tracks: Record<string, TrackData>;
+  completed_module_ids: number[];
+  unlocked_module_ids: number[];
+}
+
+interface ArticleData {
+  module_id: number;
   title: string;
-  lessonsTotal: number;
-  lessonsCompleted: number;
-  locked: boolean;
-  lessons: { title: string; outcomes: string[]; locked: boolean }[];
+  track: string;
+  track_name: string;
+  description: string;
+  estimated_minutes: number;
+  key_questions: string[];
+  what_you_get: string;
+  is_unlocked: boolean;
+  is_completed: boolean;
+  completion: {
+    output: {
+      key_insights?: string[];
+      next_steps?: string[];
+      resources_or_prompts?: string[];
+    };
+    completed_at: string;
+    module_answers: object;
+  } | null;
 }
-
-/* ── Mock data ── */
-const STARTER_CARDS: LibraryItem[] = [
-  { id: "starter-1", title: "What to say when people ask what you're doing", description: "A simple framework for explaining your move without overselling or underselling.", track: "First steps", body: "[Placeholder article content] This module helps you frame your career move in everyday conversation..." },
-  { id: "starter-2", title: "The first three conversations that matter", description: "Who to talk to first, what to ask, and what to listen for.", track: "First steps", body: "[Placeholder article content] Your first conversations shape your direction more than you think..." },
-  { id: "starter-3", title: "Setting your opening rate without second-guessing", description: "A method for picking a number you can defend.", track: "Pricing", body: "[Placeholder article content] Most people undercharge at first. Here's how to avoid that..." },
-];
-
-const BROWSE_ITEMS: LibraryItem[] = [
-  { id: "browse-1", title: "Managing scope creep on your first project", description: "How to keep boundaries clear when you're eager to impress.", track: "Delivery" },
-  { id: "browse-2", title: "Building a pipeline before you need one", description: "Start planting seeds in week one, not week twelve.", track: "Growth" },
-  { id: "browse-3", title: "When to say no to a client", description: "The signals that a project isn't right for you.", track: "Strategy" },
-  { id: "browse-4", title: "Writing proposals that convert", description: "Structure, tone, and the one thing most proposals miss.", track: "Sales" },
-  { id: "browse-5", title: "Cash flow in your first year", description: "A realistic model for managing irregular income.", track: "Finance" },
-  { id: "browse-6", title: "Positioning yourself against agencies", description: "Why being solo is an advantage, not a weakness.", track: "Strategy" },
-];
-
-const MOCK_MODULES: ModuleData[] = Array.from({ length: 9 }, (_, i) => ({
-  id: i + 1,
-  title: [
-    "Understanding your starting position",
-    "How to talk about what you're doing",
-    "Presenting yourself in the market",
-    "Finding your first client conversation",
-    "Writing a proposal that converts",
-    "Setting your day rate",
-    "Managing scope and delivery",
-    "Building a sustainable pipeline",
-    "Growing beyond solo",
-  ][i],
-  lessonsTotal: 4,
-  lessonsCompleted: i === 0 ? 4 : i === 1 ? 2 : 0,
-  locked: i > 2, // Lessons 1-3 unlocked for buyers
-  lessons: Array.from({ length: 4 }, (_, j) => ({
-    title: `Lesson ${j + 1}`,
-    outcomes: ["[Placeholder learning outcome 1]", "[Placeholder learning outcome 2]"],
-    locked: i > 2 && j > 0, // Lesson 1 always readable
-  })),
-}));
-
-const TRACKS = ["All", "First steps", "Pricing", "Delivery", "Growth", "Strategy", "Sales", "Finance"];
 
 /* ── Component ── */
 export default function Library() {
@@ -83,39 +89,77 @@ export default function Library() {
   const activeTab = searchParams.get("tab") || "today";
   const setTab = (tab: string) => setSearchParams({ tab }, { replace: true });
 
-  const [loading, setLoading] = useState(true);
+  const [todayData, setTodayData] = useState<TodayData | null>(null);
+  const [browseData, setBrowseData] = useState<BrowseData | null>(null);
+  const [articleData, setArticleData] = useState<ArticleData | null>(null);
+
+  const [todayLoading, setTodayLoading] = useState(false);
+  const [browseLoading, setBrowseLoading] = useState(false);
+  const [articleLoading, setArticleLoading] = useState(false);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [activeArticle, setActiveArticle] = useState<LibraryItem | null>(null);
+  const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
-  const [activeModuleId, setActiveModuleId] = useState<number | null>(null);
-  const [activeLesson, setActiveLesson] = useState(0);
 
-  const isSubscriber = false; // Mock: buyer state
-  const isDay31Plus = false; // Mock
+  const isSubscriber = false; // Will be derived from user state later
+  const isDay31Plus = false;
 
+  // ── Today tab data ──
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
+    if (activeTab === "today" && !todayData && !todayLoading) {
+      setTodayLoading(true);
+      supabase.functions.invoke("get-library-content", {
+        body: { call_type: "today" },
+      }).then(({ data, error }) => {
+        if (!error && data) setTodayData(data as TodayData);
+        setTodayLoading(false);
+      });
+    }
+  }, [activeTab, todayData, todayLoading]);
 
-  const openArticle = useCallback((item: LibraryItem) => {
-    setActiveArticle(item);
+  // ── Browse tab data ──
+  useEffect(() => {
+    if (activeTab === "browse" && !browseData && !browseLoading) {
+      setBrowseLoading(true);
+      supabase.functions.invoke("get-library-content", {
+        body: { call_type: "browse" },
+      }).then(({ data, error }) => {
+        if (!error && data) setBrowseData(data as BrowseData);
+        setBrowseLoading(false);
+      });
+    }
+  }, [activeTab, browseData, browseLoading]);
+
+  // ── Open article drawer ──
+  const openArticle = useCallback((moduleId: number, isUnlocked: boolean) => {
+    if (!isUnlocked) {
+      navigateAuthed(navigate, "/subscribe");
+      return;
+    }
+    setSelectedModuleId(moduleId);
+    setArticleData(null);
+    setArticleLoading(true);
     setDrawerOpen(true);
-  }, []);
 
-  const selectModule = useCallback((id: number) => {
-    setActiveModuleId(id);
-    setActiveLesson(0);
-    setTab("modules");
-  }, []);
+    supabase.functions.invoke("get-library-content", {
+      body: { call_type: "article", module_id: moduleId },
+    }).then(({ data, error }) => {
+      if (!error && data) setArticleData(data as ArticleData);
+      setArticleLoading(false);
+    });
+  }, [navigate]);
 
   const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
 
-  const filteredBrowse = activeFilter === "All"
-    ? BROWSE_ITEMS
-    : BROWSE_ITEMS.filter((i) => i.track === activeFilter);
+  // ── Derive browse track list for filter chips ──
+  const trackKeys = browseData ? Object.keys(browseData.tracks) : [];
+  const trackFilters = ["All", ...trackKeys];
 
-  const activeModule = activeModuleId ? MOCK_MODULES.find((m) => m.id === activeModuleId) : null;
+  const filteredBrowseModules: BrowseModule[] = browseData
+    ? activeFilter === "All"
+      ? Object.values(browseData.tracks).flatMap((t) => t.modules)
+      : browseData.tracks[activeFilter]?.modules || []
+    : [];
 
   const tabs = [
     { id: "today", label: "Today" },
@@ -151,7 +195,7 @@ export default function Library() {
                 key={t.id}
                 role="tab"
                 aria-selected={activeTab === t.id}
-                onClick={() => { setTab(t.id); setActiveModuleId(null); }}
+                onClick={() => { setTab(t.id); }}
                 className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                   activeTab === t.id
                     ? "bg-[hsl(var(--surface-panel))] text-foreground shadow-sm"
@@ -165,37 +209,52 @@ export default function Library() {
 
           {/* Tab content */}
           <div className="mt-8">
-            {loading ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <Skeleton key={i} className="h-24 rounded-lg" />
-                ))}
-              </div>
-            ) : activeTab === "today" ? (
-              <TodayTab items={STARTER_CARDS} onOpenArticle={openArticle} />
+            {activeTab === "today" ? (
+              todayLoading ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="h-24 rounded-lg" />
+                  ))}
+                </div>
+              ) : todayData ? (
+                <TodayTab data={todayData} onOpenArticle={openArticle} onSubscribe={handleSubscribe} />
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <Skeleton key={i} className="h-24 rounded-lg" />
+                  ))}
+                </div>
+              )
             ) : activeTab === "browse" ? (
-              <BrowseTab
-                items={filteredBrowse}
-                allItems={BROWSE_ITEMS}
-                filter={activeFilter}
-                onFilterChange={setActiveFilter}
-                onOpenArticle={openArticle}
-              />
-            ) : activeModule ? (
-              <ModuleView
-                module={activeModule}
-                activeLesson={activeLesson}
-                onSelectLesson={setActiveLesson}
-                onBack={() => setActiveModuleId(null)}
-                isSubscriber={isSubscriber}
-                onSubscribe={handleSubscribe}
-              />
+              browseLoading ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-24 rounded-lg" />
+                  ))}
+                </div>
+              ) : browseData ? (
+                <BrowseTab
+                  tracks={browseData.tracks}
+                  completedIds={browseData.completed_module_ids}
+                  filter={activeFilter}
+                  filterOptions={trackFilters}
+                  onFilterChange={setActiveFilter}
+                  onOpenArticle={openArticle}
+                  onSubscribe={handleSubscribe}
+                />
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton key={i} className="h-24 rounded-lg" />
+                  ))}
+                </div>
+              )
             ) : (
-              <ModulesTab
-                modules={MOCK_MODULES}
-                onSelectModule={selectModule}
-                isSubscriber={isSubscriber}
-              />
+              <ModulesTab onSelectModule={(id) => {
+                setTab("modules");
+                // Navigate to module detail via existing routing
+                navigate(`/library/modules/${id}`);
+              }} />
             )}
           </div>
         </div>
@@ -204,14 +263,26 @@ export default function Library() {
       {/* Reading drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent side="right" className="w-full sm:max-w-[70vw] overflow-y-auto p-0">
-          {activeArticle && (
-            <ReadingDrawer
-              item={activeArticle}
+          {articleLoading ? (
+            <div className="p-8 space-y-4">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-32 w-full mt-6" />
+            </div>
+          ) : articleData ? (
+            <ArticleDrawer
+              data={articleData}
               onClose={() => setDrawerOpen(false)}
-              relatedItems={BROWSE_ITEMS.filter((b) => b.id !== activeArticle.id).slice(0, 3)}
-              onOpenRelated={openArticle}
+              onSubscribe={handleSubscribe}
+              onStartModule={() => {
+                setDrawerOpen(false);
+                navigate(`/library/modules/${articleData.module_id}`);
+              }}
             />
-          )}
+          ) : null}
         </SheetContent>
       </Sheet>
     </div>
@@ -219,21 +290,72 @@ export default function Library() {
 }
 
 /* ── Today Tab ── */
-function TodayTab({ items, onOpenArticle }: { items: LibraryItem[]; onOpenArticle: (i: LibraryItem) => void }) {
+function TodayTab({
+  data, onOpenArticle, onSubscribe,
+}: {
+  data: TodayData;
+  onOpenArticle: (moduleId: number, isUnlocked: boolean) => void;
+  onSubscribe: () => void;
+}) {
+  const { featured, progress } = data;
+
   return (
     <div>
+      {/* Progress summary */}
+      <div className="mb-6 flex items-center gap-3">
+        <Progress
+          value={progress.unlocked > 0 ? (progress.completed / progress.unlocked) * 100 : 0}
+          className="h-1.5 flex-1"
+        />
+        <span className="shrink-0 text-xs text-muted-foreground">{progress.message}</span>
+      </div>
+
       <p className="text-sm text-muted-foreground mb-6">
-        Start here — three pieces for your first few days.
+        Chosen for where you are right now.
       </p>
+
       <div className="grid gap-4 sm:grid-cols-2">
-        {items.map((item) => (
-          <LibraryCard
-            key={item.id}
-            title={item.title}
-            description={item.description}
-            track={item.track}
-            onClick={() => onOpenArticle(item)}
-          />
+        {featured.map((item) => (
+          <button
+            key={item.module_id}
+            onClick={() => onOpenArticle(item.module_id, item.is_unlocked)}
+            className="w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-5 text-left transition-colors hover:border-primary/30"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--surface-inset))]">
+                {!item.is_unlocked ? (
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                ) : item.is_completed ? (
+                  <Check className="h-4 w-4 text-primary" />
+                ) : (
+                  <BookOpen className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">
+                    {item.track_name}
+                  </span>
+                  {item.tag === "up_next" && (
+                    <span className="text-[9px] font-medium uppercase tracking-wider text-accent-foreground bg-accent/20 px-1.5 py-0.5 rounded">
+                      Up next
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-sm font-semibold text-foreground leading-snug">{item.title}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">
+                  {item.description}
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <Clock className="h-3 w-3 text-muted-foreground/60" />
+                  <span className="text-[10px] text-muted-foreground/60">{item.estimated_minutes} min</span>
+                </div>
+              </div>
+            </div>
+            {!item.is_unlocked && (
+              <p className="mt-3 text-[10px] font-medium text-muted-foreground">Subscribe to unlock</p>
+            )}
+          </button>
         ))}
       </div>
     </div>
@@ -242,34 +364,46 @@ function TodayTab({ items, onOpenArticle }: { items: LibraryItem[]; onOpenArticl
 
 /* ── Browse Tab ── */
 function BrowseTab({
-  items, allItems, filter, onFilterChange, onOpenArticle,
+  tracks, completedIds, filter, filterOptions, onFilterChange, onOpenArticle, onSubscribe,
 }: {
-  items: LibraryItem[];
-  allItems: LibraryItem[];
+  tracks: Record<string, TrackData>;
+  completedIds: number[];
   filter: string;
+  filterOptions: string[];
   onFilterChange: (f: string) => void;
-  onOpenArticle: (i: LibraryItem) => void;
+  onOpenArticle: (moduleId: number, isUnlocked: boolean) => void;
+  onSubscribe: () => void;
 }) {
+  const completedSet = new Set(completedIds);
+
+  // Get display data — either all tracks or single filtered track
+  const displayTracks = filter === "All"
+    ? Object.values(tracks)
+    : tracks[filter] ? [tracks[filter]] : [];
+
   return (
     <div>
       {/* Filter chips */}
       <div className="flex flex-wrap gap-2 mb-6">
-        {TRACKS.map((t) => (
-          <button
-            key={t}
-            onClick={() => onFilterChange(t)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              filter === t
-                ? "bg-primary text-primary-foreground"
-                : "bg-[hsl(var(--surface-inset))] text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t}
-          </button>
-        ))}
+        {filterOptions.map((t) => {
+          const label = t === "All" ? "All" : tracks[t]?.name || t;
+          return (
+            <button
+              key={t}
+              onClick={() => onFilterChange(t)}
+              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                filter === t
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-[hsl(var(--surface-inset))] text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
-      {items.length === 0 ? (
+      {displayTracks.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-sm text-muted-foreground mb-4">No articles match that filter.</p>
           <Button variant="outline" size="sm" onClick={() => onFilterChange("All")}>
@@ -277,15 +411,60 @@ function BrowseTab({
           </Button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {items.map((item) => (
-            <LibraryCard
-              key={item.id}
-              title={item.title}
-              description={item.description}
-              track={item.track}
-              onClick={() => onOpenArticle(item)}
-            />
+        <div className="space-y-10">
+          {displayTracks.map((track) => (
+            <section key={track.track_id}>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-semibold text-foreground">{track.name}</h2>
+                <span className="text-[10px] text-muted-foreground">
+                  {track.completed_count}/{track.total_count} done
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mb-4">{track.description}</p>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {/* Sort sector-relevant modules first for Track E */}
+                {[...track.modules]
+                  .sort((a, b) => (b.is_sector_relevant ? 1 : 0) - (a.is_sector_relevant ? 1 : 0))
+                  .map((mod) => (
+                    <button
+                      key={mod.module_id}
+                      onClick={() => onOpenArticle(mod.module_id, mod.is_unlocked)}
+                      className="w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-5 text-left transition-colors hover:border-primary/30"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--surface-inset))]">
+                          {!mod.is_unlocked ? (
+                            <Lock className="h-4 w-4 text-muted-foreground" />
+                          ) : completedSet.has(mod.module_id) ? (
+                            <Check className="h-4 w-4 text-primary" />
+                          ) : (
+                            <BookOpen className="h-4 w-4 text-primary" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          {mod.is_sector_relevant && (
+                            <span className="text-[9px] font-medium uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded mb-1 inline-block">
+                              Your sector
+                            </span>
+                          )}
+                          <h3 className="text-sm font-semibold text-foreground leading-snug">{mod.title}</h3>
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">
+                            {mod.description}
+                          </p>
+                          <div className="mt-2 flex items-center gap-2">
+                            <Clock className="h-3 w-3 text-muted-foreground/60" />
+                            <span className="text-[10px] text-muted-foreground/60">{mod.estimated_minutes} min</span>
+                          </div>
+                        </div>
+                      </div>
+                      {!mod.is_unlocked && (
+                        <p className="mt-3 text-[10px] font-medium text-muted-foreground">Subscribe to unlock</p>
+                      )}
+                    </button>
+                  ))}
+              </div>
+            </section>
           ))}
         </div>
       )}
@@ -293,150 +472,26 @@ function BrowseTab({
   );
 }
 
-/* ── Modules Tab ── */
-function ModulesTab({
-  modules, onSelectModule, isSubscriber,
-}: {
-  modules: ModuleData[];
-  onSelectModule: (id: number) => void;
-  isSubscriber: boolean;
-}) {
+/* ── Modules Tab (unchanged — still uses existing routing) ── */
+function ModulesTab({ onSelectModule }: { onSelectModule: (id: number) => void }) {
   return (
-    <div className="space-y-3">
-      {modules.map((m) => {
-        const pct = m.lessonsTotal > 0 ? (m.lessonsCompleted / m.lessonsTotal) * 100 : 0;
-        const done = m.lessonsCompleted === m.lessonsTotal && m.lessonsTotal > 0;
-
-        return (
-          <button
-            key={m.id}
-            onClick={() => onSelectModule(m.id)}
-            className="flex w-full items-center gap-4 rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-4 text-left transition-colors hover:border-primary/30"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[hsl(var(--surface-inset))]">
-              {m.locked && !isSubscriber ? (
-                <Lock className="h-4 w-4 text-muted-foreground" />
-              ) : (
-                <BookOpen className="h-4 w-4 text-primary" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-foreground">{m.title}</h3>
-              <div className="mt-2 flex items-center gap-3">
-                <Progress value={pct} className="h-1.5 flex-1" />
-                <span className="shrink-0 text-[11px] text-muted-foreground">
-                  {m.lessonsCompleted}/{m.lessonsTotal}
-                </span>
-              </div>
-            </div>
-            <div className="shrink-0">
-              {done ? (
-                <span className="text-xs font-medium text-primary">View</span>
-              ) : m.locked && !isSubscriber ? (
-                <span className="text-xs text-muted-foreground">Locked</span>
-              ) : m.lessonsCompleted > 0 ? (
-                <span className="text-xs font-medium text-primary">Continue</span>
-              ) : (
-                <span className="text-xs font-medium text-primary">Start</span>
-              )}
-              <ChevronRight className="mt-0.5 h-4 w-4 text-muted-foreground" />
-            </div>
-          </button>
-        );
-      })}
+    <div className="py-8 text-center">
+      <BookOpen className="mx-auto h-8 w-8 text-muted-foreground/30 mb-4" />
+      <p className="text-sm text-muted-foreground">
+        Modules are accessed through the Today and Browse tabs. Select a module to begin.
+      </p>
     </div>
   );
 }
 
-/* ── Module View ── */
-function ModuleView({
-  module, activeLesson, onSelectLesson, onBack, isSubscriber, onSubscribe,
+/* ── Article Drawer ── */
+function ArticleDrawer({
+  data, onClose, onSubscribe, onStartModule,
 }: {
-  module: ModuleData;
-  activeLesson: number;
-  onSelectLesson: (i: number) => void;
-  onBack: () => void;
-  isSubscriber: boolean;
-  onSubscribe: () => void;
-}) {
-  const lesson = module.lessons[activeLesson];
-  const isLocked = lesson?.locked && !isSubscriber;
-
-  return (
-    <div>
-      <button
-        onClick={onBack}
-        className="mb-6 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        ← All modules
-      </button>
-
-      <h2 className="font-display text-xl font-semibold text-foreground">{module.title}</h2>
-
-      <div className="mt-6 flex flex-col gap-6 lg:flex-row">
-        {/* Lesson nav */}
-        <nav className="flex lg:flex-col gap-2 overflow-x-auto lg:w-48 shrink-0">
-          {module.lessons.map((l, i) => (
-            <button
-              key={i}
-              onClick={() => onSelectLesson(i)}
-              className={`whitespace-nowrap rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                activeLesson === i
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {l.locked && !isSubscriber && <Lock className="mr-1.5 inline h-3 w-3" />}
-              {l.title}
-            </button>
-          ))}
-        </nav>
-
-        {/* Lesson content */}
-        <div className="flex-1">
-          {isLocked ? (
-            <GlassCard className="p-8 text-center">
-              <h3 className="text-sm font-semibold text-foreground mb-2">{lesson.title}</h3>
-              <ul className="mb-6 space-y-1">
-                {lesson.outcomes.map((o, i) => (
-                  <li key={i} className="text-xs text-muted-foreground">{o}</li>
-                ))}
-              </ul>
-              <div className="rounded-lg border border-border bg-[hsl(var(--surface-inset))] p-6">
-                <Lock className="mx-auto h-5 w-5 text-muted-foreground mb-3" />
-                <p className="text-sm font-medium text-foreground mb-1">Subscribe to unlock</p>
-                <p className="text-xs text-muted-foreground mb-4">This lesson is available with an active subscription.</p>
-                <Button onClick={onSubscribe} size="sm">Subscribe to unlock</Button>
-              </div>
-            </GlassCard>
-          ) : (
-            <GlassCard className="p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-4">{lesson.title}</h3>
-              <div className="text-sm leading-relaxed text-muted-foreground space-y-3">
-                <p>[Placeholder lesson content] This is where the personalised module content will appear.</p>
-                <p>Learning outcomes for this lesson:</p>
-                <ul className="list-disc pl-5 space-y-1">
-                  {lesson.outcomes.map((o, i) => (
-                    <li key={i}>{o}</li>
-                  ))}
-                </ul>
-              </div>
-            </GlassCard>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Reading Drawer ── */
-function ReadingDrawer({
-  item, onClose, relatedItems, onOpenRelated,
-}: {
-  item: LibraryItem;
+  data: ArticleData;
   onClose: () => void;
-  relatedItems: LibraryItem[];
-  onOpenRelated: (i: LibraryItem) => void;
+  onSubscribe: () => void;
+  onStartModule: () => void;
 }) {
   return (
     <div className="flex flex-col min-h-full">
@@ -444,9 +499,9 @@ function ReadingDrawer({
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-[hsl(var(--surface-panel))] px-6 py-4">
         <div>
           <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">
-            {item.track}
+            {data.track_name}
           </span>
-          <h2 className="text-lg font-semibold text-foreground">{item.title}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{data.title}</h2>
         </div>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
           <X className="h-5 w-5" />
@@ -454,30 +509,124 @@ function ReadingDrawer({
       </div>
 
       {/* Body */}
-      <div className="flex-1 px-6 py-8">
-        <div className="text-sm leading-[1.8] text-muted-foreground space-y-4">
-          <p>{item.body || "[Placeholder content] This article will contain personalised guidance based on your report and current progress."}</p>
-          <p>[Placeholder] The full article content would appear here, covering the topic in depth with specific recommendations tailored to your situation.</p>
+      <div className="flex-1 px-6 py-8 space-y-6">
+        {/* Meta */}
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <Clock className="h-3 w-3" /> {data.estimated_minutes} min
+          </span>
+          {data.is_completed && (
+            <span className="flex items-center gap-1 text-primary">
+              <Check className="h-3 w-3" /> Completed
+            </span>
+          )}
         </div>
-      </div>
 
-      {/* Related */}
-      {relatedItems.length > 0 && (
-        <div className="border-t border-border px-6 py-6">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Related</h3>
-          <div className="space-y-3">
-            {relatedItems.map((r) => (
-              <LibraryCard
-                key={r.id}
-                title={r.title}
-                description={r.description}
-                track={r.track}
-                onClick={() => onOpenRelated(r)}
-              />
-            ))}
-          </div>
+        {/* Description */}
+        <div className="text-sm leading-[1.8] text-muted-foreground">
+          <p>{data.description}</p>
         </div>
-      )}
+
+        {/* Key questions */}
+        {data.key_questions && data.key_questions.length > 0 && (
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Key questions
+            </h3>
+            <ul className="space-y-2">
+              {data.key_questions.map((q, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/50" />
+                  {q}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* What you get */}
+        {data.what_you_get && (
+          <GlassCard className="p-5">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
+              What you get
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{data.what_you_get}</p>
+          </GlassCard>
+        )}
+
+        {/* Completed state — show output */}
+        {data.is_completed && data.completion?.output && (
+          <div className="space-y-5">
+            {data.completion.output.key_insights && data.completion.output.key_insights.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                  Key insights
+                </h3>
+                <ul className="space-y-2">
+                  {data.completion.output.key_insights.map((insight, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      {insight}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {data.completion.output.next_steps && data.completion.output.next_steps.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                  Next steps
+                </h3>
+                <ul className="space-y-2">
+                  {data.completion.output.next_steps.map((step, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                      <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/60" />
+                      {step}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {data.completion.output.resources_or_prompts && data.completion.output.resources_or_prompts.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                  Resources
+                </h3>
+                <ul className="space-y-2">
+                  {data.completion.output.resources_or_prompts.map((r, i) => (
+                    <li key={i} className="text-sm text-muted-foreground">{r}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <Button variant="outline" size="sm" onClick={onStartModule}>
+              Redo this module
+            </Button>
+          </div>
+        )}
+
+        {/* Not completed + unlocked → CTA to start */}
+        {!data.is_completed && data.is_unlocked && (
+          <Button onClick={onStartModule} className="w-full">
+            Get my personalised guidance
+          </Button>
+        )}
+
+        {/* Not unlocked → subscribe */}
+        {!data.is_unlocked && (
+          <div className="rounded-lg border border-border bg-[hsl(var(--surface-inset))] p-6 text-center">
+            <Lock className="mx-auto h-5 w-5 text-muted-foreground mb-3" />
+            <p className="text-sm font-medium text-foreground mb-1">Subscribe to unlock</p>
+            <p className="text-xs text-muted-foreground mb-4">
+              This module is available with an active subscription.
+            </p>
+            <Button onClick={onSubscribe} size="sm">Subscribe to unlock</Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
