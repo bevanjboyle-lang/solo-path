@@ -29,6 +29,32 @@ export function continueFunnel(navigate: (path: string) => void, destination: st
 }
 
 /**
+ * Sign in with magic link (OTP). Anti-enumeration: always resolves
+ * successfully regardless of whether the email exists.
+ */
+export async function signIn(
+  email: string,
+  redirectTo?: string
+): Promise<{ error?: string; rateLimited?: boolean }> {
+  const redirect = redirectTo
+    ? `${window.location.origin}${redirectTo}`
+    : `${window.location.origin}/plan`;
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: redirect },
+  });
+
+  if (error) {
+    if (error.status === 429 || error.message?.toLowerCase().includes("rate")) {
+      return { rateLimited: true };
+    }
+    return { error: error.message };
+  }
+  return {};
+}
+
+/**
  * Get or create client_session_id.
  */
 export function getClientSessionId(): string {

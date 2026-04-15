@@ -1,169 +1,205 @@
-import { useState, useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect, useRef } from "react";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import MintTopBar from "@/components/MintTopBar";
+import { signIn, startTest } from "@/lib/handlers";
+import { Loader2 } from "lucide-react";
+import TopBar from "@/components/TopBar";
+import Banner from "@/components/Banner";
 
-type Mode = "signin" | "signup";
+type ViewState = "form" | "sent";
 
 export default function Auth() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("signin");
+  const [params] = useSearchParams();
+  const redirectTarget = params.get("redirect") || "/plan";
+  const expired = params.get("expired") === "true";
+
+  const [view, setView] = useState<ViewState>("form");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [signupSuccess, setSignupSuccess] = useState(false);
+  const [bannerState, setBannerState] = useState<"rate_limited" | "server_error" | "expired" | null>(
+    expired ? "expired" : null
+  );
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/questionnaire", { replace: true });
-      }
-    };
-    checkSession();
-  }, [navigate]);
+  const successH1Ref = useRef<HTMLHeadingElement>(null);
 
+  // Redirect already-authed users before form paints
+  if (!loading && user) {
+    return <Navigate to={redirectTarget} replace />;
+  }
   if (loading) return null;
-  if (user) return <Navigate to="/questionnaire" replace />;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-    if (mode === "signup" && password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-    if (mode === "signup" && password.length < 8) {
-      setError("Password must be at least 8 characters.");
-      return;
-    }
-
+  const handleSend = async () => {
+    if (!isValidEmail || submitting) return;
+    setBannerState(null);
     setSubmitting(true);
 
-    if (mode === "signin") {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      setSubmitting(false);
-      if (error) { setError(error.message); return; }
-      if (data.session) { navigate("/questionnaire", { replace: true }); }
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: window.location.origin },
-      });
-      setSubmitting(false);
-      if (error) { setError(error.message); return; }
-      setSignupSuccess(true);
+    const result = await signIn(email.trim(), redirectTarget);
+    setSubmitting(false);
+
+    if (result.rateLimited) {
+      setBannerState("rate_limited");
+      return;
     }
+    if (result.error) {
+      setBannerState("server_error");
+      return;
+    }
+
+    // Anti-enumeration: always show success regardless of email existence
+    setView("sent");
+    setTimeout(() => successH1Ref.current?.focus(), 100);
   };
 
-  const switchMode = () => {
-    setMode(mode === "signin" ? "signup" : "signin");
-    setError("");
-    setSignupSuccess(false);
+  const handleReset = () => {
+    setEmail("");
+    setView("form");
+    setBannerState(null);
   };
 
-  const isSignin = mode === "signin";
+  const handleResend = async () => {
+    setSubmitting(true);
+    const result = await signIn(email.trim(), redirectTarget);
+    setSubmitting(false);
+    if (result.rateLimited) setBannerState("rate_limited");
+    else if (result.error) setBannerState("server_error");
+  };
 
   return (
-    <div className="flex min-h-screen flex-col text-foreground">
-      <MintTopBar />
-      <nav className="fixed left-0 right-0 top-1 z-50 border-b bg-surface-panel/95 backdrop-blur-lg" style={{ borderColor: "#D1CEC7" }}>
-        <div className="mx-auto flex h-14 max-w-5xl items-center px-6">
-          <a href="/" className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </a>
-        </div>
-      </nav>
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <TopBar minimal />
 
-      <div className="flex flex-1 items-center justify-center px-6 pt-20">
-        <motion.div
-          className="w-full max-w-sm rounded-2xl bg-surface-panel p-8 shadow-panel"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <h1 className="font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-            {isSignin ? "Sign in to continue" : "Create your account"}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {isSignin
-              ? "Enter the email and password linked to your account."
-              : "Sign up with your email to get started."}
-          </p>
+      {/* Banners */}
+      <div aria-live="polite">
+        {bannerState === "rate_limited" && (
+          <Banner variant="warning">
+            You've requested several links. Use the most recent one — we'll let you request another in a few minutes.
+          </Banner>
+        )}
+        {bannerState === "server_error" && (
+          <Banner variant="error">
+            We couldn't send the link right now. Please try again in a moment.
+          </Banner>
+        )}
+        {bannerState === "expired" && (
+          <Banner variant="info">
+            That link has expired. Enter your email to get a fresh one.
+          </Banner>
+        )}
+      </div>
 
-          {signupSuccess ? (
-            <div className="mt-8 rounded-md border p-4 text-center" style={{ borderColor: "#D1CEC7" }}>
-              <p className="text-sm font-medium text-foreground">Check your email</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                We've sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then sign in.
-              </p>
-              <button
-                onClick={switchMode}
-                className="mt-4 text-sm font-medium text-primary hover:underline"
-              >
-                Back to sign in
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-              <div>
-                <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-muted-foreground">Email address</label>
-                <input
-                  id="email" type="email" required value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full rounded-md border bg-surface-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  style={{ borderColor: "#D1CEC7" }}
-                />
-              </div>
-              <div>
-                <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-muted-foreground">Password</label>
-                <input
-                  id="password" type="password" required value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={isSignin ? "Enter your password" : "At least 8 characters"}
-                  className="w-full rounded-md border bg-surface-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                  style={{ borderColor: "#D1CEC7" }}
-                />
-              </div>
-              {!isSignin && (
-                <div>
-                  <label htmlFor="confirm-password" className="mb-1.5 block text-xs font-medium text-muted-foreground">Confirm password</label>
-                  <input
-                    id="confirm-password" type="password" required value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Re-enter your password"
-                    className="w-full rounded-md border bg-surface-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    style={{ borderColor: "#D1CEC7" }}
-                  />
-                </div>
+      <div className="flex flex-1 items-center justify-center px-6">
+        <div className="w-full max-w-[420px]">
+          <motion.div
+            className="rounded-2xl border border-border bg-[hsl(var(--surface-panel))] p-8 shadow-panel"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <AnimatePresence mode="wait">
+              {view === "form" ? (
+                <motion.div
+                  key="form"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <h1 className="font-display text-2xl font-semibold tracking-tight">
+                    Sign in
+                  </h1>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    We'll email you a one-time link. No password required.
+                  </p>
+
+                  <form
+                    onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                    className="mt-8 space-y-4"
+                  >
+                    <div>
+                      <label htmlFor="auth-email" className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                        Email address
+                      </label>
+                      <input
+                        id="auth-email"
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full rounded-md border border-border bg-[hsl(var(--surface-card))] px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                        autoComplete="email"
+                        autoFocus
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={!isValidEmail || submitting}
+                      className="flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 hover:-translate-y-px disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send magic link"}
+                    </button>
+                  </form>
+
+                  <p className="mt-4 text-center text-[11px] text-muted-foreground">
+                    We'll email you a one-time link. No password, no sign-up.
+                  </p>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="sent"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <h1
+                    ref={successH1Ref}
+                    tabIndex={-1}
+                    className="font-display text-2xl font-semibold tracking-tight outline-none"
+                  >
+                    Check your email.
+                  </h1>
+                  <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                    We've sent a link to <strong className="text-foreground">{email}</strong>. Click it to sign in. The link expires in 15 minutes.
+                  </p>
+
+                  <div className="mt-6 flex flex-col gap-2">
+                    <button
+                      onClick={handleResend}
+                      disabled={submitting}
+                      className="text-sm font-medium text-primary hover:underline disabled:opacity-50"
+                    >
+                      {submitting ? "Sending…" : "Send again"}
+                    </button>
+                    <button
+                      onClick={handleReset}
+                      className="text-sm font-medium text-muted-foreground hover:text-foreground"
+                    >
+                      Use a different email
+                    </button>
+                  </div>
+                </motion.div>
               )}
-              {error && <p className="text-sm text-destructive">{error}</p>}
-              <button
-                type="submit" disabled={submitting || !email || !password || (!isSignin && !confirmPassword)}
-                className="flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:bg-[#26B89D] hover:-translate-y-px hover:shadow-card-hover disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : (isSignin ? "Sign in" : "Create account")}
-              </button>
+            </AnimatePresence>
+          </motion.div>
 
-              <p className="text-center text-xs text-muted-foreground">
-                {isSignin ? "Don't have an account?" : "Already have an account?"}{" "}
-                <button type="button" onClick={switchMode} className="font-medium text-primary hover:underline">
-                  {isSignin ? "Sign up" : "Sign in"}
-                </button>
-              </p>
-            </form>
-          )}
-        </motion.div>
+          {/* Safety net link — outside the card */}
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            Haven't taken the test yet?{" "}
+            <button
+              onClick={() => startTest(navigate)}
+              className="font-medium text-primary hover:underline"
+            >
+              Start here →
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   );
