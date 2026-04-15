@@ -153,16 +153,61 @@ export default function Library() {
     setArticleData(null);
     setArticleLoading(true);
     setDrawerOpen(true);
+    setDrawerView("detail");
+    setModuleAnswers({});
+    setModuleOutput(null);
 
     supabase.functions.invoke("get-library-content", {
       body: { call_type: "article", module_id: moduleId },
     }).then(({ data, error }) => {
-      if (!error && data) setArticleData(data as ArticleData);
+      if (!error && data) {
+        const article = (data as any).module || data;
+        setArticleData(article as ArticleData);
+      }
       setArticleLoading(false);
     });
   }, [navigate]);
 
   const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
+
+  // ── Start question form ──
+  const startQuestions = useCallback(() => {
+    if (!articleData) return;
+    const initial: Record<string, string> = {};
+    articleData.key_questions.forEach((_, i) => {
+      initial[`question_${i + 1}`] = "";
+    });
+    setModuleAnswers(initial);
+    setDrawerView("questions");
+  }, [articleData]);
+
+  // ── Submit module answers ──
+  const submitModuleAnswers = useCallback(async () => {
+    if (!articleData) return;
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-guidance", {
+        body: { module_id: articleData.module_id, module_answers: moduleAnswers },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const output = data?.output || data;
+      setModuleOutput(output as ModuleOutput);
+      setDrawerView("output");
+    } catch (e: any) {
+      toast.error(e.message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }, [articleData, moduleAnswers]);
+
+  // ── Back to modules from drawer ──
+  const backToModules = useCallback(() => {
+    setDrawerOpen(false);
+    setDrawerView("detail");
+    setModuleOutput(null);
+    setArticleData(null);
+  }, []);
 
   // ── Derive browse track list for filter chips ──
   const trackKeys = browseData ? Object.keys(browseData.tracks) : [];
