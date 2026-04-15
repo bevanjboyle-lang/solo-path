@@ -108,20 +108,14 @@ export default function Results() {
       const urlParams = new URLSearchParams(window.location.search);
       const stripeSessionId = urlParams.get('session_id') || localStorage.getItem('stripe_session_id') || '';
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/check-payment`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(stripeSessionId ? { session_id: stripeSessionId } : {}),
-        }
-      );
-
-      const result = await response.json();
-      return result.paid === true || result.is_complete === true;
+      const { data: result, error } = await supabase.functions.invoke('check-payment', {
+        body: stripeSessionId ? { session_id: stripeSessionId } : {},
+      });
+      if (error) {
+        console.error('check-payment error:', error);
+        return false;
+      }
+      return result?.paid === true || result?.is_complete === true;
     } catch (err) {
       console.error('check-payment error:', err);
       return false;
@@ -174,23 +168,12 @@ export default function Results() {
     setPdfLoading(true);
     setPdfError(null);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      const res = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-pdf`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-            "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          },
-          body: JSON.stringify({ report_id: reportId }),
-        }
-      );
-      if (!res.ok) throw new Error("PDF generation failed");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const { data: blob, error } = await supabase.functions.invoke('export-pdf', {
+        body: { report_id: reportId },
+        headers: { 'Accept': 'application/pdf' },
+      });
+      if (error || !blob) throw new Error("PDF generation failed");
+      const url = URL.createObjectURL(blob instanceof Blob ? blob : new Blob([blob], { type: 'application/pdf' }));
       const a = document.createElement("a");
       const today = new Date().toISOString().slice(0, 10);
       a.href = url;
