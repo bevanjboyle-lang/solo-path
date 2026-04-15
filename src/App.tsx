@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { AnimatePresence, motion } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
+import CVUpload from "./pages/CVUpload";
 import Auth from "./pages/Auth";
 import Questionnaire from "./pages/Questionnaire";
 import Processing from "./pages/Processing";
