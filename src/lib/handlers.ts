@@ -71,10 +71,14 @@ export function openPanel(
  * Open Stripe billing portal via edge function.
  */
 export async function openBillingPortal(): Promise<void> {
-  const { data, error } = await supabase.functions.invoke("customer-portal", {});
+  const { data, error } = await supabase.functions.invoke("create-billing-portal-session", {
+    body: {},
+  });
   if (error) throw error;
+  if (data?.error) throw new Error(data.error);
   const url = data?.url;
-  if (url) window.location.href = url;
+  if (url) window.open(url, "_blank");
+  else throw new Error("No billing portal URL returned");
 }
 
 /**
@@ -90,26 +94,46 @@ export async function resumeSubscription(): Promise<{ error?: string }> {
  * Confirm and delete CV data.
  */
 export async function confirmDeleteCv(): Promise<{ error?: string }> {
-  const { error } = await supabase.functions.invoke("delete-cv", {});
+  const { data, error } = await supabase.functions.invoke("delete-user-cv", {
+    body: {},
+  });
   if (error) return { error: error.message };
+  if (data?.error) return { error: data.error };
   return {};
 }
 
 /**
- * Request a data export.
+ * Request a data export — returns blob for download.
  */
-export async function requestDataExport(): Promise<{ error?: string }> {
-  const { error } = await supabase.functions.invoke("request-data-export", {});
-  if (error) return { error: error.message };
-  return {};
+export async function requestDataExport(): Promise<{ blob?: Blob; error?: string }> {
+  const session = (await supabase.auth.getSession()).data.session;
+  if (!session) return { error: "Not authenticated" };
+
+  const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-user-data`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+      "Content-Type": "application/json",
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    },
+    body: JSON.stringify({}),
+  });
+
+  if (!res.ok) return { error: `Export failed (${res.status})` };
+  const blob = await res.blob();
+  return { blob };
 }
 
 /**
  * Delete user account entirely.
  */
-export async function confirmDeleteAccount(): Promise<{ error?: string }> {
-  const { error } = await supabase.functions.invoke("delete-account", {});
+export async function confirmDeleteAccount(userId: string): Promise<{ error?: string }> {
+  const { data, error } = await supabase.functions.invoke("delete-account", {
+    body: { confirmation: "delete", user_id: userId },
+  });
   if (error) return { error: error.message };
+  if (data?.error) return { error: data.error };
   return {};
 }
 
