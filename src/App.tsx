@@ -97,7 +97,6 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <AnimatedRoutes />
-          <Footer />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
