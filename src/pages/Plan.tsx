@@ -1,0 +1,388 @@
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useNavigate, useSearchParams, useParams, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { navigateAuthed } from "@/lib/handlers";
+import TopBar from "@/components/TopBar";
+import Banner from "@/components/Banner";
+import TodayCard, { type PlanState } from "@/components/plan/TodayCard";
+import TrackerGrid from "@/components/plan/TrackerGrid";
+import CheckInPanel from "@/components/plan/CheckInPanel";
+import ReportSection from "@/components/ReportSection";
+import LibraryCard from "@/components/plan/LibraryCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import type { StrandData } from "@/components/StrandCard";
+
+// Mock data for preview (Day 0 default)
+const MOCK_NARRATIVE =
+  "You're a senior product manager with 12 years in fintech. Your experience maps cleanly to three commercial paths, with two requiring minimal ramp-up. Here's what stands out.";
+
+const MOCK_STRANDS: StrandData[] = [
+  {
+    title: "Fractional CPO for Series A fintechs",
+    pitch: "Your product leadership experience is directly applicable to early-stage companies that need strategic product direction without a full-time hire.",
+    primary_move_type: "leverage",
+    structural_warmth: "Warm — direct network match",
+  },
+  {
+    title: "Product strategy consultancy",
+    pitch: "Package your methodology into a consultancy offering targeting mid-market fintechs navigating regulatory complexity.",
+    primary_move_type: "anchor",
+    structural_warmth: "Warm — sector credibility",
+  },
+  {
+    title: "B2B SaaS for compliance workflows",
+    pitch: "The compliance pain point you identified is underserved. A focused tool could capture a niche market.",
+    primary_move_type: "moonshot",
+    structural_warmth: "Cold — requires build phase",
+  },
+  {
+    title: "Advisory board positions",
+    pitch: "Your regulatory knowledge makes you valuable to boards. Low commitment, high signal, builds network for other moves.",
+    primary_move_type: "growth",
+    structural_warmth: "Warm — reputation-based",
+  },
+  {
+    title: "Corporate training in product thinking",
+    pitch: "Banks and insurers pay well for structured product training. Your background gives you instant credibility.",
+    primary_move_type: "pivot",
+    structural_warmth: "Neutral — requires outreach",
+  },
+];
+
+const MOCK_GUIDANCE = [
+  { title: "Positioning your expertise", description: "How to articulate what you do in one sentence that lands.", track: "Foundation" },
+  { title: "First outreach templates", description: "Proven message structures for warm and cold contacts.", track: "Activation" },
+  { title: "Pricing your time", description: "How to set rates that reflect your value without pricing yourself out.", track: "Commercial" },
+];
+
+interface PlanPageProps {
+  initialSessionId?: string;
+}
+
+export default function Plan({ initialSessionId }: PlanPageProps) {
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  const [planState, setPlanState] = useState<PlanState>("loading");
+  const [dayNumber, setDayNumber] = useState(0);
+  const [weekNumber, setWeekNumber] = useState(1);
+  const [sessionId, setSessionId] = useState(initialSessionId || "");
+  const [checkinOpen, setCheckinOpen] = useState(false);
+  const [narrative, setNarrative] = useState<string | null>(MOCK_NARRATIVE);
+  const [strands, setStrands] = useState<StrandData[]>(MOCK_STRANDS);
+  const [trackerDays, setTrackerDays] = useState<{ day: number; completed: boolean; isToday: boolean }[]>([]);
+  const [hasPaid, setHasPaid] = useState<boolean | null>(null);
+  const [isSubscriber, setIsSubscriber] = useState(false);
+  const [showSubscribeWall, setShowSubscribeWall] = useState(false);
+
+  // Route guard: unauthed/unpaid → redirect to /
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      navigate("/", { replace: true });
+      return;
+    }
+
+    // Check if user has a paid report
+    supabase
+      .from("reports")
+      .select("id, status, hook_insight, core_report, answers")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data || data.status === "pending" || data.status === "generating") {
+          // No paid report — redirect
+          navigate("/", { replace: true });
+          return;
+        }
+
+        setHasPaid(true);
+        setNarrative(data.hook_insight || MOCK_NARRATIVE);
+
+        // Extract strands from core_report
+        const coreReport = data.core_report as Record<string, unknown> | null;
+        const options = (coreReport?.options as Array<Record<string, unknown>>) || [];
+        if (options.length > 0) {
+          setStrands(
+            options.map((opt) => ({
+              title: (opt.title as string) || "Untitled option",
+              pitch: (opt.one_liner as string) || (opt.pitch as string) || "",
+              primary_move_type: (opt.primary_move_type as string) || null,
+              structural_warmth: (opt.structural_warmth as string) || null,
+            }))
+          );
+        }
+
+        // Check tracker session
+        supabase
+          .from("tracker_sessions")
+          .select("id, current_day, activated_at, subscription_status, last_checkin_date")
+          .eq("user_id", user.id)
+          .eq("report_id", data.id)
+          .maybeSingle()
+          .then(({ data: session }) => {
+            if (!session) {
+              // Day 0 — no tracker yet
+              setPlanState("day0");
+              buildTrackerDays(0, []);
+              return;
+            }
+
+            setSessionId(session.id);
+            const currentDay = session.current_day || 0;
+            setDayNumber(currentDay);
+
+            const isSub = session.subscription_status === "active";
+            setIsSubscriber(isSub);
+
+            // Determine today's check-in status
+            const today = new Date().toISOString().slice(0, 10);
+            const checkedInToday = session.last_checkin_date === today;
+
+            if (currentDay === 0) {
+              setPlanState("day0");
+            } else if (isSub) {
+              setPlanState(checkedInToday ? "sub_done" : "sub_active");
+            } else if (currentDay > 30) {
+              setPlanState("day31_nosub");
+              setShowSubscribeWall(true);
+            } else {
+              setPlanState(checkedInToday ? "done_today" : "active");
+            }
+
+            // Build tracker days
+            supabase
+              .from("checkin_history")
+              .select("day_number")
+              .eq("tracker_session_id", session.id)
+              .then(({ data: checkins }) => {
+                const completedDays = new Set((checkins || []).map((c) => c.day_number));
+                buildTrackerDays(currentDay, Array.from(completedDays));
+              });
+          });
+      });
+  }, [user, authLoading, navigate]);
+
+  // /checkin/:sessionId deep-link: pre-open drawer
+  useEffect(() => {
+    if (initialSessionId && planState !== "loading" && planState !== "day0") {
+      setCheckinOpen(true);
+    }
+  }, [initialSessionId, planState]);
+
+  // Subscription return toast
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("from") === "subscribe") {
+      toast({ title: "Subscription active. Library unlocked." });
+      window.history.replaceState(null, "", "/plan");
+    }
+  }, [location.search, toast]);
+
+  function buildTrackerDays(currentDay: number, completedDays: number[]) {
+    const total = 30;
+    const days = Array.from({ length: total }, (_, i) => ({
+      day: i + 1,
+      completed: completedDays.includes(i + 1),
+      isToday: i + 1 === currentDay,
+    }));
+    setTrackerDays(days);
+  }
+
+  const scrollToReport = useCallback(() => {
+    reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const openCheckin = useCallback(() => {
+    setCheckinOpen(true);
+  }, []);
+
+  const handleCheckinSubmit = useCallback(async (response: string) => {
+    // Call existing submit-checkin edge function
+    const { error } = await supabase.functions.invoke("process-checkin", {
+      body: { session_id: sessionId, response },
+    });
+    if (error) throw error;
+
+    // Optimistic update
+    setPlanState((prev) => {
+      if (prev === "active") return "done_today";
+      if (prev === "sub_active") return "sub_done";
+      return prev;
+    });
+
+    setTrackerDays((prev) =>
+      prev.map((d) => (d.isToday ? { ...d, completed: true } : d))
+    );
+
+    toast({ title: "Check-in saved." });
+
+    // If opened via deep-link, update URL
+    if (initialSessionId) {
+      window.history.replaceState(null, "", "/plan");
+    }
+  }, [sessionId, initialSessionId, toast]);
+
+  const handleDayClick = useCallback((day: number) => {
+    // Open read-only drawer for completed day
+    setDayNumber(day);
+    setCheckinOpen(true);
+  }, []);
+
+  // Guard: don't render paid UI before auth resolves
+  if (authLoading || hasPaid === null) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <TopBar />
+        <div className="mx-auto w-full max-w-3xl space-y-8 px-6 pt-12 pb-16">
+          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="h-12 w-full rounded-lg" />
+          <div className="grid grid-cols-10 gap-2">
+            {Array.from({ length: 30 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 rounded-md" />
+            ))}
+          </div>
+          <Skeleton className="h-24 w-full rounded-lg" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <TopBar />
+
+      {/* Day 31+ subscribe wall banner */}
+      {showSubscribeWall && (
+        <Banner variant="info">
+          Your 30-day plan is complete. Your report and check-in history stay here. Open a subscription to keep going.
+        </Banner>
+      )}
+
+      <main className="mx-auto w-full max-w-3xl px-6 pt-8 pb-24">
+        {/* §2 TodayCard — always first, always primary */}
+        <TodayCard
+          state={planState}
+          dayNumber={dayNumber}
+          weekNumber={weekNumber}
+          sessionId={sessionId}
+          onScrollToReport={scrollToReport}
+          onOpenCheckin={openCheckin}
+        />
+
+        {/* §3 TrackerGrid */}
+        {planState !== "day0" && trackerDays.length > 0 && (
+          <motion.div
+            className="mt-10"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
+          >
+            <TrackerGrid
+              days={trackerDays}
+              variant={isSubscriber ? "rolling-weekly" : "thirty-day"}
+              onDayClick={handleDayClick}
+            />
+          </motion.div>
+        )}
+
+        {/* §4 Strand summary row */}
+        <motion.div
+          className="mt-10"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+        >
+          <h2 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-[0.08em]">
+            Your options
+          </h2>
+          <div className="space-y-3">
+            {strands.map((strand, i) => (
+              <div key={i} className="rounded-lg border border-border bg-[hsl(var(--surface-panel))] px-5 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-sm font-medium text-foreground truncate">{strand.title}</span>
+                    <span className="hidden sm:inline">
+                      {strand.primary_move_type && (
+                        <span className="text-[10px] font-medium text-muted-foreground">
+                          {strand.primary_move_type}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  {strand.structural_warmth && (
+                    <span className="shrink-0 text-[11px] text-muted-foreground">
+                      {strand.structural_warmth}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* §5 ReportSection */}
+        <motion.div
+          ref={reportRef}
+          className="mt-10"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+        >
+          <ReportSection
+            narrative={narrative}
+            strands={strands}
+            locked={false}
+            initialExpanded={planState === "day0"}
+            mode="full"
+          />
+        </motion.div>
+
+        {/* §6 Recent guidance teaser */}
+        <motion.div
+          className="mt-14"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
+        >
+          <h2 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-[0.08em]">
+            Guidance for you
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {MOCK_GUIDANCE.map((item, i) => (
+              <LibraryCard
+                key={i}
+                title={item.title}
+                description={item.description}
+                track={item.track}
+                onClick={() => navigateAuthed(navigate, "/library")}
+              />
+            ))}
+          </div>
+        </motion.div>
+      </main>
+
+      {/* CheckInPanel — Drawer, not a route */}
+      <CheckInPanel
+        open={checkinOpen}
+        onOpenChange={(open) => {
+          setCheckinOpen(open);
+          if (!open && initialSessionId) {
+            window.history.replaceState(null, "", "/plan");
+          }
+        }}
+        sessionId={sessionId}
+        dayNumber={dayNumber}
+        onSubmit={handleCheckinSubmit}
+      />
+    </div>
+  );
+}
