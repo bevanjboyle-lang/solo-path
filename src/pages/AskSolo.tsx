@@ -1,14 +1,13 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Send, Lock, Zap, MessageCircle, Plus, PanelLeft } from "lucide-react";
+import { Loader2, Send, Lock, MessageCircle, Plus, PanelLeft } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
 import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,9 +26,11 @@ interface Thread {
   lastMessage: string;
   timestamp: Date;
   pinned?: boolean;
+  conversationId: string;
+  messages: ChatMessage[];
 }
 
-/* ── Mock ── */
+/* ── Constants ── */
 const QUOTA_TOTAL = 10;
 
 const PROMPT_SUGGESTIONS = [
@@ -48,24 +49,63 @@ export default function AskSolo() {
   const [threads, setThreads] = useState<Thread[]>([]);
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [sessionStarting, setSessionStarting] = useState(false);
   const [threadDrawerOpen, setThreadDrawerOpen] = useState(false);
 
-  // Mock state
+  // Mock state — will be derived from backend later
   const isSubscriber = false;
   const questionsUsed = 3;
   const quotaExhausted = !isSubscriber && questionsUsed >= QUOTA_TOTAL;
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const sessionStartedRef = useRef(false);
 
-  // Init
+  // ── Start session on mount ──
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(timer);
+    if (sessionStartedRef.current) return;
+    sessionStartedRef.current = true;
+
+    const startSession = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("ask-solo", {
+          body: { call_type: "start_session" },
+        });
+        if (!error && data) {
+          setConversationId(data.conversation_id);
+          // Show context cue as opening assistant message
+          if (data.context_cue) {
+            setMessages([{
+              role: "assistant",
+              content: data.context_cue,
+              timestamp: new Date(),
+            }]);
+          }
+        }
+      } catch (err) {
+        console.error("[AskSolo] Failed to start session:", err);
+      }
+      setLoading(false);
+    };
+
+    startSession();
   }, []);
+
+  // ── End session on unmount ──
+  useEffect(() => {
+    const currentConvId = conversationId;
+    return () => {
+      if (currentConvId) {
+        supabase.functions.invoke("ask-solo", {
+          body: { call_type: "end_session", conversation_id: currentConvId },
+        }).catch(() => {});
+      }
+    };
+  }, [conversationId]);
 
   // Auto-scroll
   useEffect(() => {
@@ -74,8 +114,8 @@ export default function AskSolo() {
 
   // Context deep-link
   useEffect(() => {
-    if (contextId && !loading && messages.length === 0) {
-      setInput(`I'd like to understand more about this topic.`);
+    if (contextId && !loading && messages.length <= 1) {
+      setInput("I'd like to understand more about this topic.");
     }
   }, [contextId, loading]);
 
@@ -90,12 +130,28 @@ export default function AskSolo() {
     setSending(true);
 
     // Create thread if none active
+    let currentConvId = conversationId;
     if (!activeThreadId) {
+      // Start a fresh session for a new thread if we don't have one
+      if (!currentConvId) {
+        try {
+          const { data } = await supabase.functions.invoke("ask-solo", {
+            body: { call_type: "start_session" },
+          });
+          if (data?.conversation_id) {
+            currentConvId = data.conversation_id;
+            setConversationId(data.conversation_id);
+          }
+        } catch {}
+      }
+
       const newThread: Thread = {
         id: crypto.randomUUID(),
         title: text.slice(0, 50) + (text.length > 50 ? "..." : ""),
         lastMessage: text,
         timestamp: new Date(),
+        conversationId: currentConvId || "",
+        messages: updated,
       };
       setThreads((prev) => [newThread, ...prev]);
       setActiveThreadId(newThread.id);
@@ -106,18 +162,26 @@ export default function AskSolo() {
         body: {
           call_type: "conversation",
           message: text,
+          conversation_id: currentConvId,
           history: updated.map((m) => ({ role: m.role, content: m.content })),
         },
       });
       if (error) throw error;
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: data?.response || "Sorry, I couldn't generate a response. Please try again.",
-          timestamp: new Date(),
-        },
-      ]);
+      const assistantMsg: ChatMessage = {
+        role: "assistant",
+        content: data?.response || "Sorry, I couldn't generate a response. Please try again.",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
+
+      // Update thread's last message
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === activeThreadId
+            ? { ...t, lastMessage: assistantMsg.content.slice(0, 80), messages: [...updated, assistantMsg] }
+            : t
+        )
+      );
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -126,7 +190,7 @@ export default function AskSolo() {
     }
     setSending(false);
     inputRef.current?.focus();
-  }, [input, sending, messages, activeThreadId, quotaExhausted]);
+  }, [input, sending, messages, activeThreadId, quotaExhausted, conversationId]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -135,12 +199,45 @@ export default function AskSolo() {
     }
   };
 
-  const newThread = () => {
+  const newThread = useCallback(async () => {
+    // End current session
+    if (conversationId) {
+      supabase.functions.invoke("ask-solo", {
+        body: { call_type: "end_session", conversation_id: conversationId },
+      }).catch(() => {});
+    }
+
     setActiveThreadId(null);
     setMessages([]);
+    setConversationId(null);
     setInput("");
+
+    // Start a new session
+    try {
+      const { data } = await supabase.functions.invoke("ask-solo", {
+        body: { call_type: "start_session" },
+      });
+      if (data) {
+        setConversationId(data.conversation_id);
+        if (data.context_cue) {
+          setMessages([{
+            role: "assistant",
+            content: data.context_cue,
+            timestamp: new Date(),
+          }]);
+        }
+      }
+    } catch {}
+
     inputRef.current?.focus();
-  };
+  }, [conversationId]);
+
+  const selectThread = useCallback((thread: Thread) => {
+    setActiveThreadId(thread.id);
+    setMessages(thread.messages);
+    setConversationId(thread.conversationId);
+    setThreadDrawerOpen(false);
+  }, []);
 
   const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
 
@@ -179,7 +276,7 @@ export default function AskSolo() {
             {threads.map((t) => (
               <button
                 key={t.id}
-                onClick={() => { setActiveThreadId(t.id); setThreadDrawerOpen(false); }}
+                onClick={() => selectThread(t)}
                 className={`w-full rounded-md px-3 py-2.5 text-left transition-colors ${
                   activeThreadId === t.id
                     ? "bg-primary/10 text-foreground"
@@ -249,7 +346,7 @@ export default function AskSolo() {
           {/* Messages */}
           <main className="flex-1 overflow-y-auto px-6 py-6">
             <div className="mx-auto max-w-2xl space-y-4">
-              {contextId && messages.length === 0 && (
+              {contextId && messages.length <= 1 && (
                 <GlassCard className="px-4 py-3 mb-2">
                   <p className="text-xs text-primary/80">About: [Article title for {contextId}]</p>
                 </GlassCard>
