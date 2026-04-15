@@ -308,18 +308,14 @@ export default function Library() {
                 </div>
               )
             ) : (
-              <ModulesTab onSelectModule={(id) => {
-                setTab("modules");
-                // Navigate to module detail via existing routing
-                navigate(`/library/modules/${id}`);
-              }} />
+              <ModulesTab onSelectModule={(id) => openArticle(id, true)} />
             )}
           </div>
         </div>
       </PanelLayout>
 
       {/* Reading drawer */}
-      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+      <Sheet open={drawerOpen} onOpenChange={(open) => { if (!open) backToModules(); }}>
         <SheetContent side="right" className="w-full sm:max-w-[70vw] overflow-y-auto p-0">
           {articleLoading ? (
             <div className="p-8 space-y-4">
@@ -331,15 +327,33 @@ export default function Library() {
               <Skeleton className="h-32 w-full mt-6" />
             </div>
           ) : articleData ? (
-            <ArticleDrawer
-              data={articleData}
-              onClose={() => setDrawerOpen(false)}
-              onSubscribe={handleSubscribe}
-              onStartModule={() => {
-                setDrawerOpen(false);
-                navigate(`/library/modules/${articleData.module_id}`);
-              }}
-            />
+            drawerView === "questions" ? (
+              <QuestionForm
+                data={articleData}
+                answers={moduleAnswers}
+                onAnswerChange={(key, val) => setModuleAnswers((a) => ({ ...a, [key]: val }))}
+                onSubmit={submitModuleAnswers}
+                onBack={() => setDrawerView("detail")}
+                submitting={submitting}
+                onClose={backToModules}
+              />
+            ) : drawerView === "output" && moduleOutput ? (
+              <OutputView
+                moduleName={articleData.title}
+                output={moduleOutput}
+                onBack={backToModules}
+                moduleId={articleData.module_id}
+                navigate={navigate}
+                onClose={backToModules}
+              />
+            ) : (
+              <ArticleDrawer
+                data={articleData}
+                onClose={backToModules}
+                onSubscribe={handleSubscribe}
+                onStartModule={startQuestions}
+              />
+            )
           ) : null}
         </SheetContent>
       </Sheet>
