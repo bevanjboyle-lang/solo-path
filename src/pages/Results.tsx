@@ -173,8 +173,7 @@ export default function Results() {
         headers: { 'Accept': 'application/pdf' },
       });
       if (error || !blob) throw new Error("PDF generation failed");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob instanceof Blob ? blob : new Blob([blob], { type: 'application/pdf' }));
       const a = document.createElement("a");
       const today = new Date().toISOString().slice(0, 10);
       a.href = url;
