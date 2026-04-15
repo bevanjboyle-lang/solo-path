@@ -54,7 +54,7 @@ function AnimatedRoutes() {
           <Route path="/auth" element={<Auth />} />
 
           {/* Activation funnel — anonymous */}
-          <Route path="/cv-upload" element={<div>CV Upload (coming next)</div>} />
+          <Route path="/cv-upload" element={<CVUpload />} />
           <Route path="/questionnaire" element={<Questionnaire />} />
           <Route path="/processing" element={<Processing />} />
           <Route path="/teaser" element={<Teaser />} />
