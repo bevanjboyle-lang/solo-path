@@ -288,8 +288,9 @@ export default function Account() {
                     variant="outline"
                     className="mt-3"
                     onClick={() => setShowDeleteCv(true)}
+                    disabled={cvRemoved}
                   >
-                    Remove
+                    {cvRemoved ? "Removed" : "Remove"}
                   </Button>
                 </div>
 
