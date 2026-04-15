@@ -1,182 +1,232 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, Loader2, ArrowLeft, Zap, Shield } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { useTrackerSession } from "@/hooks/useTrackerSession";
-import { Card, CardContent } from "@/components/ui/card";
+import { triggerStripeCheckout, navigateAuthed, resumeSubscription } from "@/lib/handlers";
+import TopBar from "@/components/TopBar";
+import PanelLayout from "@/components/PanelLayout";
+import Banner from "@/components/Banner";
+import GlassCard from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import SoloLogo from "@/components/SoloLogo";
+import { useToast } from "@/hooks/use-toast";
 
-const plans = [
-  {
-    id: "monthly" as const,
-    name: "Monthly",
-    price: "\u00a319",
-    period: "/month",
-    description: "Flexible, cancel anytime.",
-    features: [
-      "Daily AI check-ins",
-      "Adaptive replanning",
-      "Extended tracking beyond 30 days",
-      "Priority support",
-    ],
-  },
-  {
-    id: "annual" as const,
-    name: "Annual",
-    price: "\u00a3149",
-    period: "/year",
-    savings: "Save \u00a379/year",
-    description: "Best value for committed professionals.",
-    features: [
-      "Everything in Monthly",
-      "Two months free",
-      "Early access to new features",
-      "Priority support",
-    ],
-    highlighted: true,
-  },
+const INCLUDES = [
+  "Ongoing 30-day tracker",
+  "Nine guidance modules",
+  "Unlimited Ask Solo",
+  "New guidance every week",
+  "A fresh test when you need one",
 ];
 
 export default function Subscribe() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { session, subscribe, isSubscribed, loading } = useTrackerSession();
-  const [selected, setSelected] = useState<"monthly" | "annual">("annual");
-  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
 
-  if (loading) {
+  const fromDay31 = searchParams.get("from") === "day31";
+  const paymentCancelled = searchParams.get("payment_cancelled") === "1";
+
+  // Mock state
+  const isSubscriber = false;
+  const isCancelPending = false;
+  const cancelEndDate = "15 May 2026";
+
+  const [checkingOut, setCheckingOut] = useState<"monthly" | "annual" | null>(null);
+  const [error, setError] = useState(false);
+
+  const handleCheckout = async (plan: "monthly" | "annual") => {
+    setCheckingOut(plan);
+    setError(false);
+    try {
+      const priceId = plan === "monthly" ? "price_sub_monthly" : "price_sub_annual";
+      await triggerStripeCheckout(priceId, { email: user?.email });
+    } catch {
+      setError(true);
+    }
+    setCheckingOut(null);
+  };
+
+  const handleResume = async () => {
+    await resumeSubscription();
+    toast({ title: "Subscription resumed." });
+  };
+
+  const handleBackToPlan = () => navigateAuthed(navigate, "/plan");
+  const handleFaqLink = () => navigate("/faq#subscription");
+
+  // Already subscribed
+  if (isSubscriber && !isCancelPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      <div className="min-h-screen flex flex-col text-foreground">
+        <TopBar />
+        <PanelLayout className="px-6 py-16 sm:px-10">
+          <div className="mx-auto max-w-md text-center">
+            <h1
+              className="font-display text-2xl font-bold tracking-tight sm:text-3xl"
+              style={{ letterSpacing: "-0.02em" }}
+            >
+              You're already subscribed.
+            </h1>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Your subscription is active. Head back to your plan.
+            </p>
+            <Button className="mt-8" onClick={handleBackToPlan}>
+              Back to plan
+            </Button>
+          </div>
+        </PanelLayout>
       </div>
     );
   }
 
-  if (isSubscribed) {
-    navigate("/manage-subscription", { replace: true });
-    return null;
-  }
-
-  const handleCheckout = async () => {
-    if (!session) {
-      navigate("/questionnaire");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const url = await subscribe(selected);
-      if (url) window.location.href = url;
-    } catch (err) {
-      console.error("Checkout error:", err);
-    }
-    setSubmitting(false);
-  };
-
   return (
-    <div className="flex min-h-screen flex-col text-foreground">
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-5xl items-center px-6">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Dashboard
-          </button>
+    <div className="min-h-screen flex flex-col text-foreground">
+      <TopBar />
+
+      {fromDay31 && (
+        <div className="px-6 pt-4">
+          <p className="text-center text-xs text-muted-foreground">Your 30 days are complete.</p>
         </div>
-      </nav>
+      )}
 
-      <main className="flex flex-1 items-center justify-center px-6 pt-20 pb-16">
-        <motion.div
-          className="w-full max-w-2xl"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="text-center mb-10">
-            <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              Keep your plan active
-            </h1>
-            <p className="mt-3 text-sm text-muted-foreground max-w-md mx-auto">
-              Your profile, your plan, and everything you've built over the last 30 days stays live.
-            </p>
-          </div>
+      {paymentCancelled && (
+        <div className="px-6">
+          <Banner variant="info">No charge made. You can try again whenever you're ready.</Banner>
+        </div>
+      )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            {plans.map((plan) => (
-              <Card
-                key={plan.id}
-                onClick={() => setSelected(plan.id)}
-                className={`relative cursor-pointer transition-all ${
-                  selected === plan.id
-                    ? "border-primary ring-1 ring-primary/30"
-                    : "border-border/50 hover:border-border"
-                } bg-card`}
-              >
-                {plan.savings && (
-                  <Badge className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-[10px]">
-                    {plan.savings}
-                  </Badge>
-                )}
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div
-                      className={`h-4 w-4 rounded-full border-2 flex items-center justify-center ${
-                        selected === plan.id ? "border-primary" : "border-muted-foreground/30"
-                      }`}
-                    >
-                      {selected === plan.id && (
-                        <div className="h-2 w-2 rounded-full bg-primary" />
-                      )}
-                    </div>
-                    <span className="font-medium text-foreground">{plan.name}</span>
-                  </div>
+      {error && (
+        <div className="px-6">
+          <Banner variant="error">We couldn't open checkout. Please try again.</Banner>
+        </div>
+      )}
 
-                  <div className="mb-3">
-                    <span className="text-2xl font-semibold text-foreground">{plan.price}</span>
-                    <span className="text-sm text-muted-foreground">{plan.period}</span>
-                  </div>
+      {isCancelPending && (
+        <div className="px-6">
+          <Banner variant="info">
+            Your subscription is set to end on {cancelEndDate}. Resume it instead.
+          </Banner>
+        </div>
+      )}
 
-                  <p className="text-xs text-muted-foreground mb-4">{plan.description}</p>
-
-                  <ul className="space-y-2">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-xs text-muted-foreground">
-                        <Check className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-8 flex flex-col items-center gap-3">
-            <Button
-              onClick={handleCheckout}
-              disabled={submitting}
-              className="w-full max-w-sm h-11 bg-primary text-primary-foreground hover:bg-primary/90"
+      <PanelLayout className="px-6 py-16 sm:px-10">
+        <div className="mx-auto max-w-3xl">
+          {/* Hero */}
+          <motion.div
+            className="text-center mb-12"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <h1
+              className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl"
+              style={{ letterSpacing: "-0.02em" }}
             >
-              {submitting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <Zap className="h-4 w-4 mr-1.5" />
-                  {selected === "annual" ? "Full year of support" : "Keep your plan active"} - {selected === "annual" ? "£149" : "£19/month"}
-                </>
-              )}
-            </Button>
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <Shield className="h-3 w-3" />
-              Secure checkout via Stripe. Cancel anytime.
-            </div>
+              Keep your plan alive.
+            </h1>
+            <p className="mt-4 mx-auto max-w-lg text-sm text-muted-foreground leading-relaxed">
+              Your 30-day report is yours forever. The subscription is what keeps the tracker moving after Day 30 — new guidance, unlimited Ask Solo, and the modules you haven't opened yet.
+            </p>
+          </motion.div>
+
+          {/* Pricing cards */}
+          <div className="grid gap-6 sm:grid-cols-2">
+            {/* Monthly */}
+            <GlassCard className="flex flex-col p-6">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Monthly</span>
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="font-display text-3xl font-extrabold text-foreground">£19</span>
+                <span className="text-sm text-muted-foreground">/ month</span>
+              </div>
+              <div className="mt-6 flex-1" />
+              <Button
+                className="w-full mt-4"
+                variant="outline"
+                onClick={() => handleCheckout("monthly")}
+                disabled={checkingOut !== null}
+              >
+                {checkingOut === "monthly" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Subscribe — £19 / month"
+                )}
+              </Button>
+            </GlassCard>
+
+            {/* Annual */}
+            <GlassCard
+              className="relative flex flex-col p-6"
+              style={{ background: "rgba(46,205,176,0.04)", border: "1px solid rgba(46,205,176,0.2)" }}
+            >
+              <Badge className="absolute -top-2.5 right-4 bg-primary text-primary-foreground text-[10px]">
+                Two months free
+              </Badge>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Annual</span>
+              <div className="mt-3 flex items-baseline gap-1">
+                <span className="font-display text-3xl font-extrabold text-foreground">£149</span>
+                <span className="text-sm text-muted-foreground">/ year</span>
+              </div>
+              <div className="mt-6 flex-1" />
+              <Button
+                className="w-full mt-4"
+                onClick={() => handleCheckout("annual")}
+                disabled={checkingOut !== null}
+              >
+                {checkingOut === "annual" ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Subscribe — £149 / year"
+                )}
+              </Button>
+            </GlassCard>
           </div>
-        </motion.div>
-      </main>
+
+          {/* Resume button for cancel-pending */}
+          {isCancelPending && (
+            <div className="mt-6 text-center">
+              <Button onClick={handleResume}>Resume subscription</Button>
+            </div>
+          )}
+
+          {/* What you get */}
+          <div className="mt-12">
+            <h3
+              className="font-display text-lg font-semibold text-foreground"
+              style={{ letterSpacing: "-0.01em" }}
+            >
+              What you get
+            </h3>
+            <ul className="mt-4 space-y-2.5">
+              {INCLUDES.map((item) => (
+                <li key={item} className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <p className="mt-8 text-center text-xs text-muted-foreground">
+            Your report stays yours whether you subscribe or not.
+          </p>
+
+          {/* Tertiary row */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+            <Button variant="ghost" className="text-muted-foreground" onClick={handleBackToPlan}>
+              Not right now
+            </Button>
+            <button
+              onClick={handleFaqLink}
+              className="text-xs font-medium text-muted-foreground underline hover:text-foreground transition-colors"
+            >
+              See full subscription FAQ →
+            </button>
+          </div>
+        </div>
+      </PanelLayout>
     </div>
   );
 }
