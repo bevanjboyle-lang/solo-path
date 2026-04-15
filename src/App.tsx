@@ -38,7 +38,7 @@ function CheckinDeepLink() {
 
 const queryClient = new QueryClient();
 
-const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success", "/auth"];
+const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success", "/auth", "/privacy", "/terms"];
 
 function AnimatedRoutes() {
   const location = useLocation();
