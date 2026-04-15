@@ -41,6 +41,22 @@ export function getClientSessionId(): string {
 }
 
 /**
+ * Trigger Stripe checkout — creates a session via edge function and redirects.
+ * THE canonical handler for every "Unlock" CTA on /teaser and PricingCard.
+ */
+export async function triggerStripeCheckout(
+  priceId: string,
+  metadata: Record<string, unknown>
+): Promise<void> {
+  const { data, error } = await supabase.functions.invoke("create-payment", {
+    body: { price_id: priceId, ...metadata },
+  });
+  if (error) throw error;
+  const redirectUrl = data?.sessionUrl || data?.url;
+  if (redirectUrl) window.location.href = redirectUrl;
+}
+
+/**
  * Submit form — named form submission handler.
  * Resolves the correct backend endpoint based on form name.
  */

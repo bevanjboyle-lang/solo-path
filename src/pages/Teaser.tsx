@@ -1,173 +1,261 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { LogOut, Sparkles, CheckCircle } from "lucide-react";
-import SoloLogo from "@/components/SoloLogo";
-import { Badge } from "@/components/ui/badge";
+import { triggerStripeCheckout } from "@/lib/handlers";
+import TopBar from "@/components/TopBar";
+import Banner from "@/components/Banner";
+import ReportSection from "@/components/ReportSection";
+import TeaserLockedSection from "@/components/TeaserLockedSection";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Shield, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import type { StrandData } from "@/components/StrandCard";
 
 export default function Teaser() {
   const [searchParams] = useSearchParams();
-  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const reportId = searchParams.get("report_id");
-  const [hookInsight, setHookInsight] = useState<string | null>(null);
-  const [archetype, setArchetype] = useState<string | null>(null);
+  const cancelReturn = searchParams.get("canceled") === "true";
+  const recoveryToken = searchParams.get("token");
+
   const [loading, setLoading] = useState(true);
   const [payLoading, setPayLoading] = useState(false);
+  const [firstName, setFirstName] = useState<string | null>(null);
+  const [narrative, setNarrative] = useState<string | null>(null);
+  const [strands, setStrands] = useState<StrandData[]>([]);
+  const [reportStatus, setReportStatus] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+  const [showSticky, setShowSticky] = useState(false);
 
+  // No report_id → redirect to /
   useEffect(() => {
-    if (!user || !reportId) return;
+    if (!reportId) navigate("/", { replace: true });
+  }, [reportId, navigate]);
+
+  // Fetch report data
+  useEffect(() => {
+    if (!reportId) return;
     localStorage.setItem("solo_report_id", reportId);
+
     supabase
       .from("reports")
-      .select("hook_insight, core_report")
+      .select("status, answers, hook_insight, core_report")
       .eq("id", reportId)
-      .eq("user_id", user.id)
       .maybeSingle()
-      .then(({ data }) => {
-        setHookInsight((data as any)?.hook_insight || null);
-        setArchetype((data as any)?.core_report?.archetype?.primary || null);
+      .then(({ data, error: fetchError }) => {
+        if (fetchError || !data) {
+          setError(true);
+          setLoading(false);
+          return;
+        }
+
+        setReportStatus(data.status);
+
+        // If still generating, redirect to processing
+        if (data.status === "generating" || data.status === "pending") {
+          navigate(`/processing?report_id=${reportId}`, { replace: true });
+          return;
+        }
+
+        const answers = data.answers as Record<string, unknown> | null;
+        setFirstName((answers?.first_name as string) || null);
+        setNarrative(data.hook_insight || null);
+
+        // Extract first two strands from core_report
+        const coreReport = data.core_report as Record<string, unknown> | null;
+        const options = (coreReport?.options as Array<Record<string, unknown>>) || [];
+        const previewStrands: StrandData[] = options.slice(0, 2).map((opt) => ({
+          title: (opt.title as string) || "Untitled option",
+          pitch: (opt.one_liner as string) || (opt.pitch as string) || "",
+          primary_move_type: (opt.primary_move_type as string) || null,
+        }));
+        setStrands(previewStrands);
         setLoading(false);
       });
-  }, [user, reportId]);
+  }, [reportId, navigate]);
 
-  const handleCheckout = async () => {
+  // Sticky CTA on scroll past hero
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowSticky(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // THE canonical checkout handler — both CTAs call this
+  const handleUnlock = useCallback(async () => {
     setPayLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("create-payment", {
-        body: { report_id: reportId },
+      await triggerStripeCheckout("price_report_oneoff", {
+        report_id: reportId,
       });
-      if (error) throw error;
-      const redirectUrl = data?.sessionUrl || data?.url;
-      if (redirectUrl) window.location.href = redirectUrl;
     } catch (err) {
-      console.error("Payment error:", err);
-    } finally {
+      console.error("Checkout error:", err);
       setPayLoading(false);
     }
-  };
+  }, [reportId]);
 
+  // No report_id guard already handled above
+  if (!reportId) return null;
+
+  // Loading skeleton
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <motion.div
-          className="h-8 w-8 rounded-full border-2 border-border border-t-primary"
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-        />
+      <div className="flex min-h-screen flex-col">
+        <TopBar minimal />
+        <div className="mx-auto w-full max-w-2xl space-y-8 px-6 pt-20 pb-16">
+          <Skeleton className="h-10 w-3/4" />
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-40 w-full rounded-lg" />
+          <Skeleton className="h-24 w-full rounded-lg" />
+          <Skeleton className="h-24 w-full rounded-lg" />
+          <Skeleton className="h-px w-full" />
+          <Skeleton className="h-32 w-full rounded-lg" />
+        </div>
       </div>
     );
   }
 
-  const outcomeItems = [
-    "The full analysis of your career capital and what it's worth commercially",
-    "10 scored and ranked options, with honest assessments of what each one requires",
-    "Your 30-day activation plan, with every outreach message written for you",
-    "A realistic assessment of AI risk to your current role, and the options most resilient to it",
-    "A market snapshot for your sector and location",
-    "30 days of daily execution support via the Adaptive Tracker",
+  // Error: report not found
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <TopBar minimal />
+        <Banner variant="error">
+          We couldn't find that report.{" "}
+          <a href="/" className="underline font-medium">
+            Return home
+          </a>
+        </Banner>
+      </div>
+    );
+  }
+
+  const heroName = firstName ? `Your plan, ${firstName}.` : "Your plan.";
+
+  const whatYouGet = [
+    "Your full report with all five options",
+    "A 30-day activation plan built around the one you choose",
+    "Daily check-ins to keep you honest",
+    "Guidance library when you get stuck",
   ];
 
   return (
-    <div className="flex min-h-screen flex-col text-foreground">
-      {/* Top bar */}
-      <div className="fixed top-0 left-0 right-0 z-50/80 backdrop-blur-xl border-b border-border/50">
-        <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-6">
-          <SoloLogo width={100} height={28} />
-          <button
-            onClick={() => signOut()}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
+    <div className="flex min-h-screen flex-col">
+      <TopBar minimal />
+
+      {/* Banners */}
+      {cancelReturn && (
+        <Banner variant="warning">
+          Your payment wasn't completed. Your report is still here — try again when you're ready.
+        </Banner>
+      )}
+      {recoveryToken && !cancelReturn && (
+        <Banner variant="info">Welcome back. Here's your report.</Banner>
+      )}
 
       {/* Content */}
-      <div className="flex flex-1 flex-col items-center px-6 pt-20 pb-12">
+      <main className="mx-auto w-full max-w-2xl px-6 pt-12 pb-32 sm:pt-16">
         <motion.div
-          className="flex w-full max-w-lg flex-col items-center text-center"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.4 }}
         >
-          {/* Section 1: Archetype card */}
-          <div
-            className="mb-6 flex h-12 w-12 items-center justify-center rounded-full"
-            style={{ background: "var(--gradient-cta)" }}
+          {/* §2 Hero strip */}
+          <h1
+            className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+            style={{ letterSpacing: "-0.02em" }}
           >
-            <Sparkles className="h-6 w-6 text-primary-foreground" />
-          </div>
-
-          <h1 className="text-2xl font-semibold text-foreground sm:text-3xl">
-            Your Plan B options are ready
+            {heroName}
           </h1>
-
-          {archetype && (
-            <p className="mt-3 text-sm text-muted-foreground">
-              Archetype: <span className="font-medium text-foreground">{archetype}</span>
-            </p>
-          )}
-
-          {/* Section 2: Hook insight - enlarged */}
-          {hookInsight && (
-            <motion.div
-              className="mt-8 w-full rounded-xl border-l-4 border-primary bg-card p-6 text-left"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-primary mb-3">What we know about your situation</p>
-              <p className="text-base font-medium leading-relaxed text-foreground sm:text-lg">
-                "{hookInsight}"
-              </p>
-              <p className="mt-3 text-xs text-muted-foreground">
-                This is specific to your role and sector. The full analysis is below.
-              </p>
-            </motion.div>
-          )}
-
-          {/* Section 3: Outcomes list */}
-          <motion.div
-            className="mt-8 w-full rounded-xl border border-border bg-card p-6 text-left"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.4 }}
-          >
-            <h3 className="text-sm font-semibold text-foreground mb-4">What's in your report.</h3>
-            <div className="space-y-3">
-              {outcomeItems.map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
-                  <p className="text-sm leading-relaxed text-muted-foreground">{item}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Section 4: Trust signal + CTA */}
-          <motion.div
-            className="mt-8 flex flex-col items-center gap-4"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.4 }}
-          >
-            <p className="max-w-md text-xs text-center text-muted-foreground leading-relaxed">
-              Built from 95 professional archetypes across 14 sectors. Every output is specific to your role, your sector, and your seniority level. Not a framework with your name on it.
-            </p>
-
-            <button
-              onClick={handleCheckout}
-              disabled={payLoading}
-              className="inline-flex items-center rounded-lg px-8 py-3 text-base font-medium text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50"
-              style={{ background: "var(--gradient-cta)" }}
-            >
-              {payLoading ? "Loading..." : "Unlock your 30-day execution plan - £19.99"}
-            </button>
-          </motion.div>
+          <p className="mt-3 text-base text-muted-foreground">
+            We've drafted five options. Here's the first one for free.
+          </p>
         </motion.div>
-      </div>
+
+        {/* §3 Free preview */}
+        <motion.div
+          className="mt-10"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
+        >
+          <ReportSection narrative={narrative} strands={strands} locked={false} />
+        </motion.div>
+
+        {/* §4 + §5 Locked boundary + unlock callout */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
+        >
+          <TeaserLockedSection onUnlock={handleUnlock} loading={payLoading} />
+        </motion.div>
+
+        {/* §6 What you get strip */}
+        <motion.div
+          className="mt-14"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+        >
+          <h2 className="text-lg font-semibold text-foreground">What you get</h2>
+          <div className="mt-5 space-y-3">
+            {whatYouGet.map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <CheckCircle className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+                <p className="text-sm leading-relaxed text-muted-foreground">{item}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* §7 Trust strip */}
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <Shield className="h-3.5 w-3.5" />
+            Secure payment via Stripe
+          </span>
+          <span>30-day refund policy</span>
+          <span>Your data stays private</span>
+        </div>
+
+        {/* §8 Bottom CTA band */}
+        <motion.div
+          className="mt-14 flex flex-col items-center text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.45, duration: 0.4 }}
+        >
+          <Button
+            size="lg"
+            onClick={handleUnlock}
+            disabled={payLoading}
+            className="rounded-lg bg-primary px-8 py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            {payLoading ? "Redirecting..." : "Unlock my full report \u2014 \u00A319.99"}
+          </Button>
+          <p className="mt-3 text-xs text-muted-foreground">
+            One-time payment. No subscription. No auto-renewal.
+          </p>
+        </motion.div>
+      </main>
+
+      {/* Mobile sticky CTA */}
+      {showSticky && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-[hsl(var(--surface-panel))] p-4 md:hidden">
+          <Button
+            size="lg"
+            onClick={handleUnlock}
+            disabled={payLoading}
+            className="w-full rounded-lg bg-primary py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            {payLoading ? "Redirecting..." : "Unlock my full report \u2014 \u00A319.99"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
