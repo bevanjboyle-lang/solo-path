@@ -1,228 +1,323 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { CheckCircle, Loader2, Copy, Check, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import TopBar from "@/components/TopBar";
+import Banner from "@/components/Banner";
 import { Button } from "@/components/ui/button";
-import SoloLogo from "@/components/SoloLogo";
 
-interface ProvisionalFirstMove {
-  action_text: string;
-  why_first: string;
-  draft_message: {
-    format?: string;
-    subject?: string;
-    body: string;
-  };
-  follow_up_prompt: string;
-}
+type BridgeState =
+  | "exchanging"    // default on mount
+  | "polling"       // session set, polling readiness
+  | "delayed"       // 10s elapsed, not ready
+  | "ready"         // all state present, flash then navigate
+  | "stuck"         // 60s elapsed
+  | "token_error"   // invalid/expired token
+  | "network_error" // can't reach servers
+  | "no_token";     // redirect handled
 
 export default function PaymentSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [error, setError] = useState(false);
-  const [provisionalFirstMove, setProvisionalFirstMove] = useState<ProvisionalFirstMove | null>(null);
-  const [resultsUrl, setResultsUrl] = useState<string>("");
-  const [copied, setCopied] = useState(false);
-  const [verified, setVerified] = useState(false);
+  const token = searchParams.get("token");
 
+  const [state, setState] = useState<BridgeState>(token ? "exchanging" : "no_token");
+  const [hasSession, setHasSession] = useState(false);
+  const elapsedRef = useRef(0);
+  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+
+  // No token → redirect to /
   useEffect(() => {
-    const sessionId = searchParams.get("session_id");
-    if (!sessionId) {
-      const savedReportId = localStorage.getItem("solo_report_id");
-      navigate(savedReportId ? `/results?report_id=${savedReportId}&from=payment` : "/");
+    if (!token) navigate("/", { replace: true });
+  }, [token, navigate]);
+
+  // Cleanup
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (pollingRef.current) clearTimeout(pollingRef.current);
+    };
+  }, []);
+
+  // Poll readiness
+  const pollReadiness = useCallback(async () => {
+    if (!mountedRef.current) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke("get-account-readiness", {
+        body: {},
+      });
+
+      if (!mountedRef.current) return;
+
+      if (error) {
+        // Single poll failure — self-recovering, don't change state
+        scheduleNextPoll();
+        return;
+      }
+
+      if (data?.ready) {
+        setState("ready");
+        // Brief flash then navigate
+        setTimeout(() => {
+          if (mountedRef.current) navigate("/plan", { replace: true });
+        }, 400);
+        return;
+      }
+
+      // Not ready yet
+      scheduleNextPoll();
+    } catch {
+      if (mountedRef.current) scheduleNextPoll();
+    }
+  }, [navigate]);
+
+  const scheduleNextPoll = useCallback(() => {
+    if (!mountedRef.current) return;
+
+    elapsedRef.current += getInterval();
+
+    if (elapsedRef.current >= 60) {
+      setState("stuck");
       return;
     }
 
-    const verify = async () => {
+    if (elapsedRef.current >= 10) {
+      setState((prev) => (prev === "ready" || prev === "stuck" ? prev : "delayed"));
+    }
+
+    pollingRef.current = setTimeout(pollReadiness, getInterval() * 1000);
+  }, [pollReadiness]);
+
+  function getInterval(): number {
+    if (elapsedRef.current < 10) return 1;
+    return 2;
+  }
+
+  // Exchange token on mount
+  useEffect(() => {
+    if (!token || state !== "exchanging") return;
+
+    const exchange = async () => {
       try {
-        const { data, error: fnError } = await supabase.functions.invoke("verify-payment", {
-          body: { session_id: sessionId },
+        const { data, error } = await supabase.functions.invoke("exchange-payment-token", {
+          body: { token },
         });
-        if (fnError) throw fnError;
-        if (data?.paid) {
-          const savedReportId = localStorage.getItem("solo_report_id");
-          const reportParam = savedReportId ? `report_id=${savedReportId}&` : "";
-          const url = `/results?${reportParam}from=payment`;
-          setResultsUrl(url);
-          setVerified(true);
 
-          // Try to load provisional_first_move from report
-          if (savedReportId) {
-            const { data: report } = await supabase
-              .from("reports")
-              .select("core_report")
-              .eq("id", savedReportId)
-              .single();
+        if (!mountedRef.current) return;
 
-            const pfm = (report?.core_report as any)?.provisional_first_move;
-            if (pfm?.action_text && pfm?.draft_message) {
-              setProvisionalFirstMove(pfm);
-              return;
-            }
-
-            // Also check activation_plan.first_move as fallback
-            const { data: report2 } = await supabase
-              .from("reports")
-              .select("activation_plan")
-              .eq("id", savedReportId)
-              .single();
-            const fm = (report2?.activation_plan as any)?.first_move;
-            if (fm?.action && fm?.outreach_draft) {
-              setProvisionalFirstMove({
-                action_text: fm.action,
-                why_first: fm.why_first || "",
-                draft_message: {
-                  format: fm.outreach_draft.format,
-                  subject: fm.outreach_draft.subject,
-                  body: fm.outreach_draft.body,
-                },
-                follow_up_prompt: fm.follow_up_prompt || "We'll ask you about this tomorrow.",
-              });
-              return;
-            }
-          }
-        } else {
-          setError(true);
+        if (error || !data?.session) {
+          setState("token_error");
+          return;
         }
+
+        // Set supabase session
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
+
+        if (!mountedRef.current) return;
+
+        if (sessionError) {
+          setState("token_error");
+          return;
+        }
+
+        setHasSession(true);
+        setState("polling");
+        pollReadiness();
       } catch {
-        setError(true);
+        if (mountedRef.current) setState("network_error");
       }
     };
 
-    verify();
-  }, [navigate, searchParams]);
+    exchange();
+  }, [token, state, pollReadiness]);
 
-  const handleCopy = () => {
-    if (!provisionalFirstMove?.draft_message?.body) return;
-    const text = provisionalFirstMove.draft_message.subject
-      ? `Subject: ${provisionalFirstMove.draft_message.subject}\n\n${provisionalFirstMove.draft_message.body}`
-      : provisionalFirstMove.draft_message.body;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
-  };
+  // Retry handler for network errors and delayed state
+  const handleRetry = useCallback(() => {
+    if (state === "network_error") {
+      setState("exchanging");
+    } else if (state === "delayed") {
+      elapsedRef.current = 0;
+      pollReadiness();
+    }
+  }, [state, pollReadiness]);
 
-  // Error state
-  if (error) {
-    return (
-      <div className="min-h-screen text-foreground">
-        <nav className="border-b border-border/50/80 backdrop-blur-xl">
-          <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
-            <SoloLogo width={100} height={28} />
-          </div>
-        </nav>
-        <div className="mx-auto max-w-lg px-6 py-24 text-center">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-              <CheckCircle className="h-8 w-8 text-destructive" />
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight">Something went wrong</h1>
-            <p className="text-sm leading-relaxed text-muted-foreground">We couldn't verify your payment. Please contact support.</p>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
-
-  // Still verifying
-  if (!verified) {
-    return (
-      <div className="min-h-screen text-foreground">
-        <nav className="border-b border-border/50/80 backdrop-blur-xl">
-          <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
-            <SoloLogo width={100} height={28} />
-          </div>
-        </nav>
-        <div className="mx-auto max-w-lg px-6 py-24 text-center">
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-6">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Verifying payment...</p>
-          </motion.div>
-        </div>
-      </div>
-    );
-  }
+  if (!token) return null;
 
   return (
-    <div className="min-h-screen text-foreground">
-      <nav className="border-b border-border/50/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-14 max-w-3xl items-center px-6">
-          <SoloLogo width={100} height={28} />
-        </div>
-      </nav>
+    <div className="flex min-h-screen flex-col">
+      <TopBar minimal={!hasSession} />
 
-      <div className="mx-auto max-w-2xl px-6 py-12">
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="flex flex-col gap-8">
-          {/* Section 1: Confirmation */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-              <CheckCircle className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight">Payment confirmed. Your full report is ready.</h1>
-            </div>
-          </div>
+      {/* Stuck banner */}
+      {state === "stuck" && (
+        <Banner variant="warning">
+          Your payment worked, but we're catching up. Your report is safe. We're having trouble completing the handover. Please email support — we'll sort it out manually.
+        </Banner>
+      )}
 
-          {/* Section 2: Provisional First Move (if available) */}
-          {provisionalFirstMove && (
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.4 }}
-              className="space-y-4"
-            >
-              <div>
-                <h2 className="text-lg font-semibold text-foreground">Before you read your report: do this one thing.</h2>
-                <p className="mt-1 text-sm text-muted-foreground">The best time to act is before the planning starts. This is based on your top-ranked option.</p>
-              </div>
+      {/* Token error banner */}
+      {state === "token_error" && (
+        <Banner variant="error">
+          This link is no longer valid. Please sign in with the magic link we emailed you.
+        </Banner>
+      )}
 
-              {/* Action text */}
-              <div className="rounded-xl border border-border/60 bg-card p-6 space-y-4">
-                <p className="text-base font-medium leading-snug text-foreground">{provisionalFirstMove.action_text}</p>
-                {provisionalFirstMove.why_first && (
-                  <p className="text-sm text-muted-foreground leading-relaxed">{provisionalFirstMove.why_first}</p>
-                )}
+      {/* Network error banner */}
+      {state === "network_error" && (
+        <Banner variant="error">
+          We can't reach our servers. Check your connection and try again.
+        </Banner>
+      )}
 
-                {/* Draft message card */}
-                <div className="rounded-lg border border-border bg-surface/50 p-4 space-y-3">
-                  {provisionalFirstMove.draft_message.subject && (
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70 mb-1">Subject</p>
-                      <p className="text-sm text-foreground">{provisionalFirstMove.draft_message.subject}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground/70 mb-1">Message</p>
-                    <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">{provisionalFirstMove.draft_message.body}</p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
-                    {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copied ? "Copied!" : "Copy message"}
+      {/* Centred content */}
+      <div className="flex flex-1 items-center justify-center px-6">
+        <div className="w-full max-w-md text-center" aria-live="polite">
+          <AnimatePresence mode="wait">
+            {/* Exchanging / Polling — happy path */}
+            {(state === "exchanging" || state === "polling") && (
+              <motion.div
+                key="exchanging"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center gap-4"
+              >
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>
+                  Setting up your account.
+                </h1>
+                <p className="text-sm text-muted-foreground">This takes a few seconds.</p>
+                <Loader2 className="mt-2 h-5 w-5 animate-spin text-muted-foreground" />
+              </motion.div>
+            )}
+
+            {/* Delayed */}
+            {state === "delayed" && (
+              <motion.div
+                key="delayed"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center gap-4"
+              >
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>
+                  Almost there.
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Our system is catching up. This usually clears in a few seconds.
+                </p>
+                <Loader2 className="mt-2 h-5 w-5 animate-spin text-muted-foreground" />
+                <div className="mt-4 flex flex-col items-center gap-2">
+                  <Button variant="secondary" size="sm" onClick={handleRetry}>
+                    Try now
                   </Button>
+                  <a
+                    href="mailto:support@soloplanb.com"
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Contact support
+                  </a>
                 </div>
+              </motion.div>
+            )}
 
-                <p className="text-xs text-muted-foreground italic">We'll ask you about this tomorrow.</p>
-              </div>
-            </motion.div>
-          )}
+            {/* Ready — brief flash */}
+            {state === "ready" && (
+              <motion.div
+                key="ready"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col items-center gap-4"
+              >
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>
+                  Your report is ready.
+                </h1>
+              </motion.div>
+            )}
 
-          {/* Section 3: CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: provisionalFirstMove ? 0.4 : 0.2, duration: 0.4 }}
-          >
-            <Button
-              onClick={() => navigate(resultsUrl)}
-              className="gap-2"
-              style={{ background: "var(--gradient-cta)" }}
-            >
-              View your full report
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </motion.div>
-        </motion.div>
+            {/* Stuck — content in banner, just support CTA here */}
+            {state === "stuck" && (
+              <motion.div
+                key="stuck"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center gap-4"
+              >
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>
+                  Your payment worked, but we're catching up.
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Your report is safe. We're having trouble completing the handover. Please email support — we'll sort it out manually.
+                </p>
+                <a
+                  href="mailto:support@soloplanb.com"
+                  className="mt-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+                >
+                  Contact support
+                </a>
+              </motion.div>
+            )}
+
+            {/* Token error */}
+            {state === "token_error" && (
+              <motion.div
+                key="token_error"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center gap-4"
+              >
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>
+                  This link is no longer valid.
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Please sign in with the magic link we emailed you.
+                </p>
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate("/auth")}
+                  className="mt-2"
+                >
+                  Go to sign-in
+                </Button>
+              </motion.div>
+            )}
+
+            {/* Network error */}
+            {state === "network_error" && (
+              <motion.div
+                key="network_error"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center gap-4"
+              >
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>
+                  Connection issue.
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  We can't reach our servers. Check your connection and try again.
+                </p>
+                <Button variant="secondary" onClick={handleRetry} className="mt-2">
+                  Retry
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   );
