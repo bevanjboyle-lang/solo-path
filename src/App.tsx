@@ -71,14 +71,13 @@ function AnimatedRoutes() {
             <Route path="/payment-success" element={<PaymentSuccess />} />
 
             {/* Gated routes */}
-            <Route path="/plan" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/checkin/:sessionId" element={<ProtectedRoute><Checkin /></ProtectedRoute>} />
+            <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
+            <Route path="/checkin/:sessionId" element={<ProtectedRoute><CheckinDeepLink /></ProtectedRoute>} />
             <Route path="/library" element={<ProtectedRoute><GuidanceLibrary /></ProtectedRoute>} />
             <Route path="/library/modules/:id" element={<ProtectedRoute><ModuleDetail /></ProtectedRoute>} />
             <Route path="/ask-solo" element={<ProtectedRoute><AskSolo /></ProtectedRoute>} />
             <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
             <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
-            <Route path="/tracker" element={<ProtectedRoute><Tracker /></ProtectedRoute>} />
             <Route path="/guidance" element={<ProtectedRoute><Guidance /></ProtectedRoute>} />
             <Route path="/modules" element={<ProtectedRoute><Modules /></ProtectedRoute>} />
             <Route path="/modules/:id" element={<ProtectedRoute><ModuleDetail /></ProtectedRoute>} />
