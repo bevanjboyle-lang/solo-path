@@ -190,7 +190,7 @@ export default function Account() {
               {isSubscriber ? (
                 <div className="space-y-4">
                   <p className="text-sm text-foreground">
-                    Subscription — £{subscriptionPlan === "annual" ? "149 / year" : "19 / month"} · Renews {renewDate}
+                    Subscription — £{(subscriptionPlan as string) === "annual" ? "149 / year" : "19 / month"} · Renews {renewDate}
                   </p>
                   <div className="flex gap-3">
                     <Button size="sm" variant="outline" onClick={handleBillingPortal}>
