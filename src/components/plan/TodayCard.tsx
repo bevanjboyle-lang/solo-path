@@ -63,6 +63,23 @@ export default function TodayCard({
 }: TodayCardProps) {
   const navigate = useNavigate();
 
+  const handleCTA = useCallback((action: string) => {
+    switch (action) {
+      case "scrollToReport":
+        onScrollToReport?.();
+        break;
+      case "openCheckin":
+        onOpenCheckin?.();
+        break;
+      case "navigateLibrary":
+        navigateAuthed(navigate, "/library");
+        break;
+      case "navigateSubscribe":
+        navigateAuthed(navigate, "/subscribe");
+        break;
+    }
+  }, [onScrollToReport, onOpenCheckin, navigate]);
+
   if (state === "loading") {
     return (
       <div className="rounded-xl border border-border bg-[hsl(var(--surface-panel))] p-8 animate-pulse">
@@ -77,23 +94,6 @@ export default function TodayCard({
   const props = { state, dayNumber, weekNumber, sessionId, onScrollToReport, onOpenCheckin };
   const body = config.body(props);
   const cta = config.cta(props);
-
-  const handleCTA = useCallback(() => {
-    switch (cta.action) {
-      case "scrollToReport":
-        onScrollToReport?.();
-        break;
-      case "openCheckin":
-        onOpenCheckin?.();
-        break;
-      case "navigateLibrary":
-        navigateAuthed(navigate, "/library");
-        break;
-      case "navigateSubscribe":
-        navigateAuthed(navigate, "/subscribe");
-        break;
-    }
-  }, [cta.action, onScrollToReport, onOpenCheckin, navigate]);
 
   return (
     <motion.div
