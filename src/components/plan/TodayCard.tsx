@@ -115,7 +115,7 @@ export default function TodayCard({
         <Button
           variant={cta.variant === "primary" ? "default" : "secondary"}
           size="lg"
-          onClick={handleCTA}
+          onClick={() => handleCTA(cta.action)}
           className={
             cta.variant === "primary"
               ? "rounded-lg bg-primary px-6 text-[15px] font-semibold text-primary-foreground hover:bg-primary/90"
