@@ -10,7 +10,7 @@ const anonLinks = [
   { label: "FAQ", to: "/faq" },
 ];
 
-export default function TopBar() {
+export default function TopBar({ minimal = false }: { minimal?: boolean }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -19,7 +19,7 @@ export default function TopBar() {
   const handleSignOut = () => { signOut(); setOpen(false); };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-surface-panel border-b border-border">
+    <header className="sticky top-0 z-50 bg-[hsl(var(--surface-panel))] border-b border-border">
       {/* Mint accent line */}
       <div className="h-1 w-full" style={{ backgroundColor: "#2ECDB0" }} />
 
@@ -30,64 +30,72 @@ export default function TopBar() {
         </Link>
 
         {/* Desktop links */}
-        <div className="hidden items-center gap-8 md:flex">
-          {anonLinks.map((l) => (
-            <Link
-              key={l.to}
-              to={l.to}
-              className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {l.label}
-            </Link>
-          ))}
-        </div>
+        {!minimal && (
+          <div className="hidden items-center gap-8 md:flex">
+            {anonLinks.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+        )}
 
         {/* Desktop right */}
-        <div className="hidden items-center gap-5 md:flex">
-          {user ? (
-            <>
-              <button
-                onClick={() => navigateAuthed(navigate, "/plan")}
+        {!minimal ? (
+          <div className="hidden items-center gap-5 md:flex">
+            {user ? (
+              <>
+                <button
+                  onClick={() => navigateAuthed(navigate, "/plan")}
+                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  My plan
+                </button>
+                <button
+                  onClick={handleSignOut}
+                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/auth"
                 className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                My plan
-              </button>
-              <button
-                onClick={handleSignOut}
-                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Sign out
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/auth"
-              className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                Sign in
+              </Link>
+            )}
+            <button
+              onClick={handleStartTest}
+              className="rounded-lg bg-primary px-5 py-2 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Sign in
-            </Link>
-          )}
-          <button
-            onClick={handleStartTest}
-            className="rounded-lg bg-primary px-5 py-2 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Take the test
-          </button>
-        </div>
+              Take the test
+            </button>
+          </div>
+        ) : (
+          <div />
+        )}
 
         {/* Mobile hamburger */}
-        <button
-          className="md:hidden"
-          onClick={() => setOpen(!open)}
-          aria-label={open ? "Close menu" : "Open menu"}
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        {!minimal && (
+          <button
+            className="md:hidden"
+            onClick={() => setOpen(!open)}
+            aria-label={open ? "Close menu" : "Open menu"}
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        )}
       </nav>
 
       {/* Mobile menu */}
-      {open && (
-        <div className="border-t border-border bg-surface-panel px-6 py-4 md:hidden">
+      {!minimal && open && (
+        <div className="border-t border-border bg-[hsl(var(--surface-panel))] px-6 py-4 md:hidden">
           <div className="flex flex-col gap-3">
             {anonLinks.map((l) => (
               <Link
