@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,12 +14,10 @@ import Processing from "./pages/Processing";
 import Results from "./pages/Results";
 import Teaser from "./pages/Teaser";
 import PaymentSuccess from "./pages/PaymentSuccess";
-import Tracker from "./pages/Tracker";
-import Checkin from "./pages/Checkin";
+import Plan from "./pages/Plan";
 import Pricing from "./pages/Pricing";
 import GuidanceLibrary from "./pages/GuidanceLibrary";
 import FAQ from "./pages/FAQ";
-import Dashboard from "./pages/Dashboard";
 import Subscribe from "./pages/Subscribe";
 import Modules from "./pages/Modules";
 import ModuleDetail from "./pages/ModuleDetail";
@@ -29,6 +27,12 @@ import NotFound from "./pages/NotFound";
 import Footer from "@/components/Footer";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+
+/** Deep-link wrapper: /checkin/:sessionId → Plan with pre-opened drawer */
+function CheckinDeepLink() {
+  const { sessionId } = useParams();
+  return <Plan initialSessionId={sessionId} />;
+}
 
 const queryClient = new QueryClient();
 
