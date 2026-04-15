@@ -1,98 +1,263 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import TopBar from "@/components/TopBar";
+import { getClientSessionId } from "@/lib/handlers";
+
+const CYCLING_MESSAGES = [
+  "Reading your answers.",
+  "Mapping your archetype.",
+  "Shortlisting business options.",
+  "Drafting your 30-day plan.",
+  "Finishing up.",
+];
+
+const CYCLE_INTERVAL = 2800;
+const TIMEOUT_MS = 60_000;
+
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return reduced;
+}
+
+type PageState = "generating" | "ready" | "failed" | "timed_out";
 
 export default function Processing() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [error, setError] = useState(false);
+  const [searchParams] = useSearchParams();
+  const reportId = searchParams.get("report_id");
 
-  const generate = useCallback(async () => {
-    if (!user) return;
-    setError(false);
+  const [state, setState] = useState<PageState>("generating");
+  const [msgIndex, setMsgIndex] = useState(0);
+  const reducedMotion = usePrefersReducedMotion();
+  const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startRef = useRef(Date.now());
+  const mountedRef = useRef(true);
+
+  // No report_id → redirect home
+  useEffect(() => {
+    if (!reportId) {
+      navigate("/", { replace: true });
+    }
+  }, [reportId, navigate]);
+
+  // Cycling messages
+  useEffect(() => {
+    if (state !== "generating") return;
+    const id = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % CYCLING_MESSAGES.length);
+    }, CYCLE_INTERVAL);
+    return () => clearInterval(id);
+  }, [state]);
+
+  // Polling
+  const poll = useCallback(async () => {
+    if (!reportId || !mountedRef.current) return;
+
+    const elapsed = Date.now() - startRef.current;
+    if (elapsed >= TIMEOUT_MS) {
+      setState("timed_out");
+      return;
+    }
 
     try {
-      // Fetch saved answers
-      const { data: qr } = await supabase
-        .from("questionnaire_responses")
-        .select("answers")
-        .eq("user_id", user.id)
+      const { data } = await supabase
+        .from("reports")
+        .select("status")
+        .eq("id", reportId)
         .maybeSingle();
 
-      if (!qr?.answers) throw new Error("No questionnaire answers found");
+      if (!mountedRef.current) return;
 
-      const { data, error: fnErr } = await supabase.functions.invoke("generate-report", {
-        body: { answers: qr.answers },
-      });
-
-      if (fnErr) throw fnErr;
-      if (data?.error) throw new Error(data.error);
-
-      const reportId = data?.reportId || data?.report_id;
-      if (!reportId || reportId === 'undefined') {
-        console.error('generate-report did not return a valid reportId:', data);
-        setError(true);
+      if (data?.status === "teaser_ready") {
+        setState("ready");
+        // Brief flash then navigate
+        setTimeout(() => {
+          if (mountedRef.current) {
+            navigate(`/teaser?report_id=${reportId}`, { replace: true });
+          }
+        }, 400);
         return;
       }
 
-      navigate(`/teaser?report_id=${reportId}`);
-    } catch (err) {
-      console.error("Report generation failed:", err);
-      setError(true);
+      if (data?.status === "failed") {
+        setState("failed");
+        return;
+      }
+    } catch {
+      // Single failed poll is self-recovering — continue
     }
-  }, [user, navigate]);
+
+    if (!mountedRef.current) return;
+
+    // Schedule next poll with adaptive interval
+    const nextElapsed = Date.now() - startRef.current;
+    let delay: number;
+    if (nextElapsed < 10_000) delay = 1000;
+    else if (nextElapsed < 30_000) delay = 2000;
+    else delay = 3000;
+
+    pollingRef.current = setTimeout(poll, delay);
+  }, [reportId, navigate]);
 
   useEffect(() => {
-    generate();
-  }, [generate]);
+    mountedRef.current = true;
+    if (reportId && state === "generating") {
+      pollingRef.current = setTimeout(poll, 1000);
+    }
+    return () => {
+      mountedRef.current = false;
+      if (pollingRef.current) clearTimeout(pollingRef.current);
+    };
+  }, [reportId, poll, state]);
+
+  const handleRetry = () => {
+    const sessionId = getClientSessionId();
+    navigate(`/questionnaire?resume=true&session=${sessionId}`);
+  };
+
+  if (!reportId) return null;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center">
-      {error ? (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center gap-4"
-        >
-          <h1 className="text-2xl font-semibold text-foreground">Something went wrong</h1>
-          <p className="max-w-md text-sm text-muted-foreground">
-            We couldn't generate your report. Please try again.
-          </p>
-          <button
-            onClick={generate}
-            className="mt-2 inline-flex items-center rounded-lg px-6 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:opacity-90"
-            style={{ background: "var(--gradient-cta)" }}
-          >
-            Try again
-          </button>
-        </motion.div>
-      ) : (
-        <>
-          <motion.div
-            className="mb-10 h-10 w-10 rounded-full border-2 border-border border-t-primary"
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-          />
-          <motion.h1
-            className="text-2xl font-semibold text-foreground sm:text-3xl"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            Building your Plan B report...
-          </motion.h1>
-          <motion.p
-            className="mt-4 max-w-md text-sm leading-relaxed text-muted-foreground"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            This takes about 30 seconds. We're analysing your profile against our business model library.
-          </motion.p>
-        </>
-      )}
+    <div className="flex min-h-screen flex-col bg-background">
+      <TopBar minimal />
+
+      <main className="flex flex-1 flex-col items-center justify-center px-6">
+        <AnimatePresence mode="wait">
+          {state === "generating" && (
+            <motion.div
+              key="generating"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center text-center"
+            >
+              {/* Spinner / static indicator */}
+              {reducedMotion ? (
+                <div className="mb-10 h-10 w-10 rounded-full border-2 border-muted-foreground/30 border-t-[#2ECDB0]" />
+              ) : (
+                <motion.div
+                  className="mb-10 h-10 w-10 rounded-full border-2 border-muted-foreground/30 border-t-[#2ECDB0]"
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                />
+              )}
+
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                Building your report.
+              </h1>
+
+              <p className="mt-3 text-sm text-muted-foreground">
+                This takes about five seconds.
+              </p>
+
+              {/* Cycling messages */}
+              <div
+                className="mt-8 h-6"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={msgIndex}
+                    initial={reducedMotion ? {} : { opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={reducedMotion ? {} : { opacity: 0, y: -6 }}
+                    transition={{ duration: 0.25 }}
+                    className="text-sm text-muted-foreground/70"
+                  >
+                    {CYCLING_MESSAGES[msgIndex]}
+                  </motion.p>
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          )}
+
+          {state === "ready" && (
+            <motion.div
+              key="ready"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center text-center"
+            >
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2ECDB0]/15">
+                <svg className="h-6 w-6 text-[#2ECDB0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                Your report is ready.
+              </h1>
+            </motion.div>
+          )}
+
+          {state === "failed" && (
+            <motion.div
+              key="failed"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex max-w-md flex-col items-center text-center"
+            >
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                We couldn't generate your report.
+              </h1>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                Something went wrong on our side. Your answers are saved — you can retry without starting over.
+              </p>
+              <button
+                onClick={handleRetry}
+                className="mt-8 rounded-lg px-8 py-2.5 text-sm font-semibold text-primary-foreground transition-colors"
+                style={{ backgroundColor: "hsl(var(--primary))" }}
+              >
+                Try again
+              </button>
+              <a
+                href="mailto:support@soloplan.ai"
+                className="mt-4 text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
+              >
+                Contact support
+              </a>
+            </motion.div>
+          )}
+
+          {state === "timed_out" && (
+            <motion.div
+              key="timed_out"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex max-w-md flex-col items-center text-center"
+            >
+              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                This is taking longer than usual.
+              </h1>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                Your answers are saved. You can retry now, or come back via the email we just sent and we'll pick up where we left off.
+              </p>
+              <button
+                onClick={handleRetry}
+                className="mt-8 rounded-lg px-8 py-2.5 text-sm font-semibold text-primary-foreground transition-colors"
+                style={{ backgroundColor: "hsl(var(--primary))" }}
+              >
+                Try again
+              </button>
+              <a
+                href="mailto:support@soloplan.ai"
+                className="mt-4 text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
+              >
+                Contact support
+              </a>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }
