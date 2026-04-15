@@ -109,6 +109,10 @@ export default function Library() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [drawerView, setDrawerView] = useState<DrawerView>("detail");
+  const [moduleAnswers, setModuleAnswers] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [moduleOutput, setModuleOutput] = useState<ModuleOutput | null>(null);
 
   const isSubscriber = false; // Will be derived from user state later
   const isDay31Plus = false;
