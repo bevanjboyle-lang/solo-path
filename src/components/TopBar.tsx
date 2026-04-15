@@ -10,7 +10,7 @@ const anonLinks = [
   { label: "FAQ", to: "/faq" },
 ];
 
-export default function TopBar() {
+export default function TopBar({ minimal = false }: { minimal?: boolean }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);

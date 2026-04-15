@@ -1,10 +1,13 @@
+import { ArrowLeft } from "lucide-react";
+
 interface ProgressHeaderProps {
   currentStep: number;
   totalSteps: number;
   labels: string[];
+  onBack?: () => void;
 }
 
-export default function ProgressHeader({ currentStep, totalSteps, labels }: ProgressHeaderProps) {
+export default function ProgressHeader({ currentStep, totalSteps, labels, onBack }: ProgressHeaderProps) {
   return (
     <div className="w-full border-b border-border bg-[hsl(var(--surface-panel))]">
       <div className="max-w-2xl mx-auto px-6 py-4 flex items-center gap-3">
