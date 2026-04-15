@@ -17,13 +17,11 @@ import Teaser from "./pages/Teaser";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Plan from "./pages/Plan";
 import Pricing from "./pages/Pricing";
-import GuidanceLibrary from "./pages/GuidanceLibrary";
+import Library from "./pages/Library";
 import FAQ from "./pages/FAQ";
 import Subscribe from "./pages/Subscribe";
-import Modules from "./pages/Modules";
-import ModuleDetail from "./pages/ModuleDetail";
 import AskSolo from "./pages/AskSolo";
-import Guidance from "./pages/Guidance";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import ServerError from "./pages/ServerError";
 import Footer from "@/components/Footer";
@@ -38,7 +36,7 @@ function CheckinDeepLink() {
 
 const queryClient = new QueryClient();
 
-const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success", "/auth", "/privacy", "/terms"];
+const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success", "/auth", "/privacy", "/terms", "/plan", "/library", "/ask-solo", "/account", "/subscribe", "/checkin"];
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -75,14 +73,12 @@ function AnimatedRoutes() {
             {/* Gated routes */}
             <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
             <Route path="/checkin/:sessionId" element={<ProtectedRoute><CheckinDeepLink /></ProtectedRoute>} />
-            <Route path="/library" element={<ProtectedRoute><GuidanceLibrary /></ProtectedRoute>} />
-            <Route path="/library/modules/:id" element={<ProtectedRoute><ModuleDetail /></ProtectedRoute>} />
+            <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+            <Route path="/library/modules/:id" element={<ProtectedRoute><Library /></ProtectedRoute>} />
             <Route path="/ask-solo" element={<ProtectedRoute><AskSolo /></ProtectedRoute>} />
+            <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
             <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
-            <Route path="/guidance" element={<ProtectedRoute><Guidance /></ProtectedRoute>} />
-            <Route path="/modules" element={<ProtectedRoute><Modules /></ProtectedRoute>} />
-            <Route path="/modules/:id" element={<ProtectedRoute><ModuleDetail /></ProtectedRoute>} />
 
             {/* Errors */}
             <Route path="/500" element={<ServerError />} />

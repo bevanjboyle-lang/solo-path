@@ -1,0 +1,362 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Loader2, AlertTriangle } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  navigateAuthed,
+  startTest,
+  triggerStripeCheckout,
+  openBillingPortal,
+  resumeSubscription,
+  confirmDeleteCv,
+  requestDataExport,
+  confirmDeleteAccount,
+  claimSecondReport,
+  submitForm,
+} from "@/lib/handlers";
+import TopBar from "@/components/TopBar";
+import PanelLayout from "@/components/PanelLayout";
+import Banner from "@/components/Banner";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+export default function Account() {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  // Mock subscription state
+  const isSubscriber = false;
+  const isCancelPending = false;
+  const subscriptionPlan = "monthly"; // or "annual"
+  const renewDate = "15 May 2026";
+  const accessEndDate = "15 May 2026";
+  const paymentFailed = false;
+
+  // Profile editing
+  const [editingName, setEditingName] = useState(false);
+  const [firstName, setFirstName] = useState(user?.user_metadata?.first_name || "");
+  const [savingName, setSavingName] = useState(false);
+
+  // Modals
+  const [showDeleteCv, setShowDeleteCv] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [showCancelSub, setShowCancelSub] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const handleSaveName = async () => {
+    setSavingName(true);
+    await submitForm("profile", { first_name: firstName });
+    setSavingName(false);
+    setEditingName(false);
+    toast({ title: "Saved." });
+  };
+
+  const handleDeleteCv = async () => {
+    await confirmDeleteCv();
+    setShowDeleteCv(false);
+    toast({ title: "CV removed." });
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    await confirmDeleteAccount();
+    setDeletingAccount(false);
+    setShowDeleteAccount(false);
+    await signOut();
+    navigate("/");
+    toast({ title: "Your account has been deleted." });
+  };
+
+  const handleCancelSub = async () => {
+    setShowCancelSub(false);
+    toast({ title: "Subscription cancelled. You'll keep access until " + accessEndDate + "." });
+  };
+
+  const handleResumeSub = async () => {
+    await resumeSubscription();
+    toast({ title: "Subscription resumed." });
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
+
+  const handleSecondReport = async () => {
+    if (isSubscriber) {
+      await claimSecondReport();
+      startTest(navigate);
+    } else {
+      await triggerStripeCheckout("price_second_report", {});
+    }
+  };
+
+  const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
+  const handleBillingPortal = () => openBillingPortal();
+  const handleDataExport = () => requestDataExport();
+
+  return (
+    <div className="min-h-screen flex flex-col text-foreground">
+      <TopBar />
+
+      <PanelLayout className="px-6 py-10 sm:px-10">
+        <div className="mx-auto max-w-xl space-y-8">
+          <h1
+            className="font-display text-3xl font-bold tracking-tight"
+            style={{ letterSpacing: "-0.02em" }}
+          >
+            Account
+          </h1>
+
+          {/* 1. PROFILE */}
+          <Card className="border-border bg-[hsl(var(--surface-panel))]">
+            <CardContent className="p-6">
+              <h2 className="font-display text-base font-semibold text-foreground mb-5">Profile</h2>
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-xs text-muted-foreground">First name</Label>
+                  {editingName ? (
+                    <div className="mt-1.5 flex gap-2">
+                      <Input
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        className="h-9 text-sm"
+                        autoFocus
+                      />
+                      <Button size="sm" onClick={handleSaveName} disabled={savingName}>
+                        {savingName ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingName(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="mt-1.5 flex items-center gap-3">
+                      <span className="text-sm text-foreground">{firstName || "Not set"}</span>
+                      <button
+                        onClick={() => setEditingName(true)}
+                        className="text-xs font-medium text-primary hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <Label className="text-xs text-muted-foreground">Sign-in email</Label>
+                  <p className="mt-1.5 text-sm text-foreground">{user?.email}</p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    This is where we'll send your magic link. Contact us to change it.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 2. YOUR PLAN */}
+          <Card className="border-border bg-[hsl(var(--surface-panel))]">
+            <CardContent className="p-6">
+              <h2 className="font-display text-base font-semibold text-foreground mb-5">Your plan</h2>
+
+              {paymentFailed && (
+                <Banner variant="error">
+                  We couldn't process your last payment. Update your card to keep your subscription active.
+                </Banner>
+              )}
+
+              {isCancelPending && (
+                <Banner variant="info">
+                  Your subscription ends on {accessEndDate}. You'll keep full access until then.
+                </Banner>
+              )}
+
+              {isSubscriber ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-foreground">
+                    Subscription — £{(subscriptionPlan as string) === "annual" ? "149 / year" : "19 / month"} · Renews {renewDate}
+                  </p>
+                  <div className="flex gap-3">
+                    <Button size="sm" variant="outline" onClick={handleBillingPortal}>
+                      Manage billing
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-muted-foreground"
+                      onClick={() => setShowCancelSub(true)}
+                    >
+                      Cancel subscription
+                    </Button>
+                  </div>
+                  {isCancelPending && (
+                    <Button size="sm" onClick={handleResumeSub}>
+                      Resume subscription
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-foreground">
+                    30-day report — access until {accessEndDate}
+                  </p>
+                  <Button size="sm" onClick={handleSubscribe}>
+                    Subscribe
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 3. TAKE ANOTHER TEST */}
+          <Card className="border-border bg-[hsl(var(--surface-panel))]">
+            <CardContent className="p-6">
+              <h2 className="font-display text-base font-semibold text-foreground mb-3">Take another test</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                {isSubscriber
+                  ? "You can take a fresh test at any time — it's included in your subscription."
+                  : "Been a while, or circumstances changed? Get a fresh report for £9.99."}
+              </p>
+              <Button size="sm" variant={isSubscriber ? "default" : "outline"} onClick={handleSecondReport}>
+                {isSubscriber ? "Take another test" : "Take another test — £9.99"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* 4. DATA & PRIVACY */}
+          <Card className="border-border bg-[hsl(var(--surface-panel))]">
+            <CardContent className="p-6">
+              <h2 className="font-display text-base font-semibold text-foreground mb-5">Data & privacy</h2>
+
+              <div className="space-y-5">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Remove my CV</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    We'll delete the file and any extracted text. Your report stays.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-3"
+                    onClick={() => setShowDeleteCv(true)}
+                  >
+                    Remove
+                  </Button>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-foreground">Request my data</p>
+                  <Button size="sm" variant="outline" className="mt-3" onClick={handleDataExport}>
+                    Request export
+                  </Button>
+                </div>
+
+                {/* Danger zone */}
+                <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/5 p-5">
+                  <h3 className="flex items-center gap-2 text-sm font-semibold text-destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    Danger zone
+                  </h3>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    This permanently deletes your account, report, plan, check-in history, and conversations.
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="mt-4"
+                    onClick={() => setShowDeleteAccount(true)}
+                  >
+                    Delete my account
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 5. SIGN OUT */}
+          <Button className="w-full" onClick={handleSignOut}>
+            Sign out
+          </Button>
+        </div>
+      </PanelLayout>
+
+      {/* ── Modals ── */}
+
+      {/* CV delete */}
+      <AlertDialog open={showDeleteCv} onOpenChange={setShowDeleteCv}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove your CV?</AlertDialogTitle>
+            <AlertDialogDescription>
+              We'll delete the file and any extracted text. Your report stays.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteCv}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel subscription */}
+      <AlertDialog open={showCancelSub} onOpenChange={setShowCancelSub}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel your subscription?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You'll keep access until {accessEndDate}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCancelSub}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Account delete — typed confirmation */}
+      <AlertDialog open={showDeleteAccount} onOpenChange={(open) => { setShowDeleteAccount(open); if (!open) setDeleteConfirmText(""); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This deletes your report, plan, check-in history, and conversations. It can't be undone. Type <strong>delete</strong> to confirm.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={deleteConfirmText}
+            onChange={(e) => setDeleteConfirmText(e.target.value)}
+            placeholder='Type "delete" to confirm'
+            className="mt-2"
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmText !== "delete" || deletingAccount}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingAccount ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete account"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

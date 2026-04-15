@@ -55,6 +55,74 @@ export async function signIn(
 }
 
 /**
+ * Open a named panel (e.g. checkin drawer, askSolo widget).
+ * Panel coordination is handled by the calling page's state.
+ */
+export function openPanel(
+  _panelName: string,
+  _params?: Record<string, unknown>
+): void {
+  // Panels are controlled via page-level state, not routing.
+  // This is a declarative intent — the calling component
+  // reads the panel name and opens the correct drawer/overlay.
+}
+
+/**
+ * Open Stripe billing portal via edge function.
+ */
+export async function openBillingPortal(): Promise<void> {
+  const { data, error } = await supabase.functions.invoke("customer-portal", {});
+  if (error) throw error;
+  const url = data?.url;
+  if (url) window.location.href = url;
+}
+
+/**
+ * Resume a cancelled-pending subscription via edge function.
+ */
+export async function resumeSubscription(): Promise<{ error?: string }> {
+  const { error } = await supabase.functions.invoke("resume-subscription", {});
+  if (error) return { error: error.message };
+  return {};
+}
+
+/**
+ * Confirm and delete CV data.
+ */
+export async function confirmDeleteCv(): Promise<{ error?: string }> {
+  const { error } = await supabase.functions.invoke("delete-cv", {});
+  if (error) return { error: error.message };
+  return {};
+}
+
+/**
+ * Request a data export.
+ */
+export async function requestDataExport(): Promise<{ error?: string }> {
+  const { error } = await supabase.functions.invoke("request-data-export", {});
+  if (error) return { error: error.message };
+  return {};
+}
+
+/**
+ * Delete user account entirely.
+ */
+export async function confirmDeleteAccount(): Promise<{ error?: string }> {
+  const { error } = await supabase.functions.invoke("delete-account", {});
+  if (error) return { error: error.message };
+  return {};
+}
+
+/**
+ * Claim a second report (subscriber perk).
+ */
+export async function claimSecondReport(): Promise<{ error?: string }> {
+  const { error } = await supabase.functions.invoke("claim-second-report", {});
+  if (error) return { error: error.message };
+  return {};
+}
+
+/**
  * Get or create client_session_id.
  */
 export function getClientSessionId(): string {
