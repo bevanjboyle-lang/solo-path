@@ -36,7 +36,8 @@ import {
 export default function Account() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { toast } = useToast();
+  // CV state
+  const [cvRemoved, setCvRemoved] = useState(false);
 
   // Mock subscription state
   const isSubscriber = false;
