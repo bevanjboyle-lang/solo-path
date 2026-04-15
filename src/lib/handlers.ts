@@ -6,7 +6,7 @@ const SESSION_KEY = "solo.client_session_id";
  */
 export function startTest(navigate: (path: string) => void) {
   if (!localStorage.getItem(SESSION_KEY)) {
-    localStorage.setItem(SESSION_KEY, uuidv4());
+    localStorage.setItem(SESSION_KEY, crypto.randomUUID());
   }
   navigate("/cv-upload");
 }
