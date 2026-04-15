@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Lock, ChevronRight, X, Check, Clock, Loader2 } from "lucide-react";
+import { BookOpen, Lock, ChevronRight, X, Check, Clock, Loader2, MessageCircle } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import GlassCard from "@/components/ui/GlassCard";
 
 /* ── Types ── */
@@ -80,7 +81,15 @@ interface ArticleData {
   } | null;
 }
 
-/* ── Component ── */
+interface ModuleOutput {
+  key_insights?: string[];
+  next_steps?: string[];
+  resources_or_prompts?: string[];
+}
+
+type DrawerView = "detail" | "questions" | "output";
+
+
 export default function Library() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -100,6 +109,10 @@ export default function Library() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedModuleId, setSelectedModuleId] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [drawerView, setDrawerView] = useState<DrawerView>("detail");
+  const [moduleAnswers, setModuleAnswers] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [moduleOutput, setModuleOutput] = useState<ModuleOutput | null>(null);
 
   const isSubscriber = false; // Will be derived from user state later
   const isDay31Plus = false;
@@ -140,16 +153,61 @@ export default function Library() {
     setArticleData(null);
     setArticleLoading(true);
     setDrawerOpen(true);
+    setDrawerView("detail");
+    setModuleAnswers({});
+    setModuleOutput(null);
 
     supabase.functions.invoke("get-library-content", {
       body: { call_type: "article", module_id: moduleId },
     }).then(({ data, error }) => {
-      if (!error && data) setArticleData(data as ArticleData);
+      if (!error && data) {
+        const article = (data as any).module || data;
+        setArticleData(article as ArticleData);
+      }
       setArticleLoading(false);
     });
   }, [navigate]);
 
   const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
+
+  // ── Start question form ──
+  const startQuestions = useCallback(() => {
+    if (!articleData) return;
+    const initial: Record<string, string> = {};
+    articleData.key_questions.forEach((_, i) => {
+      initial[`question_${i + 1}`] = "";
+    });
+    setModuleAnswers(initial);
+    setDrawerView("questions");
+  }, [articleData]);
+
+  // ── Submit module answers ──
+  const submitModuleAnswers = useCallback(async () => {
+    if (!articleData) return;
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-guidance", {
+        body: { module_id: articleData.module_id, module_answers: moduleAnswers },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      const output = data?.output || data;
+      setModuleOutput(output as ModuleOutput);
+      setDrawerView("output");
+    } catch (e: any) {
+      toast.error(e.message || "Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }, [articleData, moduleAnswers]);
+
+  // ── Back to modules from drawer ──
+  const backToModules = useCallback(() => {
+    setDrawerOpen(false);
+    setDrawerView("detail");
+    setModuleOutput(null);
+    setArticleData(null);
+  }, []);
 
   // ── Derive browse track list for filter chips ──
   const trackKeys = browseData ? Object.keys(browseData.tracks) : [];
@@ -250,18 +308,14 @@ export default function Library() {
                 </div>
               )
             ) : (
-              <ModulesTab onSelectModule={(id) => {
-                setTab("modules");
-                // Navigate to module detail via existing routing
-                navigate(`/library/modules/${id}`);
-              }} />
+              <ModulesTab onSelectModule={(id) => openArticle(id, true)} />
             )}
           </div>
         </div>
       </PanelLayout>
 
       {/* Reading drawer */}
-      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+      <Sheet open={drawerOpen} onOpenChange={(open) => { if (!open) backToModules(); }}>
         <SheetContent side="right" className="w-full sm:max-w-[70vw] overflow-y-auto p-0">
           {articleLoading ? (
             <div className="p-8 space-y-4">
@@ -273,15 +327,33 @@ export default function Library() {
               <Skeleton className="h-32 w-full mt-6" />
             </div>
           ) : articleData ? (
-            <ArticleDrawer
-              data={articleData}
-              onClose={() => setDrawerOpen(false)}
-              onSubscribe={handleSubscribe}
-              onStartModule={() => {
-                setDrawerOpen(false);
-                navigate(`/library/modules/${articleData.module_id}`);
-              }}
-            />
+            drawerView === "questions" ? (
+              <QuestionForm
+                data={articleData}
+                answers={moduleAnswers}
+                onAnswerChange={(key, val) => setModuleAnswers((a) => ({ ...a, [key]: val }))}
+                onSubmit={submitModuleAnswers}
+                onBack={() => setDrawerView("detail")}
+                submitting={submitting}
+                onClose={backToModules}
+              />
+            ) : drawerView === "output" && moduleOutput ? (
+              <OutputView
+                moduleName={articleData.title}
+                output={moduleOutput}
+                onBack={backToModules}
+                moduleId={articleData.module_id}
+                navigate={navigate}
+                onClose={backToModules}
+              />
+            ) : (
+              <ArticleDrawer
+                data={articleData}
+                onClose={backToModules}
+                onSubscribe={handleSubscribe}
+                onStartModule={startQuestions}
+              />
+            )
           ) : null}
         </SheetContent>
       </Sheet>
@@ -472,14 +544,238 @@ function BrowseTab({
   );
 }
 
-/* ── Modules Tab (unchanged — still uses existing routing) ── */
+/* ── Modules Tab — fetches browse data to render module cards ── */
 function ModulesTab({ onSelectModule }: { onSelectModule: (id: number) => void }) {
+  const [modules, setModules] = useState<BrowseModule[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.functions.invoke("get-library-content", {
+      body: { call_type: "browse" },
+    }).then(({ data }) => {
+      if (data?.tracks) {
+        const all = Object.values(data.tracks as Record<string, TrackData>).flatMap((t) => t.modules);
+        setModules(all);
+      }
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-lg" />
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="py-8 text-center">
-      <BookOpen className="mx-auto h-8 w-8 text-muted-foreground/30 mb-4" />
-      <p className="text-sm text-muted-foreground">
-        Modules are accessed through the Today and Browse tabs. Select a module to begin.
-      </p>
+    <div className="space-y-3">
+      {modules.map((mod) => (
+        <button
+          key={mod.module_id}
+          onClick={() => {
+            if (!mod.is_unlocked) return;
+            onSelectModule(mod.module_id);
+          }}
+          className={`w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-4 text-left transition-colors ${
+            mod.is_unlocked ? "hover:border-primary/30 cursor-pointer" : "opacity-70 cursor-not-allowed"
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--surface-inset))]">
+              {!mod.is_unlocked ? (
+                <Lock className="h-4 w-4 text-muted-foreground" />
+              ) : mod.is_completed ? (
+                <Check className="h-4 w-4 text-primary" />
+              ) : (
+                <BookOpen className="h-4 w-4 text-primary" />
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">{mod.track_name}</span>
+                {mod.is_completed && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">Done</span>}
+              </div>
+              <h3 className="text-sm font-semibold text-foreground leading-snug">{mod.title}</h3>
+              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{mod.description}</p>
+            </div>
+            <div className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground/60">
+              <Clock className="h-3 w-3" />
+              {mod.estimated_minutes} min
+            </div>
+          </div>
+          {!mod.is_unlocked && (
+            <p className="mt-2 text-[10px] font-medium text-muted-foreground ml-11">Subscribe to unlock</p>
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ── Question Form ── */
+function QuestionForm({
+  data, answers, onAnswerChange, onSubmit, onBack, submitting, onClose,
+}: {
+  data: ArticleData;
+  answers: Record<string, string>;
+  onAnswerChange: (key: string, value: string) => void;
+  onSubmit: () => void;
+  onBack: () => void;
+  submitting: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex flex-col min-h-full">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-[hsl(var(--surface-panel))] px-6 py-4">
+        <div>
+          <h2 className="text-lg font-semibold text-foreground">{data.title}</h2>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-[10px] rounded-full bg-[hsl(var(--surface-inset))] px-2 py-0.5 text-muted-foreground flex items-center gap-1">
+              <Clock className="h-3 w-3" /> ~{data.estimated_minutes} min
+            </span>
+          </div>
+        </div>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="flex-1 px-6 py-8 space-y-6">
+        {data.what_you_get && (
+          <GlassCard className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">You'll get</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{data.what_you_get}</p>
+          </GlassCard>
+        )}
+
+        <div className="h-px bg-border" />
+
+        <div className="space-y-5">
+          {data.key_questions.map((q, i) => {
+            const key = `question_${i + 1}`;
+            return (
+              <div key={key}>
+                <label className="block text-sm font-medium text-foreground mb-2">{q}</label>
+                <Textarea
+                  value={answers[key] || ""}
+                  onChange={(e) => onAnswerChange(key, e.target.value.slice(0, 500))}
+                  placeholder="Your answer..."
+                  rows={4}
+                  maxLength={500}
+                  disabled={submitting}
+                  className="resize-none"
+                />
+                <p className="text-right text-[10px] text-muted-foreground/50 mt-1">
+                  {(answers[key] || "").length}/500
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center justify-between pt-4">
+          <button
+            onClick={onBack}
+            disabled={submitting}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Back to modules
+          </button>
+          <Button onClick={onSubmit} disabled={submitting}>
+            {submitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                Generating…
+              </>
+            ) : (
+              "Get my guidance"
+            )}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Output View ── */
+function OutputView({
+  moduleName, output, onBack, moduleId, navigate, onClose,
+}: {
+  moduleName: string;
+  output: ModuleOutput;
+  onBack: () => void;
+  moduleId: number;
+  navigate: (path: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex flex-col min-h-full">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-[hsl(var(--surface-panel))] px-6 py-4">
+        <h2 className="text-base font-semibold text-foreground">{moduleName}</h2>
+        <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      <div className="flex-1 px-6 py-8 space-y-6">
+        {output.key_insights && output.key_insights.length > 0 && (
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Key insights</h3>
+            <ul className="space-y-2">
+              {output.key_insights.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="h-px bg-border" />
+
+        {output.next_steps && output.next_steps.length > 0 && (
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Next steps</h3>
+            <ol className="space-y-2">
+              {output.next_steps.map((step, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <span className="mt-0.5 shrink-0 text-xs font-semibold text-primary">{i + 1}.</span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+
+        <div className="h-px bg-border" />
+
+        {output.resources_or_prompts && output.resources_or_prompts.length > 0 && (
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Prompts and resources</h3>
+            <ul className="space-y-2">
+              {output.resources_or_prompts.map((r, i) => (
+                <li key={i} className="text-sm text-muted-foreground">{r}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-4">
+          <Button variant="outline" onClick={onBack}>Back to modules</Button>
+          <button
+            onClick={() => navigate("/ask-solo?context=" + moduleId)}
+            className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Ask Solo about this
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
