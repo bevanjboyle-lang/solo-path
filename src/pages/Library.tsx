@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Lock, ChevronRight, X, Check, Clock, Loader2 } from "lucide-react";
+import { BookOpen, Lock, ChevronRight, X, Check, Clock, Loader2, MessageCircle } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
 import { supabase } from "@/integrations/supabase/client";
