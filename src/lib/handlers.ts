@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from "uuid";
-
 const SESSION_KEY = "solo.client_session_id";
 
 /**
