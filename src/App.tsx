@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { AnimatePresence, motion } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Landing from "./pages/Landing";
 import CVUpload from "./pages/CVUpload";
 import Auth from "./pages/Auth";
@@ -24,6 +25,7 @@ import ModuleDetail from "./pages/ModuleDetail";
 import AskSolo from "./pages/AskSolo";
 import Guidance from "./pages/Guidance";
 import NotFound from "./pages/NotFound";
+import ServerError from "./pages/ServerError";
 import Footer from "@/components/Footer";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -36,7 +38,7 @@ function CheckinDeepLink() {
 
 const queryClient = new QueryClient();
 
-const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success"];
+const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success", "/auth"];
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -83,6 +85,7 @@ function AnimatedRoutes() {
             <Route path="/modules/:id" element={<ProtectedRoute><ModuleDetail /></ProtectedRoute>} />
 
             {/* Errors */}
+            <Route path="/500" element={<ServerError />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </motion.div>
@@ -93,17 +96,19 @@ function AnimatedRoutes() {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AnimatedRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <AnimatedRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
