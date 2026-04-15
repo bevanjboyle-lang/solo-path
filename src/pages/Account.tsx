@@ -64,33 +64,44 @@ export default function Account() {
     await submitForm("profile", { first_name: firstName });
     setSavingName(false);
     setEditingName(false);
-    toast({ title: "Saved." });
+    toast.success("Saved.");
   };
 
   const handleDeleteCv = async () => {
-    await confirmDeleteCv();
-    setShowDeleteCv(false);
-    toast({ title: "CV removed." });
+    const result = await confirmDeleteCv();
+    if (result.error) {
+      toast.error("Unable to delete CV. Please try again.");
+    } else {
+      setShowDeleteCv(false);
+      setCvRemoved(true);
+      toast.success("Your CV has been removed.");
+    }
   };
 
   const handleDeleteAccount = async () => {
+    if (!user) return;
     setDeletingAccount(true);
-    await confirmDeleteAccount();
+    const result = await confirmDeleteAccount(user.id);
+    if (result.error) {
+      toast.error("Unable to delete account. Please contact support.");
+      setDeletingAccount(false);
+      return;
+    }
     setDeletingAccount(false);
     setShowDeleteAccount(false);
     await signOut();
     navigate("/");
-    toast({ title: "Your account has been deleted." });
+    toast("Your account has been deleted.");
   };
 
   const handleCancelSub = async () => {
     setShowCancelSub(false);
-    toast({ title: "Subscription cancelled. You'll keep access until " + accessEndDate + "." });
+    toast.success("Subscription cancelled. You'll keep access until " + accessEndDate + ".");
   };
 
   const handleResumeSub = async () => {
     await resumeSubscription();
-    toast({ title: "Subscription resumed." });
+    toast.success("Subscription resumed.");
   };
 
   const handleSignOut = async () => {
@@ -108,8 +119,29 @@ export default function Account() {
   };
 
   const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
-  const handleBillingPortal = () => openBillingPortal();
-  const handleDataExport = () => requestDataExport();
+
+  const handleBillingPortal = async () => {
+    try {
+      await openBillingPortal();
+    } catch {
+      toast.error("Unable to open billing portal. Please contact support.");
+    }
+  };
+
+  const handleDataExport = async () => {
+    const result = await requestDataExport();
+    if (result.error || !result.blob) {
+      toast.error("Unable to export data. Please try again.");
+      return;
+    }
+    const url = URL.createObjectURL(result.blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "solo-data-export-" + new Date().toISOString().split("T")[0] + ".json";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Your data export is downloading.");
+  };
 
   return (
     <div className="min-h-screen flex flex-col text-foreground">
