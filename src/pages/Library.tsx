@@ -81,7 +81,15 @@ interface ArticleData {
   } | null;
 }
 
-/* ── Component ── */
+interface ModuleOutput {
+  key_insights?: string[];
+  next_steps?: string[];
+  resources_or_prompts?: string[];
+}
+
+type DrawerView = "detail" | "questions" | "output";
+
+
 export default function Library() {
   const navigate = useNavigate();
   const { user } = useAuth();
