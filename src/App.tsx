@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { AnimatePresence, motion } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import MintTopBar from "@/components/MintTopBar";
 import Landing from "./pages/Landing";
 import CVUpload from "./pages/CVUpload";
 import Auth from "./pages/Auth";
@@ -95,6 +96,22 @@ const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        {/* Global fixed office-photo background — sits behind every page. */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: -10,
+            backgroundImage: "url('/office-bg.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            filter: "grayscale(90%) blur(20px)",
+            transform: "scale(1.08)",
+          }}
+        />
+        {/* Global 4px mint stripe — non-negotiable brand element on every page. */}
+        <MintTopBar />
         <Toaster />
         <Sonner />
         <BrowserRouter>
