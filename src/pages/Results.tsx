@@ -1108,13 +1108,19 @@ function ReportSection({ title, icon: Icon, children }: { title: string; icon: R
   );
 }
 
-function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: { draft: any; moveType?: string; outreachSubtype?: 'warm' | 'cold'; apolloQuery?: ApolloQuery | null }) {
+function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery, strandId, task }: { draft: any; moveType?: string; outreachSubtype?: 'warm' | 'cold'; apolloQuery?: ApolloQuery | null; strandId?: string; task?: any }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showContactPicker, setShowContactPicker] = useState(false);
   const [body, setBody] = useState<string>(draft?.body ?? '');
   const [subject, setSubject] = useState<string>(draft?.subject ?? '');
-  const [selectedContact, setSelectedContact] = useState<{ first_name: string; company: string | null } | null>(null);
+  const [personalisationInstructions, setPersonalisationInstructions] = useState<string>(draft?.personalisation_instructions ?? '');
+  const [selectedContact, setSelectedContact] = useState<{ first_name: string; title: string; company: string | null } | null>(null);
+  const [substitutedDraft, setSubstitutedDraft] = useState<{ body: string; subject: string; personalisation_instructions: string } | null>(null);
+  const [aiPersonalising, setAiPersonalising] = useState(false);
+  const [aiDraftActive, setAiDraftActive] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
   const triggerLabel = (() => {
     switch (moveType) {
       case "platform": return "Get platform setup guide";
@@ -1127,7 +1133,7 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
     const text = draft.format === 'email' && subject ? `Subject: ${subject}\n\n${body}` : body;
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
   };
-  const applyContact = (contact: { first_name: string; company: string | null }) => {
+  const applyContact = (contact: { first_name: string; title: string; company: string | null }) => {
     const substitute = (text: string) => {
       let out = text.replace(/\[Name\]/g, contact.first_name).replace(/\[name\]/gi, contact.first_name);
       if (contact.company) {
@@ -1135,11 +1141,65 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
       }
       return out;
     };
-    setBody(substitute(draft?.body ?? ''));
-    setSubject(substitute(draft?.subject ?? ''));
-    setSelectedContact({ first_name: contact.first_name, company: contact.company });
+    const newBody = substitute(draft?.body ?? '');
+    const newSubject = substitute(draft?.subject ?? '');
+    const newPI = draft?.personalisation_instructions ?? '';
+    setBody(newBody);
+    setSubject(newSubject);
+    setPersonalisationInstructions(newPI);
+    setSubstitutedDraft({ body: newBody, subject: newSubject, personalisation_instructions: newPI });
+    setSelectedContact({ first_name: contact.first_name, title: contact.title, company: contact.company });
     setShowContactPicker(false);
+    setAiDraftActive(false);
+    setAiError(null);
   };
+  const restoreOriginal = () => {
+    if (!substitutedDraft) return;
+    setBody(substitutedDraft.body);
+    setSubject(substitutedDraft.subject);
+    setPersonalisationInstructions(substitutedDraft.personalisation_instructions);
+    setAiDraftActive(false);
+  };
+  const personaliseFurther = async () => {
+    if (!selectedContact) return;
+    setAiPersonalising(true);
+    setAiError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke('draft-outreach', {
+        body: {
+          strand_id: strandId,
+          contact: {
+            name: selectedContact.first_name,
+            role: selectedContact.title,
+            company: selectedContact.company,
+            relationship: 'cold_prospect',
+            any_shared_context: null,
+          },
+          request: {
+            format: draft?.format,
+            purpose: 'first_client_outreach',
+            any_specific_notes: null,
+          },
+        },
+      });
+      if (error) throw error;
+      const newDraft = data?.draft ?? data;
+      const newBody = typeof newDraft?.body === 'string' ? newDraft.body : body;
+      const newSubject = typeof newDraft?.subject === 'string' ? newDraft.subject : subject;
+      const newPI = typeof data?.personalisation_instructions === 'string' ? data.personalisation_instructions : personalisationInstructions;
+      setBody(newBody);
+      setSubject(newSubject);
+      setPersonalisationInstructions(newPI);
+      setAiDraftActive(true);
+    } catch {
+      setAiError('Could not personalise the draft. Your existing draft is still ready.');
+    } finally {
+      setAiPersonalising(false);
+    }
+  };
+
+  void task;
+
   return (
     <div className="mt-2 ml-4">
       <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors">
@@ -1156,15 +1216,33 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
             backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.03) 28px)",
           }}
         >
-          {draft.format === 'email' && subject && <p className="text-xs font-semibold text-foreground">Subject: {subject}</p>}
-          <pre className="text-xs text-foreground/90 whitespace-pre-wrap font-sans leading-relaxed">{body}</pre>
+          {aiDraftActive && !aiPersonalising && (
+            <div className="flex items-center gap-1.5 text-xs text-primary">
+              <Sparkles className="w-3 h-3" />
+              <span>AI-personalised draft</span>
+            </div>
+          )}
+          {aiPersonalising ? (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground py-4">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              <span>Personalising your draft for {selectedContact?.first_name}...</span>
+            </div>
+          ) : (
+            <>
+              {draft.format === 'email' && subject && <p className="text-xs font-semibold text-foreground">Subject: {subject}</p>}
+              <pre className="text-xs text-foreground/90 whitespace-pre-wrap font-sans leading-relaxed">{body}</pre>
+            </>
+          )}
           <div className="flex items-center justify-between pt-1 border-t border-border">
-            <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors">
+            <button onClick={handleCopy} disabled={aiPersonalising} className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors disabled:opacity-50">
               <Copy className="w-3 h-3" />{copied ? 'Copied!' : 'Copy to clipboard'}
             </button>
           </div>
-          {draft.personalisation_instructions && (
-            <p className="text-xs text-amber-500/80">{draft.personalisation_instructions}</p>
+          {personalisationInstructions && !aiPersonalising && (
+            <p className="text-xs text-amber-500/80">{personalisationInstructions}</p>
+          )}
+          {aiError && (
+            <p className="text-xs text-destructive">{aiError}</p>
           )}
         </div>
       )}
@@ -1174,14 +1252,23 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
             Draft personalised for {selectedContact.first_name}
             {selectedContact.company ? ` at ${selectedContact.company}` : ''}. Edit before sending.
           </p>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
-              disabled
-              title="Coming soon"
-              className="text-xs text-muted-foreground/60 cursor-not-allowed"
+              onClick={personaliseFurther}
+              disabled={aiPersonalising}
+              className="inline-flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Personalise further
+              <Sparkles className="w-3 h-3" />
+              {aiPersonalising ? 'Personalising...' : aiDraftActive ? 'Personalise again' : 'Personalise further'}
             </button>
+            {aiDraftActive && !aiPersonalising && (
+              <button
+                onClick={restoreOriginal}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
+              >
+                Use original draft instead
+              </button>
+            )}
             <button
               onClick={() => setShowContactPicker(true)}
               className="text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
@@ -1205,7 +1292,7 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
           {showContactPicker && (
             <ApolloContactPicker
               apolloQuery={apolloQuery}
-              onContactSelected={(c) => applyContact({ first_name: c.first_name, company: c.company })}
+              onContactSelected={(c) => applyContact({ first_name: c.first_name, title: c.title, company: c.company })}
               onClose={() => setShowContactPicker(false)}
             />
           )}
