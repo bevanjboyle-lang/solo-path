@@ -233,18 +233,32 @@ export default function AskSolo() {
 
     // Start a new session
     try {
+      let archetypeName: string | null = null;
+      try {
+        const { data: report } = await supabase
+          .from("reports")
+          .select("core_report")
+          .eq("status", "complete")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        const core = report?.core_report as any;
+        archetypeName = core?.archetype?.primary ?? null;
+      } catch {}
+
       const { data } = await supabase.functions.invoke("ask-solo", {
         body: { call_type: "start_session" },
       });
       if (data) {
         setConversationId(data.conversation_id);
-        if (data.context_cue) {
-          setMessages([{
-            role: "assistant",
-            content: data.context_cue,
-            timestamp: new Date(),
-          }]);
-        }
+        const arcClause = archetypeName
+          ? `your background as a **${archetypeName}** professional`
+          : `your background`;
+        setMessages([{
+          role: "assistant",
+          content: `I know ${arcClause} and your Plan B options. I can see our previous conversation too. What would you like to work through?`,
+          timestamp: new Date(),
+        }]);
       }
     } catch {}
 
