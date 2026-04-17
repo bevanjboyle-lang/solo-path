@@ -86,6 +86,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [refinementCount, setRefinementCount] = useState(0);
   const [refineOpen, setRefineOpen] = useState(false);
   const [refineLimitReached, setRefineLimitReached] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   // Route guard: unauthed/unpaid → redirect to /
   useEffect(() => {
