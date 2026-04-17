@@ -12,8 +12,8 @@ interface PanelLayoutProps {
 export default function PanelLayout({ children, className = "", wide = false }: PanelLayoutProps) {
   return (
     <div
-      className={`mx-auto my-8 w-full rounded-xl ${
-        wide ? "max-w-[1060px]" : "max-w-[960px]"
+      className={`mx-auto my-6 w-full rounded-xl ${
+        wide ? "max-w-[1280px]" : "max-w-[1140px]"
       } ${className}`}
       style={{
         background: "#FAF9F7",
