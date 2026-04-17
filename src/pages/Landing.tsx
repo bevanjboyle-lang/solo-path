@@ -95,18 +95,24 @@ export default function Landing() {
       <TopBar />
 
       <main className="pt-[68px]">
-        {/* ═══ HERO ═══ */}
+        {/* ═══ HERO — text sits directly over the photo with a dark overlay for contrast ═══ */}
         <section className="relative overflow-hidden">
+          {/* Dark overlay over the global photo background, hero-only */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "rgba(0,0,0,0.35)" }}
+          />
           {/* Subtle mint radial */}
           <div
             className="pointer-events-none absolute inset-0"
-            style={{ background: "radial-gradient(ellipse at 50% 20%, rgba(46,205,176,0.04) 0%, transparent 55%)" }}
+            style={{ background: "radial-gradient(ellipse at 50% 20%, rgba(46,205,176,0.08) 0%, transparent 55%)" }}
           />
 
-          <div className="mx-auto max-w-3xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
+          <div className="relative mx-auto max-w-3xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
             <motion.h1
               className="font-display text-[2.5rem] font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]"
-              style={{ letterSpacing: "-0.025em" }}
+              style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -115,7 +121,8 @@ export default function Landing() {
             </motion.h1>
 
             <motion.p
-              className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
+              className="mx-auto mt-6 max-w-xl text-lg leading-relaxed sm:text-xl"
+              style={{ color: "rgba(250,249,247,0.85)" }}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -147,7 +154,8 @@ export default function Landing() {
               {!isAuthed && (
                 <button
                   onClick={handleStartTest}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-sm font-medium transition-colors"
+                  style={{ color: "rgba(250,249,247,0.75)" }}
                 >
                   See your free preview
                 </button>
@@ -156,7 +164,8 @@ export default function Landing() {
 
             {/* Trust strip */}
             <motion.p
-              className="mt-6 text-xs text-muted-foreground"
+              className="mt-6 text-xs"
+              style={{ color: "rgba(250,249,247,0.65)" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35, duration: 0.5 }}
