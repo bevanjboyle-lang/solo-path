@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw, Download, Send, Mail, MessageCircle, Mic } from "lucide-react";
+import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw, Download, Send, Mail, MessageCircle, Mic, Sparkles } from "lucide-react";
 import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
 import ApolloContactPicker from "@/components/ApolloContactPicker";
 import type { ApolloQuery } from "@/types/apollo";
@@ -1230,6 +1230,8 @@ function OutreachTaskItem({ task, strandColorMap, greyStrands }: { task: any; st
           moveType={task.move_type}
           outreachSubtype={task.outreach_subtype}
           apolloQuery={task.apollo_query}
+          strandId={task.strand}
+          task={task}
         />
       )}
     </li>
