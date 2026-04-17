@@ -11,9 +11,9 @@ import {
   confirmDeleteCv,
   requestDataExport,
   confirmDeleteAccount,
-  claimSecondReport,
   submitForm,
 } from "@/lib/handlers";
+import TakeAnotherTestCard from "@/components/account/TakeAnotherTestCard";
 import TopBar from "@/components/TopBar";
 import PanelLayout from "@/components/PanelLayout";
 import Banner from "@/components/Banner";
@@ -111,14 +111,7 @@ export default function Account() {
     navigate("/");
   };
 
-  const handleSecondReport = async () => {
-    if (isSubscriber) {
-      await claimSecondReport();
-      startTest(navigate);
-    } else {
-      await triggerStripeCheckout("price_second_report", {});
-    }
-  };
+  // removed — handled by TakeAnotherTestCard
 
   const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
 
@@ -260,19 +253,7 @@ export default function Account() {
           </Card>
 
           {/* 3. TAKE ANOTHER TEST */}
-          <Card className="border-border bg-[hsl(var(--surface-panel))]">
-            <CardContent className="p-6">
-              <h2 className="font-display text-base font-semibold text-foreground mb-3">Take another test</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                {isSubscriber
-                  ? "You can take a fresh test at any time — it's included in your subscription."
-                  : "Been a while, or circumstances changed? Get a fresh report for £9.99."}
-              </p>
-              <Button size="sm" variant={isSubscriber ? "default" : "outline"} onClick={handleSecondReport}>
-                {isSubscriber ? "Take another test" : "Take another test — £9.99"}
-              </Button>
-            </CardContent>
-          </Card>
+          <TakeAnotherTestCard />
 
           {/* 4. DATA & PRIVACY */}
           <Card className="border-border bg-[hsl(var(--surface-panel))]">

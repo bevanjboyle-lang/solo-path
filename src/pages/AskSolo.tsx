@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { navigateAuthed } from "@/lib/handlers";
 import { supabase } from "@/integrations/supabase/client";
+import AskSoloInfoPopover from "@/components/AskSoloInfoPopover";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
 import { Button } from "@/components/ui/button";
@@ -342,6 +343,11 @@ export default function AskSolo() {
               <div className="flex items-center gap-2">
                 <MessageCircle className="h-4 w-4 text-primary" />
                 <h1 className="text-sm font-semibold text-foreground">Ask Solo</h1>
+                <AskSoloInfoPopover
+                  isSubscriber={isSubscriber}
+                  questionsRemaining={QUOTA_TOTAL - questionsUsed}
+                  totalQuestions={QUOTA_TOTAL}
+                />
               </div>
             </div>
 
