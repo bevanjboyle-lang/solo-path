@@ -139,14 +139,14 @@ export default function Landing() {
               {isAuthed ? (
                 <button
                   onClick={handleOpenPlan}
-                  className="rounded-lg bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="rounded-lg bg-[#1A1915] px-8 py-3.5 text-base font-semibold text-white shadow-md ring-1 ring-black/10 transition-colors hover:bg-black"
                 >
                   Open my plan
                 </button>
               ) : (
                 <button
                   onClick={handleStartTest}
-                  className="rounded-lg bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  className="rounded-lg bg-[#1A1915] px-8 py-3.5 text-base font-semibold text-white shadow-md ring-1 ring-black/10 transition-colors hover:bg-black"
                 >
                   Take the test
                 </button>
@@ -154,8 +154,7 @@ export default function Landing() {
               {!isAuthed && (
                 <button
                   onClick={handleStartTest}
-                  className="text-sm font-medium transition-colors"
-                  style={{ color: "rgba(250,249,247,0.75)" }}
+                  className="rounded-lg border border-white/80 bg-transparent px-8 py-3.5 text-base font-semibold text-white transition-colors hover:bg-white hover:text-[#1A8A72]"
                 >
                   See your free preview
                 </button>
