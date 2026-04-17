@@ -373,6 +373,24 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
         >
+          {/* Refine your report — paid users only */}
+          {hasPaid && reportId && (
+            <div className="mb-5 flex flex-col items-start gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={submitRefinement}
+                disabled={refineLimitReached || refinementCount >= 3}
+                className="text-xs font-medium"
+              >
+                Refine your report
+              </Button>
+              {(refineLimitReached || refinementCount >= 3) && (
+                <p className="text-[11px] text-muted-foreground">Refinement limit reached.</p>
+              )}
+            </div>
+          )}
+
           <ReportSection
             narrative={narrative}
             strands={strands}
