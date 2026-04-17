@@ -179,7 +179,7 @@ export default function Landing() {
         </section>
 
         {/* ═══ #how-it-works ═══ */}
-        <section id="how-it-works" className="py-16 lg:py-24">
+        <section id="how-it-works" className="py-10 lg:py-14">
           <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
@@ -220,7 +220,7 @@ export default function Landing() {
         </section>
 
         {/* ═══ #why-solo — editorial split section ═══ */}
-        <section id="why-solo" className="py-16 lg:py-24">
+        <section id="why-solo" className="py-10 lg:py-14">
           <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
@@ -267,7 +267,7 @@ export default function Landing() {
         </section>
 
         {/* ═══ #who-its-for ═══ */}
-        <section id="who-its-for" className="py-16 lg:py-24">
+        <section id="who-its-for" className="py-10 lg:py-14">
           <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
@@ -314,7 +314,7 @@ export default function Landing() {
         </section>
 
         {/* ═══ #sample-report — editorial preview ═══ */}
-        <section id="sample-report" className="py-16 lg:py-24">
+        <section id="sample-report" className="py-10 lg:py-14">
           <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
@@ -415,7 +415,7 @@ export default function Landing() {
         </section>
 
         {/* ═══ Pricing summary ═══ */}
-        <section className="py-16 lg:py-24">
+        <section className="py-10 lg:py-14">
           <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
@@ -457,7 +457,7 @@ export default function Landing() {
         </section>
 
         {/* ═══ #about — Founder ═══ */}
-        <section id="about" className="py-16 lg:py-24">
+        <section id="about" className="py-10 lg:py-14">
           <div className="mx-auto max-w-5xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
@@ -477,7 +477,7 @@ export default function Landing() {
         </section>
 
         {/* ═══ FAQ teaser ═══ */}
-        <section className="py-16 lg:py-24">
+        <section className="py-10 lg:py-14">
           <div className="mx-auto max-w-5xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
