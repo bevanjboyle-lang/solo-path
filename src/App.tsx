@@ -106,8 +106,8 @@ const App = () => (
             backgroundImage: "url('/office-bg.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            filter: "grayscale(90%) blur(20px)",
-            transform: "scale(1.08)",
+            filter: "grayscale(75%) blur(8px)",
+            transform: "scale(1.04)",
           }}
         />
         {/* Global 4px mint stripe — non-negotiable brand element on every page. */}
