@@ -33,14 +33,16 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
+
 export default function Account() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { isActive: isSubscriber } = useSubscriptionStatus();
   // CV state
   const [cvRemoved, setCvRemoved] = useState(false);
 
   // Mock subscription state
-  const isSubscriber = false;
   const isCancelPending = false;
   const subscriptionPlan = "monthly"; // or "annual"
   const renewDate = "15 May 2026";

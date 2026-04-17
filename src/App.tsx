@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import MintTopBar from "@/components/MintTopBar";
 import CookieBanner from "@/components/CookieBanner";
+import AskSoloWidget from "@/components/AskSoloWidget";
 import Landing from "./pages/Landing";
 import CVUpload from "./pages/CVUpload";
 import Auth from "./pages/Auth";
@@ -118,6 +119,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <AnimatedRoutes />
+            <AskSoloWidget mode="floating" />
             <CookieBanner />
           </AuthProvider>
         </BrowserRouter>

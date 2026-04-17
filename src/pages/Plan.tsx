@@ -126,8 +126,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         if (options.length > 0) {
           setStrands(
             options.map((opt) => ({
-              title: (opt.title as string) || "Untitled option",
-              pitch: (opt.one_liner as string) || (opt.pitch as string) || "",
+              title: (opt.model_name as string) || (opt.title as string) || "Untitled option",
+              pitch: (opt.one_line_pitch as string) || (opt.one_liner as string) || (opt.pitch as string) || "",
               primary_move_type: (opt.primary_move_type as string) || null,
               structural_warmth: (opt.structural_warmth as string) || null,
             }))
@@ -259,8 +259,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       if (options.length > 0) {
         setStrands(
           options.map((opt) => ({
-            title: (opt.title as string) || "Untitled option",
-            pitch: (opt.one_liner as string) || (opt.pitch as string) || "",
+            title: (opt.model_name as string) || (opt.title as string) || "Untitled option",
+            pitch: (opt.one_line_pitch as string) || (opt.one_liner as string) || (opt.pitch as string) || "",
             primary_move_type: (opt.primary_move_type as string) || null,
             structural_warmth: (opt.structural_warmth as string) || null,
           }))

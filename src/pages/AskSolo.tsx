@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Loader2, Send, Lock, MessageCircle, Plus, PanelLeft } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useAuth } from "@/hooks/useAuth";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { navigateAuthed } from "@/lib/handlers";
 import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
@@ -56,8 +57,8 @@ export default function AskSolo() {
   const [sessionStarting, setSessionStarting] = useState(false);
   const [threadDrawerOpen, setThreadDrawerOpen] = useState(false);
 
-  // Mock state — will be derived from backend later
-  const isSubscriber = false;
+  // Subscription state — active subscribers have unlimited questions
+  const { isActive: isSubscriber } = useSubscriptionStatus();
   const questionsUsed = 3;
   const quotaExhausted = !isSubscriber && questionsUsed >= QUOTA_TOTAL;
 
