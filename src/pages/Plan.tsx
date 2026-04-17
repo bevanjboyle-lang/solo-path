@@ -184,12 +184,15 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       });
   }, [user, authLoading, navigate]);
 
-  // /checkin/:sessionId deep-link: pre-open drawer
+  // /checkin/:sessionId deep-link: pre-open drawer immediately on mount
+  // and rewrite URL to /plan so the deep-link is not visible in the address bar.
   useEffect(() => {
-    if (initialSessionId && planState !== "loading" && planState !== "day0") {
+    if (initialSessionId) {
       setCheckinOpen(true);
+      window.history.replaceState({}, "", "/plan");
     }
-  }, [initialSessionId, planState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Subscription return toast
   useEffect(() => {
