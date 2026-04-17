@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw, Download, Send, Mail, MessageCircle, Mic } from "lucide-react";
 import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
+import ApolloContactPicker from "@/components/ApolloContactPicker";
+import type { ApolloQuery } from "@/types/apollo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
