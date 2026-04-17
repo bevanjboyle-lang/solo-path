@@ -1112,6 +1112,9 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showContactPicker, setShowContactPicker] = useState(false);
+  const [body, setBody] = useState<string>(draft?.body ?? '');
+  const [subject, setSubject] = useState<string>(draft?.subject ?? '');
+  const [selectedContact, setSelectedContact] = useState<{ first_name: string; company: string | null } | null>(null);
   const triggerLabel = (() => {
     switch (moveType) {
       case "platform": return "Get platform setup guide";
@@ -1121,15 +1124,27 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
     }
   })();
   const handleCopy = () => {
-    const text = draft.format === 'email' && draft.subject ? `Subject: ${draft.subject}\n\n${draft.body}` : draft.body;
+    const text = draft.format === 'email' && subject ? `Subject: ${subject}\n\n${body}` : body;
     navigator.clipboard.writeText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); });
+  };
+  const applyContact = (contact: { first_name: string; company: string | null }) => {
+    const substitute = (text: string) => {
+      let out = text.replace(/\[Name\]/g, contact.first_name).replace(/\[name\]/gi, contact.first_name);
+      if (contact.company) {
+        out = out.replace(/\[Company\]/g, contact.company).replace(/\[company\]/gi, contact.company);
+      }
+      return out;
+    };
+    setBody(substitute(draft?.body ?? ''));
+    setSubject(substitute(draft?.subject ?? ''));
+    setSelectedContact({ first_name: contact.first_name, company: contact.company });
+    setShowContactPicker(false);
   };
   return (
     <div className="mt-2 ml-4">
       <button onClick={() => setOpen(!open)} className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors">
         <MessageSquare className="w-3 h-3" />
         {open ? 'Hide draft' : triggerLabel}
-        {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
       </button>
       {open && (
@@ -1141,8 +1156,8 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
             backgroundImage: "repeating-linear-gradient(transparent, transparent 27px, rgba(0,0,0,0.03) 28px)",
           }}
         >
-          {draft.format === 'email' && draft.subject && <p className="text-xs font-semibold text-foreground">Subject: {draft.subject}</p>}
-          <pre className="text-xs text-foreground/90 whitespace-pre-wrap font-sans leading-relaxed">{draft.body}</pre>
+          {draft.format === 'email' && subject && <p className="text-xs font-semibold text-foreground">Subject: {subject}</p>}
+          <pre className="text-xs text-foreground/90 whitespace-pre-wrap font-sans leading-relaxed">{body}</pre>
           <div className="flex items-center justify-between pt-1 border-t border-border">
             <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors">
               <Copy className="w-3 h-3" />{copied ? 'Copied!' : 'Copy to clipboard'}
@@ -1153,9 +1168,32 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
           )}
         </div>
       )}
+      {open && selectedContact && (
+        <div className="mt-2 space-y-1">
+          <p className="text-xs text-muted-foreground">
+            Draft personalised for {selectedContact.first_name}
+            {selectedContact.company ? ` at ${selectedContact.company}` : ''}. Edit before sending.
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              disabled
+              title="Coming soon"
+              className="text-xs text-muted-foreground/60 cursor-not-allowed"
+            >
+              Personalise further
+            </button>
+            <button
+              onClick={() => setShowContactPicker(true)}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-2 hover:underline"
+            >
+              Find different contacts
+            </button>
+          </div>
+        </div>
+      )}
       {open && outreachSubtype === 'cold' && apolloQuery && (
         <div className="mt-2">
-          {!showContactPicker ? (
+          {!showContactPicker && !selectedContact && (
             <button
               onClick={() => setShowContactPicker(true)}
               className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -1163,10 +1201,11 @@ function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: {
               <Users className="w-3 h-3" />
               Find contacts matching this profile
             </button>
-          ) : (
+          )}
+          {showContactPicker && (
             <ApolloContactPicker
               apolloQuery={apolloQuery}
-              onContactSelected={() => { /* wired in Credit 2 */ }}
+              onContactSelected={(c) => applyContact({ first_name: c.first_name, company: c.company })}
               onClose={() => setShowContactPicker(false)}
             />
           )}
