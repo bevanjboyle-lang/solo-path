@@ -226,32 +226,130 @@ export default function Teaser() {
 
       {/* Content */}
       <main className="mx-auto w-full max-w-2xl px-6 pt-12 pb-32 sm:pt-16">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          {/* §2 Hero strip */}
-          <h1
-            className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
-            style={{ letterSpacing: "-0.02em" }}
-          >
-            {heroName}
-          </h1>
-          <p className="mt-3 text-base text-muted-foreground">
-            We've drafted five options. Here's the first one for free.
-          </p>
-        </motion.div>
+        {personalised ? (
+          <>
+            {/* ── Personalised above-fold view ── */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              {/* Archetype label (small caps, mint) */}
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
+                Your archetype: {personalised.archetype}
+              </p>
 
-        {/* §3 Free preview */}
-        <motion.div
-          className="mt-10"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.4 }}
-        >
-          <ReportSection narrative={narrative} strands={strands} locked={false} />
-        </motion.div>
+              {/* H1 — hook headline */}
+              <h1
+                className="font-display mt-3 text-3xl font-bold leading-[1.15] tracking-tight text-foreground sm:text-4xl lg:text-[2.75rem]"
+                style={{ letterSpacing: "-0.02em" }}
+              >
+                {personalised.headline}
+              </h1>
+
+              {/* Subtext — hook paragraph */}
+              <p
+                className="mt-4 text-base leading-[1.7] sm:text-lg"
+                style={{ color: "#6B6860" }}
+              >
+                {personalised.paragraph}
+              </p>
+            </motion.div>
+
+            {/* First strand card (unlocked) */}
+            <motion.div
+              className="mt-10"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12, duration: 0.4 }}
+            >
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Your first recommended path
+              </p>
+              <div className="card-stone p-6">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <h2 className="font-display text-lg font-semibold leading-snug text-foreground">
+                    {personalised.firstStrand.title}
+                  </h2>
+                  {personalised.firstStrand.moveType && (
+                    <MoveTypePill value={personalised.firstStrand.moveType} />
+                  )}
+                </div>
+                <p className="mt-3 text-sm leading-[1.7] text-muted-foreground">
+                  {personalised.firstStrand.pitch}
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Second strand — blurred teaser */}
+            <motion.div
+              className="mt-6"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18, duration: 0.4 }}
+            >
+              <div className="relative">
+                <div
+                  aria-hidden="true"
+                  className="card-stone p-6"
+                  style={{
+                    filter: "blur(6px)",
+                    userSelect: "none",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="font-display text-lg font-semibold leading-snug text-foreground">
+                      {personalised.secondStrand?.title ||
+                        "A second path matched to your profile"}
+                    </h2>
+                    <MoveTypePill
+                      value={personalised.secondStrand?.moveType || "direct"}
+                    />
+                  </div>
+                  <p className="mt-3 text-sm leading-[1.7] text-muted-foreground">
+                    {personalised.secondStrand?.pitch ||
+                      "A second income path scored against your archetype, with a one-line pitch describing the buyer and the offer."}
+                  </p>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="rounded-md bg-[hsl(var(--surface-panel))]/90 px-4 py-2 text-sm font-semibold text-foreground shadow-sm ring-1 ring-border">
+                    Unlock to see all your paths
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        ) : (
+          <>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              {/* §2 Hero strip — generic fallback */}
+              <h1
+                className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl"
+                style={{ letterSpacing: "-0.02em" }}
+              >
+                {heroName}
+              </h1>
+              <p className="mt-3 text-base text-muted-foreground">
+                We've drafted five options. Here's the first one for free.
+              </p>
+            </motion.div>
+
+            {/* §3 Free preview — generic fallback */}
+            <motion.div
+              className="mt-10"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.4 }}
+            >
+              <ReportSection narrative={narrative} strands={strands} locked={false} />
+            </motion.div>
+          </>
+        )}
 
         {/* §4 + §5 Locked boundary + unlock callout */}
         <motion.div
