@@ -275,6 +275,45 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     setRefineOpen(true);
   }, [refineLimitReached, refinementCount]);
 
+  const exportPdf = useCallback(async () => {
+    if (!reportId || exportingPdf) return;
+    setExportingPdf(true);
+    setPdfError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("No auth session");
+
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-pdf`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+        },
+        body: JSON.stringify({ report_id: reportId }),
+      });
+      if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+      const blob = await res.blob();
+
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `Solo-Plan-${reportId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error("exportPdf error", err);
+      setPdfError("Couldn't generate PDF. Please try again.");
+      setTimeout(() => setPdfError(null), 5000);
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [reportId, exportingPdf]);
+
   // Guard: don't render paid UI before auth resolves
   if (authLoading || hasPaid === null) {
     return (
