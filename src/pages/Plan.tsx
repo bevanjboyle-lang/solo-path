@@ -11,7 +11,9 @@ import TrackerGrid from "@/components/plan/TrackerGrid";
 import CheckInPanel from "@/components/plan/CheckInPanel";
 import ReportSection from "@/components/ReportSection";
 import LibraryCard from "@/components/plan/LibraryCard";
+import RefineReportPanel from "@/components/plan/RefineReportPanel";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { StrandData } from "@/components/StrandCard";
 
