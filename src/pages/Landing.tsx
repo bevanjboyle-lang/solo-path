@@ -101,10 +101,7 @@ export default function Landing() {
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(46,205,176,0.42) 0%, rgba(46,205,176,0.30) 60%, rgba(26,138,114,0.45) 100%)",
-            }}
+            style={{ background: "#2ECDB0" }}
           />
           {/* Subtle mint radial */}
           <div
