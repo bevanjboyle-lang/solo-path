@@ -576,7 +576,7 @@ function ModulesTab({ onSelectModule }: { onSelectModule: (id: number, unlocked:
       {modules.map((mod) => (
         <button
           key={mod.module_id}
-          onClick={() => onSelectModule(mod.module_id)}
+          onClick={() => onSelectModule(mod.module_id, mod.is_unlocked)}
           className={`w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-4 text-left transition-colors ${
             mod.is_unlocked ? "hover:border-primary/30 cursor-pointer" : "opacity-70 cursor-pointer hover:border-primary/30"
           }`}
