@@ -308,7 +308,7 @@ export default function Library() {
                 </div>
               )
             ) : (
-              <ModulesTab onSelectModule={(id) => openArticle(id, true)} />
+              <ModulesTab onSelectModule={(id, unlocked) => openArticle(id, unlocked)} />
             )}
           </div>
         </div>
@@ -545,7 +545,7 @@ function BrowseTab({
 }
 
 /* ── Modules Tab — fetches browse data to render module cards ── */
-function ModulesTab({ onSelectModule }: { onSelectModule: (id: number) => void }) {
+function ModulesTab({ onSelectModule }: { onSelectModule: (id: number, unlocked: boolean) => void }) {
   const [modules, setModules] = useState<BrowseModule[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -576,12 +576,9 @@ function ModulesTab({ onSelectModule }: { onSelectModule: (id: number) => void }
       {modules.map((mod) => (
         <button
           key={mod.module_id}
-          onClick={() => {
-            if (!mod.is_unlocked) return;
-            onSelectModule(mod.module_id);
-          }}
+          onClick={() => onSelectModule(mod.module_id, mod.is_unlocked)}
           className={`w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-4 text-left transition-colors ${
-            mod.is_unlocked ? "hover:border-primary/30 cursor-pointer" : "opacity-70 cursor-not-allowed"
+            mod.is_unlocked ? "hover:border-primary/30 cursor-pointer" : "opacity-70 cursor-pointer hover:border-primary/30"
           }`}
         >
           <div className="flex items-center gap-3">
