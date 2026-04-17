@@ -11,7 +11,9 @@ import TrackerGrid from "@/components/plan/TrackerGrid";
 import CheckInPanel from "@/components/plan/CheckInPanel";
 import ReportSection from "@/components/ReportSection";
 import LibraryCard from "@/components/plan/LibraryCard";
+import RefineReportPanel from "@/components/plan/RefineReportPanel";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { StrandData } from "@/components/StrandCard";
 
@@ -80,6 +82,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [isSubscriber, setIsSubscriber] = useState(false);
   const [showSubscribeWall, setShowSubscribeWall] = useState(false);
+  const [reportId, setReportId] = useState<string>("");
+  const [refinementCount, setRefinementCount] = useState(0);
+  const [refineOpen, setRefineOpen] = useState(false);
+  const [refineLimitReached, setRefineLimitReached] = useState(false);
 
   // Route guard: unauthed/unpaid → redirect to /
   useEffect(() => {
@@ -105,10 +111,14 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         }
 
         setHasPaid(true);
+        setReportId(data.id);
         setNarrative(data.hook_insight || MOCK_NARRATIVE);
 
         // Extract strands from core_report
         const coreReport = data.core_report as Record<string, unknown> | null;
+        const rc = Number((coreReport?.refinement_count as number) ?? 0) || 0;
+        setRefinementCount(rc);
+        if (rc >= 3) setRefineLimitReached(true);
         const options = (coreReport?.options as Array<Record<string, unknown>>) || [];
         if (options.length > 0) {
           setStrands(
@@ -237,6 +247,32 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     setCheckinOpen(true);
   }, []);
 
+  const handleRefined = useCallback((updatedReport: unknown, newCount: number) => {
+    const r = updatedReport as Record<string, unknown> | null;
+    if (r) {
+      const coreReport = (r.core_report as Record<string, unknown>) || null;
+      if (typeof r.hook_insight === "string") setNarrative(r.hook_insight as string);
+      const options = (coreReport?.options as Array<Record<string, unknown>>) || [];
+      if (options.length > 0) {
+        setStrands(
+          options.map((opt) => ({
+            title: (opt.title as string) || "Untitled option",
+            pitch: (opt.one_liner as string) || (opt.pitch as string) || "",
+            primary_move_type: (opt.primary_move_type as string) || null,
+            structural_warmth: (opt.structural_warmth as string) || null,
+          }))
+        );
+      }
+    }
+    setRefinementCount(newCount);
+    if (newCount >= 3) setRefineLimitReached(true);
+  }, []);
+
+  const submitRefinement = useCallback(() => {
+    if (refineLimitReached || refinementCount >= 3) return;
+    setRefineOpen(true);
+  }, [refineLimitReached, refinementCount]);
+
   // Guard: don't render paid UI before auth resolves
   if (authLoading || hasPaid === null) {
     return (
@@ -337,6 +373,24 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
         >
+          {/* Refine your report — paid users only */}
+          {hasPaid && reportId && (
+            <div className="mb-5 flex flex-col items-start gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={submitRefinement}
+                disabled={refineLimitReached || refinementCount >= 3}
+                className="text-xs font-medium"
+              >
+                Refine your report
+              </Button>
+              {(refineLimitReached || refinementCount >= 3) && (
+                <p className="text-[11px] text-muted-foreground">Refinement limit reached.</p>
+              )}
+            </div>
+          )}
+
           <ReportSection
             narrative={narrative}
             strands={strands}
@@ -383,6 +437,19 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         dayNumber={dayNumber}
         onSubmit={handleCheckinSubmit}
       />
+
+      {/* Refine Report Panel */}
+      {reportId && (
+        <RefineReportPanel
+          open={refineOpen}
+          onOpenChange={setRefineOpen}
+          reportId={reportId}
+          refinementCount={refinementCount}
+          onRefined={handleRefined}
+          onLimitReached={() => setRefineLimitReached(true)}
+          onToast={(message) => toast({ title: message })}
+        />
+      )}
     </div>
   );
 }
