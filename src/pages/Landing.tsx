@@ -386,25 +386,29 @@ export default function Landing() {
         </section>
 
         {/* ═══ Stat strip ═══ */}
-        <section className="border-t border-border/50 py-16">
-          <ScrollReveal>
-            <div className="mx-auto flex max-w-xl flex-col gap-8 px-6 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
-              {[
-                { num: 95, label: "archetypes" },
-                { num: 480, label: "business models" },
-                { num: 2694, label: "combinations" },
-              ].map((s) => (
-                <div key={s.label} className="flex-1 text-center sm:px-6">
-                  <span className="block font-display text-3xl font-bold text-foreground">
-                    <AnimatedCounter target={s.num} />
-                  </span>
-                  <span className="mt-1 block text-xs font-semibold uppercase tracking-wider text-primary">
-                    {s.label}
-                  </span>
+        <section className="py-12">
+          <div className="mx-auto max-w-xl px-6">
+            <div className="panel-ivory px-6 py-8">
+              <ScrollReveal>
+                <div className="flex flex-col gap-8 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
+                  {[
+                    { num: 95, label: "archetypes" },
+                    { num: 480, label: "business models" },
+                    { num: 2694, label: "combinations" },
+                  ].map((s) => (
+                    <div key={s.label} className="flex-1 text-center sm:px-6">
+                      <span className="block font-display text-3xl font-bold text-foreground">
+                        <AnimatedCounter target={s.num} />
+                      </span>
+                      <span className="mt-1 block text-xs font-semibold uppercase tracking-wider text-primary">
+                        {s.label}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </ScrollReveal>
             </div>
-          </ScrollReveal>
+          </div>
         </section>
 
         {/* ═══ Pricing summary ═══ */}
