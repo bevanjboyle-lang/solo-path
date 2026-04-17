@@ -108,14 +108,14 @@ export default function WhySolo() {
 
               <div className="my-8 h-px w-full bg-border" />
 
-              {/* Chart B: AI Exposure by Sector */}
+              {/* Chart B: Sector change */}
               <div className="mb-4 text-center">
                 <span className="mb-3 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-primary">Why Now</span>
                 <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                  AI is reshaping every white-collar sector
+                  Every white-collar sector is changing shape
                 </h2>
                 <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
-                  Percentage of roles in each sector exposed to AI-driven automation. The higher the exposure, the greater the urgency to build independent options.
+                  Percentage of roles in each sector being reshaped by automation and new ways of working. Professionals who plan ahead have more options.
                 </p>
               </div>
               <ResponsiveContainer width="100%" height={300}>
