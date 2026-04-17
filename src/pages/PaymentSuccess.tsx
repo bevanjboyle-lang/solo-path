@@ -174,7 +174,30 @@ export default function PaymentSuccess() {
     }
   }, [state, pollReadiness]);
 
-  if (!token) return null;
+  if (!token && !isSecondReport) return null;
+
+  // Second-report flow: dedicated confirmation screen
+  if (isSecondReport) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <TopBar />
+        <div className="flex flex-1 items-center justify-center px-6">
+          <div className="w-full max-w-md text-center">
+            <h1
+              className="text-2xl font-semibold tracking-tight text-foreground"
+              style={{ letterSpacing: "-0.02em" }}
+            >
+              Payment confirmed
+            </h1>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Setting up your second report — this will take a couple of seconds.
+            </p>
+            <Loader2 className="mx-auto mt-5 h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
