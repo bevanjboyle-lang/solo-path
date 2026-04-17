@@ -425,3 +425,16 @@ export default function Teaser() {
     </div>
   );
 }
+
+/* ── Move type pill (mint outline) ── */
+function MoveTypePill({ value }: { value: string }) {
+  const label =
+    value && value.length > 0
+      ? value.charAt(0).toUpperCase() + value.slice(1).toLowerCase()
+      : "Direct";
+  return (
+    <span className="inline-flex shrink-0 items-center rounded-full border border-primary/40 bg-[hsl(var(--surface-mint-tint))] px-2.5 py-0.5 text-[11px] font-semibold text-[hsl(var(--mint-text))]">
+      {label}
+    </span>
+  );
+}
