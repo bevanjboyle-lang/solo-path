@@ -437,6 +437,19 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         dayNumber={dayNumber}
         onSubmit={handleCheckinSubmit}
       />
+
+      {/* Refine Report Panel */}
+      {reportId && (
+        <RefineReportPanel
+          open={refineOpen}
+          onOpenChange={setRefineOpen}
+          reportId={reportId}
+          refinementCount={refinementCount}
+          onRefined={handleRefined}
+          onLimitReached={() => setRefineLimitReached(true)}
+          onToast={(message) => toast({ title: message })}
+        />
+      )}
     </div>
   );
 }
