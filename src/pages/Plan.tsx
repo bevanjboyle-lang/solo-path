@@ -228,12 +228,17 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     setCheckinOpen(true);
   }, []);
 
+  const checkinReplanPendingRef = useRef(false);
+
   const handleCheckinSubmit = useCallback(async (response: string) => {
     // Call existing submit-checkin edge function
-    const { error } = await supabase.functions.invoke("process-checkin", {
+    const { data, error } = await supabase.functions.invoke("process-checkin", {
       body: { session_id: sessionId, response },
     });
     if (error) throw error;
+
+    const replanPendingFromCheckin = !!(data as { replan_pending?: boolean } | null)?.replan_pending;
+    checkinReplanPendingRef.current = replanPendingFromCheckin;
 
     // Optimistic update
     setPlanState((prev) => {
@@ -246,7 +251,11 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       prev.map((d) => (d.isToday ? { ...d, completed: true } : d))
     );
 
-    toast({ title: "Check-in saved." });
+    // Don't show "Plan updated" framing when a replan is pending — the AI
+    // output already states the plan hasn't been rebuilt yet.
+    if (!replanPendingFromCheckin) {
+      toast({ title: "Check-in saved." });
+    }
 
     // If opened via deep-link, update URL
     if (initialSessionId) {
