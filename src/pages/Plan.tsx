@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
