@@ -3,6 +3,8 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Loader2, CheckCircle, Briefcase, Target, CalendarCheck, Users, BarChart3, ShieldCheck, LogOut, Copy, Check, ChevronDown, ChevronUp, MessageSquare, Zap, RefreshCw, Download, Send, Mail, MessageCircle, Mic } from "lucide-react";
 import ShimmerSkeleton from "@/components/ui/ShimmerSkeleton";
+import ApolloContactPicker from "@/components/ApolloContactPicker";
+import type { ApolloQuery } from "@/types/apollo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
@@ -1106,9 +1108,10 @@ function ReportSection({ title, icon: Icon, children }: { title: string; icon: R
   );
 }
 
-function OutreachDraftPanel({ draft, moveType }: { draft: any; moveType?: string }) {
+function OutreachDraftPanel({ draft, moveType, outreachSubtype, apolloQuery }: { draft: any; moveType?: string; outreachSubtype?: 'warm' | 'cold'; apolloQuery?: ApolloQuery | null }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showContactPicker, setShowContactPicker] = useState(false);
   const triggerLabel = (() => {
     switch (moveType) {
       case "platform": return "Get platform setup guide";
@@ -1150,6 +1153,25 @@ function OutreachDraftPanel({ draft, moveType }: { draft: any; moveType?: string
           )}
         </div>
       )}
+      {open && outreachSubtype === 'cold' && apolloQuery && (
+        <div className="mt-2">
+          {!showContactPicker ? (
+            <button
+              onClick={() => setShowContactPicker(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Users className="w-3 h-3" />
+              Find contacts matching this profile
+            </button>
+          ) : (
+            <ApolloContactPicker
+              apolloQuery={apolloQuery}
+              onContactSelected={() => { /* wired in Credit 2 */ }}
+              onClose={() => setShowContactPicker(false)}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1163,7 +1185,14 @@ function OutreachTaskItem({ task, strandColorMap, greyStrands }: { task: any; st
       {strand && strandColorMap.has(strand) && (
         <StrandPill strand={strand} colorIdx={strandColorMap.get(strand)!} grey={greyStrands} />
       )}
-      {task.outreach_draft && <OutreachDraftPanel draft={task.outreach_draft} moveType={task.move_type} />}
+      {task.outreach_draft && (
+        <OutreachDraftPanel
+          draft={task.outreach_draft}
+          moveType={task.move_type}
+          outreachSubtype={task.outreach_subtype}
+          apolloQuery={task.apollo_query}
+        />
+      )}
     </li>
   );
 }
