@@ -10,6 +10,7 @@ import Banner from "@/components/Banner";
 import TodayCard, { type PlanState } from "@/components/plan/TodayCard";
 import TrackerGrid from "@/components/plan/TrackerGrid";
 import CheckInPanel from "@/components/plan/CheckInPanel";
+import ReplanPromptCard from "@/components/plan/ReplanPromptCard";
 import ReportSection from "@/components/ReportSection";
 import LibraryCard from "@/components/plan/LibraryCard";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
@@ -89,6 +90,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [refineLimitReached, setRefineLimitReached] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [replanPending, setReplanPending] = useState(false);
+  const [replanContext, setReplanContext] = useState<Record<string, unknown> | null>(null);
 
   // Route guard: unauthed/unpaid → redirect to /
   useEffect(() => {
@@ -137,7 +140,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         // Check tracker session
         supabase
           .from("tracker_sessions")
-          .select("id, current_day, activated_at, subscription_status, last_checkin_date")
+          .select("id, current_day, activated_at, subscription_status, last_checkin_date, replan_pending, replan_context")
           .eq("user_id", user.id)
           .eq("report_id", data.id)
           .maybeSingle()
