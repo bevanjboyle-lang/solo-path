@@ -190,14 +190,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     buildTrackerDays(currentDay, Array.from(completedDays));
   }, []);
 
-  // Trigger second effect just so existing useEffect closure stays minimal
-  useEffect(() => {
-    // no-op — kept to preserve hook order across edits
-  }, []);
-
-  // dummy block to balance braces — original had nested .then; replaced cleanly above.
-  useEffect(() => {
-
+  
   // /checkin/:sessionId deep-link: pre-open drawer immediately on mount
   // and rewrite URL to /plan so the deep-link is not visible in the address bar.
   useEffect(() => {
