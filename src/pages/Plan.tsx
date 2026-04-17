@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
@@ -86,6 +87,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [refinementCount, setRefinementCount] = useState(0);
   const [refineOpen, setRefineOpen] = useState(false);
   const [refineLimitReached, setRefineLimitReached] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   // Route guard: unauthed/unpaid → redirect to /
   useEffect(() => {
@@ -273,6 +276,45 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     setRefineOpen(true);
   }, [refineLimitReached, refinementCount]);
 
+  const exportPdf = useCallback(async () => {
+    if (!reportId || exportingPdf) return;
+    setExportingPdf(true);
+    setPdfError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("No auth session");
+
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-pdf`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+        },
+        body: JSON.stringify({ report_id: reportId }),
+      });
+      if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+      const blob = await res.blob();
+
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `Solo-Plan-${reportId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error("exportPdf error", err);
+      setPdfError("Couldn't generate PDF. Please try again.");
+      setTimeout(() => setPdfError(null), 5000);
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [reportId, exportingPdf]);
+
   // Guard: don't render paid UI before auth resolves
   if (authLoading || hasPaid === null) {
     return (
@@ -373,20 +415,41 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
         >
-          {/* Refine your report — paid users only */}
+          {/* Report actions — paid users only */}
           {hasPaid && reportId && (
             <div className="mb-5 flex flex-col items-start gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={submitRefinement}
-                disabled={refineLimitReached || refinementCount >= 3}
-                className="text-xs font-medium"
-              >
-                Refine your report
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={submitRefinement}
+                  disabled={refineLimitReached || refinementCount >= 3}
+                  className="text-xs font-medium"
+                >
+                  Refine your report
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportPdf}
+                  disabled={exportingPdf}
+                  className="text-xs font-medium"
+                >
+                  {exportingPdf ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Generating PDF...
+                    </span>
+                  ) : (
+                    "Download as PDF"
+                  )}
+                </Button>
+              </div>
               {(refineLimitReached || refinementCount >= 3) && (
                 <p className="text-[11px] text-muted-foreground">Refinement limit reached.</p>
+              )}
+              {pdfError && (
+                <p className="text-[11px] text-red-500">{pdfError}</p>
               )}
             </div>
           )}
