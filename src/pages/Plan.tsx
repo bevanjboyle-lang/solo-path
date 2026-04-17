@@ -82,6 +82,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [isSubscriber, setIsSubscriber] = useState(false);
   const [showSubscribeWall, setShowSubscribeWall] = useState(false);
+  const [reportId, setReportId] = useState<string>("");
+  const [refinementCount, setRefinementCount] = useState(0);
+  const [refineOpen, setRefineOpen] = useState(false);
+  const [refineLimitReached, setRefineLimitReached] = useState(false);
 
   // Route guard: unauthed/unpaid → redirect to /
   useEffect(() => {
