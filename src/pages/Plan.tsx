@@ -415,20 +415,41 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4 }}
         >
-          {/* Refine your report — paid users only */}
+          {/* Report actions — paid users only */}
           {hasPaid && reportId && (
             <div className="mb-5 flex flex-col items-start gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={submitRefinement}
-                disabled={refineLimitReached || refinementCount >= 3}
-                className="text-xs font-medium"
-              >
-                Refine your report
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={submitRefinement}
+                  disabled={refineLimitReached || refinementCount >= 3}
+                  className="text-xs font-medium"
+                >
+                  Refine your report
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={exportPdf}
+                  disabled={exportingPdf}
+                  className="text-xs font-medium"
+                >
+                  {exportingPdf ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Generating PDF...
+                    </span>
+                  ) : (
+                    "Download as PDF"
+                  )}
+                </Button>
+              </div>
               {(refineLimitReached || refinementCount >= 3) && (
                 <p className="text-[11px] text-muted-foreground">Refinement limit reached.</p>
+              )}
+              {pdfError && (
+                <p className="text-[11px] text-red-500">{pdfError}</p>
               )}
             </div>
           )}
