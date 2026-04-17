@@ -412,90 +412,96 @@ export default function Landing() {
         </section>
 
         {/* ═══ Pricing summary ═══ */}
-        <section className="py-24 lg:py-32">
+        <section className="py-16 lg:py-24">
           <div className="mx-auto max-w-3xl px-6">
-            <ScrollReveal>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Pricing</p>
-              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                Simple pricing. No commitment.
-              </h2>
-            </ScrollReveal>
-
-            <div className="mt-12 grid gap-6 sm:grid-cols-2">
-              <ScrollReveal delay={0.05}>
-                <div className="rounded-xl border border-border p-6">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">One-time</p>
-                  <p className="mt-3 font-display text-3xl font-bold">£19.99</p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Full report, 30-day activation plan, adaptive tracker, outreach drafts.
-                  </p>
-                  <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                    See details <ChevronRight className="h-3 w-3" />
-                  </Link>
-                </div>
+            <div className="panel-ivory p-8 sm:p-12">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Pricing</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                  Simple pricing. No commitment.
+                </h2>
               </ScrollReveal>
 
-              <ScrollReveal delay={0.12}>
-                <div className="rounded-xl border border-border p-6">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">Support</p>
-                  <p className="mt-3 font-display text-3xl font-bold">£19<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Ongoing tracking, guidance library, Ask Solo advisory, weekly cadence.
-                  </p>
-                  <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                    See details <ChevronRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </ScrollReveal>
+              <div className="mt-8 grid gap-6 sm:grid-cols-2">
+                <ScrollReveal delay={0.05}>
+                  <div className="card-stone h-full p-6">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">One-time</p>
+                    <p className="mt-3 font-display text-3xl font-bold">£19.99</p>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      Full report, 30-day activation plan, adaptive tracker, outreach drafts.
+                    </p>
+                    <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                      See details <ChevronRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </ScrollReveal>
+
+                <ScrollReveal delay={0.12}>
+                  <div className="card-stone h-full p-6" style={{ borderTop: "4px solid #2ECDB0" }}>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">Support</p>
+                    <p className="mt-3 font-display text-3xl font-bold">£19<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      Ongoing tracking, guidance library, Ask Solo advisory, weekly cadence.
+                    </p>
+                    <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                      See details <ChevronRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </ScrollReveal>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ═══ #about — Founder ═══ */}
-        <section id="about" className="border-t border-border/50 py-24 lg:py-32">
+        <section id="about" className="py-16 lg:py-24">
           <div className="mx-auto max-w-2xl px-6">
-            <ScrollReveal>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">About Solo</p>
-              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-                Built by someone who's been there.
-              </h2>
-              <p className="mt-6 text-sm leading-[1.8] text-muted-foreground">
-                Solo was built by a professional who spent 15 years in structured corporate roles before realising that the gap between "secure career" and "viable independent option" was wider than it needed to be. The tools existed. The intelligence existed. What didn't exist was a system that connected the two for people whose experience was their primary asset.
-              </p>
-              <p className="mt-4 text-sm leading-[1.8] text-muted-foreground">
-                Solo is that system. It doesn't sell motivation or mindset. It maps the commercial reality of what your career has already built, and shows you what's possible with it.
-              </p>
-            </ScrollReveal>
+            <div className="panel-ivory p-8 sm:p-12">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">About Solo</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
+                  Built by someone who's been there.
+                </h2>
+                <p className="mt-6 text-sm leading-[1.8] text-muted-foreground">
+                  Solo was built by a professional who spent 15 years in structured corporate roles before realising that the gap between "secure career" and "viable independent option" was wider than it needed to be. The tools existed. The intelligence existed. What didn't exist was a system that connected the two for people whose experience was their primary asset.
+                </p>
+                <p className="mt-4 text-sm leading-[1.8] text-muted-foreground">
+                  Solo is that system. It doesn't sell motivation or mindset. It maps the commercial reality of what your career has already built, and shows you what's possible with it.
+                </p>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
 
         {/* ═══ FAQ teaser ═══ */}
-        <section className="py-24 lg:py-32">
+        <section className="py-16 lg:py-24">
           <div className="mx-auto max-w-2xl px-6">
-            <ScrollReveal>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">FAQ</p>
-              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-                Common questions
-              </h2>
-            </ScrollReveal>
+            <div className="panel-ivory p-8 sm:p-12">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">FAQ</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
+                  Common questions
+                </h2>
+              </ScrollReveal>
 
-            <ScrollReveal delay={0.1}>
-              <Accordion type="single" collapsible className="mt-8">
-                {faqItems.map((item, i) => (
-                  <AccordionItem key={i} value={`faq-${i}`} className="border-border">
-                    <AccordionTrigger className="text-sm font-medium text-left hover:no-underline py-4">
-                      {item.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-sm leading-relaxed text-muted-foreground pb-4">
-                      {item.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-              <Link to="/faq" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                All questions <ChevronRight className="h-3 w-3" />
-              </Link>
-            </ScrollReveal>
+              <ScrollReveal delay={0.1}>
+                <Accordion type="single" collapsible className="mt-6">
+                  {faqItems.map((item, i) => (
+                    <AccordionItem key={i} value={`faq-${i}`} className="border-border">
+                      <AccordionTrigger className="text-sm font-medium text-left hover:no-underline py-4">
+                        {item.q}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm leading-relaxed text-muted-foreground pb-4">
+                        {item.a}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+                <Link to="/faq" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                  All questions <ChevronRight className="h-3 w-3" />
+                </Link>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
 
