@@ -138,10 +138,75 @@ export async function confirmDeleteAccount(userId: string): Promise<{ error?: st
 }
 
 /**
- * Claim a second report (subscriber perk).
+ * Claim a second report. Backend returns one of:
+ *  - { eligible: true, requires_payment: false }   → navigate to /cv-upload
+ *  - { requires_payment: true, checkout_url }      → redirect to Stripe
+ *  - { eligible: false, reason: "cap_reached", days_until_eligible } → caller handles UI
  */
-export async function claimSecondReport(): Promise<{ error?: string }> {
-  const { error } = await supabase.functions.invoke("claim-second-report", {});
+export interface ClaimSecondReportResult {
+  eligible?: boolean;
+  requires_payment?: boolean;
+  checkout_url?: string;
+  reason?: string;
+  days_until_eligible?: number;
+  second_report_paid?: boolean;
+  error?: string;
+}
+
+export async function claimSecondReport(
+  navigate?: (path: string) => void
+): Promise<ClaimSecondReportResult> {
+  const { data, error } = await supabase.functions.invoke("claim-second-report", {
+    body: {},
+  });
+  if (error) return { error: error.message };
+  const result = (data || {}) as ClaimSecondReportResult;
+
+  if (result.requires_payment && result.checkout_url) {
+    window.location.href = result.checkout_url;
+    return result;
+  }
+  if (result.eligible && !result.requires_payment && navigate) {
+    navigateAuthed(navigate, "/cv-upload");
+  }
+  return result;
+}
+
+/**
+ * Toggle Ask Solo info popover. Pure intent handler — local state lives
+ * in the widget that calls this. Pass the current value and the setter.
+ */
+export function openAskSoloInfo(
+  current: boolean,
+  setOpen: (next: boolean) => void
+): void {
+  setOpen(!current);
+}
+
+/**
+ * Confirm a pending replan. POSTs action=run to process-replan.
+ */
+export async function confirmReplan(
+  trackerSessionId: string,
+  userId: string
+): Promise<{ error?: string }> {
+  const { error } = await supabase.functions.invoke("process-replan", {
+    body: { action: "run", trackerSessionId, userId },
+  });
+  if (error) return { error: error.message };
+  return {};
+}
+
+/**
+ * Dismiss a pending replan. POSTs action=dismiss to process-replan.
+ */
+export async function dismissReplan(
+  trackerSessionId: string,
+  userId: string
+): Promise<{ error?: string }> {
+  const { error } = await supabase.functions.invoke("process-replan", {
+    body: { action: "dismiss", trackerSessionId, userId },
+  });
   if (error) return { error: error.message };
   return {};
 }
