@@ -71,21 +71,39 @@ export default function AskSolo() {
     if (sessionStartedRef.current) return;
     sessionStartedRef.current = true;
 
+    const buildGreeting = (archetypeName?: string | null) => {
+      const arcClause = archetypeName
+        ? `your background as a **${archetypeName}** professional`
+        : `your background`;
+      return `I know ${arcClause} and your Plan B options. I can see our previous conversation too. What would you like to work through?`;
+    };
+
     const startSession = async () => {
       try {
+        // Fetch latest report for archetype context
+        let archetypeName: string | null = null;
+        try {
+          const { data: report } = await supabase
+            .from("reports")
+            .select("core_report")
+            .eq("status", "complete")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const core = report?.core_report as any;
+          archetypeName = core?.archetype?.primary ?? null;
+        } catch {}
+
         const { data, error } = await supabase.functions.invoke("ask-solo", {
           body: { call_type: "start_session" },
         });
         if (!error && data) {
           setConversationId(data.conversation_id);
-          // Show context cue as opening assistant message
-          if (data.context_cue) {
-            setMessages([{
-              role: "assistant",
-              content: data.context_cue,
-              timestamp: new Date(),
-            }]);
-          }
+          setMessages([{
+            role: "assistant",
+            content: buildGreeting(archetypeName),
+            timestamp: new Date(),
+          }]);
         }
       } catch (err) {
         console.error("[AskSolo] Failed to start session:", err);
