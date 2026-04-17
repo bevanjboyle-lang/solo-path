@@ -545,7 +545,7 @@ function BrowseTab({
 }
 
 /* ── Modules Tab — fetches browse data to render module cards ── */
-function ModulesTab({ onSelectModule }: { onSelectModule: (id: number) => void }) {
+function ModulesTab({ onSelectModule }: { onSelectModule: (id: number, unlocked: boolean) => void }) {
   const [modules, setModules] = useState<BrowseModule[]>([]);
   const [loading, setLoading] = useState(true);
 
