@@ -10,6 +10,7 @@ import Banner from "@/components/Banner";
 import TodayCard, { type PlanState } from "@/components/plan/TodayCard";
 import TrackerGrid from "@/components/plan/TrackerGrid";
 import CheckInPanel from "@/components/plan/CheckInPanel";
+import ReplanPromptCard from "@/components/plan/ReplanPromptCard";
 import ReportSection from "@/components/ReportSection";
 import LibraryCard from "@/components/plan/LibraryCard";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
@@ -89,6 +90,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [refineLimitReached, setRefineLimitReached] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [replanPending, setReplanPending] = useState(false);
+  const [replanContext, setReplanContext] = useState<Record<string, unknown> | null>(null);
 
   // Route guard: unauthed/unpaid → redirect to /
   useEffect(() => {
@@ -135,55 +138,59 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         }
 
         // Check tracker session
-        supabase
-          .from("tracker_sessions")
-          .select("id, current_day, activated_at, subscription_status, last_checkin_date")
-          .eq("user_id", user.id)
-          .eq("report_id", data.id)
-          .maybeSingle()
-          .then(({ data: session }) => {
-            if (!session) {
-              // Day 0 — no tracker yet
-              setPlanState("day0");
-              buildTrackerDays(0, []);
-              return;
-            }
-
-            setSessionId(session.id);
-            const currentDay = session.current_day || 0;
-            setDayNumber(currentDay);
-
-            const isSub = session.subscription_status === "active";
-            setIsSubscriber(isSub);
-
-            // Determine today's check-in status
-            const today = new Date().toISOString().slice(0, 10);
-            const checkedInToday = session.last_checkin_date === today;
-
-            if (currentDay === 0) {
-              setPlanState("day0");
-            } else if (isSub) {
-              setPlanState(checkedInToday ? "sub_done" : "sub_active");
-            } else if (currentDay > 30) {
-              setPlanState("day31_nosub");
-              setShowSubscribeWall(true);
-            } else {
-              setPlanState(checkedInToday ? "done_today" : "active");
-            }
-
-            // Build tracker days
-            supabase
-              .from("checkin_history")
-              .select("day_number")
-              .eq("tracker_session_id", session.id)
-              .then(({ data: checkins }) => {
-                const completedDays = new Set((checkins || []).map((c) => c.day_number));
-                buildTrackerDays(currentDay, Array.from(completedDays));
-              });
-          });
+        loadTrackerSession(user.id, data.id);
       });
   }, [user, authLoading, navigate]);
 
+  const loadTrackerSession = useCallback(async (uid: string, rid: string) => {
+    const { data: session } = await (supabase as any)
+      .from("tracker_sessions")
+      .select("id, current_day, activated_at, subscription_status, last_checkin_date, replan_pending, replan_context")
+      .eq("user_id", uid)
+      .eq("report_id", rid)
+      .maybeSingle();
+
+    if (!session) {
+      setPlanState("day0");
+      buildTrackerDays(0, []);
+      setReplanPending(false);
+      setReplanContext(null);
+      return;
+    }
+
+    setSessionId(session.id);
+    const currentDay = session.current_day || 0;
+    setDayNumber(currentDay);
+
+    const isSub = session.subscription_status === "active";
+    setIsSubscriber(isSub);
+
+    setReplanPending(!!session.replan_pending);
+    setReplanContext((session.replan_context as Record<string, unknown> | null) ?? null);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const checkedInToday = session.last_checkin_date === today;
+
+    if (currentDay === 0) {
+      setPlanState("day0");
+    } else if (isSub) {
+      setPlanState(checkedInToday ? "sub_done" : "sub_active");
+    } else if (currentDay > 30) {
+      setPlanState("day31_nosub");
+      setShowSubscribeWall(true);
+    } else {
+      setPlanState(checkedInToday ? "done_today" : "active");
+    }
+
+    const { data: checkins } = await supabase
+      .from("checkin_history")
+      .select("day_number")
+      .eq("tracker_session_id", session.id);
+    const completedDays = new Set((checkins || []).map((c) => c.day_number));
+    buildTrackerDays(currentDay, Array.from(completedDays));
+  }, []);
+
+  
   // /checkin/:sessionId deep-link: pre-open drawer immediately on mount
   // and rewrite URL to /plan so the deep-link is not visible in the address bar.
   useEffect(() => {
@@ -221,12 +228,17 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     setCheckinOpen(true);
   }, []);
 
+  const checkinReplanPendingRef = useRef(false);
+
   const handleCheckinSubmit = useCallback(async (response: string) => {
     // Call existing submit-checkin edge function
-    const { error } = await supabase.functions.invoke("process-checkin", {
+    const { data, error } = await supabase.functions.invoke("process-checkin", {
       body: { session_id: sessionId, response },
     });
     if (error) throw error;
+
+    const replanPendingFromCheckin = !!(data as { replan_pending?: boolean } | null)?.replan_pending;
+    checkinReplanPendingRef.current = replanPendingFromCheckin;
 
     // Optimistic update
     setPlanState((prev) => {
@@ -239,7 +251,11 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       prev.map((d) => (d.isToday ? { ...d, completed: true } : d))
     );
 
-    toast({ title: "Check-in saved." });
+    // Don't show "Plan updated" framing when a replan is pending — the AI
+    // output already states the plan hasn't been rebuilt yet.
+    if (!replanPendingFromCheckin) {
+      toast({ title: "Check-in saved." });
+    }
 
     // If opened via deep-link, update URL
     if (initialSessionId) {
@@ -349,6 +365,18 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       )}
 
       <main className="mx-auto w-full max-w-3xl px-6 pt-8 pb-24">
+        {/* §1 ReplanPromptCard — only when a replan is pending */}
+        {replanPending && sessionId && user && (
+          <ReplanPromptCard
+            trackerSessionId={sessionId}
+            userId={user.id}
+            context={replanContext}
+            onResolved={() => {
+              if (user && reportId) loadTrackerSession(user.id, reportId);
+            }}
+          />
+        )}
+
         {/* §2 TodayCard — always first, always primary */}
         <TodayCard
           state={planState}
@@ -495,8 +523,16 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         open={checkinOpen}
         onOpenChange={(open) => {
           setCheckinOpen(open);
-          if (!open && initialSessionId) {
-            window.history.replaceState(null, "", "/plan");
+          if (!open) {
+            if (initialSessionId) {
+              window.history.replaceState(null, "", "/plan");
+            }
+            // If the latest check-in flagged a pending replan, refetch the
+            // tracker session so the ReplanPromptCard becomes visible.
+            if (checkinReplanPendingRef.current && user && reportId) {
+              checkinReplanPendingRef.current = false;
+              loadTrackerSession(user.id, reportId);
+            }
           }
         }}
         sessionId={sessionId}
