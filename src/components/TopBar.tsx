@@ -19,10 +19,10 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
   const handleSignOut = () => { signOut(); setOpen(false); };
 
   return (
-    <header className="sticky top-0 z-50 bg-[hsl(var(--surface-panel))] border-b border-border">
-      {/* Mint accent line */}
-      <div className="h-1 w-full" style={{ backgroundColor: "#2ECDB0" }} />
-
+    <header
+      className="sticky z-40 border-b border-border"
+      style={{ top: 4, background: "#FAF9F7" }}
+    >
       <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6 lg:px-10">
         {/* Logo */}
         <Link to="/" className="flex items-center" aria-label="Solo home">
