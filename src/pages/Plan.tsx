@@ -247,6 +247,32 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     setCheckinOpen(true);
   }, []);
 
+  const handleRefined = useCallback((updatedReport: unknown, newCount: number) => {
+    const r = updatedReport as Record<string, unknown> | null;
+    if (r) {
+      const coreReport = (r.core_report as Record<string, unknown>) || null;
+      if (typeof r.hook_insight === "string") setNarrative(r.hook_insight as string);
+      const options = (coreReport?.options as Array<Record<string, unknown>>) || [];
+      if (options.length > 0) {
+        setStrands(
+          options.map((opt) => ({
+            title: (opt.title as string) || "Untitled option",
+            pitch: (opt.one_liner as string) || (opt.pitch as string) || "",
+            primary_move_type: (opt.primary_move_type as string) || null,
+            structural_warmth: (opt.structural_warmth as string) || null,
+          }))
+        );
+      }
+    }
+    setRefinementCount(newCount);
+    if (newCount >= 3) setRefineLimitReached(true);
+  }, []);
+
+  const submitRefinement = useCallback(() => {
+    if (refineLimitReached || refinementCount >= 3) return;
+    setRefineOpen(true);
+  }, [refineLimitReached, refinementCount]);
+
   // Guard: don't render paid UI before auth resolves
   if (authLoading || hasPaid === null) {
     return (
