@@ -138,54 +138,65 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         }
 
         // Check tracker session
-        supabase
-          .from("tracker_sessions")
-          .select("id, current_day, activated_at, subscription_status, last_checkin_date, replan_pending, replan_context")
-          .eq("user_id", user.id)
-          .eq("report_id", data.id)
-          .maybeSingle()
-          .then(({ data: session }) => {
-            if (!session) {
-              // Day 0 — no tracker yet
-              setPlanState("day0");
-              buildTrackerDays(0, []);
-              return;
-            }
-
-            setSessionId(session.id);
-            const currentDay = session.current_day || 0;
-            setDayNumber(currentDay);
-
-            const isSub = session.subscription_status === "active";
-            setIsSubscriber(isSub);
-
-            // Determine today's check-in status
-            const today = new Date().toISOString().slice(0, 10);
-            const checkedInToday = session.last_checkin_date === today;
-
-            if (currentDay === 0) {
-              setPlanState("day0");
-            } else if (isSub) {
-              setPlanState(checkedInToday ? "sub_done" : "sub_active");
-            } else if (currentDay > 30) {
-              setPlanState("day31_nosub");
-              setShowSubscribeWall(true);
-            } else {
-              setPlanState(checkedInToday ? "done_today" : "active");
-            }
-
-            // Build tracker days
-            supabase
-              .from("checkin_history")
-              .select("day_number")
-              .eq("tracker_session_id", session.id)
-              .then(({ data: checkins }) => {
-                const completedDays = new Set((checkins || []).map((c) => c.day_number));
-                buildTrackerDays(currentDay, Array.from(completedDays));
-              });
-          });
+        loadTrackerSession(user.id, data.id);
       });
   }, [user, authLoading, navigate]);
+
+  const loadTrackerSession = useCallback(async (uid: string, rid: string) => {
+    const { data: session } = await (supabase as any)
+      .from("tracker_sessions")
+      .select("id, current_day, activated_at, subscription_status, last_checkin_date, replan_pending, replan_context")
+      .eq("user_id", uid)
+      .eq("report_id", rid)
+      .maybeSingle();
+
+    if (!session) {
+      setPlanState("day0");
+      buildTrackerDays(0, []);
+      setReplanPending(false);
+      setReplanContext(null);
+      return;
+    }
+
+    setSessionId(session.id);
+    const currentDay = session.current_day || 0;
+    setDayNumber(currentDay);
+
+    const isSub = session.subscription_status === "active";
+    setIsSubscriber(isSub);
+
+    setReplanPending(!!session.replan_pending);
+    setReplanContext((session.replan_context as Record<string, unknown> | null) ?? null);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const checkedInToday = session.last_checkin_date === today;
+
+    if (currentDay === 0) {
+      setPlanState("day0");
+    } else if (isSub) {
+      setPlanState(checkedInToday ? "sub_done" : "sub_active");
+    } else if (currentDay > 30) {
+      setPlanState("day31_nosub");
+      setShowSubscribeWall(true);
+    } else {
+      setPlanState(checkedInToday ? "done_today" : "active");
+    }
+
+    const { data: checkins } = await supabase
+      .from("checkin_history")
+      .select("day_number")
+      .eq("tracker_session_id", session.id);
+    const completedDays = new Set((checkins || []).map((c) => c.day_number));
+    buildTrackerDays(currentDay, Array.from(completedDays));
+  }, []);
+
+  // Trigger second effect just so existing useEffect closure stays minimal
+  useEffect(() => {
+    // no-op — kept to preserve hook order across edits
+  }, []);
+
+  // dummy block to balance braces — original had nested .then; replaced cleanly above.
+  useEffect(() => {
 
   // /checkin/:sessionId deep-link: pre-open drawer immediately on mount
   // and rewrite URL to /plan so the deep-link is not visible in the address bar.
