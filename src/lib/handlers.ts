@@ -225,7 +225,7 @@ export async function generateReport(payload: {
       // a while in real life, but in tests/dev with auto-confirm it's fast.
       const session = await new Promise<typeof existing>((resolve) => {
         const timer = setTimeout(() => {
-          sub.subscription.unsubscribe();
+          sub.data.subscription.unsubscribe();
           resolve(null);
         }, 60_000);
         const sub = supabase.auth.onAuthStateChange((event, s) => {
