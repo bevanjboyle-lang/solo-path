@@ -95,18 +95,24 @@ export default function Landing() {
       <TopBar />
 
       <main className="pt-[68px]">
-        {/* ═══ HERO ═══ */}
+        {/* ═══ HERO — text sits directly over the photo with a dark overlay for contrast ═══ */}
         <section className="relative overflow-hidden">
+          {/* Dark overlay over the global photo background, hero-only */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{ background: "rgba(0,0,0,0.35)" }}
+          />
           {/* Subtle mint radial */}
           <div
             className="pointer-events-none absolute inset-0"
-            style={{ background: "radial-gradient(ellipse at 50% 20%, rgba(46,205,176,0.04) 0%, transparent 55%)" }}
+            style={{ background: "radial-gradient(ellipse at 50% 20%, rgba(46,205,176,0.08) 0%, transparent 55%)" }}
           />
 
-          <div className="mx-auto max-w-3xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
+          <div className="relative mx-auto max-w-3xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
             <motion.h1
               className="font-display text-[2.5rem] font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]"
-              style={{ letterSpacing: "-0.025em" }}
+              style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
@@ -115,7 +121,8 @@ export default function Landing() {
             </motion.h1>
 
             <motion.p
-              className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
+              className="mx-auto mt-6 max-w-xl text-lg leading-relaxed sm:text-xl"
+              style={{ color: "rgba(250,249,247,0.85)" }}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -147,7 +154,8 @@ export default function Landing() {
               {!isAuthed && (
                 <button
                   onClick={handleStartTest}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                  className="text-sm font-medium transition-colors"
+                  style={{ color: "rgba(250,249,247,0.75)" }}
                 >
                   See your free preview
                 </button>
@@ -156,7 +164,8 @@ export default function Landing() {
 
             {/* Trust strip */}
             <motion.p
-              className="mt-6 text-xs text-muted-foreground"
+              className="mt-6 text-xs"
+              style={{ color: "rgba(250,249,247,0.65)" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35, duration: 0.5 }}
@@ -167,192 +176,197 @@ export default function Landing() {
         </section>
 
         {/* ═══ #how-it-works ═══ */}
-        <section id="how-it-works" className="py-24 lg:py-32">
+        <section id="how-it-works" className="py-16 lg:py-24">
           <div className="mx-auto max-w-3xl px-6">
-            <ScrollReveal>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">How it works</p>
-              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                From experience to income path in 8 minutes
-              </h2>
-            </ScrollReveal>
+            <div className="panel-ivory p-8 sm:p-12">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">How it works</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                  From experience to income path in 8 minutes
+                </h2>
+              </ScrollReveal>
 
-            <div className="mt-16 space-y-16">
-              {steps.map((s, i) => (
-                <ScrollReveal key={s.num} delay={i * 0.08}>
-                  <div className="flex gap-6 lg:gap-10">
-                    <span className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
-                      {s.num}
-                    </span>
-                    <div>
-                      <h3 className="text-base font-semibold leading-snug">{s.title}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground max-w-md">{s.desc}</p>
+              <div className="mt-10 space-y-4">
+                {steps.map((s, i) => (
+                  <ScrollReveal key={s.num} delay={i * 0.08}>
+                    <div className="card-stone flex gap-6 p-5 lg:gap-8">
+                      <span className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
+                        {s.num}
+                      </span>
+                      <div>
+                        <h3 className="text-base font-semibold leading-snug">{s.title}</h3>
+                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground max-w-md">{s.desc}</p>
+                      </div>
                     </div>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
-
-            <ScrollReveal delay={0.3}>
-              <div className="mt-16 text-center">
-                <button
-                  onClick={handleStartTest}
-                  className="rounded-lg bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Start your test
-                </button>
+                  </ScrollReveal>
+                ))}
               </div>
-            </ScrollReveal>
+
+              <ScrollReveal delay={0.3}>
+                <div className="mt-10 text-center">
+                  <button
+                    onClick={handleStartTest}
+                    className="rounded-lg bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                  >
+                    Start your test
+                  </button>
+                </div>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
 
         {/* ═══ #why-solo — editorial split section ═══ */}
-        <section id="why-solo" className="border-t border-border/50 py-24 lg:py-32">
+        <section id="why-solo" className="py-16 lg:py-24">
           <div className="mx-auto max-w-5xl px-6">
-            <div className="grid gap-16 lg:grid-cols-[1fr_1.2fr] lg:gap-24">
-              {/* Left: sticky heading */}
-              <ScrollReveal>
-                <div className="lg:sticky lg:top-32">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Why Solo</p>
-                  <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                    Most professionals have no credible Plan B
-                  </h2>
-                  <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                    Not because they lack the skills. Because they've never had to translate what they know into something someone outside their employer would pay for.
-                  </p>
-                </div>
-              </ScrollReveal>
+            <div className="panel-ivory p-8 sm:p-12">
+              <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
+                {/* Left: sticky heading */}
+                <ScrollReveal>
+                  <div className="lg:sticky lg:top-32">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Why Solo</p>
+                    <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                      Most professionals have no credible Plan B
+                    </h2>
+                    <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+                      Not because they lack the skills. Because they've never had to translate what they know into something someone outside their employer would pay for.
+                    </p>
+                  </div>
+                </ScrollReveal>
 
-              {/* Right: flowing content */}
-              <div className="space-y-8">
-                {[
-                  {
-                    title: "Your skills don't translate themselves",
-                    body: "Most professionals can't describe what they'd sell, to whom, or for how much. They've never had to. Solo does that translation.",
-                  },
-                  {
-                    title: "Generic advice doesn't help",
-                    body: "ChatGPT gives you broad ideas. Career coaches give you confidence. Neither gives you a commercially realistic answer built from your actual experience.",
-                  },
-                  {
-                    title: "Roles are becoming less predictable",
-                    body: "Middle-management, analytical, and process roles are being restructured faster than most professionals expected. Not eliminated, but less stable and less guaranteed.",
-                  },
-                ].map((item, i) => (
-                  <ScrollReveal key={item.title} delay={i * 0.1}>
-                    <div>
-                      <h3 className="text-base font-semibold">{item.title}</h3>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
-                    </div>
-                  </ScrollReveal>
-                ))}
+                {/* Right: flowing content as stone cards */}
+                <div className="space-y-4">
+                  {[
+                    {
+                      title: "Your skills don't translate themselves",
+                      body: "Most professionals can't describe what they'd sell, to whom, or for how much. They've never had to. Solo does that translation.",
+                    },
+                    {
+                      title: "Generic advice doesn't help",
+                      body: "ChatGPT gives you broad ideas. Career coaches give you confidence. Neither gives you a commercially realistic answer built from your actual experience.",
+                    },
+                    {
+                      title: "Roles are becoming less predictable",
+                      body: "Middle-management, analytical, and process roles are being restructured faster than most professionals expected. Not eliminated, but less stable and less guaranteed.",
+                    },
+                  ].map((item, i) => (
+                    <ScrollReveal key={item.title} delay={i * 0.1}>
+                      <div className="card-stone p-5">
+                        <h3 className="text-base font-semibold">{item.title}</h3>
+                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                      </div>
+                    </ScrollReveal>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </section>
 
         {/* ═══ #who-its-for ═══ */}
-        <section id="who-its-for" className="py-24 lg:py-32">
+        <section id="who-its-for" className="py-16 lg:py-24">
           <div className="mx-auto max-w-3xl px-6">
-            <ScrollReveal>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Who it's for</p>
-              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                Solo isn't for everyone.
-              </h2>
-            </ScrollReveal>
+            <div className="panel-ivory p-8 sm:p-12">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Who it's for</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                  Solo isn't for everyone.
+                </h2>
+              </ScrollReveal>
 
-            <div className="mt-8 space-y-4">
-              {personas.map((p, i) => (
-                <ScrollReveal key={i} delay={i * 0.1}>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{p}</p>
-                </ScrollReveal>
-              ))}
-            </div>
-
-            <ScrollReveal delay={0.2}>
-              <p className="mt-10 text-sm font-medium text-foreground/90">
-                If your background sits somewhere in here, it is.
-              </p>
-            </ScrollReveal>
-
-            <ScrollReveal delay={0.25}>
-              <div className="mt-6 flex flex-wrap gap-2">
-                {domains.map((d) => (
-                  <span
-                    key={d}
-                    className="inline-block rounded-md border border-border bg-surface-card px-3 py-1 text-xs font-medium text-muted-foreground"
-                  >
-                    {d}
-                  </span>
+              <div className="mt-8 space-y-4">
+                {personas.map((p, i) => (
+                  <ScrollReveal key={i} delay={i * 0.1}>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{p}</p>
+                  </ScrollReveal>
                 ))}
               </div>
-            </ScrollReveal>
 
-            <ScrollReveal delay={0.3}>
-              <p className="mt-6 text-xs text-muted-foreground">
-                95 professional archetypes · 14 domains · 480 business models
-              </p>
-            </ScrollReveal>
+              <ScrollReveal delay={0.2}>
+                <p className="mt-10 text-sm font-medium text-foreground/90">
+                  If your background sits somewhere in here, it is.
+                </p>
+              </ScrollReveal>
+
+              <ScrollReveal delay={0.25}>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {domains.map((d) => (
+                    <span
+                      key={d}
+                      className="inline-block rounded-md border border-border bg-surface-card px-3 py-1 text-xs font-medium text-muted-foreground"
+                    >
+                      {d}
+                    </span>
+                  ))}
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal delay={0.3}>
+                <p className="mt-6 text-xs text-muted-foreground">
+                  95 professional archetypes · 14 domains · 480 business models
+                </p>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
 
         {/* ═══ #sample-report — editorial preview ═══ */}
-        <section id="sample-report" className="border-t border-border/50 py-24 lg:py-32">
+        <section id="sample-report" className="py-16 lg:py-24">
           <div className="mx-auto max-w-5xl px-6">
-            <div className="grid gap-16 lg:grid-cols-[1.2fr_1fr] lg:gap-24">
-              {/* Left: report sections list */}
-              <div>
-                <ScrollReveal>
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">What's in your report</p>
-                  <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                    Eight sections. No fluff.
-                  </h2>
-                </ScrollReveal>
+            <div className="panel-ivory p-8 sm:p-12">
+              <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+                {/* Left: report sections list */}
+                <div>
+                  <ScrollReveal>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">What's in your report</p>
+                    <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                      Eight sections. No fluff.
+                    </h2>
+                  </ScrollReveal>
 
-                <div className="mt-10 space-y-6">
-                  {reportFeatures.map((f, i) => (
-                    <ScrollReveal key={f.title} delay={i * 0.05}>
-                      <div className="flex gap-4">
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                        <div>
+                  <div className="mt-8 grid gap-3 sm:grid-cols-2">
+                    {reportFeatures.map((f, i) => (
+                      <ScrollReveal key={f.title} delay={i * 0.05}>
+                        <div className="card-stone h-full p-4">
                           <h3 className="text-sm font-semibold">{f.title}</h3>
-                          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{f.desc}</p>
+                        </div>
+                      </ScrollReveal>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Right: blurred locked preview + CTA */}
+                <ScrollReveal delay={0.15}>
+                  <div className="lg:sticky lg:top-32 space-y-6">
+                    {/* Simulated locked section */}
+                    <div className="card-stone p-6 relative overflow-hidden">
+                      <div className="space-y-3" style={{ filter: "blur(4px)" }} aria-hidden="true">
+                        <div className="h-4 w-3/4 rounded bg-muted" />
+                        <div className="h-3 w-full rounded bg-muted" />
+                        <div className="h-3 w-5/6 rounded bg-muted" />
+                        <div className="h-3 w-2/3 rounded bg-muted" />
+                        <div className="mt-4 h-4 w-1/2 rounded bg-muted" />
+                        <div className="h-3 w-full rounded bg-muted" />
+                        <div className="h-3 w-4/5 rounded bg-muted" />
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                          <p className="text-sm font-semibold text-foreground">Your full report</p>
+                          <p className="mt-1 text-xs text-muted-foreground">Unlock for £19.99</p>
                         </div>
                       </div>
-                    </ScrollReveal>
-                  ))}
-                </div>
-              </div>
+                    </div>
 
-              {/* Right: blurred locked preview + CTA */}
-              <ScrollReveal delay={0.15}>
-                <div className="lg:sticky lg:top-32 space-y-8">
-                  {/* Simulated locked section */}
-                  <div className="rounded-xl border border-border bg-surface-card p-6 relative overflow-hidden">
-                    <div className="space-y-3" style={{ filter: "blur(4px)" }} aria-hidden="true">
-                      <div className="h-4 w-3/4 rounded bg-muted" />
-                      <div className="h-3 w-full rounded bg-muted" />
-                      <div className="h-3 w-5/6 rounded bg-muted" />
-                      <div className="h-3 w-2/3 rounded bg-muted" />
-                      <div className="mt-4 h-4 w-1/2 rounded bg-muted" />
-                      <div className="h-3 w-full rounded bg-muted" />
-                      <div className="h-3 w-4/5 rounded bg-muted" />
-                    </div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center">
-                        <p className="text-sm font-semibold text-foreground">Your full report</p>
-                        <p className="mt-1 text-xs text-muted-foreground">Unlock for £19.99</p>
-                      </div>
-                    </div>
+                    <button
+                      onClick={handleStartTest}
+                      className="w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
+                      Take the test
+                    </button>
                   </div>
-
-                  <button
-                    onClick={handleStartTest}
-                    className="w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                  >
-                    Take the test
-                  </button>
-                </div>
-              </ScrollReveal>
+                </ScrollReveal>
+              </div>
             </div>
           </div>
         </section>
@@ -372,112 +386,122 @@ export default function Landing() {
         </section>
 
         {/* ═══ Stat strip ═══ */}
-        <section className="border-t border-border/50 py-16">
-          <ScrollReveal>
-            <div className="mx-auto flex max-w-xl flex-col gap-8 px-6 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
-              {[
-                { num: 95, label: "archetypes" },
-                { num: 480, label: "business models" },
-                { num: 2694, label: "combinations" },
-              ].map((s) => (
-                <div key={s.label} className="flex-1 text-center sm:px-6">
-                  <span className="block font-display text-3xl font-bold text-foreground">
-                    <AnimatedCounter target={s.num} />
-                  </span>
-                  <span className="mt-1 block text-xs font-semibold uppercase tracking-wider text-primary">
-                    {s.label}
-                  </span>
+        <section className="py-12">
+          <div className="mx-auto max-w-xl px-6">
+            <div className="panel-ivory px-6 py-8">
+              <ScrollReveal>
+                <div className="flex flex-col gap-8 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
+                  {[
+                    { num: 95, label: "archetypes" },
+                    { num: 480, label: "business models" },
+                    { num: 2694, label: "combinations" },
+                  ].map((s) => (
+                    <div key={s.label} className="flex-1 text-center sm:px-6">
+                      <span className="block font-display text-3xl font-bold text-foreground">
+                        <AnimatedCounter target={s.num} />
+                      </span>
+                      <span className="mt-1 block text-xs font-semibold uppercase tracking-wider text-primary">
+                        {s.label}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </ScrollReveal>
             </div>
-          </ScrollReveal>
+          </div>
         </section>
 
         {/* ═══ Pricing summary ═══ */}
-        <section className="py-24 lg:py-32">
+        <section className="py-16 lg:py-24">
           <div className="mx-auto max-w-3xl px-6">
-            <ScrollReveal>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Pricing</p>
-              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                Simple pricing. No commitment.
-              </h2>
-            </ScrollReveal>
-
-            <div className="mt-12 grid gap-6 sm:grid-cols-2">
-              <ScrollReveal delay={0.05}>
-                <div className="rounded-xl border border-border p-6">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">One-time</p>
-                  <p className="mt-3 font-display text-3xl font-bold">£19.99</p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Full report, 30-day activation plan, adaptive tracker, outreach drafts.
-                  </p>
-                  <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                    See details <ChevronRight className="h-3 w-3" />
-                  </Link>
-                </div>
+            <div className="panel-ivory p-8 sm:p-12">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Pricing</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
+                  Simple pricing. No commitment.
+                </h2>
               </ScrollReveal>
 
-              <ScrollReveal delay={0.12}>
-                <div className="rounded-xl border border-border p-6">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-primary">Support</p>
-                  <p className="mt-3 font-display text-3xl font-bold">£19<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Ongoing tracking, guidance library, Ask Solo advisory, weekly cadence.
-                  </p>
-                  <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                    See details <ChevronRight className="h-3 w-3" />
-                  </Link>
-                </div>
-              </ScrollReveal>
+              <div className="mt-8 grid gap-6 sm:grid-cols-2">
+                <ScrollReveal delay={0.05}>
+                  <div className="card-stone h-full p-6">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">One-time</p>
+                    <p className="mt-3 font-display text-3xl font-bold">£19.99</p>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      Full report, 30-day activation plan, adaptive tracker, outreach drafts.
+                    </p>
+                    <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                      See details <ChevronRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </ScrollReveal>
+
+                <ScrollReveal delay={0.12}>
+                  <div className="card-stone h-full p-6" style={{ borderTop: "4px solid #2ECDB0" }}>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">Support</p>
+                    <p className="mt-3 font-display text-3xl font-bold">£19<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      Ongoing tracking, guidance library, Ask Solo advisory, weekly cadence.
+                    </p>
+                    <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                      See details <ChevronRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                </ScrollReveal>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ═══ #about — Founder ═══ */}
-        <section id="about" className="border-t border-border/50 py-24 lg:py-32">
+        <section id="about" className="py-16 lg:py-24">
           <div className="mx-auto max-w-2xl px-6">
-            <ScrollReveal>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">About Solo</p>
-              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-                Built by someone who's been there.
-              </h2>
-              <p className="mt-6 text-sm leading-[1.8] text-muted-foreground">
-                Solo was built by a professional who spent 15 years in structured corporate roles before realising that the gap between "secure career" and "viable independent option" was wider than it needed to be. The tools existed. The intelligence existed. What didn't exist was a system that connected the two for people whose experience was their primary asset.
-              </p>
-              <p className="mt-4 text-sm leading-[1.8] text-muted-foreground">
-                Solo is that system. It doesn't sell motivation or mindset. It maps the commercial reality of what your career has already built, and shows you what's possible with it.
-              </p>
-            </ScrollReveal>
+            <div className="panel-ivory p-8 sm:p-12">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">About Solo</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
+                  Built by someone who's been there.
+                </h2>
+                <p className="mt-6 text-sm leading-[1.8] text-muted-foreground">
+                  Solo was built by a professional who spent 15 years in structured corporate roles before realising that the gap between "secure career" and "viable independent option" was wider than it needed to be. The tools existed. The intelligence existed. What didn't exist was a system that connected the two for people whose experience was their primary asset.
+                </p>
+                <p className="mt-4 text-sm leading-[1.8] text-muted-foreground">
+                  Solo is that system. It doesn't sell motivation or mindset. It maps the commercial reality of what your career has already built, and shows you what's possible with it.
+                </p>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
 
         {/* ═══ FAQ teaser ═══ */}
-        <section className="py-24 lg:py-32">
+        <section className="py-16 lg:py-24">
           <div className="mx-auto max-w-2xl px-6">
-            <ScrollReveal>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">FAQ</p>
-              <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-                Common questions
-              </h2>
-            </ScrollReveal>
+            <div className="panel-ivory p-8 sm:p-12">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">FAQ</p>
+                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
+                  Common questions
+                </h2>
+              </ScrollReveal>
 
-            <ScrollReveal delay={0.1}>
-              <Accordion type="single" collapsible className="mt-8">
-                {faqItems.map((item, i) => (
-                  <AccordionItem key={i} value={`faq-${i}`} className="border-border">
-                    <AccordionTrigger className="text-sm font-medium text-left hover:no-underline py-4">
-                      {item.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-sm leading-relaxed text-muted-foreground pb-4">
-                      {item.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-              <Link to="/faq" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                All questions <ChevronRight className="h-3 w-3" />
-              </Link>
-            </ScrollReveal>
+              <ScrollReveal delay={0.1}>
+                <Accordion type="single" collapsible className="mt-6">
+                  {faqItems.map((item, i) => (
+                    <AccordionItem key={i} value={`faq-${i}`} className="border-border">
+                      <AccordionTrigger className="text-sm font-medium text-left hover:no-underline py-4">
+                        {item.q}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm leading-relaxed text-muted-foreground pb-4">
+                        {item.a}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+                <Link to="/faq" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
+                  All questions <ChevronRight className="h-3 w-3" />
+                </Link>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
 
