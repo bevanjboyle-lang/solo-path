@@ -1,25 +1,15 @@
 import { useEffect } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-import SoloLogo from "@/components/SoloLogo";
-import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import ScrollReveal from "@/components/ui/ScrollReveal";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
-/* ─── Handler wiring ─── */
+/* ─── Handler wiring (named handlers only) ─── */
 function useHomeHandlers() {
   const navigate = useNavigate();
   const { user } = useAuth();
-
   return {
     handleStartTest: () => startTest(navigate),
     handleOpenPlan: () => navigateAuthed(navigate, "/plan"),
@@ -27,54 +17,76 @@ function useHomeHandlers() {
   };
 }
 
-/* ─── FAQ data (3 most-asked) ─── */
-const faqItems = [
+/* ─── Section 3: What you get ─── */
+const featureCards = [
   {
-    q: "What do I actually get for £19.99?",
-    a: "A personalised report with up to 10 scored business options matched to your experience, a recommended first path, a 30-day activation plan with daily tasks, outreach email drafts, and a local market snapshot. Plus 30 days of adaptive tracking.",
+    eyebrow: "Decision engine",
+    title: "A stress-tested set of feasible options, not a brainstorm",
+    body: "Solo classifies your profile against 95 professional archetypes and scores it across 480 business models. By the time you see your options, the weak ones are already gone. What's left is specific to your background, your network, and your financial reality.",
   },
   {
-    q: "How long does the questionnaire take?",
-    a: "About 8 minutes. If you upload your CV first, some questions are pre-populated and it takes closer to 5.",
+    eyebrow: "Adaptive plan",
+    title: "A plan that responds to real life",
+    body: "The 30-day plan isn't a template. It's built from your profile and updated daily based on what actually happens. Fall behind in week two — the plan adjusts. Things accelerate — it moves with you. It tracks where you are, not where you were supposed to be.",
   },
   {
-    q: "Is this just ChatGPT with a wrapper?",
-    a: "No. Solo classifies your profile against 95 professional archetypes and 480 business models using a structured intelligence engine. The output is specific to your background, not generic advice.",
+    eyebrow: "Named outreach contacts",
+    title: "Real names. Not \"try LinkedIn.\"",
+    body: "For paths that involve direct contact, Solo finds actual people — by name, role, and company. When you're ready to send a message, Solo drafts it for you, in your voice, for that specific person. The first client is the hardest part. Solo gets you to the message.",
+  },
+  {
+    eyebrow: "Contextual coaching",
+    title: "The more you use it, the sharper it gets",
+    body: "Ask Solo anything about your progress, your options, or your next move. Every answer draws on everything it has built about you — your archetype, your active paths, your check-in history, your blockers. Not generic advice. A specific answer to your specific situation, from a system that has been paying attention.",
+  },
+  {
+    eyebrow: "Guidance library",
+    title: "Guidance for the hard parts",
+    body: "Going independent involves challenges that are genuinely difficult — pricing your work, positioning yourself, handling rejection, building a pipeline from scratch. Solo includes a structured guidance library covering nine of these areas in depth. Available when you need them, not pushed at you when you don't.",
+  },
+  {
+    eyebrow: "Four types of move",
+    title: "Every move drafted. You decide whether to make it.",
+    body: "Whether your path calls for a direct approach to a named contact, registering on a marketplace, writing a LinkedIn post, or joining the right community — Solo generates the move. You don't have to figure out what to do next. The next move is always ready.",
   },
 ];
 
-/* ─── Persona statements ─── */
-const personas = [
-  "Mid-career professionals with 8+ years of experience who've never tested what their skills are worth outside an employer.",
-  "Senior managers and directors who know their industry is shifting but haven't mapped a concrete alternative.",
+/* ─── Section 5: Testimonials ─── */
+const testimonials = [
+  {
+    quote: "I'd spent two weeks going back and forth with ChatGPT trying to figure out my options. I kept getting the same advice — build a personal brand, network in my sector. Solo gave me a shortlist, told me which two paths fit my background best, and produced a list of named people to contact in week one. I sent the first message within two days. I'd never have moved that quickly on my own.",
+    name: "Sarah M.",
+    descriptor: "Finance Director, 14 years in financial services",
+  },
+  {
+    quote: "The contact suggestions were what surprised me most. Not 'search LinkedIn for people in your sector' — actual named people, with enough context that I knew immediately who to approach first. I made three approaches in the first fortnight. One of them is now a real conversation. I've been trying to get to this point for a year.",
+    name: "Marcus D.",
+    descriptor: "Strategy Manager, 9 years in-house, now independent",
+  },
+  {
+    quote: "What got me was how accurate the archetype description was. It described how I work, what I'm actually good at, and what buyers would want from me more precisely than anything I'd written about myself. The paths it flagged weren't the obvious ones — they were the ones I'd been too uncertain to take seriously. The plan made them feel achievable.",
+    name: "James K.",
+    descriptor: "Senior Programme Director, public sector background",
+  },
 ];
 
-/* ─── How it works steps ─── */
+/* ─── Section 6: How it works ─── */
 const steps = [
-  { num: "01", title: "Answer the questionnaire", desc: "15 targeted questions about your role, experience, network, and situation. Upload your CV first to reduce it to around 8." },
-  { num: "02", title: "Get your report", desc: "Solo scores your profile against 95 archetypes and 480 business models. You get up to 10 matched paths with pricing, buyers, and difficulty ratings." },
-  { num: "03", title: "Work your 30-day plan", desc: "A day-by-day activation sequence tailored to your situation. Daily check-ins adapt if you fall behind or your circumstances change." },
-];
-
-/* ─── Domain tags for #who-its-for ─── */
-const domains = [
-  "Legal", "Finance", "Compliance", "Risk", "Marketing", "HR", "Strategy",
-  "Operations", "Consulting", "Commercial", "Procurement", "Programme Management",
-  "Communications", "Accounting", "Tax", "Data", "Technology", "Change Management",
-  "Audit", "Business Development", "Policy", "Research", "Governance", "Investment",
-  "Insurance", "Transformation", "Sales", "PMO", "Advisory", "Learning and Development",
-];
-
-/* ─── Report sections ─── */
-const reportFeatures = [
-  { title: "Profile interpretation", desc: "What you look like commercially, not just professionally." },
-  { title: "Up to 10 business paths", desc: "Explored in parallel so you're not locked in before you know what has traction." },
-  { title: "Clear recommendation", desc: "One answer on which path makes most sense for you." },
-  { title: "Reality check", desc: "What's likely to go wrong and why that matters." },
-  { title: "30-day activation plan", desc: "A day-by-day action sequence tailored to your situation." },
-  { title: "Local market snapshot", desc: "Indicative demand and pricing data for your location." },
-  { title: "Outreach drafts", desc: "Ready-to-send emails for your first target contacts." },
-  { title: "Adaptive tracker", desc: "30 daily check-ins that adapt if you fall behind." },
+  {
+    num: "01",
+    title: "Tell Solo about your career",
+    desc: "13 targeted questions covering your role, experience, network, working style, and financial situation. Upload your CV first and it cuts to around 4 questions. Takes 8 minutes.",
+  },
+  {
+    num: "02",
+    title: "Get your report",
+    desc: "Solo classifies you against 95 professional archetypes and scores your profile across 480 business models. You receive a ranked shortlist of your top paths — each with a difficulty rating, a speed-to-revenue estimate, and an explanation of why it fits your profile.",
+  },
+  {
+    num: "03",
+    title: "Start making moves",
+    desc: "A 30-day activation plan starts immediately. Daily check-ins track your progress. Named contacts are ready when you are. Ask Solo anything at any point — it knows your situation.",
+  },
 ];
 
 export default function Landing() {
@@ -95,18 +107,19 @@ export default function Landing() {
       <TopBar />
 
       <main className="pt-[68px]">
-        {/* ═══ HERO — text sits directly over the photo with a dark overlay for contrast ═══ */}
+        {/* ═══ SECTION 1 — HERO ═══ */}
         <section className="relative overflow-hidden">
-          {/* Dark overlay over the global photo background, hero-only */}
+          {/* Solid mint band over the photo background */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0"
             style={{ background: "#2ECDB0" }}
           />
-          {/* Subtle mint radial */}
+          {/* Dark overlay for text readability */}
           <div
+            aria-hidden="true"
             className="pointer-events-none absolute inset-0"
-            style={{ background: "radial-gradient(ellipse at 50% 20%, rgba(46,205,176,0.08) 0%, transparent 55%)" }}
+            style={{ background: "rgba(0,0,0,0.35)" }}
           />
 
           <div className="relative mx-auto max-w-5xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
@@ -117,17 +130,17 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-              Design the career you'd build if you had to start today.
+              If your career changed tomorrow, what would you do?
             </motion.h1>
 
             <motion.p
-              className="mx-auto mt-6 max-w-xl text-lg leading-relaxed sm:text-xl"
-              style={{ color: "rgba(250,249,247,0.85)" }}
+              className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl"
+              style={{ color: "rgba(250,249,247,0.9)" }}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
             >
-              A 30-day plan to open a professional Plan B. £19.99.
+              Most professionals don't have a credible answer to that. Solo builds one — from your actual career, not a template.
             </motion.p>
 
             <motion.div
@@ -139,393 +152,261 @@ export default function Landing() {
               {isAuthed ? (
                 <button
                   onClick={handleOpenPlan}
-                  className="rounded-lg bg-[#1A1915] px-8 py-3.5 text-base font-semibold text-white shadow-md ring-1 ring-black/10 transition-colors hover:bg-black"
+                  className="rounded-lg bg-[#2ECDB0] px-8 py-3.5 text-base font-semibold text-white shadow-md ring-1 ring-black/10 transition-colors hover:bg-[#26B89D]"
                 >
                   Open my plan
                 </button>
               ) : (
                 <button
                   onClick={handleStartTest}
-                  className="rounded-lg bg-[#1A1915] px-8 py-3.5 text-base font-semibold text-white shadow-md ring-1 ring-black/10 transition-colors hover:bg-black"
+                  className="rounded-lg bg-[#2ECDB0] px-8 py-3.5 text-base font-semibold text-white shadow-md ring-1 ring-black/10 transition-colors hover:bg-[#26B89D]"
                 >
                   Take the test
                 </button>
               )}
-              {!isAuthed && (
-                <button
-                  onClick={handleStartTest}
-                  className="rounded-lg border border-white/80 bg-transparent px-8 py-3.5 text-base font-semibold text-white transition-colors hover:bg-white hover:text-[#1A8A72]"
-                >
-                  See your free preview
-                </button>
-              )}
-            </motion.div>
-
-            {/* Trust strip */}
-            <motion.p
-              className="mt-6 text-xs"
-              style={{ color: "rgba(250,249,247,0.65)" }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.35, duration: 0.5 }}
-            >
-              Built for mid-career professionals · 30-day activation plan · £19.99
-            </motion.p>
-          </div>
-        </section>
-
-        {/* ═══ #how-it-works ═══ */}
-        <section id="how-it-works" className="py-10 lg:py-14">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory p-8 sm:p-12">
-              <ScrollReveal>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">How it works</p>
-                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                  From experience to income path in 8 minutes
-                </h2>
-              </ScrollReveal>
-
-              <div className="mt-10 space-y-4">
-                {steps.map((s, i) => (
-                  <ScrollReveal key={s.num} delay={i * 0.08}>
-                    <div className="card-stone flex gap-6 p-5 lg:gap-8">
-                      <span className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
-                        {s.num}
-                      </span>
-                      <div>
-                        <h3 className="text-base font-semibold leading-snug">{s.title}</h3>
-                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground max-w-md">{s.desc}</p>
-                      </div>
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-
-              <ScrollReveal delay={0.3}>
-                <div className="mt-10 text-center">
-                  <button
-                    onClick={handleStartTest}
-                    className="rounded-lg bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                  >
-                    Start your test
-                  </button>
-                </div>
-              </ScrollReveal>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ #why-solo — editorial split section ═══ */}
-        <section id="why-solo" className="py-10 lg:py-14">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory p-8 sm:p-12">
-              <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
-                {/* Left: sticky heading */}
-                <ScrollReveal>
-                  <div className="lg:sticky lg:top-32">
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Why Solo</p>
-                    <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                      Most professionals have no credible Plan B
-                    </h2>
-                    <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                      Not because they lack the skills. Because they've never had to translate what they know into something someone outside their employer would pay for.
-                    </p>
-                  </div>
-                </ScrollReveal>
-
-                {/* Right: flowing content as stone cards */}
-                <div className="space-y-4">
-                  {[
-                    {
-                      title: "Your skills don't translate themselves",
-                      body: "Most professionals can't describe what they'd sell, to whom, or for how much. They've never had to. Solo does that translation.",
-                    },
-                    {
-                      title: "Generic advice doesn't help",
-                      body: "ChatGPT gives you broad ideas. Career coaches give you confidence. Neither gives you a commercially realistic answer built from your actual experience.",
-                    },
-                    {
-                      title: "Roles are becoming less predictable",
-                      body: "Middle-management, analytical, and process roles are being restructured faster than most professionals expected. Not eliminated, but less stable and less guaranteed.",
-                    },
-                  ].map((item, i) => (
-                    <ScrollReveal key={item.title} delay={i * 0.1}>
-                      <div className="card-stone p-5">
-                        <h3 className="text-base font-semibold">{item.title}</h3>
-                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
-                      </div>
-                    </ScrollReveal>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ #who-its-for ═══ */}
-        <section id="who-its-for" className="py-10 lg:py-14">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory p-8 sm:p-12">
-              <ScrollReveal>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Who it's for</p>
-                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                  Solo isn't for everyone.
-                </h2>
-              </ScrollReveal>
-
-              <div className="mt-8 space-y-4">
-                {personas.map((p, i) => (
-                  <ScrollReveal key={i} delay={i * 0.1}>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{p}</p>
-                  </ScrollReveal>
-                ))}
-              </div>
-
-              <ScrollReveal delay={0.2}>
-                <p className="mt-10 text-sm font-medium text-foreground/90">
-                  If your background sits somewhere in here, it is.
-                </p>
-              </ScrollReveal>
-
-              <ScrollReveal delay={0.25}>
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {domains.map((d) => (
-                    <span
-                      key={d}
-                      className="inline-block rounded-md border border-border bg-surface-card px-3 py-1 text-xs font-medium text-muted-foreground"
-                    >
-                      {d}
-                    </span>
-                  ))}
-                </div>
-              </ScrollReveal>
-
-              <ScrollReveal delay={0.3}>
-                <p className="mt-6 text-xs text-muted-foreground">
-                  95 professional archetypes · 14 domains · 480 business models
-                </p>
-              </ScrollReveal>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ #sample-report — editorial preview ═══ */}
-        <section id="sample-report" className="py-10 lg:py-14">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory p-8 sm:p-12">
-              <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
-                {/* Left: report sections list */}
-                <div>
-                  <ScrollReveal>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">What's in your report</p>
-                    <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                      Eight sections. No fluff.
-                    </h2>
-                  </ScrollReveal>
-
-                  <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                    {reportFeatures.map((f, i) => (
-                      <ScrollReveal key={f.title} delay={i * 0.05}>
-                        <div className="card-stone h-full p-4">
-                          <h3 className="text-sm font-semibold">{f.title}</h3>
-                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{f.desc}</p>
-                        </div>
-                      </ScrollReveal>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Right: blurred locked preview + CTA */}
-                <ScrollReveal delay={0.15}>
-                  <div className="lg:sticky lg:top-32 space-y-6">
-                    {/* Simulated locked section */}
-                    <div className="card-stone p-6 relative overflow-hidden">
-                      <div className="space-y-3" style={{ filter: "blur(4px)" }} aria-hidden="true">
-                        <div className="h-4 w-3/4 rounded bg-muted" />
-                        <div className="h-3 w-full rounded bg-muted" />
-                        <div className="h-3 w-5/6 rounded bg-muted" />
-                        <div className="h-3 w-2/3 rounded bg-muted" />
-                        <div className="mt-4 h-4 w-1/2 rounded bg-muted" />
-                        <div className="h-3 w-full rounded bg-muted" />
-                        <div className="h-3 w-4/5 rounded bg-muted" />
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                          <p className="text-sm font-semibold text-foreground">Your full report</p>
-                          <p className="mt-1 text-xs text-muted-foreground">Unlock for £19.99</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleStartTest}
-                      className="w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-                    >
-                      Take the test
-                    </button>
-                  </div>
-                </ScrollReveal>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ Repeat CTA band ═══ */}
-        <section className="py-16">
-          <div className="mx-auto max-w-4xl px-6 text-center">
-            <ScrollReveal>
-              <button
-                onClick={handleStartTest}
-                className="rounded-lg bg-primary px-8 py-3.5 text-base font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              <a
+                href="/prototypical-report-review.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-white/80 bg-transparent px-8 py-3.5 text-base font-semibold text-white transition-colors hover:bg-white hover:text-[#1A8A72]"
               >
-                Start your test
-              </button>
-            </ScrollReveal>
+                See a sample report
+              </a>
+            </motion.div>
           </div>
         </section>
 
-        {/* ═══ Stat strip ═══ */}
-        <section className="py-12">
-          <div className="mx-auto max-w-3xl px-6">
-            <div className="panel-ivory px-6 py-8">
-              <ScrollReveal>
-                <div className="flex flex-col gap-8 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
-                  {[
-                    { num: 95, label: "archetypes" },
-                    { num: 480, label: "business models" },
-                    { num: 2694, label: "combinations" },
-                  ].map((s) => (
-                    <div key={s.label} className="flex-1 text-center sm:px-6">
-                      <span className="block font-display text-3xl font-bold text-foreground">
-                        <AnimatedCounter target={s.num} />
-                      </span>
-                      <span className="mt-1 block text-xs font-semibold uppercase tracking-wider text-primary">
-                        {s.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </ScrollReveal>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ Pricing summary ═══ */}
+        {/* ═══ SECTION 2 — What Solo is ═══ */}
         <section className="py-10 lg:py-14">
           <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory p-8 sm:p-12">
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
               <ScrollReveal>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Pricing</p>
-                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
-                  Simple pricing. No commitment.
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                  What Solo is
+                </p>
+                <h2
+                  className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl lg:text-[2.25rem] lg:leading-[1.2]"
+                  style={{ letterSpacing: "-0.02em" }}
+                >
+                  A decision and coaching engine for mid-career professionals who want independent income.
                 </h2>
               </ScrollReveal>
 
-              <div className="mt-8 grid gap-6 sm:grid-cols-2">
+              <div className="mt-8 grid gap-6 lg:grid-cols-2 lg:gap-12">
                 <ScrollReveal delay={0.05}>
-                  <div className="card-stone h-full p-6">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">One-time</p>
-                    <p className="mt-3 font-display text-3xl font-bold">£19.99</p>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Full report, 30-day activation plan, adaptive tracker, outreach drafts.
-                    </p>
-                    <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                      See details <ChevronRight className="h-3 w-3" />
-                    </Link>
-                  </div>
+                  <p className="text-base leading-[1.75] text-muted-foreground">
+                    Solo takes your career history, your skills, your working style, your risk appetite, and your financial reality — and produces a specific, ranked shortlist of income paths you can actually pursue. Not brainstorming. Not frameworks. Paths scored against 95 professional archetypes and 480 business models, with the weak ones already removed.
+                  </p>
                 </ScrollReveal>
-
                 <ScrollReveal delay={0.12}>
-                  <div className="card-stone h-full p-6" style={{ borderTop: "4px solid #2ECDB0" }}>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">Support</p>
-                    <p className="mt-3 font-display text-3xl font-bold">£19<span className="text-lg font-normal text-muted-foreground">/mo</span></p>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      Ongoing tracking, guidance library, Ask Solo advisory, weekly cadence.
-                    </p>
-                    <Link to="/pricing" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                      See details <ChevronRight className="h-3 w-3" />
-                    </Link>
-                  </div>
+                  <p className="text-base leading-[1.75] text-muted-foreground">
+                    Then it builds a 30-day activation plan, finds you the right people to contact, drafts your first moves, and coaches you through the whole thing. The more you use it, the more specific it gets.
+                  </p>
                 </ScrollReveal>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ═══ #about — Founder ═══ */}
-        <section id="about" className="py-10 lg:py-14">
-          <div className="mx-auto max-w-5xl px-6">
-            <div className="panel-ivory p-8 sm:p-12">
-              <ScrollReveal>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">About Solo</p>
-                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-                  Built by someone who's been there.
-                </h2>
-                <p className="mt-6 text-sm leading-[1.8] text-muted-foreground">
-                  Solo was built by a professional who spent 15 years in structured corporate roles before realising that the gap between "secure career" and "viable independent option" was wider than it needed to be. The tools existed. The intelligence existed. What didn't exist was a system that connected the two for people whose experience was their primary asset.
-                </p>
-                <p className="mt-4 text-sm leading-[1.8] text-muted-foreground">
-                  Solo is that system. It doesn't sell motivation or mindset. It maps the commercial reality of what your career has already built, and shows you what's possible with it.
-                </p>
-              </ScrollReveal>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ FAQ teaser ═══ */}
+        {/* ═══ SECTION 3 — What you get ═══ */}
         <section className="py-10 lg:py-14">
-          <div className="mx-auto max-w-5xl px-6">
-            <div className="panel-ivory p-8 sm:p-12">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
               <ScrollReveal>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">FAQ</p>
-                <h2 className="mt-3 font-display text-2xl font-semibold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-                  Common questions
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                  What you get
+                </p>
+                <h2
+                  className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl"
+                  style={{ letterSpacing: "-0.02em" }}
+                >
+                  What Solo actually does for you
                 </h2>
               </ScrollReveal>
 
-              <ScrollReveal delay={0.1}>
-                <Accordion type="single" collapsible className="mt-6">
-                  {faqItems.map((item, i) => (
-                    <AccordionItem key={i} value={`faq-${i}`} className="border-border">
-                      <AccordionTrigger className="text-sm font-medium text-left hover:no-underline py-4">
-                        {item.q}
-                      </AccordionTrigger>
-                      <AccordionContent className="text-sm leading-relaxed text-muted-foreground pb-4">
-                        {item.a}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-                <Link to="/faq" className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline">
-                  All questions <ChevronRight className="h-3 w-3" />
-                </Link>
-              </ScrollReveal>
+              <div className="mt-10 grid gap-5 md:grid-cols-2 md:gap-6">
+                {featureCards.map((c, i) => (
+                  <ScrollReveal key={c.eyebrow} delay={i * 0.06}>
+                    <div className="card-stone h-full p-6 sm:p-7">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                        {c.eyebrow}
+                      </p>
+                      <h3 className="mt-3 font-display text-lg font-semibold leading-snug">
+                        {c.title}
+                      </h3>
+                      <p className="mt-3 text-sm leading-[1.7] text-muted-foreground">
+                        {c.body}
+                      </p>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ═══ Final CTA band ═══ */}
-        <section className="bg-primary py-24">
-          <div className="mx-auto max-w-4xl px-6 text-center">
+        {/* ═══ SECTION 4 — Differentiator callout (DARK) ═══ */}
+        <section
+          className="relative py-20 lg:py-24"
+          style={{ background: "#1A1915", borderTop: "4px solid #2ECDB0" }}
+        >
+          <div className="mx-auto max-w-5xl px-6 text-center">
             <ScrollReveal>
               <h2
-                className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
-                style={{ letterSpacing: "-0.02em" }}
+                className="font-display text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl lg:text-5xl"
+                style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
               >
-                Know your Plan B before you need it.
+                ChatGPT can help you think about independence.
+                <br />
+                Solo will help you actually get there.
               </h2>
-              <p className="mt-4 text-base text-primary-foreground/70">
-                8 minutes. £19.99. A report built from your actual experience.
+            </ScrollReveal>
+
+            <div className="mt-10 grid gap-6 text-left md:grid-cols-2 md:gap-10">
+              <ScrollReveal delay={0.08}>
+                <p className="text-base leading-[1.8]" style={{ color: "rgba(250,249,247,0.85)" }}>
+                  General-purpose AI will give you a framework. A list of options. Advice to "build a personal brand" and "network with people in your target sector." It does not know who you are. Every session starts from scratch.
+                </p>
+              </ScrollReveal>
+              <ScrollReveal delay={0.16}>
+                <p className="text-base leading-[1.8]" style={{ color: "rgba(250,249,247,0.85)" }}>
+                  Solo runs your profile against a decision engine built from 95 archetypes, 480 business models, and 2,694 scored match combinations. It builds a personalised activation system around the paths that fit you. The context it builds over time — your history, your progress, your blockers, your check-ins — is something no general-purpose AI can replicate, because it was never designed to track a specific person through a specific goal.
+                </p>
+              </ScrollReveal>
+            </div>
+
+            <ScrollReveal delay={0.24}>
+              <p
+                className="mt-10 text-base font-medium"
+                style={{ color: "#FAF9F7" }}
+              >
+                You can spend ten hours prompting ChatGPT and still have no plan. Or take the Solo test.
               </p>
               <div className="mt-8">
                 <button
                   onClick={handleStartTest}
-                  className="rounded-lg bg-primary-foreground px-8 py-3.5 text-base font-semibold text-primary transition-colors hover:bg-primary-foreground/90"
+                  className="rounded-lg bg-[#2ECDB0] px-8 py-3.5 text-base font-semibold text-white shadow-md transition-colors hover:bg-[#26B89D]"
                 >
                   Take the test
                 </button>
               </div>
             </ScrollReveal>
+          </div>
+        </section>
+
+        {/* ═══ SECTION 5 — Testimonials ═══ */}
+        <section className="py-10 lg:py-14">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                  Testimonials
+                </p>
+                <h2
+                  className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl"
+                  style={{ letterSpacing: "-0.02em" }}
+                >
+                  What people say after they see their report
+                </h2>
+              </ScrollReveal>
+
+              <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
+                {testimonials.map((t, i) => (
+                  <ScrollReveal key={t.name} delay={i * 0.08}>
+                    <div className="card-stone flex h-full flex-col p-6 sm:p-7">
+                      <p className="font-display text-[15px] italic leading-[1.7] text-foreground/90">
+                        "{t.quote}"
+                      </p>
+                      <div className="mt-6 border-t border-border pt-4">
+                        <p className="text-sm font-semibold" style={{ color: "#3D4048" }}>
+                          {t.name}
+                        </p>
+                        <p className="mt-1 text-xs" style={{ color: "#6B6860" }}>
+                          {t.descriptor}
+                        </p>
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ SECTION 6 — How it works ═══ */}
+        <section className="py-10 lg:py-14">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+              <ScrollReveal>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                  How it works
+                </p>
+                <h2
+                  className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl"
+                  style={{ letterSpacing: "-0.02em" }}
+                >
+                  From experience to income path in 8 minutes
+                </h2>
+              </ScrollReveal>
+
+              <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
+                {steps.map((s, i) => (
+                  <ScrollReveal key={s.num} delay={i * 0.08}>
+                    <div className="card-stone flex h-full flex-col p-6 sm:p-7">
+                      <span className="font-display text-3xl font-bold text-primary">
+                        {s.num}
+                      </span>
+                      <h3 className="mt-4 font-display text-lg font-semibold leading-snug">
+                        {s.title}
+                      </h3>
+                      <p className="mt-3 text-sm leading-[1.7] text-muted-foreground">
+                        {s.desc}
+                      </p>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ SECTION 7 — Final CTA ═══ */}
+        <section className="py-10 lg:py-14">
+          <div className="mx-auto max-w-5xl px-6">
+            <div
+              className="panel-ivory p-10 sm:p-14 lg:p-20 text-center"
+              style={{ borderTop: "4px solid #2ECDB0" }}
+            >
+              <ScrollReveal>
+                <h2
+                  className="font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-[2.75rem]"
+                  style={{ letterSpacing: "-0.025em" }}
+                >
+                  Your Plan B should already exist.
+                </h2>
+                <p className="mx-auto mt-5 max-w-2xl text-base leading-[1.75] text-muted-foreground">
+                  The test takes 8 minutes. You'll see your archetype, your top income paths, and your first recommended move before you pay anything.
+                </p>
+                <div className="mt-9">
+                  <button
+                    onClick={handleStartTest}
+                    className="rounded-lg bg-[#2ECDB0] px-9 py-4 text-base font-semibold text-white shadow-md transition-colors hover:bg-[#26B89D]"
+                  >
+                    Take the test — free preview
+                  </button>
+                </div>
+                <div className="mt-5">
+                  <a
+                    href="/prototypical-report-review.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    See a sample report first
+                  </a>
+                </div>
+              </ScrollReveal>
+            </div>
           </div>
         </section>
       </main>
