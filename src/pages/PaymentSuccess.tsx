@@ -21,17 +21,43 @@ export default function PaymentSuccess() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
+  const flowType = searchParams.get("type");
+  const isSecondReport = flowType === "second_report";
 
   const [state, setState] = useState<BridgeState>(token ? "exchanging" : "no_token");
   const [hasSession, setHasSession] = useState(false);
+  const [secondReportClaiming, setSecondReportClaiming] = useState(isSecondReport);
   const elapsedRef = useRef(0);
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
 
   // No token → redirect to /
   useEffect(() => {
-    if (!token) navigate("/", { replace: true });
-  }, [token, navigate]);
+    // For second_report flow, user is already authed — no token required
+    if (!token && !isSecondReport) navigate("/", { replace: true });
+  }, [token, isSecondReport, navigate]);
+
+  // Second-report flow: claim and navigate to /cv-upload
+  useEffect(() => {
+    if (!isSecondReport) return;
+    let cancelled = false;
+    (async () => {
+      const { claimSecondReport } = await import("@/lib/handlers");
+      const result = await claimSecondReport(navigate);
+      if (cancelled) return;
+      if (result.error || result.reason === "cap_reached") {
+        const { toast } = await import("sonner");
+        toast.error(result.error || "Couldn't set up your second report.");
+        navigate("/account", { replace: true });
+        return;
+      }
+      // Handler navigates to /cv-upload on eligible
+      setSecondReportClaiming(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSecondReport, navigate]);
 
   // Cleanup
   useEffect(() => {

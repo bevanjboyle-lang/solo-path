@@ -523,8 +523,16 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         open={checkinOpen}
         onOpenChange={(open) => {
           setCheckinOpen(open);
-          if (!open && initialSessionId) {
-            window.history.replaceState(null, "", "/plan");
+          if (!open) {
+            if (initialSessionId) {
+              window.history.replaceState(null, "", "/plan");
+            }
+            // If the latest check-in flagged a pending replan, refetch the
+            // tracker session so the ReplanPromptCard becomes visible.
+            if (checkinReplanPendingRef.current && user && reportId) {
+              checkinReplanPendingRef.current = false;
+              loadTrackerSession(user.id, reportId);
+            }
           }
         }}
         sessionId={sessionId}
