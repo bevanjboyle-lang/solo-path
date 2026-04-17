@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import MintTopBar from "@/components/MintTopBar";
+import CookieBanner from "@/components/CookieBanner";
 import Landing from "./pages/Landing";
 import CVUpload from "./pages/CVUpload";
 import Auth from "./pages/Auth";
@@ -117,6 +118,7 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <AnimatedRoutes />
+            <CookieBanner />
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
