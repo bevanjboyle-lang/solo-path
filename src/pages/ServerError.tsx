@@ -11,6 +11,7 @@ export default function ServerError() {
   const isAuthed = !loading && !!user;
 
   const handleRetry = () => window.location.reload();
+  const goHome = () => navigate("/");
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -20,10 +21,13 @@ export default function ServerError() {
         <div className="w-full max-w-[560px] text-center">
           <p className="font-mono text-sm text-muted-foreground tracking-widest uppercase">500</p>
           <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            Something broke on our end.
+            Something went wrong on our end.
           </h1>
           <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            Not your fault. Try again — if it keeps happening, let us know and we'll look into it.
+            Try refreshing the page. If the problem continues, email{" "}
+            <a href="mailto:support@solo-plan.com" className="underline underline-offset-4 hover:text-foreground transition-colors">
+              support@solo-plan.com
+            </a>
           </p>
 
           <div className="mt-8 flex flex-col items-center gap-3">
@@ -31,7 +35,7 @@ export default function ServerError() {
               onClick={handleRetry}
               className="rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90"
             >
-              Try again
+              Refresh
             </button>
             {isAuthed ? (
               <button
@@ -42,10 +46,10 @@ export default function ServerError() {
               </button>
             ) : (
               <button
-                onClick={() => navigate("/")}
+                onClick={goHome}
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                Back to home
+                Go home
               </button>
             )}
             <a
