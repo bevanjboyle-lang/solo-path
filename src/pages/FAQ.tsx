@@ -34,6 +34,7 @@ const categories: FAQCategory[] = [
       { id: "faq-how-long", q: "How long does the test take?", a: "[Placeholder] The questionnaire takes around 8 minutes. Your report generates immediately after." },
       { id: "faq-cv-required", q: "Do I need to upload my CV?", a: "[Placeholder] No, it's optional. Uploading your CV pre-fills some questions and saves time." },
       { id: "faq-who-for", q: "Who is Solo designed for?", a: "[Placeholder] Mid-career professionals with 8+ years of experience who want to understand their independent options." },
+      { id: "faq-ai-worry", q: "Do I need to be worried about AI to use Solo?", a: "No. Solo is for anyone who wants to build independent income — whether you are exploring a career change, planning for greater flexibility, preparing for redundancy, or simply want financial options that don't depend entirely on one employer. AI displacement is one reason people come to Solo. It is not the only one, and you do not need to believe your job is at risk to benefit from having a Plan B." },
     ],
   },
   {

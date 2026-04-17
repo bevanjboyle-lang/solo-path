@@ -197,7 +197,7 @@ export default function HowItWorks() {
                     { title: "30-day plan", desc: "A day-by-day action sequence built around your situation: where you are starting from, who your first contacts should be, what to say" },
                     { title: "Outreach messages", desc: "For every outreach task in your plan, a ready-to-send message. You edit, you send, Solo writes the first draft" },
                     { title: "Market snapshot", desc: "Demand, pricing benchmarks, and competitive landscape for your chosen path, calibrated to your geography and sector" },
-                    { title: "AI impact read", desc: "Honest assessment of AI risk to your current role, AI resilience of your Plan B, and specific tools that strengthen it" },
+                    { title: "AI impact read", desc: "An honest read on how your current role and your Plan B are likely to evolve as work changes, plus specific tools that strengthen your position" },
                     { title: "30-day tracker", desc: "Included at no extra cost. Guided daily execution for the length of your plan, not just a document you file away" },
                   ].map((tile, i) => (
                     <GlassCard key={i} className="p-4">
