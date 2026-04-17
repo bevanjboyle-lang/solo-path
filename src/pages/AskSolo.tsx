@@ -217,32 +217,23 @@ export default function AskSolo() {
     setConversationId(null);
     setInput("");
 
+    const FALLBACK_GREETING =
+      "I can see your plan and our previous conversation. What would you like to work through?";
+
     // Start a new session
     try {
-      let archetypeName: string | null = null;
-      try {
-        const { data: report } = await supabase
-          .from("reports")
-          .select("core_report")
-          .eq("status", "complete")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        const core = report?.core_report as any;
-        archetypeName = core?.archetype?.primary ?? null;
-      } catch {}
-
       const { data } = await supabase.functions.invoke("ask-solo", {
         body: { call_type: "start_session" },
       });
       if (data) {
         setConversationId(data.conversation_id);
-        const arcClause = archetypeName
-          ? `your background as a **${archetypeName}** professional`
-          : `your background`;
+        const greeting =
+          (data.context_cue as string | undefined)?.trim() ||
+          (data.response_text as string | undefined)?.trim() ||
+          FALLBACK_GREETING;
         setMessages([{
           role: "assistant",
-          content: `I know ${arcClause} and your Plan B options. I can see our previous conversation too. What would you like to work through?`,
+          content: greeting,
           timestamp: new Date(),
         }]);
       }
