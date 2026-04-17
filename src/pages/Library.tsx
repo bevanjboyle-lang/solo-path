@@ -576,12 +576,9 @@ function ModulesTab({ onSelectModule }: { onSelectModule: (id: number) => void }
       {modules.map((mod) => (
         <button
           key={mod.module_id}
-          onClick={() => {
-            if (!mod.is_unlocked) return;
-            onSelectModule(mod.module_id);
-          }}
+          onClick={() => onSelectModule(mod.module_id)}
           className={`w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-4 text-left transition-colors ${
-            mod.is_unlocked ? "hover:border-primary/30 cursor-pointer" : "opacity-70 cursor-not-allowed"
+            mod.is_unlocked ? "hover:border-primary/30 cursor-pointer" : "opacity-70 cursor-pointer hover:border-primary/30"
           }`}
         >
           <div className="flex items-center gap-3">
