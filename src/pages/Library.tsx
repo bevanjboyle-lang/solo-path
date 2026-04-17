@@ -308,7 +308,7 @@ export default function Library() {
                 </div>
               )
             ) : (
-              <ModulesTab onSelectModule={(id) => openArticle(id, true)} />
+              <ModulesTab onSelectModule={(id, unlocked) => openArticle(id, unlocked)} />
             )}
           </div>
         </div>
