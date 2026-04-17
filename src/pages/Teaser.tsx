@@ -28,6 +28,15 @@ export default function Teaser() {
   const [error, setError] = useState(false);
   const [showSticky, setShowSticky] = useState(false);
 
+  // Personalised above-fold data (null → silent fallback to existing generic teaser)
+  const [personalised, setPersonalised] = useState<{
+    archetype: string;
+    headline: string;
+    paragraph: string;
+    firstStrand: { title: string; pitch: string; moveType: string | null };
+    secondStrand: { title: string; pitch: string; moveType: string | null } | null;
+  } | null>(null);
+
   // No report_id → redirect to /
   useEffect(() => {
     if (!reportId) navigate("/", { replace: true });
@@ -71,6 +80,65 @@ export default function Teaser() {
           primary_move_type: (opt.primary_move_type as string) || null,
         }));
         setStrands(previewStrands);
+
+        // ── Build personalised above-fold view (silent fallback if any field missing) ──
+        try {
+          const archetypeObj = coreReport?.archetype as Record<string, unknown> | undefined;
+          const archetypePrimary = (archetypeObj?.primary as string) || "";
+
+          const hookObj = coreReport?.hook_insight as Record<string, unknown> | undefined;
+          const hookHeadline = (hookObj?.headline as string) || "";
+          const hookParagraph = (hookObj?.paragraph as string) || "";
+
+          const strandsArr =
+            (coreReport?.strands as Array<Record<string, unknown>>) ||
+            (coreReport?.options as Array<Record<string, unknown>>) ||
+            [];
+          const s0 = strandsArr[0] as Record<string, unknown> | undefined;
+          const s1 = strandsArr[1] as Record<string, unknown> | undefined;
+
+          const s0Title = (s0?.title as string) || "";
+          const s0Pitch =
+            (s0?.one_line_pitch as string) ||
+            (s0?.one_liner as string) ||
+            (s0?.pitch as string) ||
+            "";
+          const s0Move =
+            (s0?.move_type as string) || (s0?.primary_move_type as string) || null;
+
+          if (
+            archetypePrimary &&
+            hookHeadline &&
+            hookParagraph &&
+            s0 &&
+            s0Title &&
+            s0Pitch
+          ) {
+            setPersonalised({
+              archetype: archetypePrimary,
+              headline: hookHeadline,
+              paragraph: hookParagraph,
+              firstStrand: { title: s0Title, pitch: s0Pitch, moveType: s0Move },
+              secondStrand: s1
+                ? {
+                    title: (s1.title as string) || "",
+                    pitch:
+                      (s1.one_line_pitch as string) ||
+                      (s1.one_liner as string) ||
+                      (s1.pitch as string) ||
+                      "",
+                    moveType:
+                      (s1.move_type as string) ||
+                      (s1.primary_move_type as string) ||
+                      null,
+                  }
+                : null,
+            });
+          }
+        } catch {
+          // Silent — fall back to existing generic teaser
+        }
+
         setLoading(false);
       });
   }, [reportId, navigate]);
