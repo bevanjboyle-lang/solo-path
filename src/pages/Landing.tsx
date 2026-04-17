@@ -112,7 +112,7 @@ export default function Landing() {
             style={{ background: "radial-gradient(ellipse at 50% 20%, rgba(46,205,176,0.08) 0%, transparent 55%)" }}
           />
 
-          <div className="relative mx-auto max-w-3xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
+          <div className="relative mx-auto max-w-5xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
             <motion.h1
               className="font-display text-[2.5rem] font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]"
               style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
@@ -180,7 +180,7 @@ export default function Landing() {
 
         {/* ═══ #how-it-works ═══ */}
         <section id="how-it-works" className="py-16 lg:py-24">
-          <div className="mx-auto max-w-3xl px-6">
+          <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">How it works</p>
@@ -221,7 +221,7 @@ export default function Landing() {
 
         {/* ═══ #why-solo — editorial split section ═══ */}
         <section id="why-solo" className="py-16 lg:py-24">
-          <div className="mx-auto max-w-5xl px-6">
+          <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
                 {/* Left: sticky heading */}
@@ -268,7 +268,7 @@ export default function Landing() {
 
         {/* ═══ #who-its-for ═══ */}
         <section id="who-its-for" className="py-16 lg:py-24">
-          <div className="mx-auto max-w-3xl px-6">
+          <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Who it's for</p>
@@ -315,7 +315,7 @@ export default function Landing() {
 
         {/* ═══ #sample-report — editorial preview ═══ */}
         <section id="sample-report" className="py-16 lg:py-24">
-          <div className="mx-auto max-w-5xl px-6">
+          <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
                 {/* Left: report sections list */}
@@ -376,7 +376,7 @@ export default function Landing() {
 
         {/* ═══ Repeat CTA band ═══ */}
         <section className="py-16">
-          <div className="mx-auto max-w-3xl px-6 text-center">
+          <div className="mx-auto max-w-4xl px-6 text-center">
             <ScrollReveal>
               <button
                 onClick={handleStartTest}
@@ -390,7 +390,7 @@ export default function Landing() {
 
         {/* ═══ Stat strip ═══ */}
         <section className="py-12">
-          <div className="mx-auto max-w-xl px-6">
+          <div className="mx-auto max-w-3xl px-6">
             <div className="panel-ivory px-6 py-8">
               <ScrollReveal>
                 <div className="flex flex-col gap-8 sm:flex-row sm:gap-0 sm:divide-x sm:divide-border">
@@ -416,7 +416,7 @@ export default function Landing() {
 
         {/* ═══ Pricing summary ═══ */}
         <section className="py-16 lg:py-24">
-          <div className="mx-auto max-w-3xl px-6">
+          <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Pricing</p>
@@ -458,7 +458,7 @@ export default function Landing() {
 
         {/* ═══ #about — Founder ═══ */}
         <section id="about" className="py-16 lg:py-24">
-          <div className="mx-auto max-w-2xl px-6">
+          <div className="mx-auto max-w-5xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">About Solo</p>
@@ -478,7 +478,7 @@ export default function Landing() {
 
         {/* ═══ FAQ teaser ═══ */}
         <section className="py-16 lg:py-24">
-          <div className="mx-auto max-w-2xl px-6">
+          <div className="mx-auto max-w-5xl px-6">
             <div className="panel-ivory p-8 sm:p-12">
               <ScrollReveal>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">FAQ</p>
@@ -510,7 +510,7 @@ export default function Landing() {
 
         {/* ═══ Final CTA band ═══ */}
         <section className="bg-primary py-24">
-          <div className="mx-auto max-w-2xl px-6 text-center">
+          <div className="mx-auto max-w-4xl px-6 text-center">
             <ScrollReveal>
               <h2
                 className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
