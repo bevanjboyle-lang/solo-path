@@ -111,10 +111,14 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         }
 
         setHasPaid(true);
+        setReportId(data.id);
         setNarrative(data.hook_insight || MOCK_NARRATIVE);
 
         // Extract strands from core_report
         const coreReport = data.core_report as Record<string, unknown> | null;
+        const rc = Number((coreReport?.refinement_count as number) ?? 0) || 0;
+        setRefinementCount(rc);
+        if (rc >= 3) setRefineLimitReached(true);
         const options = (coreReport?.options as Array<Record<string, unknown>>) || [];
         if (options.length > 0) {
           setStrands(
