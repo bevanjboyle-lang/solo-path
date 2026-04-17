@@ -109,11 +109,11 @@ export default function Landing() {
       <main className="pt-[68px]">
         {/* ═══ SECTION 1 — HERO ═══ */}
         <section className="relative overflow-hidden">
-          {/* Solid mint band over the photo background */}
+          {/* Solid black band over the photo background */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0"
-            style={{ background: "#2ECDB0" }}
+            style={{ background: "#1A1915" }}
           />
           {/* Dark overlay for text readability */}
           <div
