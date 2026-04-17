@@ -365,6 +365,18 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       )}
 
       <main className="mx-auto w-full max-w-3xl px-6 pt-8 pb-24">
+        {/* §1 ReplanPromptCard — only when a replan is pending */}
+        {replanPending && sessionId && user && (
+          <ReplanPromptCard
+            trackerSessionId={sessionId}
+            userId={user.id}
+            context={replanContext}
+            onResolved={() => {
+              if (user && reportId) loadTrackerSession(user.id, reportId);
+            }}
+          />
+        )}
+
         {/* §2 TodayCard — always first, always primary */}
         <TodayCard
           state={planState}
