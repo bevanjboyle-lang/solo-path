@@ -12,10 +12,10 @@ interface PanelLayoutProps {
 export default function PanelLayout({ children, className = "", wide = false }: PanelLayoutProps) {
   return (
     <div
-      className={`mx-auto my-6 w-full rounded-xl ${
-        wide ? "max-w-[1280px]" : "max-w-[1140px]"
-      } ${className}`}
+      className={`mx-auto my-6 w-full rounded-xl ${className}`}
       style={{
+        // Fill most of the viewport, leaving a small gutter on each side.
+        maxWidth: wide ? "min(1680px, calc(100vw - 32px))" : "min(1480px, calc(100vw - 32px))",
         background: "#FAF9F7",
         border: "1px solid #D1CEC7",
         borderRadius: 14,
