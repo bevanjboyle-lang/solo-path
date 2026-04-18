@@ -19,8 +19,10 @@ export default function Auth() {
 
   const [view, setView] = useState<ViewState>("form");
   const [email, setEmail] = useState(prefillEmail);
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [bannerState, setBannerState] = useState<"rate_limited" | "server_error" | "expired" | null>(
+  const [resendDisabledUntil, setResendDisabledUntil] = useState(0);
+  const [bannerState, setBannerState] = useState<"transport_error" | "expired" | null>(
     expired ? "expired" : null
   );
 
