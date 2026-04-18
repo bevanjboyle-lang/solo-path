@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
 import ScrollReveal from "@/components/ui/ScrollReveal";
+import SoloLogo from "@/components/SoloLogo";
 
 /* ─── Handler wiring (named handlers only) ─── */
 function useHomeHandlers() {
@@ -123,6 +124,15 @@ export default function Landing() {
           />
 
           <div className="relative mx-auto max-w-5xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
+            <motion.div
+              className="mb-8 flex justify-center"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              style={{ color: "#FAF9F7" }}
+            >
+              <SoloLogo width={140} height={40} />
+            </motion.div>
             <motion.h1
               className="font-display text-[2.5rem] font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]"
               style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
@@ -130,7 +140,7 @@ export default function Landing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
             >
-              If your career changed tomorrow, what would you do?
+              If you needed to earn an independent income fast, what would you do?
             </motion.h1>
 
             <motion.p
