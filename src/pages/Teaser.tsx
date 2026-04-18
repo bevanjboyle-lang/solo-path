@@ -219,17 +219,34 @@ export default function Teaser() {
     );
   }
 
-  // Error: report not found
+  // Error: fetch failed or timed out — banner with retry
   if (error) {
     return (
       <div className="flex min-h-screen flex-col">
         <TopBar minimal />
         <Banner variant="error">
-          We couldn't find that report.{" "}
-          <a href="/" className="underline font-medium">
-            Return home
-          </a>
+          We couldn't load your plan right now. Please refresh.
         </Banner>
+        <main className="mx-auto w-full max-w-2xl px-6 pt-12 pb-24">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Your plan
+          </h1>
+          <div className="mt-6 flex gap-3">
+            <Button
+              onClick={() => {
+                setError(false);
+                setTimedOut(false);
+                setLoading(true);
+                setRetryNonce((n) => n + 1);
+              }}
+            >
+              Retry
+            </Button>
+            <a href="/" className="inline-flex items-center text-sm font-medium text-primary hover:underline">
+              Return home
+            </a>
+          </div>
+        </main>
       </div>
     );
   }
