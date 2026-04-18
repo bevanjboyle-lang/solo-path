@@ -214,6 +214,32 @@ export default function Landing() {
                   </p>
                 </ScrollReveal>
               </div>
+
+              <ScrollReveal delay={0.18}>
+                <div className="mt-10 border-t border-border/60 pt-8">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                    What Solo is not
+                  </p>
+                  <ul className="mt-5 grid gap-3 text-base leading-[1.7] text-muted-foreground sm:gap-4 lg:grid-cols-2 lg:gap-x-12">
+                    <li className="flex gap-3">
+                      <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
+                      <span>Not a generic business plan generator or startup-advice chatbot.</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
+                      <span>Not a side-hustle tool, course funnel, or passive-income pitch.</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
+                      <span>It's a structured process for taking the niche skills you've already built into the market — to real, paying customers in your sector.</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
+                      <span>Built for mid-career professionals with a decade of expertise — not first-time founders chasing a generic startup playbook.</span>
+                    </li>
+                  </ul>
+                </div>
+              </ScrollReveal>
             </div>
           </div>
         </section>
