@@ -270,55 +270,39 @@ export async function generateReport(payload: {
   first_name: string;
   email: string | null;
   email_refused: boolean;
-}): Promise<{ report_id?: string; error?: string }> {
-  // Ensure we have an authenticated session before invoking the edge function.
-  // Anonymous users completing the questionnaire have no session yet — sign them
-  // in via OTP (magic link) and wait for SIGNED_IN before proceeding so the
-  // edge function receives a valid JWT.
-  const existing = (await supabase.auth.getSession()).data.session;
+}): Promise<{ report_id?: string; error?: string; waitingForAuth?: boolean }> {
+  // Require a real authenticated session before invoking the edge function.
+  // Never fall back to the anon key — the edge function will 401.
+  let session = (await supabase.auth.getSession()).data.session;
 
-  if (!existing) {
-    if (payload.email && !payload.email_refused) {
-      // Kick off magic-link sign-in. This both creates/retrieves the user
-      // and sends the email. We then wait for SIGNED_IN.
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: payload.email,
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (otpError) {
-        return { error: otpError.message || "Sign-in failed" };
-      }
-
-      // Wait (with timeout) for SIGNED_IN — magic-link confirmation may take
-      // a while in real life, but in tests/dev with auto-confirm it's fast.
-      const session = await new Promise<typeof existing>((resolve) => {
-        const timer = setTimeout(() => {
+  if (!session) {
+    // Wait for SIGNED_IN (cross-tab via storage event after user clicks magic
+    // link in another tab). Bounded 10s timeout — do NOT re-send a magic link
+    // here; the link was already sent at the /auth step.
+    session = await new Promise<typeof session>((resolve) => {
+      const timer = setTimeout(() => {
+        sub.data.subscription.unsubscribe();
+        resolve(null);
+      }, 10_000);
+      const sub = supabase.auth.onAuthStateChange((event, s) => {
+        if (event === "SIGNED_IN" && s) {
+          clearTimeout(timer);
           sub.data.subscription.unsubscribe();
-          resolve(null);
-        }, 60_000);
-        const sub = supabase.auth.onAuthStateChange((event, s) => {
-          if (event === "SIGNED_IN" && s) {
-            clearTimeout(timer);
-            sub.data.subscription.unsubscribe();
-            resolve(s);
-          }
-        });
+          resolve(s);
+        }
       });
+    });
 
-      if (!session) {
-        return {
-          error:
-            "We've sent a magic link to your email. Click it to confirm and your report will start generating.",
-        };
-      }
+    if (!session) {
+      return {
+        waitingForAuth: true,
+        error:
+          "Your sign-in hasn't come through yet. Please click the magic link in your email, then press Generate my report again.",
+      };
     }
-    // If email_refused with no auth, fall through and let the edge function
-    // handle the unauthenticated submission (lower-priority edge case).
   }
 
+  // supabase-js auto-injects Authorization: Bearer <access_token> from session.
   const { data, error } = await supabase.functions.invoke("generate-report", {
     body: payload,
   });
