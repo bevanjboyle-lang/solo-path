@@ -19,13 +19,17 @@ export default function Teaser() {
   const cancelReturn = searchParams.get("canceled") === "true";
   const recoveryToken = searchParams.get("token");
 
-  const [loading, setLoading] = useState(true);
+  // F39: if no report_id, do not even mount loading state — redirect synchronously.
+  // This prevents the "Loading your plan…" hang and the empty-shell home regression.
+  const [loading, setLoading] = useState(!!reportId);
   const [payLoading, setPayLoading] = useState(false);
   const [firstName, setFirstName] = useState<string | null>(null);
   const [narrative, setNarrative] = useState<string | null>(null);
   const [strands, setStrands] = useState<StrandData[]>([]);
   const [reportStatus, setReportStatus] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
   const [showSticky, setShowSticky] = useState(false);
 
   // Personalised above-fold data (null → silent fallback to existing generic teaser)
@@ -37,15 +41,24 @@ export default function Teaser() {
     secondStrand: { title: string; pitch: string; moveType: string | null } | null;
   } | null>(null);
 
-  // No report_id → redirect to /
+  // No report_id → redirect to / synchronously on mount. Don't render anything.
   useEffect(() => {
     if (!reportId) navigate("/", { replace: true });
   }, [reportId, navigate]);
 
-  // Fetch report data
+  // Fetch report data with hard 8s timeout, abort on unmount, retry support.
   useEffect(() => {
     if (!reportId) return;
     localStorage.setItem("solo_report_id", reportId);
+
+    let cancelled = false;
+    const timeoutId = window.setTimeout(() => {
+      if (!cancelled && loading) {
+        setTimedOut(true);
+        setError(true);
+        setLoading(false);
+      }
+    }, 8000);
 
     supabase
       .from("reports")
@@ -53,9 +66,18 @@ export default function Teaser() {
       .eq("id", reportId)
       .maybeSingle()
       .then(({ data, error: fetchError }) => {
-        if (fetchError || !data) {
+        if (cancelled) return;
+        window.clearTimeout(timeoutId);
+
+        if (fetchError) {
           setError(true);
           setLoading(false);
+          return;
+        }
+
+        if (!data) {
+          // No report row matches this id — bounce to home, don't render empty teaser.
+          navigate("/", { replace: true });
           return;
         }
 
@@ -140,8 +162,19 @@ export default function Teaser() {
         }
 
         setLoading(false);
+      }, (fetchError) => {
+        if (cancelled) return;
+        window.clearTimeout(timeoutId);
+        console.error("Teaser: report fetch failed", fetchError);
+        setError(true);
+        setLoading(false);
       });
-  }, [reportId, navigate]);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [reportId, navigate, retryNonce]);
 
   // Sticky CTA on scroll past hero
   useEffect(() => {
@@ -186,17 +219,34 @@ export default function Teaser() {
     );
   }
 
-  // Error: report not found
+  // Error: fetch failed or timed out — banner with retry
   if (error) {
     return (
       <div className="flex min-h-screen flex-col">
         <TopBar minimal />
         <Banner variant="error">
-          We couldn't find that report.{" "}
-          <a href="/" className="underline font-medium">
-            Return home
-          </a>
+          We couldn't load your plan right now. Please refresh.
         </Banner>
+        <main className="mx-auto w-full max-w-2xl px-6 pt-12 pb-24">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Your plan
+          </h1>
+          <div className="mt-6 flex gap-3">
+            <Button
+              onClick={() => {
+                setError(false);
+                setTimedOut(false);
+                setLoading(true);
+                setRetryNonce((n) => n + 1);
+              }}
+            >
+              Retry
+            </Button>
+            <a href="/" className="inline-flex items-center text-sm font-medium text-primary hover:underline">
+              Return home
+            </a>
+          </div>
+        </main>
       </div>
     );
   }

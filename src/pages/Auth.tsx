@@ -19,8 +19,10 @@ export default function Auth() {
 
   const [view, setView] = useState<ViewState>("form");
   const [email, setEmail] = useState(prefillEmail);
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [bannerState, setBannerState] = useState<"rate_limited" | "server_error" | "expired" | null>(
+  const [resendDisabledUntil, setResendDisabledUntil] = useState(0);
+  const [bannerState, setBannerState] = useState<"transport_error" | "expired" | null>(
     expired ? "expired" : null
   );
 
@@ -51,56 +53,79 @@ export default function Auth() {
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
+  // F37: anti-enumeration. Any non-transport response → sent state.
+  // Only true transport failures (network/5xx/timeout) keep the form visible.
+  const isTransportError = (errMsg?: string): boolean => {
+    if (!errMsg) return false;
+    const m = errMsg.toLowerCase();
+    return (
+      m.includes("network") ||
+      m.includes("failed to fetch") ||
+      m.includes("timeout") ||
+      m.includes("timed out") ||
+      m.includes("503") ||
+      m.includes("502") ||
+      m.includes("500") ||
+      m.includes("504")
+    );
+  };
+
   const handleSend = async () => {
     if (!isValidEmail || submitting) return;
     setBannerState(null);
     setSubmitting(true);
 
-    const result = await signIn(email.trim(), redirectTarget);
+    let result: Awaited<ReturnType<typeof signIn>>;
+    try {
+      result = await signIn(email.trim(), redirectTarget);
+    } catch (err) {
+      setSubmitting(false);
+      setBannerState("transport_error");
+      return;
+    }
     setSubmitting(false);
 
-    if (result.rateLimited) {
-      setBannerState("rate_limited");
-      return;
-    }
-    if (result.error) {
-      setBannerState("server_error");
+    // Transport-level error → keep form visible, show banner
+    if (result.error && isTransportError(result.error)) {
+      setBannerState("transport_error");
       return;
     }
 
-    // Anti-enumeration: always show success regardless of email existence
+    // Everything else (success, rate-limited, unknown email, 4xx) → sent state
+    setSubmittedEmail(email.trim());
     setView("sent");
     setTimeout(() => successH1Ref.current?.focus(), 100);
   };
 
   const handleReset = () => {
     setEmail("");
+    setSubmittedEmail("");
     setView("form");
     setBannerState(null);
   };
 
   const handleResend = async () => {
+    if (submitting) return;
+    if (Date.now() < resendDisabledUntil) return;
     setSubmitting(true);
-    const result = await signIn(email.trim(), redirectTarget);
+    setResendDisabledUntil(Date.now() + 5000);
+    try {
+      await signIn(submittedEmail, redirectTarget);
+    } catch {
+      // Silent — anti-enumeration. The banner stays out of sent state.
+    }
     setSubmitting(false);
-    if (result.rateLimited) setBannerState("rate_limited");
-    else if (result.error) setBannerState("server_error");
   };
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <TopBar minimal />
 
-      {/* Banners */}
+      {/* Banners — only transport errors and expired-link messaging surface here */}
       <div aria-live="polite">
-        {bannerState === "rate_limited" && (
-          <Banner variant="warning">
-            You've requested several links. Use the most recent one — we'll let you request another in a few minutes.
-          </Banner>
-        )}
-        {bannerState === "server_error" && (
+        {bannerState === "transport_error" && (
           <Banner variant="error">
-            We couldn't send the link right now. Please try again in a moment.
+            Something went wrong. Please try again.
           </Banner>
         )}
         {bannerState === "expired" && (
@@ -184,7 +209,7 @@ export default function Auth() {
                     Check your email.
                   </h1>
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                    We've sent a link to <strong className="text-foreground">{email}</strong>. Click it to sign in. The link expires in 15 minutes.
+                    We sent a magic link to <strong className="text-foreground">{submittedEmail}</strong>. Click it to sign in. The link expires in 1 hour.
                   </p>
 
                   <div className="mt-6 flex flex-col gap-2">
