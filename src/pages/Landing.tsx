@@ -4,8 +4,10 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
+import Banner from "@/components/Banner";
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import SoloLogo from "@/components/SoloLogo";
+import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
 
 /* ─── Handler wiring (named handlers only) ─── */
 function useHomeHandlers() {
@@ -104,6 +106,7 @@ export default function Landing() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { handleStartTest, handleOpenPlan, isAuthed } = useHomeHandlers();
+  const renderRegression = useMainContentSelfCheck();
 
   // report_id recovery redirect — never renders the page
   useEffect(() => {
@@ -116,6 +119,12 @@ export default function Landing() {
   return (
     <div className="relative min-h-screen text-foreground">
       <TopBar />
+
+      {renderRegression && (
+        <Banner variant="error">
+          Something went wrong rendering this page. Please refresh.
+        </Banner>
+      )}
 
       <main className="pt-[68px]">
         {/* ═══ SECTION 1 — HERO ═══ */}

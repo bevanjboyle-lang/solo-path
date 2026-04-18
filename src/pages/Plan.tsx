@@ -17,6 +17,7 @@ import RefineReportPanel from "@/components/plan/RefineReportPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
 import type { StrandData } from "@/components/StrandCard";
 
 // Mock data for preview (Day 0 default)
@@ -92,27 +93,43 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [replanPending, setReplanPending] = useState(false);
   const [replanContext, setReplanContext] = useState<Record<string, unknown> | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
-  // Route guard: unauthed/unpaid → redirect to /
+  // Route guard + plan fetch with explicit error handling.
+  // Resolution rules:
+  //   unauthed       → /auth (handled by ProtectedRoute, but defensive here too)
+  //   no paid plan   → /teaser  (per route-map §9 gating)
+  //   fetch error    → loadError = true (renders error Banner, never blanks)
+  //   populated      → setHasPaid(true) and load tracker session
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      navigate("/", { replace: true });
+      navigate("/auth?redirect=/plan", { replace: true });
       return;
     }
 
-    // Check if user has a paid report
-    supabase
-      .from("reports")
-      .select("id, status, hook_insight, core_report, answers")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("reports")
+          .select("id, status, hook_insight, core_report, answers")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (error) {
+          setLoadError(true);
+          setHasPaid(false);
+          return;
+        }
+
         if (!data || data.status === "pending" || data.status === "generating") {
-          // No paid report — redirect
-          navigate("/", { replace: true });
+          // Authed but no paid plan yet — route to teaser per spec.
+          navigate("/teaser", { replace: true });
           return;
         }
 
@@ -120,7 +137,6 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         setReportId(data.id);
         setNarrative(data.hook_insight || MOCK_NARRATIVE);
 
-        // Extract strands from core_report
         const coreReport = data.core_report as Record<string, unknown> | null;
         const rc = Number((coreReport?.refinement_count as number) ?? 0) || 0;
         setRefinementCount(rc);
@@ -137,9 +153,18 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           );
         }
 
-        // Check tracker session
         loadTrackerSession(user.id, data.id);
-      });
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Plan: report fetch failed", err);
+        setLoadError(true);
+        setHasPaid(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, authLoading, navigate]);
 
   const loadTrackerSession = useCallback(async (uid: string, rid: string) => {
@@ -334,20 +359,37 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     }
   }, [reportId, exportingPdf]);
 
-  // Guard: don't render paid UI before auth resolves
+  // Self-check: after mount, ensure main content has a visible heading.
+  // If not, render a loud fallback Banner so a regression is never silent.
+  const renderRegression = useMainContentSelfCheck(hasPaid === true && !loadError);
+
+  // ERROR state — fetch failed. Keep TopBar visible, render a Banner.
+  if (loadError) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <TopBar />
+        <Banner variant="error">
+          We couldn't load your plan. Try refreshing, or contact support if this keeps happening.
+        </Banner>
+        <main className="mx-auto w-full max-w-3xl px-6 pt-12 pb-24">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Your plan
+          </h1>
+        </main>
+      </div>
+    );
+  }
+
+  // LOADING state — full-width centred spinner, matches /auth/callback.
   if (authLoading || hasPaid === null) {
     return (
       <div className="flex min-h-screen flex-col">
         <TopBar />
-        <div className="mx-auto w-full max-w-3xl space-y-8 px-6 pt-12 pb-16">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-12 w-full rounded-lg" />
-          <div className="grid grid-cols-10 gap-2">
-            {Array.from({ length: 30 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 rounded-md" />
-            ))}
+        <div className="flex flex-1 items-center justify-center px-6">
+          <div className="flex flex-col items-center gap-4 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <p className="text-sm">Loading your plan…</p>
           </div>
-          <Skeleton className="h-24 w-full rounded-lg" />
         </div>
       </div>
     );
@@ -364,7 +406,14 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         </Banner>
       )}
 
+      {renderRegression && (
+        <Banner variant="error">
+          Something went wrong rendering this page. Please refresh.
+        </Banner>
+      )}
+
       <main className="mx-auto w-full max-w-3xl px-6 pt-8 pb-24">
+        <h1 className="sr-only">Your plan</h1>
         {/* §1 ReplanPromptCard — only when a replan is pending */}
         {replanPending && sessionId && user && (
           <ReplanPromptCard
