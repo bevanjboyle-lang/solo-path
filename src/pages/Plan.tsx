@@ -17,6 +17,7 @@ import RefineReportPanel from "@/components/plan/RefineReportPanel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
 import type { StrandData } from "@/components/StrandCard";
 
 // Mock data for preview (Day 0 default)
@@ -92,27 +93,43 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [replanPending, setReplanPending] = useState(false);
   const [replanContext, setReplanContext] = useState<Record<string, unknown> | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
-  // Route guard: unauthed/unpaid → redirect to /
+  // Route guard + plan fetch with explicit error handling.
+  // Resolution rules:
+  //   unauthed       → /auth (handled by ProtectedRoute, but defensive here too)
+  //   no paid plan   → /teaser  (per route-map §9 gating)
+  //   fetch error    → loadError = true (renders error Banner, never blanks)
+  //   populated      → setHasPaid(true) and load tracker session
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      navigate("/", { replace: true });
+      navigate("/auth?redirect=/plan", { replace: true });
       return;
     }
 
-    // Check if user has a paid report
-    supabase
-      .from("reports")
-      .select("id, status, hook_insight, core_report, answers")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("reports")
+          .select("id, status, hook_insight, core_report, answers")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled) return;
+
+        if (error) {
+          setLoadError(true);
+          setHasPaid(false);
+          return;
+        }
+
         if (!data || data.status === "pending" || data.status === "generating") {
-          // No paid report — redirect
-          navigate("/", { replace: true });
+          // Authed but no paid plan yet — route to teaser per spec.
+          navigate("/teaser", { replace: true });
           return;
         }
 
@@ -120,7 +137,6 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         setReportId(data.id);
         setNarrative(data.hook_insight || MOCK_NARRATIVE);
 
-        // Extract strands from core_report
         const coreReport = data.core_report as Record<string, unknown> | null;
         const rc = Number((coreReport?.refinement_count as number) ?? 0) || 0;
         setRefinementCount(rc);
@@ -137,9 +153,18 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           );
         }
 
-        // Check tracker session
         loadTrackerSession(user.id, data.id);
-      });
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Plan: report fetch failed", err);
+        setLoadError(true);
+        setHasPaid(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, authLoading, navigate]);
 
   const loadTrackerSession = useCallback(async (uid: string, rid: string) => {
