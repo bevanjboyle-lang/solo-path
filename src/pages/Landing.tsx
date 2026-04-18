@@ -123,15 +123,15 @@ export default function Landing() {
             style={{ background: "rgba(0,0,0,0.35)" }}
           />
 
-          <div className="relative mx-auto max-w-5xl px-6 pb-20 pt-10 sm:pt-12 lg:pt-14 text-center">
+          <div className="relative mx-auto max-w-5xl px-6 pb-10 pt-6 sm:pb-12 sm:pt-8 text-center">
             <motion.div
-              className="mb-14 sm:mb-20 flex justify-center"
+              className="mb-6 sm:mb-8 flex justify-center"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               style={{ color: "#FAF9F7" }}
             >
-              <SoloLogo width={240} height={68} />
+              <SoloLogo width={180} height={52} />
             </motion.div>
             <motion.h1
               className="font-display text-[2.5rem] font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]"
