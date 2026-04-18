@@ -121,16 +121,11 @@ export default function Auth() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <TopBar minimal />
 
-      {/* Banners */}
+      {/* Banners — only transport errors and expired-link messaging surface here */}
       <div aria-live="polite">
-        {bannerState === "rate_limited" && (
-          <Banner variant="warning">
-            You've requested several links. Use the most recent one — we'll let you request another in a few minutes.
-          </Banner>
-        )}
-        {bannerState === "server_error" && (
+        {bannerState === "transport_error" && (
           <Banner variant="error">
-            We couldn't send the link right now. Please try again in a moment.
+            Something went wrong. Please try again.
           </Banner>
         )}
         {bannerState === "expired" && (
