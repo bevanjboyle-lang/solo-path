@@ -15,15 +15,33 @@ export default function Auth() {
   const [params] = useSearchParams();
   const redirectTarget = params.get("redirect") || "/plan";
   const expired = params.get("expired") === "true";
+  const prefillEmail = params.get("email") || "";
 
   const [view, setView] = useState<ViewState>("form");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefillEmail);
   const [submitting, setSubmitting] = useState(false);
   const [bannerState, setBannerState] = useState<"rate_limited" | "server_error" | "expired" | null>(
     expired ? "expired" : null
   );
 
   const successH1Ref = useRef<HTMLHeadingElement>(null);
+
+  // Detect Supabase auth errors returned in the URL hash (e.g. expired magic link).
+  useEffect(() => {
+    if (!window.location.hash) return;
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    if (hashParams.get("error")) {
+      setBannerState("expired");
+      history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+  }, []);
+
+  // Persist the deep-link redirect target so it survives the PKCE round-trip.
+  useEffect(() => {
+    if (redirectTarget && redirectTarget !== "/plan") {
+      sessionStorage.setItem("solo.auth_redirect_target", redirectTarget);
+    }
+  }, [redirectTarget]);
 
   // Redirect already-authed users before form paints
   if (!loading && user) {
