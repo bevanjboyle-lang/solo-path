@@ -209,7 +209,7 @@ export default function Auth() {
                     Check your email.
                   </h1>
                   <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-                    We've sent a link to <strong className="text-foreground">{email}</strong>. Click it to sign in. The link expires in 15 minutes.
+                    We sent a magic link to <strong className="text-foreground">{submittedEmail}</strong>. Click it to sign in. The link expires in 1 hour.
                   </p>
 
                   <div className="mt-6 flex flex-col gap-2">
