@@ -36,13 +36,16 @@ export async function signIn(
   email: string,
   redirectTo?: string
 ): Promise<{ error?: string; rateLimited?: boolean }> {
-  const redirect = redirectTo
-    ? `${window.location.origin}${redirectTo}`
-    : `${window.location.origin}/plan`;
+  // Preserve the deep-link redirect target + email through the PKCE round-trip.
+  // The callback route reads these back from sessionStorage after exchange.
+  if (redirectTo) sessionStorage.setItem("solo.auth_redirect_target", redirectTo);
+  sessionStorage.setItem("solo.auth_email", email);
+
+  const emailRedirectTo = `${window.location.origin}/auth/callback`;
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { emailRedirectTo: redirect },
+    options: { emailRedirectTo },
   });
 
   if (error) {
@@ -280,7 +283,10 @@ export async function generateReport(payload: {
       // and sends the email. We then wait for SIGNED_IN.
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: payload.email,
-        options: { shouldCreateUser: true },
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
       if (otpError) {
         return { error: otpError.message || "Sign-in failed" };

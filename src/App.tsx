@@ -13,6 +13,7 @@ import AskSoloWidget from "@/components/AskSoloWidget";
 import Landing from "./pages/Landing";
 import CVUpload from "./pages/CVUpload";
 import Auth from "./pages/Auth";
+import AuthCallback from "./pages/AuthCallback";
 import Questionnaire from "./pages/Questionnaire";
 import Processing from "./pages/Processing";
 import Results from "./pages/Results";
@@ -63,6 +64,7 @@ function AnimatedRoutes() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Activation funnel — anonymous */}
             <Route path="/cv-upload" element={<CVUpload />} />
