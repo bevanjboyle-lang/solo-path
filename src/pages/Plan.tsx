@@ -406,7 +406,14 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         </Banner>
       )}
 
+      {renderRegression && (
+        <Banner variant="error">
+          Something went wrong rendering this page. Please refresh.
+        </Banner>
+      )}
+
       <main className="mx-auto w-full max-w-3xl px-6 pt-8 pb-24">
+        <h1 className="sr-only">Your plan</h1>
         {/* §1 ReplanPromptCard — only when a replan is pending */}
         {replanPending && sessionId && user && (
           <ReplanPromptCard
