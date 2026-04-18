@@ -316,7 +316,7 @@ export default function Landing() {
                 className="mt-10 text-base font-medium"
                 style={{ color: "#FAF9F7" }}
               >
-                You can spend ten hours prompting ChatGPT and still have no plan. Or take the Solo test.
+                You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually reach out to. Or take the Solo test — and walk away with a real plan and a real list of people to contact.
               </p>
               <div className="mt-8">
                 <button
