@@ -19,13 +19,17 @@ export default function Teaser() {
   const cancelReturn = searchParams.get("canceled") === "true";
   const recoveryToken = searchParams.get("token");
 
-  const [loading, setLoading] = useState(true);
+  // F39: if no report_id, do not even mount loading state — redirect synchronously.
+  // This prevents the "Loading your plan…" hang and the empty-shell home regression.
+  const [loading, setLoading] = useState(!!reportId);
   const [payLoading, setPayLoading] = useState(false);
   const [firstName, setFirstName] = useState<string | null>(null);
   const [narrative, setNarrative] = useState<string | null>(null);
   const [strands, setStrands] = useState<StrandData[]>([]);
   const [reportStatus, setReportStatus] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [timedOut, setTimedOut] = useState(false);
+  const [retryNonce, setRetryNonce] = useState(0);
   const [showSticky, setShowSticky] = useState(false);
 
   // Personalised above-fold data (null → silent fallback to existing generic teaser)
