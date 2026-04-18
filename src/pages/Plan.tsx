@@ -359,20 +359,37 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     }
   }, [reportId, exportingPdf]);
 
-  // Guard: don't render paid UI before auth resolves
+  // Self-check: after mount, ensure main content has a visible heading.
+  // If not, render a loud fallback Banner so a regression is never silent.
+  const renderRegression = useMainContentSelfCheck(hasPaid === true && !loadError);
+
+  // ERROR state — fetch failed. Keep TopBar visible, render a Banner.
+  if (loadError) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <TopBar />
+        <Banner variant="error">
+          We couldn't load your plan. Try refreshing, or contact support if this keeps happening.
+        </Banner>
+        <main className="mx-auto w-full max-w-3xl px-6 pt-12 pb-24">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Your plan
+          </h1>
+        </main>
+      </div>
+    );
+  }
+
+  // LOADING state — full-width centred spinner, matches /auth/callback.
   if (authLoading || hasPaid === null) {
     return (
       <div className="flex min-h-screen flex-col">
         <TopBar />
-        <div className="mx-auto w-full max-w-3xl space-y-8 px-6 pt-12 pb-16">
-          <Skeleton className="h-32 w-full rounded-xl" />
-          <Skeleton className="h-12 w-full rounded-lg" />
-          <div className="grid grid-cols-10 gap-2">
-            {Array.from({ length: 30 }).map((_, i) => (
-              <Skeleton key={i} className="h-10 rounded-md" />
-            ))}
+        <div className="flex flex-1 items-center justify-center px-6">
+          <div className="flex flex-col items-center gap-4 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <p className="text-sm">Loading your plan…</p>
           </div>
-          <Skeleton className="h-24 w-full rounded-lg" />
         </div>
       </div>
     );
