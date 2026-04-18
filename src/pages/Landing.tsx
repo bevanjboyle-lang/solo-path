@@ -125,13 +125,13 @@ export default function Landing() {
 
           <div className="relative mx-auto max-w-5xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
             <motion.div
-              className="mb-8 flex justify-center"
+              className="mb-14 sm:mb-20 flex justify-center"
               initial={{ opacity: 0, y: -8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               style={{ color: "#FAF9F7" }}
             >
-              <SoloLogo width={140} height={40} />
+              <SoloLogo width={240} height={68} />
             </motion.div>
             <motion.h1
               className="font-display text-[2.5rem] font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]"
