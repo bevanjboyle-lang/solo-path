@@ -223,11 +223,11 @@ export default function Landing() {
                   <ul className="mt-5 grid gap-3 text-base leading-[1.7] text-muted-foreground sm:gap-4 lg:grid-cols-2 lg:gap-x-12">
                     <li className="flex gap-3">
                       <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
-                      <span>Not a generic business plan generator or startup-advice chatbot.</span>
+                      <span className="font-semibold text-foreground">Not a generic business plan generator or startup-advice chatbot.</span>
                     </li>
                     <li className="flex gap-3">
                       <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
-                      <span>Not a side-hustle tool, course funnel, or passive-income pitch.</span>
+                      <span className="font-semibold text-foreground">Not a side-hustle tool, course funnel, or passive-income pitch.</span>
                     </li>
                     <li className="flex gap-3">
                       <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
