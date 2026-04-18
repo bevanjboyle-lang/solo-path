@@ -171,7 +171,7 @@ export default function Landing() {
                   onClick={handleStartTest}
                   className="rounded-lg bg-[#2ECDB0] px-8 py-3.5 text-base font-semibold text-white shadow-md ring-1 ring-black/10 transition-colors hover:bg-[#26B89D]"
                 >
-                  Take the test
+                  Assess your options
                 </button>
               )}
               <a
@@ -323,7 +323,7 @@ export default function Landing() {
                   onClick={handleStartTest}
                   className="rounded-lg bg-[#2ECDB0] px-8 py-3.5 text-base font-semibold text-white shadow-md transition-colors hover:bg-[#26B89D]"
                 >
-                  Take the test
+                  Assess your options
                 </button>
               </div>
             </ScrollReveal>
@@ -428,7 +428,7 @@ export default function Landing() {
                     onClick={handleStartTest}
                     className="rounded-lg bg-[#2ECDB0] px-9 py-4 text-base font-semibold text-white shadow-md transition-colors hover:bg-[#26B89D]"
                   >
-                    Take the test — free preview
+                    Assess your options — free preview
                   </button>
                 </div>
                 <div className="mt-5">
@@ -461,7 +461,7 @@ function MobileStickyBar({ onStartTest }: { onStartTest: () => void }) {
         onClick={onStartTest}
         className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
       >
-        Take the test
+        Assess your options
       </button>
     </div>
   );
