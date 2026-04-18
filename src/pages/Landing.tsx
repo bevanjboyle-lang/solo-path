@@ -123,7 +123,7 @@ export default function Landing() {
             style={{ background: "rgba(0,0,0,0.35)" }}
           />
 
-          <div className="relative mx-auto max-w-5xl px-6 pb-20 pt-24 sm:pt-32 lg:pt-40 text-center">
+          <div className="relative mx-auto max-w-5xl px-6 pb-20 pt-10 sm:pt-12 lg:pt-14 text-center">
             <motion.div
               className="mb-14 sm:mb-20 flex justify-center"
               initial={{ opacity: 0, y: -8 }}
