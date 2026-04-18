@@ -191,7 +191,7 @@ export default function Questionnaire() {
             className="bg-[hsl(var(--mint))] hover:bg-[hsl(var(--mint-hover))] text-white font-medium px-8"
           >
             {isGenerating
-              ? "Generating…"
+              ? "Generating your plan…"
               : isEmailStep
               ? "Generate my report"
               : "Continue"}
