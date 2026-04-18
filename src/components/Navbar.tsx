@@ -105,7 +105,7 @@ export default function Navbar() {
             }}
             onClick={() => navigate("/auth")}
           >
-            Take the test →
+            Assess your options →
           </button>
         </div>
 
@@ -200,7 +200,7 @@ export default function Navbar() {
               }}
               onClick={() => { navigate("/auth"); setOpen(false); }}
             >
-              Take the test →
+              Assess your options →
             </button>
           </div>
         </div>
