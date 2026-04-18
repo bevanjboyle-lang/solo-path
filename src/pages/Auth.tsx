@@ -53,40 +53,68 @@ export default function Auth() {
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
+  // F37: anti-enumeration. Any non-transport response → sent state.
+  // Only true transport failures (network/5xx/timeout) keep the form visible.
+  const isTransportError = (errMsg?: string): boolean => {
+    if (!errMsg) return false;
+    const m = errMsg.toLowerCase();
+    return (
+      m.includes("network") ||
+      m.includes("failed to fetch") ||
+      m.includes("timeout") ||
+      m.includes("timed out") ||
+      m.includes("503") ||
+      m.includes("502") ||
+      m.includes("500") ||
+      m.includes("504")
+    );
+  };
+
   const handleSend = async () => {
     if (!isValidEmail || submitting) return;
     setBannerState(null);
     setSubmitting(true);
 
-    const result = await signIn(email.trim(), redirectTarget);
+    let result: Awaited<ReturnType<typeof signIn>>;
+    try {
+      result = await signIn(email.trim(), redirectTarget);
+    } catch (err) {
+      setSubmitting(false);
+      setBannerState("transport_error");
+      return;
+    }
     setSubmitting(false);
 
-    if (result.rateLimited) {
-      setBannerState("rate_limited");
-      return;
-    }
-    if (result.error) {
-      setBannerState("server_error");
+    // Transport-level error → keep form visible, show banner
+    if (result.error && isTransportError(result.error)) {
+      setBannerState("transport_error");
       return;
     }
 
-    // Anti-enumeration: always show success regardless of email existence
+    // Everything else (success, rate-limited, unknown email, 4xx) → sent state
+    setSubmittedEmail(email.trim());
     setView("sent");
     setTimeout(() => successH1Ref.current?.focus(), 100);
   };
 
   const handleReset = () => {
     setEmail("");
+    setSubmittedEmail("");
     setView("form");
     setBannerState(null);
   };
 
   const handleResend = async () => {
+    if (submitting) return;
+    if (Date.now() < resendDisabledUntil) return;
     setSubmitting(true);
-    const result = await signIn(email.trim(), redirectTarget);
+    setResendDisabledUntil(Date.now() + 5000);
+    try {
+      await signIn(submittedEmail, redirectTarget);
+    } catch {
+      // Silent — anti-enumeration. The banner stays out of sent state.
+    }
     setSubmitting(false);
-    if (result.rateLimited) setBannerState("rate_limited");
-    else if (result.error) setBannerState("server_error");
   };
 
   return (
