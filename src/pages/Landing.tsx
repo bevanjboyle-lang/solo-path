@@ -11,6 +11,16 @@ import SoloLogo from "@/components/SoloLogo";
 function useHomeHandlers() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // If a magic-link error landed on `/`, forward it to /auth so the banner renders there.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash;
+    if (hash && /(?:^|[#&])error=/.test(hash)) {
+      navigate(`/auth${hash}`, { replace: true });
+    }
+  }, [navigate]);
+
   return {
     handleStartTest: () => startTest(navigate),
     handleOpenPlan: () => navigateAuthed(navigate, "/plan"),
