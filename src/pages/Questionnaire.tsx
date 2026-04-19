@@ -89,6 +89,14 @@ export default function Questionnaire() {
       });
       setIsGenerating(false);
 
+      if (result.magicLinkSent && result.email) {
+        setMagicLinkSentTo(result.email);
+        return;
+      }
+      if (result.otpError) {
+        setGenError(result.error || "We couldn't send your magic link. Please try again.");
+        return;
+      }
       if (result.error || !result.report_id) {
         setGenError(result.error || "Something went wrong. Please try again.");
         return;
