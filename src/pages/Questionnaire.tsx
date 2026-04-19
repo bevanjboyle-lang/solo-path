@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown, AlertCircle } from "lucide-react";
 import { questions, Question } from "@/data/questions";
 import { getClientSessionId, generateReport } from "@/lib/handlers";
+import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
 import ProgressHeader from "@/components/ProgressHeader";
 import { Button } from "@/components/ui/button";
