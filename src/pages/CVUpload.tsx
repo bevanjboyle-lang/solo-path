@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Shield, Sparkles, Trash2 } from "lucide-react";
 import { continueFunnel } from "@/lib/handlers";
+import { getClientSessionId } from "@/lib/clientSession";
 import TopBar from "@/components/TopBar";
 import ProgressHeader from "@/components/ProgressHeader";
 import CVUploadZone from "@/components/CVUploadZone";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-const SESSION_KEY = "solo.client_session_id";
 
 const WHY_BULLETS = [
   {
@@ -32,14 +31,7 @@ export default function CVUpload() {
   const isMobile = useIsMobile();
   const [cvPath, setCvPath] = useState<string | null>(null);
 
-  // Ensure client_session_id exists
-  useEffect(() => {
-    if (!localStorage.getItem(SESSION_KEY)) {
-      localStorage.setItem(SESSION_KEY, crypto.randomUUID());
-    }
-  }, []);
-
-  const clientSessionId = localStorage.getItem(SESSION_KEY) || "";
+  const clientSessionId = getClientSessionId();
   const cvExtractKey = `solo.cv_extract.${clientSessionId}`;
 
   const clearStoredExtract = () => {
