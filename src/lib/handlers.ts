@@ -1,15 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
-
-const SESSION_KEY = "solo.client_session_id";
+import { getClientSessionId as _getClientSessionId } from "./clientSession";
 
 /**
  * Creates a client_session_id if missing, then navigates to /cv-upload.
  * This is THE ONLY handler for every "Take the test" CTA across the entire site.
  */
 export function startTest(navigate: (path: string) => void) {
-  if (!localStorage.getItem(SESSION_KEY)) {
-    localStorage.setItem(SESSION_KEY, crypto.randomUUID());
-  }
+  _getClientSessionId();
   navigate("/cv-upload");
 }
 
@@ -215,16 +212,10 @@ export async function dismissReplan(
 }
 
 /**
- * Get or create client_session_id.
+ * Get or create client_session_id. Re-exported from the canonical
+ * implementation in src/lib/clientSession.ts.
  */
-export function getClientSessionId(): string {
-  let id = localStorage.getItem(SESSION_KEY);
-  if (!id) {
-    id = crypto.randomUUID();
-    localStorage.setItem(SESSION_KEY, id);
-  }
-  return id;
-}
+export const getClientSessionId = _getClientSessionId;
 
 /**
  * Trigger Stripe checkout — creates a session via edge function and redirects.
@@ -262,7 +253,17 @@ export async function submitForm(
 }
 
 /**
- * Generate report — kicks off the edge function and returns report_id.
+ * Generate report — ADR-013 anonymous-first contract.
+ *
+ * - If signed in: invokes generate-report with { answers, cvExtract }.
+ *   supabase-js auto-injects the user JWT in the Authorization header.
+ * - If anonymous: fires (without awaiting) a magic-link signInWithOtp for
+ *   future auth, then invokes generate-report with the anon key + the
+ *   X-Client-Session-Id header (added by the global fetch wrapper).
+ *   Backend links the resulting reports row to the user_id at payment-webhook
+ *   time using client_session_id + Stripe customer email.
+ *
+ * Never blocks on auth. Never sets the Authorization header manually.
  */
 export async function generateReport(payload: {
   client_session_id: string;
@@ -270,70 +271,37 @@ export async function generateReport(payload: {
   first_name: string;
   email: string | null;
   email_refused: boolean;
-}): Promise<{
-  report_id?: string;
-  error?: string;
-  waitingForAuth?: boolean;
-  magicLinkSent?: boolean;
-  otpError?: boolean;
-  email?: string;
-}> {
-  // Require a real authenticated session before invoking the edge function.
-  // Never fall back to the anon key — the edge function will 401.
-  let session = (await supabase.auth.getSession()).data.session;
+}): Promise<{ report_id?: string; error?: string }> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const isAuthed = session !== null;
 
-  // F42: First-time anonymous users have no session AND no magic link sent yet.
-  // Send the OTP and stop — they need to click the link before we can generate.
-  if (!session && payload.email) {
-    const { error: otpError } = await supabase.auth.signInWithOtp({
-      email: payload.email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-        shouldCreateUser: true,
-        data: { first_name: payload.first_name },
-      },
-    });
-    if (otpError) {
-      return { otpError: true, error: otpError.message };
-    }
-    return { magicLinkSent: true, email: payload.email };
+  // Anonymous: fire-and-forget magic link so a session exists when the user
+  // returns post-payment. Failures are non-fatal — the user will still pay
+  // via Stripe and reach the report.
+  if (!isAuthed && payload.email) {
+    supabase.auth
+      .signInWithOtp({
+        email: payload.email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          shouldCreateUser: true,
+          data: { first_name: payload.first_name },
+        },
+      })
+      .catch((err) => console.warn("signInWithOtp failed (non-fatal):", err));
   }
 
-  if (!session) {
-    // Wait for SIGNED_IN (cross-tab via storage event after user clicks magic
-    // link in another tab). Bounded 10s timeout — do NOT re-send a magic link
-    // here; the link was already sent at the /auth step.
-    session = await new Promise<typeof session>((resolve) => {
-      const timer = setTimeout(() => {
-        sub.data.subscription.unsubscribe();
-        resolve(null);
-      }, 10_000);
-      const sub = supabase.auth.onAuthStateChange((event, s) => {
-        if (event === "SIGNED_IN" && s) {
-          clearTimeout(timer);
-          sub.data.subscription.unsubscribe();
-          resolve(s);
-        }
-      });
-    });
-
-    if (!session) {
-      return {
-        waitingForAuth: true,
-        error:
-          "Your sign-in hasn't come through yet. Please click the magic link in your email, then press Generate my report again.",
+  const body = isAuthed
+    ? { answers: payload.answers, first_name: payload.first_name }
+    : {
+        answers: payload.answers,
+        first_name: payload.first_name,
+        email: payload.email,
+        email_refused: payload.email_refused,
+        clientSessionId: _getClientSessionId(),
       };
-    }
-  }
 
-  // supabase-js auto-injects Authorization: Bearer <access_token> from session.
-  const { data, error } = await supabase.functions.invoke("generate-report", {
-    body: payload,
-  });
-
-  if (error) {
-    return { error: error.message || "Report generation failed" };
-  }
-
+  const { data, error } = await supabase.functions.invoke("generate-report", { body });
+  if (error) return { error: error.message || "Report generation failed" };
   return { report_id: data?.report_id };
 }
