@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown, AlertCircle } from "lucide-react";
 import { questions, Question } from "@/data/questions";
 import { getClientSessionId, generateReport } from "@/lib/handlers";
+import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
 import ProgressHeader from "@/components/ProgressHeader";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-const TOTAL_STEPS = questions.length + 1; // questions + email capture
+// Total steps is computed at runtime — anon users see questions + email; authed users see questions only.
 
 export default function Questionnaire() {
   const navigate = useNavigate();
@@ -30,13 +31,19 @@ export default function Questionnaire() {
   const [showRefusalModal, setShowRefusalModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
 
   // Ensure client_session_id exists before any submit fires.
   useEffect(() => {
     getClientSessionId();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthed(session !== null);
+    });
   }, []);
 
-  const isEmailStep = current >= questions.length;
+  // Authed users skip the email-capture step entirely.
+  const totalSteps = isAuthed ? questions.length : questions.length + 1;
+  const isEmailStep = !isAuthed && current >= questions.length;
   const currentQuestion = !isEmailStep ? questions[current] : null;
   const stepNumber = current + 1;
 
@@ -72,19 +79,22 @@ export default function Questionnaire() {
     setCurrent((c) => c - 1);
   };
 
+  const isLastQuestion = current === questions.length - 1;
+  const isFinalStep = isEmailStep || (isAuthed === true && isLastQuestion);
+
   const goForward = async () => {
     if (!isStepValid()) return;
 
-    if (isEmailStep) {
+    if (isFinalStep) {
       // Final submit — generate report
       setIsGenerating(true);
       setGenError(null);
       const result = await generateReport({
         client_session_id: getClientSessionId(),
         answers,
-        first_name: firstName.trim(),
-        email: emailRefused ? null : email.trim(),
-        email_refused: emailRefused,
+        first_name: isAuthed ? "" : firstName.trim(),
+        email: isAuthed ? null : emailRefused ? null : email.trim(),
+        email_refused: isAuthed ? false : emailRefused,
       });
       setIsGenerating(false);
 
@@ -106,7 +116,7 @@ export default function Questionnaire() {
   };
 
   // Build progress labels dynamically
-  const progressLabels = Array.from({ length: TOTAL_STEPS }, (_, i) =>
+  const progressLabels = Array.from({ length: totalSteps }, (_, i) =>
     i < questions.length ? `Q${i + 1}` : "Email"
   );
 
@@ -118,7 +128,7 @@ export default function Questionnaire() {
       {/* Progress */}
       <ProgressHeader
         currentStep={stepNumber}
-        totalSteps={TOTAL_STEPS}
+        totalSteps={totalSteps}
         labels={progressLabels}
         onBack={current > 0 ? goBack : undefined}
       />
@@ -192,7 +202,7 @@ export default function Questionnaire() {
           >
             {isGenerating
               ? "Generating your plan…"
-              : isEmailStep
+              : isFinalStep
               ? "Generate my report"
               : "Continue"}
           </Button>

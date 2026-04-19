@@ -292,7 +292,7 @@ export async function generateReport(payload: {
   }
 
   const body = isAuthed
-    ? { answers: payload.answers, first_name: payload.first_name }
+    ? { answers: payload.answers }
     : {
         answers: payload.answers,
         first_name: payload.first_name,
