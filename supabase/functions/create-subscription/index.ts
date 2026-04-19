@@ -1,103 +1,124 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@18.5.0";
+// create-subscription v21 — Audit P0 #6,#7,#8: Stripe API version standardised to 2025-01-27.acacia, price IDs via env vars, APP_URL fail-loud
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req) => {
+function getUserIdFromJwt(authHeader: string | null): string | null {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
+  try {
+    const token = authHeader.slice(7);
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return payload.sub || null;
+  } catch {
+    return null;
+  }
+}
+
+// Audit fix #7: Price IDs sourced from env vars; fall back to current test IDs (warn). Bevan must set STRIPE_PRICE_SUB_MONTHLY / STRIPE_PRICE_SUB_ANNUAL at prod cutover.
+const MONTHLY_PRICE_FALLBACK = "price_1TL0r90PR8c2G6smxBdarC7B";
+const ANNUAL_PRICE_FALLBACK  = "price_1TL0qZ0PR8c2G6smwP3tWZ59";
+
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const userId = getUserIdFromJwt(req.headers.get("Authorization"));
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized", response_text: "Authentication required." }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    const body = await req.json();
+    const plan: string = body.plan_type || body.plan || "monthly";
+
+    const monthlyPriceId = Deno.env.get("STRIPE_PRICE_SUB_MONTHLY") || MONTHLY_PRICE_FALLBACK;
+    const annualPriceId  = Deno.env.get("STRIPE_PRICE_SUB_ANNUAL")  || ANNUAL_PRICE_FALLBACK;
+    if (!Deno.env.get("STRIPE_PRICE_SUB_MONTHLY") || !Deno.env.get("STRIPE_PRICE_SUB_ANNUAL")) {
+      console.warn("STRIPE_PRICE_SUB_MONTHLY/ANNUAL not fully set — using test fallbacks. Set env vars before production cutover.");
+    }
+    const priceId = plan === "annual" ? annualPriceId : monthlyPriceId;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY")!;
 
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    // Audit fix #8: APP_URL must be set. No Lovable preview fallback.
+    const appUrl = Deno.env.get("APP_URL");
+    if (!appUrl) {
+      console.error("APP_URL env var not set — cannot create subscription session");
+      return new Response(
+        JSON.stringify({
+          error: "server_misconfigured",
+          details: "APP_URL environment variable is not set",
+          response_text: "Server configuration error.",
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    // Audit fix #6: standardise API version.
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-01-27.acacia" });
+
+    const { data: profile, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("stripe_customer_id, email")
+      .eq("user_id", userId)
+      .single();
+
+    if (profileError) {
+      console.error("Profile lookup error:", profileError);
+    }
+
+    let stripeCustomerId: string | undefined = profile?.stripe_customer_id;
+
+    if (!stripeCustomerId) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+      const email = authUser?.user?.email || profile?.email;
+
+      const customer = await stripe.customers.create({
+        email: email || undefined,
+        metadata: { userId },
       });
+      stripeCustomerId = customer.id;
+
+      await supabase
+        .from("user_profiles")
+        .upsert({ user_id: userId, stripe_customer_id: stripeCustomerId }, { onConflict: "user_id" });
     }
-
-    const { tracker_session_id, plan_type = 'monthly' } = await req.json();
-    if (!tracker_session_id) {
-      return new Response(JSON.stringify({ error: "tracker_session_id is required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      return new Response(JSON.stringify({ error: "STRIPE_SECRET_KEY not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-
-    // Check if user already has a Stripe customer
-    const customers = await stripe.customers.list({ email: user.email!, limit: 1 });
-    let customerId: string | undefined;
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-    }
-
-    const origin = req.headers.get("origin") || "https://solo-app.lovable.app";
 
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email!,
-      line_items: [
-        {
-          price: plan_type === 'annual'
-            ? (Deno.env.get("STRIPE_ANNUAL_PRICE_ID") || "price_ANNUAL_TODO")
-            : (Deno.env.get("STRIPE_MONTHLY_PRICE_ID") || "price_1TL0r90PR8c2G6smxBdarC7B"),
-          quantity: 1,
-        },
-      ],
       mode: "subscription",
-      success_url: `${origin}/tracker?session_id={CHECKOUT_SESSION_ID}&subscribed=true`,
-      cancel_url: `${origin}/tracker`,
-      metadata: {
-        user_id: user.id,
-        tracker_session_id,
-      },
-      subscription_data: {
-        metadata: {
-          user_id: user.id,
-          tracker_session_id,
-        },
-      },
+      customer: stripeCustomerId,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${appUrl}/payment-success?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/subscribe?payment_cancelled=1`,
+      metadata: { userId, plan },
     });
 
-    return new Response(JSON.stringify({ checkout_url: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
-  } catch (e) {
-    console.error("create-subscription error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        sessionUrl: session.url,
+        sessionId: session.id,
+        response_text: "Subscription checkout session created.",
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (err) {
+    console.error("create-subscription error:", err);
+    return new Response(
+      JSON.stringify({ error: String(err), response_text: "Failed to create subscription session." }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 });
