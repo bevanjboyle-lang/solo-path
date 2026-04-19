@@ -1,4 +1,5 @@
-// process-checkin v28 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
+// process-checkin v29 — F45 (2026-04-19): accept `response` key in userMessage OR chain so /plan CheckInPanel callers work (Plan.tsx sends {session_id, response}). Backward-compatible with /checkin long-schema callers.
+// v28: P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
 // v27 baseline: 2026-04-17 Audit P1 #9 fix — traction signals parameterised by move type.
 // Earlier history:
 //   - v27: buildTractionSignalsReference accepts per-strand move_type, selected_strands pulled
@@ -480,8 +481,11 @@ Deno.serve(async (req: Request) => {
       body.sessionId || body.session_id || body.checkinId ||
       body.checkin_id || body.trackerSessionId || body.tracker_session_id || body.id || null;
 
+    // F45 (2026-04-19): accept `response` as a userMessage alias so /plan CheckInPanel callers
+    // (which send {session_id, response}) work without losing the user's text. Old /checkin long-schema
+    // callers (message | userMessage | user_message | text) still work unchanged.
     const userMessage =
-      body.message || body.userMessage || body.user_message || body.text || "";
+      body.message || body.userMessage || body.user_message || body.text || body.response || "";
 
     let trackerSession: Record<string, unknown> | null = null;
 
@@ -519,7 +523,7 @@ Deno.serve(async (req: Request) => {
     const portfolioReviews = (trackerSession.portfolio_reviews as unknown[]) || [];
     const portfolioReviewsCompleted = getPortfolioReviewsCompleted(portfolioReviews);
 
-    console.log(`process-checkin v28: userId=${userId}, isPortfolio=${isPortfolio}, isCatchUp=${isCatchUp}, portfolioReviewsCompleted=${portfolioReviewsCompleted}`);
+    console.log(`process-checkin v29: userId=${userId}, isPortfolio=${isPortfolio}, isCatchUp=${isCatchUp}, portfolioReviewsCompleted=${portfolioReviewsCompleted}`);
 
     // Audit P1 #9: pull selected_strands from reports so P5 can interpret traction per move_type.
     let reportData: Record<string, unknown> | null = null;
