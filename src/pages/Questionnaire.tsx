@@ -31,13 +31,19 @@ export default function Questionnaire() {
   const [showRefusalModal, setShowRefusalModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
 
   // Ensure client_session_id exists before any submit fires.
   useEffect(() => {
     getClientSessionId();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthed(session !== null);
+    });
   }, []);
 
-  const isEmailStep = current >= questions.length;
+  // Authed users skip the email-capture step entirely.
+  const totalSteps = isAuthed ? questions.length : questions.length + 1;
+  const isEmailStep = !isAuthed && current >= questions.length;
   const currentQuestion = !isEmailStep ? questions[current] : null;
   const stepNumber = current + 1;
 
