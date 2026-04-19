@@ -79,19 +79,22 @@ export default function Questionnaire() {
     setCurrent((c) => c - 1);
   };
 
+  const isLastQuestion = current === questions.length - 1;
+  const isFinalStep = isEmailStep || (isAuthed === true && isLastQuestion);
+
   const goForward = async () => {
     if (!isStepValid()) return;
 
-    if (isEmailStep) {
+    if (isFinalStep) {
       // Final submit — generate report
       setIsGenerating(true);
       setGenError(null);
       const result = await generateReport({
         client_session_id: getClientSessionId(),
         answers,
-        first_name: firstName.trim(),
-        email: emailRefused ? null : email.trim(),
-        email_refused: emailRefused,
+        first_name: isAuthed ? "" : firstName.trim(),
+        email: isAuthed ? null : emailRefused ? null : email.trim(),
+        email_refused: isAuthed ? false : emailRefused,
       });
       setIsGenerating(false);
 
