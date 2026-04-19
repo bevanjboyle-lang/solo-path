@@ -202,7 +202,7 @@ export default function Questionnaire() {
           >
             {isGenerating
               ? "Generating your plan…"
-              : isEmailStep
+              : isFinalStep
               ? "Generate my report"
               : "Continue"}
           </Button>
