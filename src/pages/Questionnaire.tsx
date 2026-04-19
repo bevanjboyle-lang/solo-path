@@ -128,7 +128,7 @@ export default function Questionnaire() {
       {/* Progress */}
       <ProgressHeader
         currentStep={stepNumber}
-        totalSteps={TOTAL_STEPS}
+        totalSteps={totalSteps}
         labels={progressLabels}
         onBack={current > 0 ? goBack : undefined}
       />
