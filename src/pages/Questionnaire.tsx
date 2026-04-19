@@ -89,12 +89,29 @@ export default function Questionnaire() {
       // Final submit — generate report
       setIsGenerating(true);
       setGenError(null);
+
+      // Read persisted CV extract (if any) for this client session.
+      const clientSessionId = localStorage.getItem("solo.client_session_id");
+      let cvExtract: Record<string, unknown> | undefined;
+      try {
+        const raw = clientSessionId
+          ? localStorage.getItem(`solo.cv_extract.${clientSessionId}`)
+          : null;
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed?.cv_extract && typeof parsed.cv_extract === "object") {
+            cvExtract = parsed.cv_extract as Record<string, unknown>;
+          }
+        }
+      } catch {}
+
       const result = await generateReport({
         client_session_id: getClientSessionId(),
         answers,
         first_name: isAuthed ? "" : firstName.trim(),
         email: isAuthed ? null : emailRefused ? null : email.trim(),
         email_refused: isAuthed ? false : emailRefused,
+        cvExtract,
       });
       setIsGenerating(false);
 

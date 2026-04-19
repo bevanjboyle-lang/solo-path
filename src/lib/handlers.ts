@@ -271,6 +271,7 @@ export async function generateReport(payload: {
   first_name: string;
   email: string | null;
   email_refused: boolean;
+  cvExtract?: Record<string, unknown>;
 }): Promise<{ report_id?: string; error?: string }> {
   const { data: { session } } = await supabase.auth.getSession();
   const isAuthed = session !== null;
@@ -291,7 +292,7 @@ export async function generateReport(payload: {
       .catch((err) => console.warn("signInWithOtp failed (non-fatal):", err));
   }
 
-  const body = isAuthed
+  const body: Record<string, unknown> = isAuthed
     ? { answers: payload.answers }
     : {
         answers: payload.answers,
@@ -300,6 +301,10 @@ export async function generateReport(payload: {
         email_refused: payload.email_refused,
         clientSessionId: _getClientSessionId(),
       };
+
+  if (payload.cvExtract) {
+    body.cvExtract = payload.cvExtract;
+  }
 
   const { data, error } = await supabase.functions.invoke("generate-report", { body });
   if (error) return { error: error.message || "Report generation failed" };

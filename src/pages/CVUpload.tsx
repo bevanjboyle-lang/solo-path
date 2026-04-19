@@ -40,9 +40,39 @@ export default function CVUpload() {
   }, []);
 
   const clientSessionId = localStorage.getItem(SESSION_KEY) || "";
+  const cvExtractKey = `solo.cv_extract.${clientSessionId}`;
+
+  const clearStoredExtract = () => {
+    try {
+      localStorage.removeItem(cvExtractKey);
+    } catch {}
+  };
+
+  const handleExtractComplete = (
+    cv_extract: Record<string, unknown>,
+    cv_confidence_score?: number,
+    cv_uploaded?: boolean
+  ) => {
+    try {
+      localStorage.setItem(
+        cvExtractKey,
+        JSON.stringify({
+          cv_extract,
+          cv_confidence_score,
+          cv_uploaded,
+          ts: new Date().toISOString(),
+        })
+      );
+    } catch (err) {
+      console.warn("Failed to persist cv_extract (non-fatal):", err);
+    }
+  };
 
   const handleContinue = () => continueFunnel(navigate, "/questionnaire");
-  const handleSkip = () => continueFunnel(navigate, "/questionnaire");
+  const handleSkip = () => {
+    clearStoredExtract();
+    continueFunnel(navigate, "/questionnaire");
+  };
 
   const WhyWeAskContent = () => (
     <div className="space-y-4">
@@ -86,7 +116,11 @@ export default function CVUpload() {
           <CVUploadZone
             clientSessionId={clientSessionId}
             onUploadComplete={(path) => setCvPath(path)}
-            onUploadClear={() => setCvPath(null)}
+            onUploadClear={() => {
+              setCvPath(null);
+              clearStoredExtract();
+            }}
+            onExtractComplete={handleExtractComplete}
           />
 
           {/* Why we ask — desktop: inline, mobile: drawer */}
