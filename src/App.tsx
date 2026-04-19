@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, useLocation, useParams } from "react-router-dom";
 import { getClientSessionId } from "@/lib/clientSession";
 import { installSupabaseFetchHeader } from "@/lib/supabaseClient";
-
 // Install the X-Client-Session-Id fetch wrapper at module load so it's active
 // before any Supabase call fires (including the AuthProvider's getSession on mount).
 installSupabaseFetchHeader();
@@ -23,7 +22,8 @@ import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
 import Questionnaire from "./pages/Questionnaire";
 import Processing from "./pages/Processing";
-import Results from "./pages/Results";
+// F47 (2026-04-19): Results import removed — /results is not in route map v1.2.
+// Canonical post-payment flow per ADR-010 is /teaser → Stripe → /payment-success → /plan.
 import Teaser from "./pages/Teaser";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Plan from "./pages/Plan";
@@ -41,8 +41,8 @@ import TermsOfService from "./pages/TermsOfService";
 
 /** Deep-link wrapper: /checkin/:sessionId → Plan with pre-opened drawer */
 function CheckinDeepLink() {
-  const { sessionId } = useParams();
-  return <Plan initialSessionId={sessionId} />;
+	const { sessionId } = useParams();
+	return <Plan initialSessionId={sessionId} />;
 }
 
 const queryClient = new QueryClient();
@@ -50,96 +50,97 @@ const queryClient = new QueryClient();
 const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success", "/auth", "/privacy", "/terms", "/plan", "/library", "/ask-solo", "/account", "/subscribe", "/checkin"];
 
 function AnimatedRoutes() {
-  const location = useLocation();
-  const hideFooter = FOOTERLESS_ROUTES.some((r) => location.pathname.startsWith(r));
+	const location = useLocation();
+	const hideFooter = FOOTERLESS_ROUTES.some((r) => location.pathname.startsWith(r));
 
-  return (
-    <>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-        >
-          <Routes location={location}>
-            {/* Anonymous routes */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
+	return (
+		<>
+			<AnimatePresence mode="wait">
+				<motion.div
+					key={location.pathname}
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
+					transition={{ duration: 0.3, ease: "easeInOut" }}
+				>
+					<Routes location={location}>
+						{/* Anonymous routes */}
+						<Route path="/" element={<Landing />} />
+						<Route path="/pricing" element={<Pricing />} />
+						<Route path="/faq" element={<FAQ />} />
+						<Route path="/privacy" element={<PrivacyPolicy />} />
+						<Route path="/terms" element={<TermsOfService />} />
+						<Route path="/auth" element={<Auth />} />
+						<Route path="/auth/callback" element={<AuthCallback />} />
 
-            {/* Activation funnel — anonymous */}
-            <Route path="/cv-upload" element={<CVUpload />} />
-            <Route path="/questionnaire" element={<Questionnaire />} />
-            <Route path="/processing" element={<Processing />} />
-            <Route path="/teaser" element={<Teaser />} />
+						{/* Activation funnel — anonymous */}
+						<Route path="/cv-upload" element={<CVUpload />} />
+						<Route path="/questionnaire" element={<Questionnaire />} />
+						<Route path="/processing" element={<Processing />} />
+						<Route path="/teaser" element={<Teaser />} />
 
-            {/* Conversion */}
-            <Route path="/payment-success" element={<PaymentSuccess />} />
+						{/* Conversion */}
+						<Route path="/payment-success" element={<PaymentSuccess />} />
 
-            {/* Gated routes */}
-            <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
-            <Route path="/checkin/:sessionId" element={<ProtectedRoute><CheckinDeepLink /></ProtectedRoute>} />
-            <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
-            <Route path="/library/modules/:id" element={<ProtectedRoute><Library /></ProtectedRoute>} />
-            <Route path="/ask-solo" element={<ProtectedRoute><AskSolo /></ProtectedRoute>} />
-            <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-            <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
-            <Route path="/results" element={<ProtectedRoute><Results /></ProtectedRoute>} />
+						{/* Gated routes */}
+						<Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
+						<Route path="/checkin/:sessionId" element={<ProtectedRoute><CheckinDeepLink /></ProtectedRoute>} />
+						<Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+						<Route path="/library/modules/:id" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+						<Route path="/ask-solo" element={<ProtectedRoute><AskSolo /></ProtectedRoute>} />
+						<Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+						<Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
+						{/* F47 (2026-04-19): /results route removed — not in route map v1.2. */}
 
-            {/* Errors */}
-            <Route path="/500" element={<ServerError />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </motion.div>
-      </AnimatePresence>
-      {!hideFooter && <Footer />}
-    </>
-  );
+						{/* Errors */}
+						<Route path="/500" element={<ServerError />} />
+						<Route path="*" element={<NotFound />} />
+					</Routes>
+				</motion.div>
+			</AnimatePresence>
+			{!hideFooter && <Footer />}
+		</>
+	);
 }
 
 const App = () => {
-  // Persist client_session_id on first mount so it exists before any
-  // user-initiated network call (defense-in-depth; module-load already covers most).
-  useEffect(() => { getClientSessionId(); }, []);
-  return (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        {/* Global fixed office-photo background — sits behind every page. */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: -10,
-            backgroundImage: "url('/office-bg.jpg')",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            filter: "grayscale(40%)",
-            transform: "scale(1.02)",
-          }}
-        />
-        {/* Global 4px mint stripe — non-negotiable brand element on every page. */}
-        <MintTopBar />
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <AnimatedRoutes />
-            <AskSoloWidget mode="floating" />
-            <CookieBanner />
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ErrorBoundary>
-  );
+	// Persist client_session_id on first mount so it exists before any
+	// user-initiated network call (defense-in-depth; module-load already covers most).
+	useEffect(() => { getClientSessionId(); }, []);
+
+	return (
+		<ErrorBoundary>
+			<QueryClientProvider client={queryClient}>
+				<TooltipProvider>
+					{/* Global fixed office-photo background — sits behind every page. */}
+					<div
+						aria-hidden="true"
+						style={{
+							position: "fixed",
+							inset: 0,
+							zIndex: -10,
+							backgroundImage: "url('/office-bg.jpg')",
+							backgroundSize: "cover",
+							backgroundPosition: "center",
+							filter: "grayscale(40%)",
+							transform: "scale(1.02)",
+						}}
+					/>
+					{/* Global 4px mint stripe — non-negotiable brand element on every page. */}
+					<MintTopBar />
+					<Toaster />
+					<Sonner />
+					<BrowserRouter>
+						<AuthProvider>
+							<AnimatedRoutes />
+							<AskSoloWidget mode="floating" />
+							<CookieBanner />
+						</AuthProvider>
+					</BrowserRouter>
+				</TooltipProvider>
+			</QueryClientProvider>
+		</ErrorBoundary>
+	);
 };
 
 export default App;
