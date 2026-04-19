@@ -18,6 +18,11 @@ interface CVUploadZoneProps {
   clientSessionId: string;
   onUploadComplete: (path: string) => void;
   onUploadClear: () => void;
+  onExtractComplete?: (
+    extract: Record<string, unknown>,
+    confidenceScore?: number,
+    uploaded?: boolean
+  ) => void;
 }
 
 function formatBytes(bytes: number) {
@@ -41,6 +46,7 @@ export default function CVUploadZone({
   clientSessionId,
   onUploadComplete,
   onUploadClear,
+  onExtractComplete,
 }: CVUploadZoneProps) {
   const [state, setState] = useState<UploadState>("empty");
   const [error, setError] = useState<string | null>(null);
@@ -77,8 +83,32 @@ export default function CVUploadZone({
       setState("uploaded");
       onUploadComplete(storagePath);
       toast({ title: "CV uploaded" });
+
+      // Fire parse-cv in the background. Failures are non-fatal — the user
+      // can still proceed; the report will simply be generated without CV context.
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const { data: parseData, error: parseError } = await supabase.functions.invoke(
+          "parse-cv",
+          { body: fd }
+        );
+        if (parseError) {
+          console.warn("parse-cv invoke failed (non-fatal):", parseError);
+        } else if (parseData?.success === false) {
+          console.warn("parse-cv returned success:false (non-fatal):", parseData);
+        } else if (parseData?.cv_extract && onExtractComplete) {
+          onExtractComplete(
+            parseData.cv_extract as Record<string, unknown>,
+            parseData.cv_confidence_score as number | undefined,
+            parseData.cv_uploaded as boolean | undefined
+          );
+        }
+      } catch (err) {
+        console.warn("parse-cv threw (non-fatal):", err);
+      }
     },
-    [clientSessionId, onUploadComplete, toast]
+    [clientSessionId, onUploadComplete, onExtractComplete, toast]
   );
 
   const handleDrop = useCallback(
