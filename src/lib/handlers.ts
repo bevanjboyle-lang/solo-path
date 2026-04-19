@@ -270,10 +270,34 @@ export async function generateReport(payload: {
   first_name: string;
   email: string | null;
   email_refused: boolean;
-}): Promise<{ report_id?: string; error?: string; waitingForAuth?: boolean }> {
+}): Promise<{
+  report_id?: string;
+  error?: string;
+  waitingForAuth?: boolean;
+  magicLinkSent?: boolean;
+  otpError?: boolean;
+  email?: string;
+}> {
   // Require a real authenticated session before invoking the edge function.
   // Never fall back to the anon key — the edge function will 401.
   let session = (await supabase.auth.getSession()).data.session;
+
+  // F42: First-time anonymous users have no session AND no magic link sent yet.
+  // Send the OTP and stop — they need to click the link before we can generate.
+  if (!session && payload.email) {
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email: payload.email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        shouldCreateUser: true,
+        data: { first_name: payload.first_name },
+      },
+    });
+    if (otpError) {
+      return { otpError: true, error: otpError.message };
+    }
+    return { magicLinkSent: true, email: payload.email };
+  }
 
   if (!session) {
     // Wait for SIGNED_IN (cross-tab via storage event after user clicks magic
