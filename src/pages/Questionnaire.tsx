@@ -18,7 +18,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-const TOTAL_STEPS = questions.length + 1; // questions + email capture
+// Total steps is computed at runtime — anon users see questions + email; authed users see questions only.
 
 export default function Questionnaire() {
   const navigate = useNavigate();
