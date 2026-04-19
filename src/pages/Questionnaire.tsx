@@ -91,12 +91,10 @@ export default function Questionnaire() {
       setGenError(null);
 
       // Read persisted CV extract (if any) for this client session.
-      const clientSessionId = localStorage.getItem("solo.client_session_id");
+      const clientSessionId = getClientSessionId();
       let cvExtract: Record<string, unknown> | undefined;
       try {
-        const raw = clientSessionId
-          ? localStorage.getItem(`solo.cv_extract.${clientSessionId}`)
-          : null;
+        const raw = localStorage.getItem(`solo.cv_extract.${clientSessionId}`);
         if (raw) {
           const parsed = JSON.parse(raw);
           if (parsed?.cv_extract && typeof parsed.cv_extract === "object") {
