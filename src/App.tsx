@@ -103,7 +103,11 @@ function AnimatedRoutes() {
   );
 }
 
-const App = () => (
+const App = () => {
+  // Persist client_session_id on first mount so it exists before any
+  // user-initiated network call (defense-in-depth; module-load already covers most).
+  useEffect(() => { getClientSessionId(); }, []);
+  return (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -135,6 +139,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </ErrorBoundary>
-);
+  );
+};
 
 export default App;
