@@ -116,7 +116,7 @@ export default function Questionnaire() {
   };
 
   // Build progress labels dynamically
-  const progressLabels = Array.from({ length: TOTAL_STEPS }, (_, i) =>
+  const progressLabels = Array.from({ length: totalSteps }, (_, i) =>
     i < questions.length ? `Q${i + 1}` : "Email"
   );
 
