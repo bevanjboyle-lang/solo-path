@@ -30,9 +30,8 @@ export default function Questionnaire() {
   const [showRefusalModal, setShowRefusalModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
-  const [magicLinkSentTo, setMagicLinkSentTo] = useState<string | null>(null);
 
-  // Ensure client_session_id
+  // Ensure client_session_id exists before any submit fires.
   useEffect(() => {
     getClientSessionId();
   }, []);
@@ -89,14 +88,6 @@ export default function Questionnaire() {
       });
       setIsGenerating(false);
 
-      if (result.magicLinkSent && result.email) {
-        setMagicLinkSentTo(result.email);
-        return;
-      }
-      if (result.otpError) {
-        setGenError(result.error || "We couldn't send your magic link. Please try again.");
-        return;
-      }
       if (result.error || !result.report_id) {
         setGenError(result.error || "Something went wrong. Please try again.");
         return;
@@ -178,8 +169,6 @@ export default function Questionnaire() {
               <p className="text-sm text-[hsl(var(--error))]">{genError}</p>
             </div>
           )}
-
-          {/* Magic link sent banner */}
           {magicLinkSentTo && (
             <div className="mt-6 rounded-lg border border-[hsl(var(--mint))]/30 bg-[hsl(var(--surface-mint-tint))] px-4 py-4 space-y-2">
               <p className="text-sm font-semibold text-[hsl(var(--text-heading))]">
