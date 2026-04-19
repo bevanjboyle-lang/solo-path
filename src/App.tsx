@@ -1,5 +1,12 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, useLocation, useParams } from "react-router-dom";
+import { getClientSessionId } from "@/lib/clientSession";
+import { installSupabaseFetchHeader } from "@/lib/supabaseClient";
+
+// Install the X-Client-Session-Id fetch wrapper at module load so it's active
+// before any Supabase call fires (including the AuthProvider's getSession on mount).
+installSupabaseFetchHeader();
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
