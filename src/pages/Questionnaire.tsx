@@ -169,16 +169,6 @@ export default function Questionnaire() {
               <p className="text-sm text-[hsl(var(--error))]">{genError}</p>
             </div>
           )}
-          {magicLinkSentTo && (
-            <div className="mt-6 rounded-lg border border-[hsl(var(--mint))]/30 bg-[hsl(var(--surface-mint-tint))] px-4 py-4 space-y-2">
-              <p className="text-sm font-semibold text-[hsl(var(--text-heading))]">
-                Check your email.
-              </p>
-              <p className="text-sm text-[hsl(var(--text-body))] leading-relaxed">
-                Click the link we just sent to <span className="font-medium">{magicLinkSentTo}</span>, then come back and press <span className="font-medium">Generate my report</span> again. The link expires in 1 hour.
-              </p>
-            </div>
-          )}
         </div>
       </main>
 
