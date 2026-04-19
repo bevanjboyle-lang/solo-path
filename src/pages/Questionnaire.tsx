@@ -30,6 +30,7 @@ export default function Questionnaire() {
   const [showRefusalModal, setShowRefusalModal] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [genError, setGenError] = useState<string | null>(null);
+  const [magicLinkSentTo, setMagicLinkSentTo] = useState<string | null>(null);
 
   // Ensure client_session_id
   useEffect(() => {
