@@ -35,6 +35,7 @@ import AskSolo from "./pages/AskSolo";
 import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import ServerError from "./pages/ServerError";
+import DevScreens from "./pages/DevScreens";
 import Footer from "@/components/Footer";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -94,6 +95,11 @@ function AnimatedRoutes() {
 
 						{/* Errors */}
 						<Route path="/500" element={<ServerError />} />
+						<Route path="/404" element={<NotFound />} />
+
+						{/* Dev-only: self-gated screen index */}
+						<Route path="/dev/screens" element={<DevScreens />} />
+
 						<Route path="*" element={<NotFound />} />
 					</Routes>
 				</motion.div>
