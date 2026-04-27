@@ -46,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    try { localStorage.removeItem("solo_dev_bypass"); } catch {}
     await supabase.auth.signOut();
   };
 
