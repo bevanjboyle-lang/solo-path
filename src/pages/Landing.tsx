@@ -1,6 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import {
+  Compass,
+  CalendarCheck,
+  Users,
+  MessagesSquare,
+  BookOpen,
+  Send,
+  ClipboardList,
+  FileText,
+  Rocket,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
@@ -36,31 +47,37 @@ const featureCards = [
     eyebrow: "Decision engine",
     title: "A stress-tested set of feasible options, not a brainstorm",
     body: "Solo classifies your profile against 95 professional archetypes and scores it across 480 business models. By the time you see your options, the weak ones are already gone. What's left is specific to your background, your network, and your financial reality.",
+    icon: Compass,
   },
   {
     eyebrow: "Adaptive plan",
     title: "A plan that responds to real life",
     body: "The 30-day plan isn't a template. It's built from your profile and updated daily based on what actually happens. Fall behind in week two — the plan adjusts. Things accelerate — it moves with you. It tracks where you are, not where you were supposed to be.",
+    icon: CalendarCheck,
   },
   {
     eyebrow: "Named outreach contacts",
     title: "Real names. Not \"try LinkedIn.\"",
     body: "For paths that involve direct contact, Solo finds actual people — by name, role, and company. When you're ready to send a message, Solo drafts it for you, in your voice, for that specific person. The first client is the hardest part. Solo gets you to the message.",
+    icon: Users,
   },
   {
     eyebrow: "Contextual coaching",
     title: "The more you use it, the sharper it gets",
     body: "Ask Solo anything about your progress, your options, or your next move. Every answer draws on everything it has built about you — your archetype, your active paths, your check-in history, your blockers. Not generic advice. A specific answer to your specific situation, from a system that has been paying attention.",
+    icon: MessagesSquare,
   },
   {
     eyebrow: "Guidance library",
     title: "Guidance for the hard parts",
     body: "Going independent involves challenges that are genuinely difficult — pricing your work, positioning yourself, handling rejection, building a pipeline from scratch. Solo includes a structured guidance library covering nine of these areas in depth. Available when you need them, not pushed at you when you don't.",
+    icon: BookOpen,
   },
   {
     eyebrow: "Four types of move",
     title: "Every move drafted. You decide whether to make it.",
     body: "Whether your path calls for a direct approach to a named contact, registering on a marketplace, writing a LinkedIn post, or joining the right community — Solo generates the move. You don't have to figure out what to do next. The next move is always ready.",
+    icon: Send,
   },
 ];
 
@@ -89,16 +106,19 @@ const steps = [
     num: "01",
     title: "Tell Solo about your career",
     desc: "13 targeted questions covering your role, experience, network, working style, and financial situation. Upload your CV first and it cuts to around 4 questions. Takes 8 minutes.",
+    icon: ClipboardList,
   },
   {
     num: "02",
     title: "Get your report",
     desc: "Solo classifies you against 95 professional archetypes and scores your profile across 480 business models. You receive a ranked shortlist of your top paths — each with a difficulty rating, a speed-to-revenue estimate, and an explanation of why it fits your profile.",
+    icon: FileText,
   },
   {
     num: "03",
     title: "Start making moves",
     desc: "A 30-day activation plan starts immediately. Daily check-ins track your progress. Named contacts are ready when you are. Ask Solo anything at any point — it knows your situation.",
+    icon: Rocket,
   },
 ];
 
@@ -208,7 +228,16 @@ export default function Landing() {
         {/* ═══ SECTION 2 — What Solo is ═══ */}
         <section className="py-10 lg:py-14">
           <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+            <div className="panel-ivory relative overflow-hidden p-8 sm:p-12 lg:p-16">
+              {/* asymmetric mint accent in top-left corner */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-0 top-0 h-16 w-1 bg-primary"
+              />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/5 blur-2xl"
+              />
               <ScrollReveal>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
                   What Solo is
@@ -217,7 +246,7 @@ export default function Landing() {
                   className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl lg:text-[2.25rem] lg:leading-[1.2]"
                   style={{ letterSpacing: "-0.02em" }}
                 >
-                  A decision and coaching engine for mid-career professionals who want independent income.
+                  Solo is a transition engine for professionals who want to build an independent-income option before they are forced to. It turns career uncertainty into a practical plan, then drives the behaviour change needed to turn that plan into real income.
                 </h2>
               </ScrollReveal>
 
@@ -282,14 +311,24 @@ export default function Landing() {
               <div className="mt-10 grid gap-5 md:grid-cols-2 md:gap-6">
                 {featureCards.map((c, i) => (
                   <ScrollReveal key={c.eyebrow} delay={i * 0.06}>
-                    <div className="card-stone h-full p-6 sm:p-7">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                        {c.eyebrow}
-                      </p>
-                      <h3 className="mt-3 font-display text-lg font-semibold leading-snug">
-                        {c.title}
-                      </h3>
-                      <p className="mt-3 text-sm leading-[1.7] text-muted-foreground">
+                    <div className={`card-stone relative h-full p-6 sm:p-7 ${i % 3 === 1 ? "md:translate-y-3" : ""}`}>
+                      <div className="flex items-start gap-4">
+                        <span
+                          aria-hidden
+                          className="flex h-10 w-10 flex-none items-center justify-center rounded-md bg-primary/10 text-primary ring-1 ring-primary/20"
+                        >
+                          <c.icon className="h-5 w-5" strokeWidth={1.75} />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                            {c.eyebrow}
+                          </p>
+                          <h3 className="mt-2 font-display text-lg font-semibold leading-snug">
+                            {c.title}
+                          </h3>
+                        </div>
+                      </div>
+                      <p className="mt-4 text-sm leading-[1.7] text-muted-foreground">
                         {c.body}
                       </p>
                     </div>
@@ -368,7 +407,13 @@ export default function Landing() {
               <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
                 {testimonials.map((t, i) => (
                   <ScrollReveal key={t.name} delay={i * 0.08}>
-                    <div className="card-stone flex h-full flex-col p-6 sm:p-7">
+                    <div className={`card-stone relative flex h-full flex-col p-6 sm:p-7 ${i === 1 ? "md:-translate-y-3" : ""}`}>
+                      <span
+                        aria-hidden
+                        className="font-display absolute -top-3 left-5 text-5xl leading-none text-primary/40 select-none"
+                      >
+                        &ldquo;
+                      </span>
                       <p className="font-display text-[15px] italic leading-[1.7] text-foreground/90">
                         "{t.quote}"
                       </p>
@@ -407,10 +452,19 @@ export default function Landing() {
               <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
                 {steps.map((s, i) => (
                   <ScrollReveal key={s.num} delay={i * 0.08}>
-                    <div className="card-stone flex h-full flex-col p-6 sm:p-7">
-                      <span className="font-display text-3xl font-bold text-primary">
-                        {s.num}
+                    <div className="card-stone relative flex h-full flex-col p-6 sm:p-7">
+                      <span
+                        aria-hidden
+                        className="absolute right-5 top-5 text-primary/70"
+                      >
+                        <s.icon className="h-5 w-5" strokeWidth={1.75} />
                       </span>
+                      <div className="flex items-baseline gap-3">
+                        <span className="font-display text-3xl font-bold text-primary">
+                          {s.num}
+                        </span>
+                        <span aria-hidden className="h-px flex-1 bg-primary/30" />
+                      </div>
                       <h3 className="mt-4 font-display text-lg font-semibold leading-snug">
                         {s.title}
                       </h3>

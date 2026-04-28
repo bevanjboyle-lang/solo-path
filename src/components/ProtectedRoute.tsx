@@ -6,7 +6,11 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
   const location = useLocation();
 
   if (loading) return null;
-  if (!user) return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  // Dev-only bypass: set by /dev/screens for the dev account. Lets the dev
+  // browse authed routes without going through /auth. Cleared on signOut.
+  let devBypass = false;
+  try { devBypass = localStorage.getItem("solo_dev_bypass") === "1"; } catch {}
+  if (!user && !devBypass) return <Navigate to={`/auth?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
 
   return <>{children}</>;
 }
