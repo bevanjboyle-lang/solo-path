@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { triggerStripeCheckout } from "@/lib/handlers";
+import { isDevBypass } from "@/lib/devBypass";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
 import ReportSection from "@/components/ReportSection";
@@ -43,7 +44,7 @@ export default function Teaser() {
 
   // No report_id → redirect to / synchronously on mount. Don't render anything.
   useEffect(() => {
-    if (!reportId) navigate("/", { replace: true });
+    if (!reportId && !isDevBypass()) navigate("/", { replace: true });
   }, [reportId, navigate]);
 
   // Fetch report data with hard 8s timeout, abort on unmount, retry support.
@@ -77,7 +78,11 @@ export default function Teaser() {
 
         if (!data) {
           // No report row matches this id — bounce to home, don't render empty teaser.
-          navigate("/", { replace: true });
+          if (!isDevBypass()) {
+            navigate("/", { replace: true });
+            return;
+          }
+          setLoading(false);
           return;
         }
 
@@ -85,8 +90,10 @@ export default function Teaser() {
 
         // If still generating, redirect to processing
         if (data.status === "generating" || data.status === "pending") {
-          navigate(`/processing?report_id=${reportId}`, { replace: true });
-          return;
+          if (!isDevBypass()) {
+            navigate(`/processing?report_id=${reportId}`, { replace: true });
+            return;
+          }
         }
 
         const answers = data.answers as Record<string, unknown> | null;
