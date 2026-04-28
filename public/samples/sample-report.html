@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Plan B Report — Sarah Okafor</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── DESIGN TOKENS — from branding/brand-guidelines.html ─── */
+:root {
+  --surface-page: #E5E2DC;
+  --surface-panel: #FAF9F7;
+  --surface-card: #F3F1ED;
+  --surface-inset: #ECEAE4;
+  --surface-mint-tint: #E8F7F3;
+
+  --border-default: #E5E2DC;
+  --border-strong: #D5D0C8;
+  --border-subtle: #EDEBE6;
+
+  --text-heading: #1D2025;
+  --text-body: #5A5650;
+  --text-muted: #7A7670;
+  --text-faint: #A09A92;
+  --text-on-mint: #FFFFFF;
+
+  --mint: #2ECDB0;
+  --mint-hover: #26B89D;
+  --mint-bg: #D6F5EE;
+  --mint-text: #1A8A72;
+
+  --warning: #D4940A;
+  --warning-bg: #FDF8E8;
+
+  --shadow-panel: 0 4px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ─── BACKDROP — blurred greyscale office photo (placeholder via gradient) ─── */
+html, body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(220,217,210,0.85) 0%, rgba(200,196,188,0.75) 50%, rgba(180,176,168,0.85) 100%),
+    radial-gradient(circle at 20% 10%, #d8d4cc 0%, #c2bdb3 60%),
+    #b8b4a9;
+  background-attachment: fixed;
+  background-size: cover;
+  min-height: 100vh;
+  filter: none;
+  position: relative;
+}
+
+/* ─── IVORY PANEL — content surface ─── */
+.report {
+  max-width: 880px;
+  margin: 0 auto;
+  background: var(--surface-panel);
+  box-shadow: var(--shadow-panel);
+  position: relative;
+  margin-top: 40px;
+  margin-bottom: 60px;
+}
+
+/* ─── HEADER STRIP ─── */
+.report-header {
+  padding: 28px 56px;
+  border-bottom: 1px solid var(--border-strong);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.report-header .logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  color: var(--text-heading);
+}
+.report-header .logo span { color: var(--mint); }
+.report-header .meta {
+  text-align: right;
+  font-size: 12px;
+}
+.report-header .meta .meta-label {
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-bottom: 2px;
+}
+.report-header .meta .meta-val {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ─── COVER ─── */
+.cover {
+  padding: 96px 56px 80px;
+}
+.cover .eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 24px;
+}
+.cover h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -1.4px;
+  color: var(--text-heading);
+  margin-bottom: 28px;
+}
+.cover h1 em {
+  font-style: normal;
+  color: var(--mint-text);
+  font-weight: 800;
+}
+.cover .lede {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--text-body);
+  max-width: 640px;
+  margin-bottom: 56px;
+}
+
+/* ─── PROFILE STRIP ─── */
+.profile-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+  padding: 24px 0;
+}
+.profile-strip .item { padding: 0 20px; border-right: 1px solid var(--border-subtle); }
+.profile-strip .item:last-child { border-right: none; }
+.profile-strip .item .label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+.profile-strip .item .value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-heading);
+}
+
+/* ─── SECTION FRAME ─── */
+.section { padding: 80px 56px; border-top: 1px solid var(--border-subtle); }
+.section.dense { padding: 56px 56px; }
+.section.spacious { padding: 120px 56px; }
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 20px;
+}
+.section h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 38px;
+  line-height: 1.15;
+  letter-spacing: -0.7px;
+  color: var(--text-heading);
+  margin-bottom: 28px;
+  max-width: 640px;
+}
+.section .lead {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--text-body);
+  max-width: 640px;
+  margin-bottom: 28px;
+}
+.section p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-body);
+  margin-bottom: 18px;
+  max-width: 640px;
+}
+.section p strong { color: var(--text-heading); font-weight: 600; }
+
+/* ─── HOOK INSIGHT — full-bleed editorial moment ─── */
+.hook {
+  padding: 110px 56px;
+  background: var(--text-heading);
+  color: var(--surface-panel);
+  position: relative;
+  overflow: hidden;
+}
+.hook::before {
+  content: "";
+  position: absolute;
+  left: 56px;
+  top: 80px;
+  width: 56px;
+  height: 2px;
+  background: var(--mint);
+}
+.hook .hook-eyebrow {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint);
+  margin-bottom: 32px;
+  margin-top: 32px;
+}
+.hook h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+  color: var(--surface-panel);
+  margin-bottom: 32px;
+  max-width: 720px;
+}
+.hook p {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.7;
+  color: rgba(250,249,247,0.82);
+  max-width: 680px;
+}
+.hook p + p { margin-top: 16px; }
+
+/* ─── ARCHETYPE — large editorial moment ─── */
+.archetype { padding: 96px 56px; }
+.archetype .arch-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 48px;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: var(--text-heading);
+  margin-bottom: 12px;
+}
+.archetype .arch-confidence {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 36px;
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--mint-bg);
+  color: var(--mint-text);
+  border-radius: 100px;
+}
+.archetype .arch-summary {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 21px;
+  line-height: 1.5;
+  color: var(--text-body);
+  max-width: 680px;
+  margin-bottom: 36px;
+}
+.archetype .arch-editorial {
+  max-width: 680px;
+}
+.archetype .arch-editorial p {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--text-body);
+  margin-bottom: 18px;
+}
+.archetype .capability-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 32px;
+}
+.archetype .capability-tags .tag {
+  padding: 6px 14px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-heading);
+}
+
+/* ─── TRANSFERABLE VALUE — split layout ─── */
+.value { padding: 80px 56px; }
+.value-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin-top: 24px;
+}
+.value-block .vb-label {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-heading);
+  margin-bottom: 14px;
+}
+.value-block p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-body);
+  margin: 0;
+}
+.credibility {
+  margin-top: 56px;
+  padding-top: 36px;
+  border-top: 1px solid var(--border-subtle);
+}
+.credibility .cred-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 24px;
+}
+.credibility-list { list-style: none; }
+.credibility-list li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  align-items: start;
+}
+.credibility-list li:last-child { border-bottom: none; }
+.credibility-list li .num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--mint-text);
+}
+.credibility-list li .text {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+/* ─── TRANSFERABLE SKILLS — editorial list ─── */
+.skills { padding: 80px 56px; background: var(--surface-card); }
+.skills h2 { color: var(--text-heading); }
+.skills-list { list-style: none; margin-top: 32px; }
+.skills-list li {
+  display: grid;
+  grid-template-columns: 60px 1fr 110px;
+  gap: 28px;
+  padding: 24px 0;
+  border-top: 1px solid var(--border-strong);
+  align-items: center;
+}
+.skills-list li:last-child { border-bottom: 1px solid var(--border-strong); }
+.skills-list .skill-rank {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--mint-text);
+  letter-spacing: -1px;
+}
+.skills-list .skill-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+.skills-list .skill-evidence {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.skills-list .skill-demand {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--text-faint);
+}
+.skills-list .skill-demand.high { color: var(--mint-text); }
+.skills-list .skill-demand.med { color: var(--warning); }
+
+/* ─── OPTIONS — TOP 3 RICH ─── */
+.options-rich { padding: 80px 56px; }
+.options-rich .options-intro {
+  max-width: 640px;
+  margin-bottom: 56px;
+}
+.option-rich {
+  margin-bottom: 64px;
+  padding-bottom: 64px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.option-rich:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.option-rich .opt-rank-row {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.option-rich .opt-rank {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--mint-text);
+}
+.option-rich .opt-divider {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 1px;
+  background: var(--mint);
+}
+.option-rich .opt-move-type {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.option-rich h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  color: var(--text-heading);
+  margin-bottom: 28px;
+  max-width: 640px;
+}
+.option-rich .opt-positioning {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--text-body);
+  max-width: 660px;
+  margin-bottom: 36px;
+  font-style: italic;
+}
+.option-rich .opt-detail {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  margin-bottom: 28px;
+}
+.option-rich .opt-detail .dt-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 10px;
+}
+.option-rich .opt-detail p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-body);
+  margin: 0;
+}
+.option-rich .opt-meta {
+  display: flex;
+  gap: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 13px;
+}
+.option-rich .opt-meta .meta-item .ml {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+.option-rich .opt-meta .meta-item .mv {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-heading);
+}
+
+/* ─── OPTIONS — RANK 4–10 COMPACT ─── */
+.options-compact { padding: 80px 56px; background: var(--surface-card); }
+.options-compact-intro { max-width: 640px; margin-bottom: 40px; }
+.options-compact-list { list-style: none; }
+.opt-compact {
+  display: grid;
+  grid-template-columns: 60px 1fr 200px;
+  gap: 24px;
+  padding: 24px 0;
+  border-top: 1px solid var(--border-strong);
+  align-items: start;
+}
+.options-compact-list .opt-compact:last-child { border-bottom: 1px solid var(--border-strong); }
+.opt-compact .oc-rank {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--text-faint);
+  letter-spacing: -0.5px;
+}
+.opt-compact .oc-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--text-heading);
+  margin-bottom: 6px;
+}
+.opt-compact .oc-why {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+.opt-compact .oc-meta {
+  text-align: right;
+  font-size: 11px;
+}
+.opt-compact .oc-move {
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 4px;
+}
+.opt-compact .oc-time {
+  color: var(--text-faint);
+}
+
+/* ─── RECOMMENDATION — centerpiece moment ─── */
+.recommendation {
+  padding: 110px 56px;
+  background: var(--surface-mint-tint);
+  border-top: 1px solid var(--border-subtle);
+}
+.recommendation .rec-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 28px;
+}
+.recommendation h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+  color: var(--text-heading);
+  margin-bottom: 36px;
+  max-width: 720px;
+}
+.recommendation .rec-rationale {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--text-body);
+  max-width: 680px;
+  margin-bottom: 36px;
+}
+.recommendation .rec-condition {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 24px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border-strong);
+  max-width: 720px;
+  align-items: start;
+}
+.recommendation .rec-condition .cl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  padding-top: 4px;
+}
+.recommendation .rec-condition .cv {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-heading);
+}
+
+/* ─── REALITY CHECK — long-form prose ─── */
+.reality { padding: 96px 56px; }
+.reality .rc-block {
+  margin-bottom: 36px;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 36px;
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.reality .rc-block:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.reality .rc-label {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding-top: 4px;
+}
+.reality .rc-content p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-body);
+  margin: 0;
+  max-width: 540px;
+}
+.reality .rc-content p strong { color: var(--text-heading); }
+
+/* ─── INCOME OUTLOOK — 3-up year section ─── */
+.income { padding: 96px 56px; background: var(--surface-card); }
+.income-intro { max-width: 640px; margin-bottom: 56px; }
+.income-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  margin-bottom: 56px;
+}
+.income-year {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-card);
+}
+.income-year.primary { border-color: var(--mint); border-width: 2px; }
+.income-year .yr-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 8px;
+}
+.income-year .yr-figure {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 36px;
+  letter-spacing: -1px;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+.income-year .yr-range {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+.income-year .yr-block { margin-bottom: 18px; }
+.income-year .yr-bl {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+.income-year .yr-block p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-body);
+  margin: 0;
+  max-width: none;
+}
+.income-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 32px;
+  padding-top: 36px;
+  border-top: 1px solid var(--border-strong);
+}
+.income-bottom .ib-block .ib-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 10px;
+}
+.income-bottom .ib-block p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-body);
+  margin: 0;
+  max-width: none;
+}
+
+/* ─── MARKET SNAPSHOT ─── */
+.market { padding: 96px 56px; }
+.market-intro { max-width: 640px; margin-bottom: 36px; }
+.market-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  margin-bottom: 36px;
+}
+.market-block .mb-label {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 12px;
+}
+.market-block p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-body);
+  margin: 0;
+  max-width: none;
+}
+.market-honest {
+  background: var(--text-heading);
+  color: var(--surface-panel);
+  padding: 36px 40px;
+  border-radius: var(--radius-md);
+  margin-top: 32px;
+}
+.market-honest .mh-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mint);
+  margin-bottom: 14px;
+}
+.market-honest p {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.6;
+  color: rgba(250,249,247,0.85);
+  margin: 0;
+  max-width: 700px;
+}
+
+/* ─── FIRST STEPS — numbered editorial list ─── */
+.steps { padding: 96px 56px; background: var(--surface-card); }
+.steps-list {
+  list-style: none;
+  margin-top: 36px;
+  counter-reset: stepc;
+}
+.steps-list li {
+  counter-increment: stepc;
+  display: grid;
+  grid-template-columns: 56px 1fr 140px;
+  gap: 28px;
+  padding: 28px 0;
+  border-top: 1px solid var(--border-strong);
+  align-items: start;
+}
+.steps-list li:last-child { border-bottom: 1px solid var(--border-strong); }
+.steps-list li::before {
+  content: "0" counter(stepc);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--mint);
+  letter-spacing: -1px;
+}
+.steps-list .step-text {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-body);
+  max-width: 520px;
+}
+.steps-list .step-text strong { color: var(--text-heading); }
+.steps-list .step-deadline {
+  text-align: right;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  padding-top: 6px;
+}
+
+/* ─── AI IMPACT ─── */
+.ai { padding: 96px 56px; }
+.ai-intro { max-width: 640px; margin-bottom: 48px; }
+.ai-block {
+  margin-bottom: 48px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ai-block:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.ai-block .ab-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 10px;
+}
+.ai-block h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: -0.4px;
+  color: var(--text-heading);
+  margin-bottom: 20px;
+  max-width: 600px;
+}
+.ai-block p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-body);
+  margin-bottom: 14px;
+  max-width: 660px;
+}
+.ai-meta {
+  display: flex;
+  gap: 32px;
+  margin-bottom: 24px;
+}
+.ai-meta .am-item {
+  font-size: 12px;
+}
+.ai-meta .am-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 4px;
+}
+.ai-meta .am-val {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-heading);
+}
+.ai-meta .am-val.med { color: var(--warning); }
+.ai-steps { list-style: none; margin-top: 24px; }
+.ai-steps li {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
+  align-items: start;
+}
+.ai-steps li:last-child { border-bottom: 1px solid var(--border-subtle); }
+.ai-steps li .ais-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--mint-text);
+}
+.ai-steps li .ais-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+
+/* ─── FOOTER ─── */
+.footer {
+  padding: 56px;
+  background: var(--text-heading);
+  color: var(--text-on-mint);
+  text-align: center;
+}
+.footer .ft-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint);
+  margin-bottom: 14px;
+}
+.footer p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(250,249,247,0.7);
+  margin: 0;
+  max-width: 540px;
+  margin: 0 auto;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 720px) {
+  .report { margin: 0; }
+  .cover, .section, .archetype, .options-rich, .options-compact, .recommendation, .reality, .income, .market, .steps, .ai, .hook { padding: 56px 28px; }
+  .cover h1 { font-size: 38px; }
+  .hook h2, .recommendation h2 { font-size: 30px; }
+  .archetype .arch-name { font-size: 32px; }
+  .option-rich h3 { font-size: 24px; }
+  .profile-strip { grid-template-columns: repeat(2, 1fr); }
+  .profile-strip .item { padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); }
+  .value-grid, .opt-detail, .market-grid, .income-grid, .income-bottom { grid-template-columns: 1fr; gap: 24px; }
+  .skills-list li { grid-template-columns: 40px 1fr; }
+  .skills-list .skill-demand { display: none; }
+  .opt-compact { grid-template-columns: 40px 1fr; }
+  .opt-compact .oc-meta { display: none; }
+  .reality .rc-block { grid-template-columns: 1fr; gap: 12px; }
+  .recommendation .rec-condition { grid-template-columns: 1fr; }
+  .steps-list li { grid-template-columns: 40px 1fr; }
+  .steps-list .step-deadline { display: none; }
+}
+</style>
+</head>
+<body>
+
+<article class="report">
+
+  <!-- ─── HEADER ─── -->
+  <header class="report-header">
+    <div class="logo">solo<span>.</span></div>
+    <div class="meta">
+      <div class="meta-label">Report generated</div>
+      <div class="meta-val">28 April 2026</div>
+    </div>
+  </header>
+
+  <!-- ─── COVER ─── -->
+  <section class="cover">
+    <div class="eyebrow">Your Plan B Report</div>
+    <h1>Sarah, your wedge isn't your finance background.<br>It's how you <em>defend</em> it.</h1>
+    <p class="lede">A commercially grounded view of ten Plan B options, ranked against your profile. The full report is below — start with the recommendation if you want the headline first.</p>
+
+    <div class="profile-strip">
+      <div class="item">
+        <div class="label">Sector</div>
+        <div class="value">FTSE 100 retail bank</div>
+      </div>
+      <div class="item">
+        <div class="label">Seniority</div>
+        <div class="value">Senior Manager</div>
+      </div>
+      <div class="item">
+        <div class="label">Experience</div>
+        <div class="value">11 years</div>
+      </div>
+      <div class="item">
+        <div class="label">Horizon</div>
+        <div class="value">18–24 months</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── HOOK INSIGHT — full-bleed editorial moment ─── -->
+  <section class="hook">
+    <div class="hook-eyebrow">The thing most people miss</div>
+    <h2>Your FBP role isn't your credential — it's your wedge.</h2>
+    <p>Most Finance Business Partners translate the numbers. They produce the model, maintain the report, keep the month-end running. That part is now widely available — automation gets a chunk of it, the rest is competitive on price. The skill that's structurally short in the market is what you actually do: walking the numbers into a room full of non-finance executives and holding the story together under hostile challenge. PE-backed CFOs cannot find this person. They have plenty of people who can build the case. They cannot find someone who can defend it. Position around the defence, not the build.</p>
+  </section>
+
+  <!-- ─── ARCHETYPE ─── -->
+  <section class="archetype">
+    <div class="section-label">Your Archetype</div>
+    <div class="arch-name">Financial Intelligence Operator</div>
+    <div class="arch-confidence">High confidence match</div>
+
+    <p class="arch-summary">You sit in finance, but you operate like a commercial director. You don't translate the numbers — you defend them. Your scarcity in the market isn't technical depth. It's the ability to hold a hostile commercial conversation about the numbers with people who don't speak finance.</p>
+
+    <div class="arch-editorial">
+      <p>You've spent eleven years inside a FTSE 100 retail bank, eight of those in-house following a Big 4 ACA training contract. The shape of your career is unusual in one specific way: you've consistently been pulled into work outside your formal remit. The Head of Retail asks you to look at pricing proposals before they go to ExCo — fifteen times in eighteen months, by your own count. Two former colleagues at fintechs run their first 100-day board reporting decisions past you. You've authored an FBP playbook that's now used across the UK division. The £38M digital transformation business case you defended through three rounds of executive challenge — and got approved first-pass — is the clearest commercial signal in your profile. The CFO told you it was the cleanest investment case defence he'd seen from a non-Director.</p>
+      <p>That pattern isn't an accident. It's evidence of a specific archetype: a finance person whose differentiator is executive translation under pressure, not technical production. The market for that capability — particularly in PE-backed mid-market businesses where the CFO is from an accounting background and weak on commercial narrative — is real, recurring, and significantly less crowded than the broader "finance consultant" segment.</p>
+    </div>
+
+    <div class="capability-tags">
+      <div class="tag">Investment case defence</div>
+      <div class="tag">Executive financial storytelling</div>
+      <div class="tag">Non-finance stakeholder management</div>
+      <div class="tag">Multi-scenario sensitivity modelling</div>
+      <div class="tag">Commercial pricing review</div>
+      <div class="tag">Board pack architecture</div>
+    </div>
+  </section>
+
+  <!-- ─── TRANSFERABLE VALUE ─── -->
+  <section class="value">
+    <div class="section-label">What You Can Sell</div>
+    <h2>Your offer, before you've named it.</h2>
+    <p class="lead">The packaging will come later. First, the product itself: what's the commercially specific thing a buyer would pay for, and why?</p>
+
+    <div class="value-grid">
+      <div class="value-block">
+        <div class="vb-label">What you can sell</div>
+        <p>Senior commercial finance partnership on a project or retainer basis — investment case development and defence, board-level financial storytelling, commercial review of pricing and product economics. The specific service is "I'll build the financial case for your decision and defend it in front of your board." That sentence is the offer.</p>
+      </div>
+      <div class="value-block">
+        <div class="vb-label">Why buyers would pay</div>
+        <p>PE-backed mid-market CFOs face a recurring trigger: a board paper requiring rigorous commercial defence on a tight timeline, and an internal team that can produce the model but not present the story. The buyer's pain isn't capacity. It's credibility under challenge. You sell the credibility, not the hours.</p>
+      </div>
+    </div>
+
+    <div class="credibility">
+      <div class="cred-label">Three credibility assets you already have</div>
+      <ul class="credibility-list">
+        <li><span class="num">01</span><span class="text">An FTSE 100 commercial finance background, ACA-qualified, Big 4-trained — an automatic rigour signal to PE-backed mid-market buyers.</span></li>
+        <li><span class="num">02</span><span class="text">A £38M digital transformation business case, defended through three rounds of executive challenge, tracking 7% ahead of plan at month 18.</span></li>
+        <li><span class="num">03</span><span class="text">An informal advisory pattern — fifteen ExCo pricing reviews for the Head of Retail in eighteen months — proving demand for your judgment.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── TRANSFERABLE SKILLS ─── -->
+  <section class="skills">
+    <div class="section-label">Six Transferable Skills</div>
+    <h2>What buyers will actually pay for, ranked by commercial leverage.</h2>
+
+    <ul class="skills-list">
+      <li>
+        <div class="skill-rank">01</div>
+        <div>
+          <div class="skill-name">Investment Case Defence</div>
+          <div class="skill-evidence">Defended £38M case (Q6) through three rounds of CFO challenge, approved first-pass.</div>
+        </div>
+        <div class="skill-demand high">High demand</div>
+      </li>
+      <li>
+        <div class="skill-rank">02</div>
+        <div>
+          <div class="skill-name">Executive Financial Storytelling</div>
+          <div class="skill-evidence">Recognised internally as "the one you put in the room when the numbers need defending" (Q8).</div>
+        </div>
+        <div class="skill-demand high">High demand</div>
+      </li>
+      <li>
+        <div class="skill-rank">03</div>
+        <div>
+          <div class="skill-name">Multi-Scenario Sensitivity Modelling</div>
+          <div class="skill-evidence">Five operating scenarios on £38M case (Q6), benefits framework now adopted division-wide.</div>
+        </div>
+        <div class="skill-demand high">High demand</div>
+      </li>
+      <li>
+        <div class="skill-rank">04</div>
+        <div>
+          <div class="skill-name">Commercial Pricing Review</div>
+          <div class="skill-evidence">Fifteen informal ExCo pricing reviews in eighteen months for the Head of Retail (Q7).</div>
+        </div>
+        <div class="skill-demand med">Medium demand</div>
+      </li>
+      <li>
+        <div class="skill-rank">05</div>
+        <div>
+          <div class="skill-name">Board Pack & Reporting Architecture</div>
+          <div class="skill-evidence">Two informal board-reporting redesigns for fintech CFO peers (Q7); UK division FBP playbook authored.</div>
+        </div>
+        <div class="skill-demand med">Medium demand</div>
+      </li>
+      <li>
+        <div class="skill-rank">06</div>
+        <div>
+          <div class="skill-name">Non-Finance Stakeholder Management</div>
+          <div class="skill-evidence">Matrix into CFO and Digital Banking COO (Q3b); described as "thinks like a commercial director" (Q8).</div>
+        </div>
+        <div class="skill-demand med">Medium demand</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ─── TOP 3 OPTIONS ─── -->
+  <section class="options-rich">
+    <div class="section-label">Your Top Options</div>
+    <h2>Three commercial paths that fit your profile cleanly.</h2>
+    <p class="options-intro">These are the strongest fits across the ten options. Each was scored on capability fit, speed to revenue, sales complexity, income potential, and recurrence. Detailed below; ranks 4–10 follow.</p>
+
+    <div class="option-rich">
+      <div class="opt-rank-row">
+        <div class="opt-rank">RANK 01</div>
+        <div class="opt-divider"></div>
+        <div class="opt-move-type">Direct move type · Relational warmth</div>
+      </div>
+      <h3>Commercial Finance Consultancy</h3>
+      <p class="opt-positioning">Project-based commercial finance partnership for PE-backed mid-market businesses — investment case development, commercial modelling, board-level financial storytelling, and CFO-side support ahead of capital events.</p>
+      <div class="opt-detail">
+        <div>
+          <div class="dt-label">Target buyer</div>
+          <p>CFOs and FDs at PE-backed UK businesses, £20M–£150M revenue. Most are accounting-trained; few are strong on commercial narrative or board defence.</p>
+        </div>
+        <div>
+          <div class="dt-label">Why this works for you</div>
+          <p>Your FTSE 100 FBP background reads as automatic rigour to PE buyers. The £38M case is your credibility asset. The fifteen ExCo pricing reviews demonstrate commercial judgment, not just technical finance — which is exactly the gap mid-market CFOs are trying to fill.</p>
+        </div>
+      </div>
+      <div class="opt-meta">
+        <div class="meta-item"><div class="ml">Time to first revenue</div><div class="mv">8–14 weeks</div></div>
+        <div class="meta-item"><div class="ml">Day rate band</div><div class="mv">£900–£1,200</div></div>
+        <div class="meta-item"><div class="ml">Composite score</div><div class="mv">88 / 100</div></div>
+      </div>
+    </div>
+
+    <div class="option-rich">
+      <div class="opt-rank-row">
+        <div class="opt-rank">RANK 02</div>
+        <div class="opt-divider"></div>
+        <div class="opt-move-type">Visibility move type · Content-led entry</div>
+      </div>
+      <h3>Investment Case Development as a Productized Service</h3>
+      <p class="opt-positioning">A defined, fixed-scope engagement — a 10-day senior commercial finance sprint that produces a board-ready investment case, sensitivity model, and presented defence — for businesses approaching a specific capital decision.</p>
+      <div class="opt-detail">
+        <div>
+          <div class="dt-label">Target buyer</div>
+          <p>PE-backed CFOs and corporate development leads facing a board paper deadline; growth-stage CFOs preparing for a capital raise.</p>
+        </div>
+        <div>
+          <div class="dt-label">Why this works for you</div>
+          <p>Productizing collapses your sales conversation. You don't sell hours — you sell the case. The £38M defence is the proof point. Your three years of private commercial finance writing is raw material for the visibility play that drives inbound. Predictable scope, premium price.</p>
+        </div>
+      </div>
+      <div class="opt-meta">
+        <div class="meta-item"><div class="ml">Time to first revenue</div><div class="mv">12–20 weeks</div></div>
+        <div class="meta-item"><div class="ml">Engagement price</div><div class="mv">£12k–£18k</div></div>
+        <div class="meta-item"><div class="ml">Composite score</div><div class="mv">81 / 100</div></div>
+      </div>
+    </div>
+
+    <div class="option-rich">
+      <div class="opt-rank-row">
+        <div class="opt-rank">RANK 03</div>
+        <div class="opt-divider"></div>
+        <div class="opt-move-type">Direct move type · Relational warmth</div>
+      </div>
+      <h3>Fractional CFO / Strategic Finance Director</h3>
+      <p class="opt-positioning">Ongoing fractional senior finance leadership — 2–4 days per month — for businesses too large for a bookkeeper but too small for a full-time CFO. Covers commercial oversight, board pack preparation, and growth-stage financial strategy.</p>
+      <div class="opt-detail">
+        <div>
+          <div class="dt-label">Target buyer</div>
+          <p>Founder-led businesses £5M–£25M turnover, often Series A or PE-backed, where the next financial hire decision is "real CFO" but the business isn't ready.</p>
+        </div>
+        <div>
+          <div class="dt-label">Why this works for you</div>
+          <p>Stronger income, recurring revenue, and a natural progression once you have 2–3 visible engagements behind you. The honest gap: the Fractional CFO label asks buyers to believe you can run the entire finance function, which is more than your current FBP role demonstrates.</p>
+        </div>
+      </div>
+      <div class="opt-meta">
+        <div class="meta-item"><div class="ml">Time to first revenue</div><div class="mv">6–12 months</div></div>
+        <div class="meta-item"><div class="ml">Monthly retainer</div><div class="mv">£3.5k–£6k</div></div>
+        <div class="meta-item"><div class="ml">Composite score</div><div class="mv">74 / 100</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── OPTIONS 4–10 COMPACT ─── -->
+  <section class="options-compact">
+    <div class="section-label">Other Options Considered</div>
+    <h2>Seven further routes — ranked, but not where you start.</h2>
+    <p class="options-compact-intro">Each was scored against your profile. None are wrong; none are where the evidence says to start. They become viable as second strands, secondary income, or longer-term plays once a primary practice is established.</p>
+
+    <ul class="options-compact-list">
+      <li class="opt-compact">
+        <div class="oc-rank">04</div>
+        <div>
+          <div class="oc-name">Coaching for Mid-Career Women in Finance</div>
+          <div class="oc-why">Anchored in your Women in Finance mentoring track record — four women through promotion in 24 months. Latent offer; needs commercial framing.</div>
+        </div>
+        <div class="oc-meta"><div class="oc-move">Community move</div><div class="oc-time">12–18 months</div></div>
+      </li>
+      <li class="opt-compact">
+        <div class="oc-rank">05</div>
+        <div>
+          <div class="oc-name">Commercial Finance Training & Facilitation</div>
+          <div class="oc-why">Half-day workshops for non-finance executive teams who can't read or challenge a P&L well. Strong content fit; sales motion is harder.</div>
+        </div>
+        <div class="oc-meta"><div class="oc-move">Visibility move</div><div class="oc-time">9–14 months</div></div>
+      </li>
+      <li class="opt-compact">
+        <div class="oc-rank">06</div>
+        <div>
+          <div class="oc-name">Board Pack & Management Reporting Redesign</div>
+          <div class="oc-why">Productized engagement: rebuild a company's board pack in 4 weeks. Anchored in your two informal fintech CFO redesigns.</div>
+        </div>
+        <div class="oc-meta"><div class="oc-move">Direct move</div><div class="oc-time">6–10 months</div></div>
+      </li>
+      <li class="opt-compact">
+        <div class="oc-rank">07</div>
+        <div>
+          <div class="oc-name">Pricing Strategy Advisory (PE-adjacent)</div>
+          <div class="oc-why">Anchored in fifteen ExCo pricing reviews. Narrow, hard to differentiate without a sector-specific track record outside banking.</div>
+        </div>
+        <div class="oc-meta"><div class="oc-move">Direct move</div><div class="oc-time">6–12 months</div></div>
+      </li>
+      <li class="opt-compact">
+        <div class="oc-rank">08</div>
+        <div>
+          <div class="oc-name">Commercial Due Diligence Support to PE Houses</div>
+          <div class="oc-why">PE-adjacent through your two university friends at mid-cap PE houses. Lower fit because PE houses use established CDD providers.</div>
+        </div>
+        <div class="oc-meta"><div class="oc-move">Direct move</div><div class="oc-time">12–18 months</div></div>
+      </li>
+      <li class="opt-compact">
+        <div class="oc-rank">09</div>
+        <div>
+          <div class="oc-name">Commercial Finance Newsletter / Content Business</div>
+          <div class="oc-why">Three years of private writing material. Lower fit because you have no public track record yet and the monetisation path is slow.</div>
+        </div>
+        <div class="oc-meta"><div class="oc-move">Visibility move</div><div class="oc-time">18+ months</div></div>
+      </li>
+      <li class="opt-compact">
+        <div class="oc-rank">10</div>
+        <div>
+          <div class="oc-name">Interim FBP / Senior Manager Contracting</div>
+          <div class="oc-why">Direct lift of current capability into FTC contracts. Functionally a job swap, not a Plan B — included for completeness, not recommendation.</div>
+        </div>
+        <div class="oc-meta"><div class="oc-move">Direct move</div><div class="oc-time">2–4 months</div></div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ─── RECOMMENDATION — centerpiece ─── -->
+  <section class="recommendation">
+    <div class="rec-eyebrow">Solo's Recommendation</div>
+    <h2>Start with Commercial Finance Consultancy. Layer in productized investment case work at month 12.</h2>
+    <p class="rec-rationale">Option 1 is the fastest credible path to first independent revenue from your current profile. The work is a direct translation of what you already do — you're not learning a new discipline, you're repackaging existing capability for a different type of buyer. Your FTSE 100 FBP background is a credibility asset in PE-backed mid-market commercial finance, not a limitation. Option 2 (productized) becomes the differentiator in year two, not the entry point.</p>
+    <div class="rec-condition">
+      <div class="cl">Key condition</div>
+      <div class="cv">Your first eight outreach conversations are with people who already know you — no cold contacts, no LinkedIn DMs to strangers, until you've validated the offer with your existing network.</div>
+    </div>
+  </section>
+
+  <!-- ─── REALITY CHECK ─── -->
+  <section class="reality">
+    <div class="section-label">A Reality Check</div>
+    <h2>The honest version of where this could go wrong.</h2>
+
+    <div class="rc-block">
+      <div class="rc-label">Most likely<br>failure mode</div>
+      <div class="rc-content">
+        <p><strong>Going generic in early outreach.</strong> "Senior commercial finance professional looking to do consulting" lands flat with PE buyers — they hear that pitch every week. The narrowness of "I defend investment cases for PE-backed boards" is what cuts through. If you default to generic positioning, momentum stalls in months two through four and you drift back toward thinking you should "just look for another job".</p>
+      </div>
+    </div>
+
+    <div class="rc-block">
+      <div class="rc-label">Second<br>failure mode</div>
+      <div class="rc-content">
+        <p><strong>Pricing too low to start.</strong> £400–600/day signals junior. £900+/day signals senior. PE buyers equate rate with quality; under-pricing creates a permanent rate floor you'll struggle to lift later. Anchor at the right level on the first proposal — your CV justifies it.</p>
+      </div>
+    </div>
+
+    <div class="rc-block">
+      <div class="rc-label">What you'll<br>find hard</div>
+      <div class="rc-content">
+        <p>Asking for money. Q10 already names this. The technical work is fine; the rate conversation is where you'll flinch. Practising your rate without softening it ("£950 a day, plus expenses") in front of a mirror is non-negotiable Phase 1 work.</p>
+      </div>
+    </div>
+
+    <div class="rc-block">
+      <div class="rc-label">Honest<br>income outlook</div>
+      <div class="rc-content">
+        <p>Year 1, evenings and weekends only: <strong>£25k–£45k</strong>. Year 2, full-time on it: <strong>£80k–£140k</strong>. Year 3, with retained PE relationships: <strong>£140k–£240k</strong>. The middle band is realistic; the top band is achievable but not guaranteed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── INCOME OUTLOOK ─── -->
+  <section class="income">
+    <div class="section-label">Three-Year Income Outlook</div>
+    <h2>What this could look like financially.</h2>
+    <p class="income-intro">Calibrated to your seniority, your network, and the pricing reality of PE-backed mid-market commercial finance. These are not promises — they are mid-case projections with explicit assumptions you can stress-test.</p>
+
+    <div class="income-grid">
+      <div class="income-year primary">
+        <div class="yr-label">Year 1 — Mid case</div>
+        <div class="yr-figure">£35k</div>
+        <div class="yr-range">Range £25k–£45k · alongside day job</div>
+        <div class="yr-block">
+          <div class="yr-bl">Revenue build</div>
+          <p>Months 1–6: setup and network re-activation, no paid work expected. Months 7–9: 1–2 small project pieces, £8–12k each. Months 10–12: 2–3 further pieces, building track record and testimonials. The shape is back-loaded, not flat.</p>
+        </div>
+        <div class="yr-block">
+          <div class="yr-bl">Sources</div>
+          <p>100% project consulting. All inbound from existing network — no cold outreach.</p>
+        </div>
+        <div class="yr-block">
+          <div class="yr-bl">Assumptions</div>
+          <p>£950 day rate, 25–40 billable days, evenings and weekends only, day job retained.</p>
+        </div>
+      </div>
+
+      <div class="income-year">
+        <div class="yr-label">Year 2 — Mid case</div>
+        <div class="yr-figure">£110k</div>
+        <div class="yr-range">Range £80k–£140k · transitioning full-time</div>
+        <div class="yr-block">
+          <div class="yr-bl">Revenue build</div>
+          <p>You exit the day job between months 14 and 18 once two PE-backed engagements are live and a third is in pipeline. Revenue ramps from ~£3k/month at quit-point to ~£10k/month by month 24, with 4–6 retained or repeat PE clients.</p>
+        </div>
+        <div class="yr-block">
+          <div class="yr-bl">Sources</div>
+          <p>70% project consulting, 30% retainer or fractional engagements.</p>
+        </div>
+        <div class="yr-block">
+          <div class="yr-bl">Assumptions</div>
+          <p>£1,100 day rate, 100–130 billable days, full-time independent.</p>
+        </div>
+      </div>
+
+      <div class="income-year">
+        <div class="yr-label">Year 3 — Mid case</div>
+        <div class="yr-figure">£180k</div>
+        <div class="yr-range">Range £140k–£240k · established practice</div>
+        <div class="yr-block">
+          <div class="yr-bl">Revenue build</div>
+          <p>Established practice with predictable inbound. Average ~£15k/month with seasonal variation around capital deployment cycles. Two larger fractional engagements may emerge in months 30–36, lifting the top band.</p>
+        </div>
+        <div class="yr-block">
+          <div class="yr-bl">Sources</div>
+          <p>50% project, 35% retainer, 15% productized investment case engagements.</p>
+        </div>
+        <div class="yr-block">
+          <div class="yr-bl">Assumptions</div>
+          <p>£1,200–£1,400 day rate equivalent, 130–160 billable days.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="income-bottom">
+      <div class="ib-block">
+        <div class="ib-label">Sensitivity factors</div>
+        <p>Most sensitive variable: time to first paying client. Every month of delay shifts Year 2 down ~£8–10k. Other key variables: PE deal flow cycles (12–18 month windows when capital deployment slows) and whether you take a fractional retainer too early at the wrong rate.</p>
+      </div>
+      <div class="ib-block">
+        <div class="ib-label">Income floor</div>
+        <p>Worst case: 12 months of effort with zero paid work. Real cash cost limited to LinkedIn Premium and a few coffees (~£200). The genuine cost is opportunity cost on time, not financial loss.</p>
+      </div>
+      <div class="ib-block">
+        <div class="ib-label">Notes</div>
+        <p>The runway from your partner's stable income (Q9) is a structural advantage most users don't have. It lets you build deliberately rather than panic-pricing. Use that runway — don't burn it on speed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── MARKET SNAPSHOT ─── -->
+  <section class="market">
+    <div class="section-label">Market Snapshot — London</div>
+    <h2>What the market actually looks like for someone with your profile.</h2>
+    <p class="market-intro">An indicative read on the London commercial finance consulting market for senior FBPs targeting PE-backed mid-market. Not a forecast; a calibration tool.</p>
+
+    <div class="market-grid">
+      <div class="market-block">
+        <div class="mb-label">Demand signal</div>
+        <p>London PE-backed mid-market businesses consistently cite inability to build credible financial cases for board decisions as a live problem. Finance directors in this segment are typically from accounting backgrounds — strong on reporting, weaker on commercial narrative. The gap is real and recurring.</p>
+      </div>
+      <div class="market-block">
+        <div class="mb-label">Pricing benchmark</div>
+        <p>For project-based commercial finance work at senior manager level from a FTSE 100 background. London premium applies. Day rate above £950 is achievable once you have 2–3 visible engagements. Starting below £700 is inadvisable — it misaligns expectations with PE buyers.</p>
+      </div>
+      <div class="market-block">
+        <div class="mb-label">Competitor landscape</div>
+        <p>The broad "finance consultant" market is competitive. The narrow "commercial finance, business case, board-level financial storytelling for PE-backed businesses" segment is significantly less crowded. Your positioning should be this specific. The narrowness is an advantage, not a constraint.</p>
+      </div>
+      <div class="market-block">
+        <div class="mb-label">Market entry insight</div>
+        <p>In this segment, the first 3–4 engagements almost always come through personal referrals from former colleagues or trusted contacts. Inbound from LinkedIn requires a visible track record first. Network activation matters more than marketing in months 1–6.</p>
+      </div>
+    </div>
+
+    <div class="market-honest">
+      <div class="mh-label">The honest read</div>
+      <p>This is not a market that rewards generic positioning, fast scaling, or aggressive outbound. It rewards specific, narrow claims, defended over time through visible engagements. You have the profile to win in it. You don't have a track record yet — that's the work.</p>
+    </div>
+  </section>
+
+  <!-- ─── FIRST STEPS ─── -->
+  <section class="steps">
+    <div class="section-label">Your First Five Steps</div>
+    <h2>What to do in the next forty-five days.</h2>
+
+    <ol class="steps-list">
+      <li>
+        <div class="step-text"><strong>Write your war story.</strong> A 90-second version of the £38M case (Q6) you can say out loud in a coffee, without qualifications.</div>
+        <div class="step-deadline">Within 7 days</div>
+      </li>
+      <li>
+        <div class="step-text"><strong>Update your LinkedIn headline.</strong> Move from job title to buyer-facing language: "Commercial Finance | Investment Case Defence | Independent Advisory for PE-Backed Businesses".</div>
+        <div class="step-deadline">Within 14 days</div>
+      </li>
+      <li>
+        <div class="step-text"><strong>Identify 8–12 contacts</strong> from your existing PE/CFO network (Q11, Q13). Draft personalised reconnect messages. No pitch — coffee or a 20-minute call.</div>
+        <div class="step-deadline">Within 21 days</div>
+      </li>
+      <li>
+        <div class="step-text"><strong>Send the first four reconnect messages.</strong> Track responses. Aim for three booked conversations by week six.</div>
+        <div class="step-deadline">Within 30 days</div>
+      </li>
+      <li>
+        <div class="step-text"><strong>Have your first "would you ever pay for this?" conversation.</strong> Don't pitch — diagnose. Listen for the trigger moments PE buyers describe.</div>
+        <div class="step-deadline">Within 45 days</div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- ─── AI IMPACT ─── -->
+  <section class="ai">
+    <div class="section-label">AI Impact & Adaptation</div>
+    <h2>What AI changes about all of this.</h2>
+    <p class="ai-intro">A direct read on how AI is reshaping your current role and your Plan B — and the specific moves that keep you ahead of the curve.</p>
+
+    <div class="ai-block">
+      <div class="ab-label">Part 1 — AI Risk to Your Current Role</div>
+      <h3>The Finance Business Partner function will shrink. The judgment work won't.</h3>
+      <div class="ai-meta">
+        <div class="am-item"><div class="am-label">Displacement risk</div><div class="am-val med">Medium</div></div>
+        <div class="am-item"><div class="am-label">Risk horizon</div><div class="am-val">3–5 years</div></div>
+      </div>
+      <p>The production layer of FBP work is in active retreat. Tools like Causal, Pigment, and Mosaic are absorbing template-based forecasting, variance analysis, and routine reporting at speeds and price points that traditional finance functions cannot match. By 2030, the in-house FBP role as currently structured will likely halve in headcount across FTSE 100 financial services. The defensible part is what you already do best: judgment under challenge, executive translation, sensitivity assumption defence. But the function as a whole won't grow — it will compress upward, with fewer, more senior practitioners doing higher-leverage work, and more pressure on those without the executive-translation skill to demonstrate their commercial value.</p>
+    </div>
+
+    <div class="ai-block">
+      <div class="ab-label">Part 2 — AI Resilience of Your Plan B</div>
+      <h3>Commercial finance consultancy is more AI-resilient than your day job.</h3>
+      <p>The reason is structural. PE-backed CFOs need human credibility to land board approvals. AI can build the model; it cannot defend it in a hostile room. The buyer is not buying the artefact — they are buying the credible person standing behind the artefact when the chair pushes back. That cannot be automated, because the trust transaction depends on a human being accountable for the answer. Your Plan B sells the bit AI cannot do. Your day job sells a bundle of work that increasingly can.</p>
+    </div>
+
+    <div class="ai-block">
+      <div class="ab-label">Part 3 — Adaptation Path</div>
+      <h3>Four moves over the next twelve months.</h3>
+      <ol class="ai-steps">
+        <li><span class="ais-num">01</span><span class="ais-text">Build working fluency in two AI tools your buyers actually use — Causal or Pigment for FP&A, Hebbia for commercial diligence. Position as "modern commercial finance partner who uses AI to compress the build", not "AI-replacement-proof".</span></li>
+        <li><span class="ais-num">02</span><span class="ais-text">Develop a public point of view on AI in commercial finance. One short article a quarter on LinkedIn — anchored in your private writing. Surfaces you as informed without overclaiming.</span></li>
+        <li><span class="ais-num">03</span><span class="ais-text">Deliberately move your work toward judgment-heavy engagements (board defence, investment cases) and away from production-heavy ones (templating, reporting). Price differential supports this.</span></li>
+        <li><span class="ais-num">04</span><span class="ais-text">Build a small library of "I used AI to do this in 30% of the time" case studies — evidence you can show in client conversations to demonstrate operational maturity, not just talk about it.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="ft-eyebrow">Sample Report</div>
+    <p>This is a sample of what you receive when you take the Solo Plan B test. Your report is generated against your own profile, not Sarah's. The activation plan that follows is built from the strands you select.</p>
+  </footer>
+
+</article>
+
+</body>
+</html>

@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your 30-Day Plan B Activation — Sarah Okafor</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ─── DESIGN TOKENS ─── */
+:root {
+  --surface-page: #E5E2DC;
+  --surface-panel: #FAF9F7;
+  --surface-card: #F3F1ED;
+  --surface-inset: #ECEAE4;
+  --surface-mint-tint: #E8F7F3;
+
+  --border-default: #E5E2DC;
+  --border-strong: #D5D0C8;
+  --border-subtle: #EDEBE6;
+
+  --text-heading: #1D2025;
+  --text-body: #5A5650;
+  --text-muted: #7A7670;
+  --text-faint: #A09A92;
+  --text-on-mint: #FFFFFF;
+
+  --mint: #2ECDB0;
+  --mint-hover: #26B89D;
+  --mint-bg: #D6F5EE;
+  --mint-text: #1A8A72;
+
+  /* Strand markers — restrained, not loud */
+  --strand-1: #1A8A72;   /* Direct — mint-text */
+  --strand-2: #5C6BA5;   /* Visibility — slate-blue */
+  --strand-3: #B07A4A;   /* Community — warm tan */
+  --strand-shared: #7A7670;
+
+  --warning: #D4940A;
+  --warning-bg: #FDF8E8;
+
+  --shadow-panel: 0 4px 32px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.04);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(220,217,210,0.85) 0%, rgba(200,196,188,0.75) 50%, rgba(180,176,168,0.85) 100%),
+    radial-gradient(circle at 20% 10%, #d8d4cc 0%, #c2bdb3 60%),
+    #b8b4a9;
+  background-attachment: fixed;
+  background-size: cover;
+  min-height: 100vh;
+  position: relative;
+}
+
+.plan {
+  max-width: 920px;
+  margin: 40px auto 60px;
+  background: var(--surface-panel);
+  box-shadow: var(--shadow-panel);
+  position: relative;
+}
+
+/* ─── HEADER ─── */
+.plan-header {
+  padding: 28px 56px;
+  border-bottom: 1px solid var(--border-strong);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.plan-header .logo {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  color: var(--text-heading);
+}
+.plan-header .logo span { color: var(--mint); }
+.plan-header .meta {
+  text-align: right;
+  font-size: 12px;
+}
+.plan-header .meta .meta-label {
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-bottom: 2px;
+}
+.plan-header .meta .meta-val {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ─── COVER ─── */
+.cover { padding: 96px 56px 80px; }
+.cover .eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 24px;
+}
+.cover h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -1.4px;
+  color: var(--text-heading);
+  margin-bottom: 28px;
+}
+.cover .lede {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 22px;
+  line-height: 1.45;
+  color: var(--text-body);
+  max-width: 660px;
+  margin-bottom: 56px;
+}
+.plan-meta-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+  padding: 24px 0;
+}
+.plan-meta-strip .item { padding: 0 20px; border-right: 1px solid var(--border-subtle); }
+.plan-meta-strip .item:last-child { border-right: none; }
+.plan-meta-strip .item .label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+.plan-meta-strip .item .value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-heading);
+}
+
+/* ─── SECTION FRAME ─── */
+.section { padding: 80px 56px; border-top: 1px solid var(--border-subtle); }
+.section.dense { padding: 56px 56px; }
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 20px;
+}
+.section h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 38px;
+  line-height: 1.15;
+  letter-spacing: -0.7px;
+  color: var(--text-heading);
+  margin-bottom: 28px;
+  max-width: 660px;
+}
+.section .lead {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--text-body);
+  max-width: 660px;
+  margin-bottom: 28px;
+}
+.section p {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-body);
+  margin-bottom: 18px;
+  max-width: 660px;
+}
+
+/* ─── FIELD OF PLAY ─── */
+.fop { padding: 96px 56px; }
+.fop-strands {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 28px;
+  margin-top: 40px;
+}
+.strand-card {
+  padding: 32px 28px;
+  background: var(--surface-card);
+  border-top: 3px solid;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+.strand-card.s1 { border-top-color: var(--strand-1); }
+.strand-card.s2 { border-top-color: var(--strand-2); }
+.strand-card.s3 { border-top-color: var(--strand-3); }
+.strand-card .sc-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.strand-card.s1 .sc-tag { color: var(--strand-1); }
+.strand-card.s2 .sc-tag { color: var(--strand-2); }
+.strand-card.s3 .sc-tag { color: var(--strand-3); }
+.strand-card h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.25;
+  color: var(--text-heading);
+  margin-bottom: 12px;
+}
+.strand-card .sc-positioning {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+.strand-card .sc-meta {
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+.strand-card .sc-meta .ml { color: var(--text-faint); font-weight: 600; letter-spacing: 0.5px; }
+.strand-card .sc-meta .mv { color: var(--text-heading); font-weight: 700; }
+
+/* ─── FIRST MOVE — full-bleed dark moment ─── */
+.first-move {
+  padding: 110px 56px;
+  background: var(--text-heading);
+  color: var(--surface-panel);
+  position: relative;
+  overflow: hidden;
+}
+.first-move::before {
+  content: "";
+  position: absolute;
+  left: 56px;
+  top: 80px;
+  width: 56px;
+  height: 2px;
+  background: var(--mint);
+}
+.first-move .fm-eyebrow {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint);
+  margin: 32px 0 28px;
+}
+.first-move h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+  color: var(--surface-panel);
+  margin-bottom: 28px;
+  max-width: 720px;
+}
+.first-move .fm-window {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mint);
+  border: 1px solid var(--mint);
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 36px;
+}
+.first-move p {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.7;
+  color: rgba(250,249,247,0.82);
+  max-width: 720px;
+  margin-bottom: 18px;
+}
+.first-move .fm-target {
+  margin-top: 32px;
+  padding: 28px 32px;
+  background: rgba(255,255,255,0.05);
+  border-left: 2px solid var(--mint);
+  max-width: 720px;
+}
+.first-move .fm-target .fmt-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mint);
+  margin-bottom: 12px;
+}
+.first-move .fm-target .fmt-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--surface-panel);
+  margin-bottom: 8px;
+}
+.first-move .fm-target .fmt-detail {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(250,249,247,0.7);
+}
+
+/* ─── TIME ALLOCATION ─── */
+.time-alloc { padding: 80px 56px; background: var(--surface-card); }
+.time-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-top: 36px;
+}
+.time-row {
+  padding: 24px 28px;
+  background: var(--surface-panel);
+  border-left: 3px solid;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.time-row.s1 { border-left-color: var(--strand-1); }
+.time-row.s2 { border-left-color: var(--strand-2); }
+.time-row.s3 { border-left-color: var(--strand-3); }
+.time-row .tr-pct {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -1px;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+.time-row .tr-strand {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  margin-bottom: 8px;
+}
+.time-row .tr-detail {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ─── PHASE HEADER ─── */
+.phase-header {
+  padding: 80px 56px 40px;
+  border-top: 1px solid var(--border-subtle);
+}
+.phase-header .ph-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 14px;
+}
+.phase-header h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 38px;
+  line-height: 1.15;
+  letter-spacing: -0.7px;
+  color: var(--text-heading);
+  margin-bottom: 16px;
+  max-width: 660px;
+}
+.phase-header .ph-range {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 24px;
+}
+.phase-header .ph-purpose {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--text-body);
+  max-width: 660px;
+}
+
+/* ─── DAYS ─── */
+.days { padding: 0 56px 56px; }
+.day {
+  padding: 32px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.day:first-child { border-top: none; }
+.day-head {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.day-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 1;
+  color: var(--text-heading);
+  letter-spacing: -1px;
+}
+.day-num.review { color: var(--mint); }
+.day-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text-heading);
+}
+.day-time {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.task {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 24px;
+  padding: 14px 0;
+  align-items: start;
+}
+.task .strand-tag {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  padding-top: 4px;
+}
+.task .strand-tag.shared { color: var(--strand-shared); }
+.task .strand-tag.s1 { color: var(--strand-1); }
+.task .strand-tag.s2 { color: var(--strand-2); }
+.task .strand-tag.s3 { color: var(--strand-3); }
+.task .task-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+.task .task-text strong { color: var(--text-heading); font-weight: 600; }
+.task .task-hook { color: var(--mint-text); font-weight: 600; }
+
+/* Portfolio Review days look heavier */
+.day.review-day {
+  margin: 16px 0;
+  padding: 32px 32px;
+  background: var(--surface-mint-tint);
+  border-radius: var(--radius-md);
+  border-top: none;
+}
+.day.review-day .day-num {
+  color: var(--mint-text);
+  font-size: 32px;
+}
+.day.review-day .day-label {
+  color: var(--mint-text);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+/* ─── MOVE ARTEFACT INLINE ─── */
+.artefact {
+  margin-top: 14px;
+  padding: 20px 24px;
+  background: var(--surface-card);
+  border-left: 2px solid var(--mint);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.artefact .art-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 10px;
+}
+.artefact .art-body {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-body);
+  font-family: var(--font-body);
+  white-space: pre-line;
+}
+.artefact .art-body em {
+  color: var(--text-faint);
+  font-style: italic;
+  font-size: 13px;
+}
+
+/* ─── PER-STRAND DETAIL ─── */
+.strand-detail { padding: 96px 56px; border-top: 1px solid var(--border-subtle); }
+.strand-detail.alt { background: var(--surface-card); }
+.strand-detail .sd-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.strand-detail .sd-tag.s1 { color: var(--strand-1); }
+.strand-detail .sd-tag.s2 { color: var(--strand-2); }
+.strand-detail .sd-tag.s3 { color: var(--strand-3); }
+.strand-detail h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+  color: var(--text-heading);
+  margin-bottom: 24px;
+  max-width: 660px;
+}
+.strand-detail .sd-summary {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--text-body);
+  max-width: 660px;
+  margin-bottom: 48px;
+}
+.sd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+.sd-grid .sd-block .sb-label {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-heading);
+  margin-bottom: 14px;
+}
+.sd-grid .sd-block p {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-body);
+  margin: 0;
+  max-width: none;
+}
+
+/* ─── TRACTION SIGNALS ─── */
+.traction {
+  background: var(--surface-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 32px;
+}
+.strand-detail.alt .traction { background: var(--surface-panel); }
+.traction-label {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-heading);
+  margin-bottom: 24px;
+}
+.signal-list { list-style: none; }
+.signal-list li {
+  display: grid;
+  grid-template-columns: 1fr 110px;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-subtle);
+  align-items: center;
+}
+.signal-list li:first-child { border-top: none; }
+.signal-list .sig-text { font-size: 14px; line-height: 1.5; color: var(--text-body); }
+.signal-list .sig-weight {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  text-align: right;
+}
+.sig-weight.vstrong { color: var(--mint-text); }
+.sig-weight.strong { color: var(--mint-text); }
+.sig-weight.moderate { color: var(--text-muted); }
+.sig-weight.negative { color: var(--warning); }
+
+/* ─── COMMUNITY SHORTLIST ─── */
+.community-list { list-style: none; }
+.community-list li {
+  padding: 18px 0;
+  border-top: 1px solid var(--border-subtle);
+}
+.community-list li:first-child { border-top: none; }
+.community-list .cl-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-heading);
+  margin-bottom: 4px;
+}
+.community-list .cl-detail {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* ─── NETWORK TOOLKIT ─── */
+.toolkit { padding: 96px 56px; }
+.template {
+  margin-bottom: 48px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.template:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+.template .tp-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 10px;
+}
+.template h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--text-heading);
+  margin-bottom: 14px;
+}
+.template .tp-when {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  max-width: 600px;
+}
+.template-body {
+  background: var(--surface-card);
+  padding: 28px 32px;
+  border-radius: var(--radius-md);
+  border-left: 2px solid var(--mint);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--text-body);
+  white-space: pre-line;
+  font-family: var(--font-body);
+}
+
+/* ─── DAY 30 ─── */
+.day-30 {
+  padding: 110px 56px;
+  background: var(--surface-mint-tint);
+}
+.day-30 .d30-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint-text);
+  margin-bottom: 28px;
+}
+.day-30 h2 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+  color: var(--text-heading);
+  margin-bottom: 28px;
+  max-width: 720px;
+}
+.day-30 p {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--text-body);
+  max-width: 660px;
+  margin-bottom: 18px;
+}
+
+/* ─── FOOTER ─── */
+.footer {
+  padding: 56px;
+  background: var(--text-heading);
+  color: var(--text-on-mint);
+  text-align: center;
+}
+.footer .ft-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--mint);
+  margin-bottom: 14px;
+}
+.footer p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(250,249,247,0.7);
+  margin: 0 auto;
+  max-width: 540px;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 720px) {
+  .plan { margin: 0; }
+  .cover, .section, .fop, .first-move, .time-alloc, .phase-header, .strand-detail, .toolkit, .day-30 { padding: 56px 28px; }
+  .days { padding: 0 28px 56px; }
+  .cover h1, .first-move h2 { font-size: 32px; }
+  .day-30 h2 { font-size: 30px; }
+  .fop-strands, .time-grid, .sd-grid { grid-template-columns: 1fr; gap: 18px; }
+  .plan-meta-strip { grid-template-columns: repeat(2, 1fr); }
+  .plan-meta-strip .item { padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); }
+  .task { grid-template-columns: 70px 1fr; gap: 14px; }
+  .signal-list li { grid-template-columns: 1fr; gap: 4px; }
+  .signal-list .sig-weight { text-align: left; }
+}
+</style>
+</head>
+<body>
+
+<article class="plan">
+
+  <header class="plan-header">
+    <div class="logo">solo<span>.</span></div>
+    <div class="meta">
+      <div class="meta-label">Plan generated</div>
+      <div class="meta-val">28 April 2026</div>
+    </div>
+  </header>
+
+  <!-- ─── COVER ─── -->
+  <section class="cover">
+    <div class="eyebrow">Your 30-Day Plan B Activation</div>
+    <h1>Three strands.<br>Thirty days.<br>One field of play.</h1>
+    <p class="lede">A single integrated plan that tests three viable Plan B routes in parallel — so the strongest one earns its place through evidence, not guesswork. Daily tasks tagged by strand. Move artefacts ready to send.</p>
+
+    <div class="plan-meta-strip">
+      <div class="item">
+        <div class="label">Strands</div>
+        <div class="value">3 in play</div>
+      </div>
+      <div class="item">
+        <div class="label">Duration</div>
+        <div class="value">30 days</div>
+      </div>
+      <div class="item">
+        <div class="label">Effort</div>
+        <div class="value">~6 hrs / week</div>
+      </div>
+      <div class="item">
+        <div class="label">Reviews</div>
+        <div class="value">Day 19 & 26</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FIELD OF PLAY ─── -->
+  <section class="fop">
+    <div class="section-label">Your Field of Play</div>
+    <h2>The three strands you've chosen to test in parallel.</h2>
+    <p class="lead">Each runs on a different move type. That's deliberate — a portfolio of Direct, Visibility, and Community work means a quiet result on one strand doesn't stall the whole plan. By Day 19 you'll have evidence about which is the strongest.</p>
+
+    <div class="fop-strands">
+      <div class="strand-card s1">
+        <div class="sc-tag">Strand 1 · Direct</div>
+        <h3>Commercial Finance Consultancy</h3>
+        <p class="sc-positioning">Project-based commercial finance for PE-backed mid-market — investment cases, board defence, commercial review.</p>
+        <div class="sc-meta">
+          <span class="ml">Time</span>
+          <span class="mv">50%</span>
+        </div>
+      </div>
+      <div class="strand-card s2">
+        <div class="sc-tag">Strand 2 · Visibility</div>
+        <h3>Productized Investment Case</h3>
+        <p class="sc-positioning">A 10-day fixed-scope sprint that produces a board-ready investment case, sensitivity model, and presented defence.</p>
+        <div class="sc-meta">
+          <span class="ml">Time</span>
+          <span class="mv">30%</span>
+        </div>
+      </div>
+      <div class="strand-card s3">
+        <div class="sc-tag">Strand 3 · Community</div>
+        <h3>Coaching for Mid-Career Women in Finance</h3>
+        <p class="sc-positioning">A coaching practice anchored in your Women in Finance mentoring track record — promotion, board readiness, executive translation.</p>
+        <div class="sc-meta">
+          <span class="ml">Time</span>
+          <span class="mv">20%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FIRST MOVE ─── -->
+  <section class="first-move">
+    <div class="fm-eyebrow">Your First Move — before the plan starts</div>
+    <h2>Send one specific reconnect message in the next 24 hours.</h2>
+    <div class="fm-window">24-hour window</div>
+    <p>Before the plan begins, before you read another section, before you do anything else: send a short, specific reconnect message to one named PE-backed CFO from your network. Not a pitch. Not "I'm thinking of going independent." Just a coffee invitation, anchored in something specific you remember about their business.</p>
+    <p>This is the highest-leverage thing you can do today, because nothing else in this plan works if you can't do this one. Everything from here onward is variation on the same skill: making contact with a specific person about a specific thing without softening the ask.</p>
+
+    <div class="fm-target">
+      <div class="fmt-label">Apollo-named target</div>
+      <div class="fmt-name">Priya Ramaswamy — CFO, [PE-backed mid-market industrials business, ~£60M revenue]</div>
+      <div class="fmt-detail">Worked together on a joint FBP forum in 2023. Last conversation: she mentioned post-acquisition integration was harder than the deal team had modelled. That's your hook.</div>
+    </div>
+  </section>
+
+  <!-- ─── TIME ALLOCATION ─── -->
+  <section class="time-alloc">
+    <div class="section-label">Time Allocation</div>
+    <h2>How to split six hours a week across three strands.</h2>
+    <p class="lead">Calibrated to your day-job constraint (Q14) and your weekly capacity. The split shifts after Day 19's Portfolio Review — strands showing traction earn more time; cold strands get reduced or paused.</p>
+
+    <div class="time-grid">
+      <div class="time-row s1">
+        <div class="tr-pct">50%</div>
+        <div class="tr-strand">Strand 1 — Consultancy</div>
+        <div class="tr-detail">Approximately 3 hours/week. The largest share because Direct outreach has the shortest path to a paid conversation, and your network is your strongest asset.</div>
+      </div>
+      <div class="time-row s2">
+        <div class="tr-pct">30%</div>
+        <div class="tr-strand">Strand 2 — Visibility</div>
+        <div class="tr-detail">Approximately 1.75 hours/week. Lower share but compounds — a LinkedIn presence built in 30 days creates inbound surface for months 4–12.</div>
+      </div>
+      <div class="time-row s3">
+        <div class="tr-pct">20%</div>
+        <div class="tr-strand">Strand 3 — Community</div>
+        <div class="tr-detail">Approximately 1.25 hours/week. Smallest share because community traction is slow by design. Plant seeds; don't expect harvest in 30 days.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PHASE 1 ═══ -->
+  <div class="phase-header">
+    <div class="ph-eyebrow">Phase 1 of 4</div>
+    <h2>Shared Foundations</h2>
+    <div class="ph-range">Days 1 – 7 · ~6 hours total</div>
+    <p class="ph-purpose">Work that benefits all three strands. Your war story, your LinkedIn presence, your network audit, your point of view. Phase 1 builds the shared assets every strand draws on. Don't skip it for outreach — outreach without these assets lands flat.</p>
+  </div>
+
+  <div class="days">
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">01</div>
+        <div class="day-label">Write your war story</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Write the 90-second version of the £38M case (Q6).</strong> Three sentences: what was at stake, what you did, what the outcome was. No qualifications, no hedging. Read it aloud until it sounds natural.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text">Save it somewhere you can find it. You'll use this version six times in the next thirty days.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">02</div>
+        <div class="day-label">Capture your hook insight</div>
+        <div class="day-time">~60 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><span class="task-hook">Hook insight task —</span> Write down, in 200 words, the answer to: <strong>"What's the hardest thing about commercial finance for PE-backed CFOs that they can't say out loud?"</strong> Pull from your fifteen ExCo pricing reviews and your two informal fintech advisory relationships. This becomes raw material for Strand 2's first LinkedIn post AND the positioning sentence in Strand 1's outreach.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">03</div>
+        <div class="day-label">Update LinkedIn headline</div>
+        <div class="day-time">~45 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Move from job-title language to buyer-facing language.</strong> Suggested: "Commercial Finance | Investment Case Defence | Independent Advisory for PE-Backed Businesses." This is passive visibility — costs 10 minutes and starts working immediately.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text">Update your About section with two paragraphs. Lead with what you do for buyers, not what your title is.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">04</div>
+        <div class="day-label">Audit your network</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Identify 8–12 reconnect candidates</strong> from your existing PE/CFO contacts (Q11, Q13). Cross-reference with LinkedIn — note who's recently changed roles, raised funding, or moved into PE-backed leadership.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text">Save the shortlist as a tracking document. You'll reference it daily through Phase 2.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">05</div>
+        <div class="day-label">Draft three reconnect messages</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Draft three personalised reconnect messages</strong> from the shortlist. Use the template in the Network Toolkit. Each must reference something specific you remember about their business — not generic.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s3">Strand 3</div>
+        <div class="task-text">Spend 20 minutes researching the three named Women in Finance communities listed in Strand 3's detail below. Bookmark each.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">06</div>
+        <div class="day-label">First sends &amp; first post</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Send the first three reconnect messages.</strong> One at a time. Track responses in your shortlist document.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s2">Strand 2</div>
+        <div class="task-text"><strong>Draft your first LinkedIn post</strong> from the hook insight you wrote on Day 02. Keep it to 200 words. End with a question, not a CTA.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">07</div>
+        <div class="day-label">Phase 1 reflection</div>
+        <div class="day-time">~30 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Review what you've built so far.</strong> War story, headline, network shortlist, draft post, three messages sent. That's the foundation. Note any responses received already.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 2 ═══ -->
+  <div class="phase-header">
+    <div class="ph-eyebrow">Phase 2 of 4</div>
+    <h2>Strand Activation</h2>
+    <div class="ph-range">Days 8 – 18 · ~22 hours total</div>
+    <p class="ph-purpose">Eleven days of strand-specific work running in parallel. Direct outreach for Strand 1, visibility posts for Strand 2, community contributions for Strand 3. The aim isn't to land a paying client — it's to generate enough signal across all three strands that the Day 19 review has something real to assess.</p>
+  </div>
+
+  <div class="days">
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">08</div>
+        <div class="day-label">Post live, more sends</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s2">Strand 2</div>
+        <div class="task-text"><strong>Publish your first LinkedIn post.</strong> Tuesday morning, 8–9am UK. Don't promote it — just post and let it land.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text">Send three more reconnect messages. You should now have six out.
+          <div class="artefact">
+            <div class="art-label">Reconnect email — example sent today</div>
+            <div class="art-body">Subject: Quick thought from your old FBP days
+
+Hi James,
+
+It's been a while — I think the last time we properly spoke was the joint FBP review in 2023, just before you moved across to [Company]. I noticed you've been there a couple of years now and the recent funding round announcement looked significant.
+
+I'm at a point where I'm thinking seriously about doing some independent commercial finance work alongside my current role — investment cases, board defence, the kind of thing I've been doing on the FBP side for the last few years but for businesses that don't have a strong commercial finance function internally.
+
+I'd really value 20 minutes to pick your brain — not a pitch, genuinely just curiosity about how businesses like yours think about bringing in external finance support and whether there's a moment in the calendar when that's useful. Would you be up for a quick call in the next couple of weeks?
+
+Best,
+Sarah</div>
+          </div>
+        </div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s3">Strand 3</div>
+        <div class="task-text">Join the Women in Banking &amp; Finance UK Slack. Don't post yet. Just observe the rhythm of conversation for a week.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">09</div>
+        <div class="day-label">Follow-up day</div>
+        <div class="day-time">~45 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Check who opened your messages.</strong> For anyone who responded, propose a specific time. Don't say "any time that works for you" — give two options.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s2">Strand 2</div>
+        <div class="task-text">Comment substantively on three PE-finance posts in your network. Not "great post". Add a perspective.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">10</div>
+        <div class="day-label">Visibility build</div>
+        <div class="day-time">~60 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s2">Strand 2</div>
+        <div class="task-text"><strong>Draft your second LinkedIn post.</strong> This one is less about insight, more about evidence — share the £38M case (Q6) framed as "what defending a board investment case taught me about non-finance executive translation".</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text">Send the final two reconnect messages — you should have eight out by end of today.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">11</div>
+        <div class="day-label">First community contribution</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s3">Strand 3</div>
+        <div class="task-text"><strong>Post your first contribution to the Women in Banking &amp; Finance UK Slack.</strong> A 150-word reflection on something specific you've learnt mentoring four mid-career women through promotion. End with a question to the community. The post should sit in their #career-conversations channel.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text">Continue conversations with Strand 1 contacts who responded.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">12</div>
+        <div class="day-label">Mid-Phase 2 push</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s2">Strand 2</div>
+        <div class="task-text"><strong>Publish second LinkedIn post.</strong> Same posting window. Track engagement against your first post.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text">If two or more contacts have responded with interest, book the first call. Use the verbal positioning statement from the Network Toolkit.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">13</div>
+        <div class="day-label">First conversation</div>
+        <div class="day-time">~90 mins (incl. call)</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Have your first reconnect call.</strong> 20 minutes. Don't pitch. Diagnose. Ask: "When you need someone to do the financial analysis for a major internal decision, how do you typically handle that?" Listen for the trigger moments.</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text">After the call, write down everything they said about how their finance function actually works. Not your interpretation — their words.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">14</div>
+        <div class="day-label">Reflection &amp; recalibration</div>
+        <div class="day-time">~45 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Mid-Phase 2 check.</strong> What's responding? What's silent? Don't act on it yet — you're building data for the Day 19 review. Just observe.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">15</div>
+        <div class="day-label">Strand 1 deepening</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Have a second reconnect call.</strong> Same diagnostic frame. Look for patterns — are buyers describing the same trigger moments?</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s2">Strand 2</div>
+        <div class="task-text">Comment on three more posts in your visibility feed. Pattern-match: are PE-finance practitioners engaging with you?</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">16</div>
+        <div class="day-label">Visibility post #3</div>
+        <div class="day-time">~60 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s2">Strand 2</div>
+        <div class="task-text"><strong>Publish third LinkedIn post.</strong> By now you should have a feel for which angle (insight vs. evidence vs. story) is landing. Lean into it.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">17</div>
+        <div class="day-label">Community presence</div>
+        <div class="day-time">~60 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s3">Strand 3</div>
+        <div class="task-text"><strong>Respond substantively to two community discussions</strong> in the Slack you joined. Look for where mid-career women are asking about promotion, board readiness, or executive translation — that's your zone.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">18</div>
+        <div class="day-label">Phase 2 wrap</div>
+        <div class="day-time">~45 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Write up traction observations across all three strands.</strong> Use the traction signals listed below. Score each strand. Bring it to the Day 19 review honest, not aspirational.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 3 ═══ -->
+  <div class="phase-header">
+    <div class="ph-eyebrow">Phase 3 of 4</div>
+    <h2>Evidence &amp; Review</h2>
+    <div class="ph-range">Days 19 – 23 · ~5 hours total</div>
+    <p class="ph-purpose">The first Portfolio Review. You've now run all three strands for two weeks. The data tells you which is responding. This phase is about hearing what the data is saying and starting to narrow — not yet committing, but starting to weight effort toward signal.</p>
+  </div>
+
+  <div class="days">
+    <div class="day review-day">
+      <div class="day-head">
+        <div class="day-num review">19</div>
+        <div class="day-label">Portfolio Review #1</div>
+        <div class="day-time">~90 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Conduct the Portfolio Review through the Solo check-in conversation.</strong> Five exchanges, longer than the daily check-in. Solo asks per strand: which traction signals have you observed? Which strand feels most alive? Which feels stalled?</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Decide:</strong> continue all three strands, narrow to two, or pause one. The decision is recorded. From tomorrow, time allocation shifts.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">20</div>
+        <div class="day-label">Adjusted action — push the strand</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1 (presumed strong)</div>
+        <div class="task-text"><strong>Concentrate on the strongest strand.</strong> If Strand 1 is leading, send three more reconnect messages to second-tier contacts. Book any open conversations.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">21</div>
+        <div class="day-label">Continued momentum</div>
+        <div class="day-time">~60 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text">Have your third reconnect call. By now you should be hearing two or three repeated themes from buyers. Note them.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">22</div>
+        <div class="day-label">Cross-strand insight</div>
+        <div class="day-time">~60 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s2">Strand 2</div>
+        <div class="task-text">Publish post #4 — directly referencing one of the trigger moments you've heard from Strand 1 conversations. The visibility post now feeds the Direct strand.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">23</div>
+        <div class="day-label">Late-Phase reflection</div>
+        <div class="day-time">~45 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Strongest signal so far?</strong> What would Solo do differently if it were starting Phase 4 from today? Capture in 100 words. This goes into Day 26's Portfolio Review.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 4 ═══ -->
+  <div class="phase-header">
+    <div class="ph-eyebrow">Phase 4 of 4</div>
+    <h2>Focus &amp; Accelerate</h2>
+    <div class="ph-range">Days 24 – 30 · ~7 hours total</div>
+    <p class="ph-purpose">The narrowing. You concentrate the remaining effort on the one or two strongest strands. The aim is to push toward the first concrete commercial conversation — "would you ever pay for this?" — within the final week. By Day 30 you have data, not a plan.</p>
+  </div>
+
+  <div class="days">
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">24</div>
+        <div class="day-label">Focus action</div>
+        <div class="day-time">~90 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Identify which conversation is closest to "would you pay for this?"</strong> Prepare for that specific conversation. Re-read your notes from previous calls with this person.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">25</div>
+        <div class="day-label">Sharpen positioning</div>
+        <div class="day-time">~60 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Write a one-page offer note</strong> tailored to your strongest contact. Not a proposal — a description of the work you'd do and what they'd get. Keep to 250 words.</div>
+      </div>
+    </div>
+
+    <div class="day review-day">
+      <div class="day-head">
+        <div class="day-num review">26</div>
+        <div class="day-label">Portfolio Review #2 — Focus Decision</div>
+        <div class="day-time">~90 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Final focus decision via Solo's Portfolio Review.</strong> Which 1–2 strands carry into the next 30 days? Which is formally paused? Lock the decision; from Day 27 the plan is single or dual-strand.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">27</div>
+        <div class="day-label">The conversation</div>
+        <div class="day-time">~75 mins (incl. call)</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Have the "would you ever pay for this?" conversation.</strong> Don't pitch. Frame it as: "Based on what we've talked about, here's the kind of work I'd do. Is that something you'd ever bring in externally?" Listen.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">28</div>
+        <div class="day-label">First proposal sketch</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Sketch a draft proposal</strong> based on what you heard. Even if no one's asked for one yet — having it ready compresses the next response cycle by a week.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">29</div>
+        <div class="day-label">Continue or close</div>
+        <div class="day-time">~60 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag s1">Strand 1</div>
+        <div class="task-text"><strong>Push the strongest conversation forward.</strong> If a second call is needed, book it. If a proposal is wanted, send the sketch.</div>
+      </div>
+    </div>
+
+    <div class="day">
+      <div class="day-head">
+        <div class="day-num">30</div>
+        <div class="day-label">Day 30 review</div>
+        <div class="day-time">~75 mins</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text"><strong>Write the honest 500-word review.</strong> What worked? What didn't? Which strand earned its place? What does the next 30 days look like?</div>
+      </div>
+      <div class="task">
+        <div class="strand-tag shared">Shared</div>
+        <div class="task-text">If you're a Solo subscriber, this review feeds the next 30-day plan automatically. If you're not — that's the point at which subscription matters.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── PER-STRAND DETAIL — STRAND 1 ─── -->
+  <section class="strand-detail">
+    <div class="sd-tag s1">Strand 1 · Direct · Relational warmth</div>
+    <h2>Commercial Finance Consultancy</h2>
+    <p class="sd-summary">Project-based commercial finance for PE-backed mid-market businesses. The Direct outreach strand — first sales conversations come from people who already know you.</p>
+
+    <div class="sd-grid">
+      <div class="sd-block">
+        <div class="sb-label">Market snapshot — London PE-backed mid-market</div>
+        <p>The buyer is a CFO or FD at a £20M–£150M PE-backed business, typically accounting-trained and weak on commercial narrative. The trigger moment is a board paper requiring rigorous commercial defence on a tight timeline. Day rates above £950 are achievable from your background; starting below £700 misaligns expectations. First 3–4 engagements come through personal referrals — inbound from cold LinkedIn comes later, after a visible track record exists.</p>
+      </div>
+      <div class="sd-block">
+        <div class="sb-label">Why Direct first</div>
+        <p>Your network composition (Q11, Q13) is unusually strong for this segment. ~25 Big 4 alumni now in CFO/FD roles at mid-market businesses. ~12 PE-backed company CFOs who would take your call, of which 8 are people you've worked with directly. That's not a network you build through visibility or community — it's a network you activate through Direct contact, one warm message at a time.</p>
+      </div>
+    </div>
+
+    <div class="traction">
+      <div class="traction-label">Traction signals to watch</div>
+      <ul class="signal-list">
+        <li><span class="sig-text">Former colleague responds to your reconnect message</span><span class="sig-weight moderate">Moderate</span></li>
+        <li><span class="sig-text">Contact asks for more detail about your offering</span><span class="sig-weight strong">Strong</span></li>
+        <li><span class="sig-text">Someone refers you to a potential buyer</span><span class="sig-weight strong">Strong</span></li>
+        <li><span class="sig-text">A call or meeting is booked with a potential client</span><span class="sig-weight vstrong">Very strong</span></li>
+        <li><span class="sig-text">You receive a request for a proposal or scope discussion</span><span class="sig-weight vstrong">Very strong</span></li>
+        <li><span class="sig-text">Outreach gets no response after 5+ attempts</span><span class="sig-weight negative">Negative</span></li>
+        <li><span class="sig-text">Contacts express polite disinterest or "not the right time"</span><span class="sig-weight negative">Negative</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── STRAND 2 ─── -->
+  <section class="strand-detail alt">
+    <div class="sd-tag s2">Strand 2 · Visibility · Content-led entry</div>
+    <h2>Productized Investment Case Development</h2>
+    <p class="sd-summary">A 10-day fixed-scope sprint that produces a board-ready investment case. The Visibility strand — the audience finds you, not the other way around.</p>
+
+    <div class="sd-grid">
+      <div class="sd-block">
+        <div class="sb-label">Market snapshot — LinkedIn finance leadership audience</div>
+        <p>Your audience is mid-market and PE-backed CFOs, finance directors, and corporate development leads. The right posting cadence is 2× per week, Tuesday and Thursday morning UK. Engagement compounds slowly — your first six posts will get less than your sixteenth. Don't read engagement against vanity benchmarks; read it against whether the right people are commenting. One substantive comment from a PE-backed CFO is worth fifty likes from peers.</p>
+      </div>
+      <div class="sd-block">
+        <div class="sb-label">Why Visibility second</div>
+        <p>You have raw material no one else has — three years of private writing about commercial finance. The Visibility strand is a low-cost surface that compounds: every post is a permanent, searchable artefact that demonstrates judgment. It also feeds Strand 1 — a CFO you reconnect with in week two will check your LinkedIn. A live, sharp profile turns a polite "let's catch up" into a real conversation about the work.</p>
+      </div>
+    </div>
+
+    <div class="traction">
+      <div class="traction-label">Traction signals to watch</div>
+      <ul class="signal-list">
+        <li><span class="sig-text">Post engagement runs 5×+ above your baseline pre-plan</span><span class="sig-weight moderate">Moderate</span></li>
+        <li><span class="sig-text">A senior finance practitioner comments substantively (not just likes)</span><span class="sig-weight strong">Strong</span></li>
+        <li><span class="sig-text">Profile views spike following a post (above 50/week)</span><span class="sig-weight moderate">Moderate</span></li>
+        <li><span class="sig-text">A DM follow-up arrives after a post — direct enquiry or question</span><span class="sig-weight strong">Strong</span></li>
+        <li><span class="sig-text">An inbound enquiry from someone you haven't met</span><span class="sig-weight vstrong">Very strong</span></li>
+        <li><span class="sig-text">Three consecutive posts with zero substantive engagement</span><span class="sig-weight negative">Negative</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── STRAND 3 ─── -->
+  <section class="strand-detail">
+    <div class="sd-tag s3">Strand 3 · Community · Slow-build presence</div>
+    <h2>Coaching for Mid-Career Women in Finance</h2>
+    <p class="sd-summary">A coaching practice anchored in your Women in Finance mentoring track record. The Community strand — earning standing inside a real network before any commercial conversation.</p>
+
+    <div class="sd-grid">
+      <div class="sd-block">
+        <div class="sb-label">Market snapshot — UK Women in Finance communities</div>
+        <p>Three named communities are the right ones for someone with your background. The buyer for paid coaching is mid-career women in finance approaching promotion to Director or Head of, where the gap is rarely technical and almost always executive presence and board-readiness. Rates for senior 1:1 coaching from credentialed practitioners run £200–£400 per session, six-session blocks. Community traction is slow by design — three months of consistent presence usually precedes the first paid enquiry.</p>
+      </div>
+      <div class="sd-block">
+        <div class="sb-label">Why Community third</div>
+        <p>You have a real, named track record (four mid-career women through promotion in 24 months) that gives you legitimate standing in this space. The hesitation in your profile (Q10, "the idea of positioning myself to strangers makes me uncomfortable") is the exact reason Community is the right entry mode for you. Community lets you become known through contribution before you ever sell anything — it's the mode that fits your temperament.</p>
+      </div>
+    </div>
+
+    <div class="traction">
+      <div class="traction-label">Traction signals to watch</div>
+      <ul class="signal-list">
+        <li><span class="sig-text">Community admin acknowledges your first post</span><span class="sig-weight moderate">Moderate</span></li>
+        <li><span class="sig-text">A peer DMs to thank you for a contribution</span><span class="sig-weight strong">Strong</span></li>
+        <li><span class="sig-text">Someone requests a 1:1 conversation following a contribution</span><span class="sig-weight strong">Strong</span></li>
+        <li><span class="sig-text">A community member refers you onward to another community or contact</span><span class="sig-weight strong">Strong</span></li>
+        <li><span class="sig-text">Someone explicitly asks "do you do this paid?"</span><span class="sig-weight vstrong">Very strong</span></li>
+        <li><span class="sig-text">Two weeks of contribution with no acknowledgement</span><span class="sig-weight negative">Negative</span></li>
+      </ul>
+    </div>
+
+    <div class="traction" style="margin-top:32px;">
+      <div class="traction-label">Three communities to enter — first contribution prompts</div>
+      <ul class="community-list">
+        <li>
+          <div class="cl-name">Women in Banking &amp; Finance UK (Slack)</div>
+          <div class="cl-detail">~3,500 members. Active #career-conversations channel. First contribution: 150 words on what mentoring four women through promotion taught you about the gap between technical readiness and board readiness.</div>
+        </li>
+        <li>
+          <div class="cl-name">Women in Finance UK Charter Network (LinkedIn group)</div>
+          <div class="cl-detail">Approximately 8,000 members. Lower frequency but higher seniority. First contribution: a comment on the most recent thread about executive presence — not a post yet, just a substantive comment that surfaces your perspective.</div>
+        </li>
+        <li>
+          <div class="cl-name">CFO Connect — Women's Cohort (private community)</div>
+          <div class="cl-detail">Smaller, ~600 members. Specifically female finance leaders. Higher signal density. First contribution: introduce yourself with a specific question — "what's the most useful thing you'd tell a senior manager preparing for their first board paper defence?"</div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ─── NETWORK ACTIVATION TOOLKIT ─── -->
+  <section class="toolkit">
+    <div class="section-label">Network Activation Toolkit</div>
+    <h2>Four templates calibrated to your profile.</h2>
+    <p class="lead">Reusable assets for Direct moves across strands. Each is personalised against your sector, seniority, and network — not generic templates from a sales course.</p>
+
+    <div class="template" style="margin-top:48px;">
+      <div class="tp-label">Template 01</div>
+      <h3>Reconnect email — former colleague at a PE-backed business</h3>
+      <p class="tp-when">When you have a real prior working relationship and a specific recent reason to reach out (role change, funding round, business milestone).</p>
+      <div class="template-body">Subject: Quick thought from your old FBP days
+
+Hi [Name],
+
+It's been a while — I think the last time we properly spoke was [specific shared moment]. I noticed [specific recent thing about their business] and it made me think of you.
+
+I'm at a point where I'm thinking seriously about doing some independent commercial finance work alongside my current role — investment cases, board defence, the kind of thing I've been doing on the FBP side for the last few years but for businesses that don't have a strong commercial finance function internally.
+
+I'd really value 20 minutes to pick your brain — not a pitch, genuinely just curiosity about how businesses like yours think about bringing in external finance support and whether there's a moment in the calendar when that's useful.
+
+Would you be up for a quick call in the next couple of weeks?
+
+Best,
+Sarah</div>
+    </div>
+
+    <div class="template">
+      <div class="tp-label">Template 02</div>
+      <h3>LinkedIn DM — second-tier contact, less recent relationship</h3>
+      <p class="tp-when">When you've worked together briefly or know each other through a mutual connection but the relationship has gone quiet.</p>
+      <div class="template-body">Hi [Name] — hope you're well. I've been following your move to [company] and the [specific thing] looked interesting.
+
+Quick context: I'm starting to do some independent commercial finance work alongside my role — primarily for PE-backed businesses needing senior commercial finance support on specific decisions (investment cases, board prep, commercial reviews).
+
+Would love to catch up briefly and pick your brain about how businesses in your space think about bringing in external finance support. 20 minutes on a call if you have time in the next few weeks?
+
+Sarah</div>
+    </div>
+
+    <div class="template">
+      <div class="tp-label">Template 03</div>
+      <h3>Referral ask — to a former colleague who said yes to a coffee</h3>
+      <p class="tp-when">After your reconnect call has gone well and they've expressed interest in what you're doing — this is the natural follow-up that turns a coffee into a referral.</p>
+      <div class="template-body">[Name] — thanks for the time on Tuesday, that was useful.
+
+Quick follow-up: you mentioned that [specific thing they said about how their finance function works / what their board needs / what they'd want from an external partner]. That's exactly the kind of conversation I want to be having more of.
+
+Is there anyone you'd recommend I speak to? I'm specifically looking for CFOs or FDs at PE-backed businesses £20M–£150M who'd value 20 minutes of an exploratory conversation about commercial finance support — same diagnostic frame I used with you, no pitch.
+
+Two or three names would be enormously helpful. Happy to send a draft message you can forward, or to reach out cold with you copied.
+
+Sarah</div>
+    </div>
+
+    <div class="template">
+      <div class="tp-label">Template 04</div>
+      <h3>Verbal positioning statement — the 30-second version</h3>
+      <p class="tp-when">For when someone asks "what are you doing now?" — at an industry event, on a coffee, in a passing conversation. Practise it until it sounds unhedged.</p>
+      <div class="template-body">"I'm working with mid-market and PE-backed businesses on commercial finance — business cases, investment decisions, board-level financial analysis. The thing I'm best at is defending the numbers in a hostile commercial conversation, which is what most PE-backed boards actually need. Right now it's alongside my day job, but I'm building toward making it my main thing."
+
+— Practise saying it without qualifications. No "trying to" or "sort of" or "if it works out". Say it as if it's already true, because it is.</div>
+    </div>
+  </section>
+
+  <!-- ─── DAY 30 ─── -->
+  <section class="day-30">
+    <div class="d30-eyebrow">After Day 30</div>
+    <h2>What happens next is data, not a plan.</h2>
+    <p>By the end of Day 30 you have evidence you didn't have before. You know which strand is responding. You know how PE-backed CFOs talk about their problems. You know whether your reconnect emails get answered, whether your visibility posts land with the right people, whether the community contributions earn standing.</p>
+    <p>The next 30 days isn't this plan repeated. It's a sharper plan, calibrated to what you've learned. If you're subscribed to Solo, the new plan generates from your tracked progress. If you're not — this is where most people lose momentum, because they never write the next plan and the energy from Phase 4 dissipates over a quiet weekend.</p>
+    <p>The point of the first 30 days isn't to land your first paying client. It's to make the path real enough that the next 30 days writes itself.</p>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="ft-eyebrow">Sample Plan</div>
+    <p>This is a sample of what you receive when you select your strands from the Plan B report. Your plan is generated against your own profile and your own selected strands, not Sarah's.</p>
+  </footer>
+
+</article>
+
+</body>
+</html>
