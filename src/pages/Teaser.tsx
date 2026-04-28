@@ -104,8 +104,13 @@ export default function Teaser() {
         const coreReport = data.core_report as Record<string, unknown> | null;
         const options = (coreReport?.options as Array<Record<string, unknown>>) || [];
         const previewStrands: StrandData[] = options.slice(0, 2).map((opt) => ({
-          title: (opt.title as string) || "Untitled option",
-          pitch: (opt.one_liner as string) || (opt.pitch as string) || "",
+          title: (opt.model_name as string) || (opt.title as string) || "Untitled option",
+          pitch:
+            (opt.positioning as string) ||
+            (opt.one_line_pitch as string) ||
+            (opt.one_liner as string) ||
+            (opt.pitch as string) ||
+            "",
           primary_move_type: (opt.primary_move_type as string) || null,
         }));
         setStrands(previewStrands);
@@ -113,52 +118,55 @@ export default function Teaser() {
         // ── Build personalised above-fold view (silent fallback if any field missing) ──
         try {
           const archetypeObj = coreReport?.archetype as Record<string, unknown> | undefined;
-          const archetypePrimary = (archetypeObj?.primary as string) || "";
+          const archetypeName =
+            (archetypeObj?.name as string) || (archetypeObj?.primary as string) || "";
 
           const hookObj = coreReport?.hook_insight as Record<string, unknown> | undefined;
           const hookHeadline = (hookObj?.headline as string) || "";
           const hookParagraph = (hookObj?.paragraph as string) || "";
 
-          const strandsArr =
-            (coreReport?.strands as Array<Record<string, unknown>>) ||
+          const optionsArr =
             (coreReport?.options as Array<Record<string, unknown>>) ||
+            (coreReport?.strands as Array<Record<string, unknown>>) ||
             [];
-          const s0 = strandsArr[0] as Record<string, unknown> | undefined;
-          const s1 = strandsArr[1] as Record<string, unknown> | undefined;
+          const o0 = optionsArr[0] as Record<string, unknown> | undefined;
+          const o1 = optionsArr[1] as Record<string, unknown> | undefined;
 
-          const s0Title = (s0?.title as string) || "";
-          const s0Pitch =
-            (s0?.one_line_pitch as string) ||
-            (s0?.one_liner as string) ||
-            (s0?.pitch as string) ||
+          const o0Title = (o0?.model_name as string) || (o0?.title as string) || "";
+          const o0Pitch =
+            (o0?.positioning as string) ||
+            (o0?.one_line_pitch as string) ||
+            (o0?.one_liner as string) ||
+            (o0?.pitch as string) ||
             "";
-          const s0Move =
-            (s0?.move_type as string) || (s0?.primary_move_type as string) || null;
+          const o0Move =
+            (o0?.primary_move_type as string) || (o0?.move_type as string) || null;
 
           if (
-            archetypePrimary &&
+            archetypeName &&
             hookHeadline &&
             hookParagraph &&
-            s0 &&
-            s0Title &&
-            s0Pitch
+            o0 &&
+            o0Title &&
+            o0Pitch
           ) {
             setPersonalised({
-              archetype: archetypePrimary,
+              archetype: archetypeName,
               headline: hookHeadline,
               paragraph: hookParagraph,
-              firstStrand: { title: s0Title, pitch: s0Pitch, moveType: s0Move },
-              secondStrand: s1
+              firstStrand: { title: o0Title, pitch: o0Pitch, moveType: o0Move },
+              secondStrand: o1
                 ? {
-                    title: (s1.title as string) || "",
+                    title: (o1.model_name as string) || (o1.title as string) || "",
                     pitch:
-                      (s1.one_line_pitch as string) ||
-                      (s1.one_liner as string) ||
-                      (s1.pitch as string) ||
+                      (o1.positioning as string) ||
+                      (o1.one_line_pitch as string) ||
+                      (o1.one_liner as string) ||
+                      (o1.pitch as string) ||
                       "",
                     moveType:
-                      (s1.move_type as string) ||
-                      (s1.primary_move_type as string) ||
+                      (o1.primary_move_type as string) ||
+                      (o1.move_type as string) ||
                       null,
                   }
                 : null,
