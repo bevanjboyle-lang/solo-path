@@ -23,13 +23,16 @@ export default function AuthCallback() {
         return;
       }
 
-      // 1. Poll briefly for the session to materialize after PKCE exchange.
-      const deadline = Date.now() + 2000;
+      // 1. Wait until the session is definitively readable (with access_token).
+      // exchangeCodeForSession resolves before supabase-js finishes propagating
+      // the session to localStorage / its internal state, so functions.invoke
+      // would otherwise fire without a valid Authorization header → 401.
+      const deadline = Date.now() + 5000;
       let session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] = null;
       while (Date.now() < deadline && !cancelled) {
         const { data } = await supabase.auth.getSession();
-        if (data.session) { session = data.session; break; }
-        await new Promise((r) => setTimeout(r, 150));
+        if (data.session?.access_token) { session = data.session; break; }
+        await new Promise((r) => setTimeout(r, 100));
       }
       if (cancelled) return;
 
@@ -51,8 +54,12 @@ export default function AuthCallback() {
         null;
       if (clientSessionId) {
         try {
+          // Pass the access token explicitly so the edge function always
+          // receives a valid Authorization header, even if supabase-js's
+          // internal token state is still settling.
           await supabase.functions.invoke("link-anon-session", {
             body: { client_session_id: clientSessionId },
+            headers: { Authorization: `Bearer ${session.access_token}` },
           });
         } catch (err) {
           console.warn("link-anon-session call failed (non-fatal):", err);
