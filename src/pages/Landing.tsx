@@ -217,7 +217,7 @@ export default function Landing() {
                   className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl lg:text-[2.25rem] lg:leading-[1.2]"
                   style={{ letterSpacing: "-0.02em" }}
                 >
-                  a transition engine for professionals who need to build an independent-income option before they are forced to.
+                  A transition engine for professionals who need to build an independent-income option before they are forced to. It then drives the behaviour change required to realise the independent income.
                 </h2>
               </ScrollReveal>
 
