@@ -36,6 +36,7 @@ import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import ServerError from "./pages/ServerError";
 import DevScreens from "./pages/DevScreens";
+import SampleReport from "./pages/SampleReport";
 import Footer from "@/components/Footer";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -69,6 +70,7 @@ function AnimatedRoutes() {
 						<Route path="/" element={<Landing />} />
 						<Route path="/pricing" element={<Pricing />} />
 						<Route path="/faq" element={<FAQ />} />
+						<Route path="/sample-report" element={<SampleReport />} />
 						<Route path="/privacy" element={<PrivacyPolicy />} />
 						<Route path="/terms" element={<TermsOfService />} />
 						<Route path="/auth" element={<Auth />} />
