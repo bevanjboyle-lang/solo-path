@@ -302,14 +302,24 @@ export default function Landing() {
               <div className="mt-10 grid gap-5 md:grid-cols-2 md:gap-6">
                 {featureCards.map((c, i) => (
                   <ScrollReveal key={c.eyebrow} delay={i * 0.06}>
-                    <div className="card-stone h-full p-6 sm:p-7">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                        {c.eyebrow}
-                      </p>
-                      <h3 className="mt-3 font-display text-lg font-semibold leading-snug">
-                        {c.title}
-                      </h3>
-                      <p className="mt-3 text-sm leading-[1.7] text-muted-foreground">
+                    <div className={`card-stone relative h-full p-6 sm:p-7 ${i % 3 === 1 ? "md:translate-y-3" : ""}`}>
+                      <div className="flex items-start gap-4">
+                        <span
+                          aria-hidden
+                          className="flex h-10 w-10 flex-none items-center justify-center rounded-md bg-primary/10 text-primary ring-1 ring-primary/20"
+                        >
+                          <c.icon className="h-5 w-5" strokeWidth={1.75} />
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                            {c.eyebrow}
+                          </p>
+                          <h3 className="mt-2 font-display text-lg font-semibold leading-snug">
+                            {c.title}
+                          </h3>
+                        </div>
+                      </div>
+                      <p className="mt-4 text-sm leading-[1.7] text-muted-foreground">
                         {c.body}
                       </p>
                     </div>
@@ -427,10 +437,19 @@ export default function Landing() {
               <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
                 {steps.map((s, i) => (
                   <ScrollReveal key={s.num} delay={i * 0.08}>
-                    <div className="card-stone flex h-full flex-col p-6 sm:p-7">
-                      <span className="font-display text-3xl font-bold text-primary">
-                        {s.num}
+                    <div className="card-stone relative flex h-full flex-col p-6 sm:p-7">
+                      <span
+                        aria-hidden
+                        className="absolute right-5 top-5 text-primary/70"
+                      >
+                        <s.icon className="h-5 w-5" strokeWidth={1.75} />
                       </span>
+                      <div className="flex items-baseline gap-3">
+                        <span className="font-display text-3xl font-bold text-primary">
+                          {s.num}
+                        </span>
+                        <span aria-hidden className="h-px flex-1 bg-primary/30" />
+                      </div>
                       <h3 className="mt-4 font-display text-lg font-semibold leading-snug">
                         {s.title}
                       </h3>
