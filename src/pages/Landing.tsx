@@ -228,7 +228,16 @@ export default function Landing() {
         {/* ═══ SECTION 2 — What Solo is ═══ */}
         <section className="py-10 lg:py-14">
           <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+            <div className="panel-ivory relative overflow-hidden p-8 sm:p-12 lg:p-16">
+              {/* asymmetric mint accent in top-left corner */}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute left-0 top-0 h-16 w-1 bg-primary"
+              />
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/5 blur-2xl"
+              />
               <ScrollReveal>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
                   What Solo is
@@ -398,7 +407,13 @@ export default function Landing() {
               <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
                 {testimonials.map((t, i) => (
                   <ScrollReveal key={t.name} delay={i * 0.08}>
-                    <div className="card-stone flex h-full flex-col p-6 sm:p-7">
+                    <div className={`card-stone relative flex h-full flex-col p-6 sm:p-7 ${i === 1 ? "md:-translate-y-3" : ""}`}>
+                      <span
+                        aria-hidden
+                        className="font-display absolute -top-3 left-5 text-5xl leading-none text-primary/40 select-none"
+                      >
+                        &ldquo;
+                      </span>
                       <p className="font-display text-[15px] italic leading-[1.7] text-foreground/90">
                         "{t.quote}"
                       </p>
