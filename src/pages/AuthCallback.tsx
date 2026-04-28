@@ -15,31 +15,82 @@ export default function AuthCallback() {
 
   useEffect(() => {
     let cancelled = false;
-    const reportId = params.get("reportId") || params.get("report_id");
+    const reportIdParam = params.get("reportId") || params.get("report_id");
 
     (async () => {
       if (isDevBypass()) {
         navigate("/plan", { replace: true });
         return;
       }
+
+      // 1. Poll briefly for the session to materialize after PKCE exchange.
       const deadline = Date.now() + 2000;
+      let session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] = null;
       while (Date.now() < deadline && !cancelled) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          if (cancelled) return;
-          if (reportId) navigate(`/teaser?reportId=${reportId}`, { replace: true });
-          else navigate("/plan", { replace: true });
-          return;
-        }
+        const { data } = await supabase.auth.getSession();
+        if (data.session) { session = data.session; break; }
         await new Promise((r) => setTimeout(r, 150));
       }
       if (cancelled) return;
-      // Still no session after the poll window — link expired or invalid.
-      if (reportId) {
-        navigate(`/teaser?reportId=${reportId}`, { replace: true });
+
+      if (!session) {
+        // Magic link expired or invalid.
+        if (reportIdParam) {
+          navigate(`/teaser?report_id=${reportIdParam}`, { replace: true });
+          return;
+        }
+        setExpired(true);
         return;
       }
-      setExpired(true);
+
+      // 2. Best-effort: link any anon-keyed rows to this user before routing.
+      const clientSessionId =
+        (typeof window !== "undefined" &&
+          (localStorage.getItem("solo_client_session_id") ||
+            localStorage.getItem("solo.client_session_id"))) ||
+        null;
+      if (clientSessionId) {
+        try {
+          await supabase.functions.invoke("link-anon-session", {
+            body: { client_session_id: clientSessionId },
+          });
+        } catch (err) {
+          console.warn("link-anon-session call failed (non-fatal):", err);
+        }
+      }
+      if (cancelled) return;
+
+      // 3. Honour an explicit reportId in the callback URL first.
+      if (reportIdParam) {
+        navigate(`/teaser?report_id=${reportIdParam}`, { replace: true });
+        return;
+      }
+
+      // 4. Find the user's most recent teaser-or-better report.
+      const { data: report, error: reportLookupError } = await supabase
+        .from("reports")
+        .select("id, status")
+        .eq("user_id", session.user.id)
+        .in("status", ["teaser_ready", "complete", "pending_selection", "generating_plan"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (reportLookupError) {
+        console.error("Report lookup after auth failed:", reportLookupError);
+      }
+      if (cancelled) return;
+
+      // 5. Route. NEVER redirect to /questionnaire?resume=true — that route
+      // is for users who haven't submitted, not for users who just signed in.
+      if (report?.id) {
+        if (report.status === "complete") {
+          navigate(`/plan?report_id=${report.id}`, { replace: true });
+        } else {
+          navigate(`/teaser?report_id=${report.id}`, { replace: true });
+        }
+        return;
+      }
+      navigate("/", { replace: true });
     })();
 
     return () => { cancelled = true; };
