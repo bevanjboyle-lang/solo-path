@@ -217,7 +217,7 @@ export default function Landing() {
                   className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl lg:text-[2.25rem] lg:leading-[1.2]"
                   style={{ letterSpacing: "-0.02em" }}
                 >
-                  A transition engine for professionals who need to build an independent-income option before they are forced to. It then drives the behaviour change required to realise the independent income.
+                  Solo is a transition engine for professionals who want to build an independent-income option before they are forced to. It turns career uncertainty into a practical plan, then drives the behaviour change needed to turn that plan into real income.
                 </h2>
               </ScrollReveal>
 
