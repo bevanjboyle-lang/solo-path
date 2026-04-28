@@ -32,10 +32,19 @@ export default function PaymentSuccess() {
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
 
-  // No token → redirect to /
+  // No token → redirect. /plan if authed, / if not.
+  // For second_report flow, user is already authed — no token required.
   useEffect(() => {
-    // For second_report flow, user is already authed — no token required
-    if (!token && !isSecondReport && !isDevBypass()) navigate("/", { replace: true });
+    if (token || isSecondReport || isDevBypass()) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      navigate(data?.session ? "/plan" : "/", { replace: true });
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [token, isSecondReport, navigate]);
 
   // Second-report flow: claim and navigate to /cv-upload

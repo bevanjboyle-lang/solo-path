@@ -132,7 +132,7 @@ export default function Library() {
 
   // ── Browse tab data ──
   useEffect(() => {
-    if (activeTab === "browse" && !browseData && !browseLoading) {
+    if ((activeTab === "browse" || activeTab === "modules") && !browseData && !browseLoading) {
       setBrowseLoading(true);
       supabase.functions.invoke("get-library-content", {
         body: { call_type: "browse" },
@@ -308,7 +308,10 @@ export default function Library() {
                 </div>
               )
             ) : (
-              <ModulesTab onSelectModule={(id, unlocked) => openArticle(id, unlocked)} />
+              <ModulesTab
+                browseData={browseData}
+                onSelectModule={(id, unlocked) => openArticle(id, unlocked)}
+              />
             )}
           </div>
         </div>
@@ -545,23 +548,15 @@ function BrowseTab({
 }
 
 /* ── Modules Tab — fetches browse data to render module cards ── */
-function ModulesTab({ onSelectModule }: { onSelectModule: (id: number, unlocked: boolean) => void }) {
-  const [modules, setModules] = useState<BrowseModule[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    supabase.functions.invoke("get-library-content", {
-      body: { call_type: "browse" },
-    }).then(({ data }) => {
-      if (data?.tracks) {
-        const all = Object.values(data.tracks as Record<string, TrackData>).flatMap((t) => t.modules);
-        setModules(all);
-      }
-      setLoading(false);
-    });
-  }, []);
-
-  if (loading) {
+/* ── Modules Tab — receives browse data from parent ── */
+function ModulesTab({
+  browseData,
+  onSelectModule,
+}: {
+  browseData: BrowseData | null;
+  onSelectModule: (id: number, unlocked: boolean) => void;
+}) {
+  if (!browseData) {
     return (
       <div className="space-y-3">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -570,6 +565,8 @@ function ModulesTab({ onSelectModule }: { onSelectModule: (id: number, unlocked:
       </div>
     );
   }
+
+  const modules: BrowseModule[] = Object.values(browseData.tracks).flatMap((t) => t.modules);
 
   return (
     <div className="space-y-3">
