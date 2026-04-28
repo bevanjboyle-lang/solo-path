@@ -1,6 +1,17 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
+import {
+  Compass,
+  CalendarCheck,
+  Users,
+  MessagesSquare,
+  BookOpen,
+  Send,
+  ClipboardList,
+  FileText,
+  Rocket,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
@@ -36,31 +47,37 @@ const featureCards = [
     eyebrow: "Decision engine",
     title: "A stress-tested set of feasible options, not a brainstorm",
     body: "Solo classifies your profile against 95 professional archetypes and scores it across 480 business models. By the time you see your options, the weak ones are already gone. What's left is specific to your background, your network, and your financial reality.",
+    icon: Compass,
   },
   {
     eyebrow: "Adaptive plan",
     title: "A plan that responds to real life",
     body: "The 30-day plan isn't a template. It's built from your profile and updated daily based on what actually happens. Fall behind in week two — the plan adjusts. Things accelerate — it moves with you. It tracks where you are, not where you were supposed to be.",
+    icon: CalendarCheck,
   },
   {
     eyebrow: "Named outreach contacts",
     title: "Real names. Not \"try LinkedIn.\"",
     body: "For paths that involve direct contact, Solo finds actual people — by name, role, and company. When you're ready to send a message, Solo drafts it for you, in your voice, for that specific person. The first client is the hardest part. Solo gets you to the message.",
+    icon: Users,
   },
   {
     eyebrow: "Contextual coaching",
     title: "The more you use it, the sharper it gets",
     body: "Ask Solo anything about your progress, your options, or your next move. Every answer draws on everything it has built about you — your archetype, your active paths, your check-in history, your blockers. Not generic advice. A specific answer to your specific situation, from a system that has been paying attention.",
+    icon: MessagesSquare,
   },
   {
     eyebrow: "Guidance library",
     title: "Guidance for the hard parts",
     body: "Going independent involves challenges that are genuinely difficult — pricing your work, positioning yourself, handling rejection, building a pipeline from scratch. Solo includes a structured guidance library covering nine of these areas in depth. Available when you need them, not pushed at you when you don't.",
+    icon: BookOpen,
   },
   {
     eyebrow: "Four types of move",
     title: "Every move drafted. You decide whether to make it.",
     body: "Whether your path calls for a direct approach to a named contact, registering on a marketplace, writing a LinkedIn post, or joining the right community — Solo generates the move. You don't have to figure out what to do next. The next move is always ready.",
+    icon: Send,
   },
 ];
 
@@ -89,16 +106,19 @@ const steps = [
     num: "01",
     title: "Tell Solo about your career",
     desc: "13 targeted questions covering your role, experience, network, working style, and financial situation. Upload your CV first and it cuts to around 4 questions. Takes 8 minutes.",
+    icon: ClipboardList,
   },
   {
     num: "02",
     title: "Get your report",
     desc: "Solo classifies you against 95 professional archetypes and scores your profile across 480 business models. You receive a ranked shortlist of your top paths — each with a difficulty rating, a speed-to-revenue estimate, and an explanation of why it fits your profile.",
+    icon: FileText,
   },
   {
     num: "03",
     title: "Start making moves",
     desc: "A 30-day activation plan starts immediately. Daily check-ins track your progress. Named contacts are ready when you are. Ask Solo anything at any point — it knows your situation.",
+    icon: Rocket,
   },
 ];
 
