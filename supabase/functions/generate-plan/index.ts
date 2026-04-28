@@ -1,12 +1,20 @@
-// generate-plan v27 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
-// v26 baseline: 2026-04-17 Audit P2 #16 — source-header reconciled with deploy counter.
-// Earlier history:
-//   - v17 (pre-reconciliation): ADR-012 model tier constants — MODEL_TIER1 (gpt-5.4) for P3v2 activation plan synthesis,
-//     MODEL_TIER3 (gpt-5.4-nano) for P4 market snapshot (per strand), MODEL_TIER2 (gpt-5.4-mini) for recalibration
-//     reality_check + first_steps.
+// generate-plan v28 — async pattern (mirrors generate-report v44.1)
+//
+// Changes from v27:
+//   - Synchronous: validate input, fetch report, mark status='generating_plan',
+//     return { report_id, status: 'generating_plan' } immediately (~2s).
+//   - Background (via EdgeRuntime.waitUntil): all OpenAI calls + final report row update.
+//
+// Why: synchronous v27 takes 60-180s for prompt 3 (16384 tokens) plus per-strand market
+// snapshots in parallel. Total time exceeds gateway proxy timeout (60-150s) and the browser
+// sees a hung connection. Frontend should poll reports.status until 'complete'.
+//
+// v27 baseline: P0 #22 (2026-04-18) max_tokens → max_completion_tokens for GPT-5.4 compatibility.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import OpenAI from "https://esm.sh/openai@4.28.0";
+import OpenAI from "https://esm.sh/openai@4.79.1";
+
+const FUNCTION_VERSION = "v28-async";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -498,7 +506,63 @@ Deno.serve(async (req: Request) => {
       })
       .eq("id", report_id);
 
-    console.log(`Generating ${isPortfolio ? "portfolio" : "single"} plan for report ${report_id}, strands: ${selectedStrands.map(s => `${s.strand_id}=${s.model_name}[${s.primary_move_type}/${s.warmth_type}]`).join(", ")}`);
+    console.log(`${FUNCTION_VERSION} kicking off background work for report ${report_id} (${selectedStrands.length} strands, isPortfolio=${isPortfolio})`);
+
+    // ── ASYNC: kick off the slow OpenAI work in background, return immediately ──
+    // @ts-expect-error EdgeRuntime is provided by Supabase Deno deploy runtime
+    EdgeRuntime.waitUntil(generatePlanInBackground({
+      report_id, selectedStrands, isPortfolio, coreReport, answers, hookInsight,
+      profileFlags, profileConstraints, openai, supabase,
+    }));
+
+    return new Response(
+      JSON.stringify({
+        report_id,
+        status: "generating_plan",
+        mode: isPortfolio ? "portfolio" : "single",
+        selected_strands: selectedStrands.map(s => ({
+          strand_id: s.strand_id,
+          rank: s.rank,
+          model_name: s.model_name,
+          business_model_id: s.business_model_id,
+          primary_move_type: s.primary_move_type,
+          structural_warmth: s.structural_warmth,
+          warmth_type: s.warmth_type,
+        })),
+        strand_count: selectedStrands.length,
+        response_text: "Plan generation started. Poll reports.status by report_id until 'complete'.",
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+
+  } catch (entryError) {
+    console.error(`${FUNCTION_VERSION} entry error:`, entryError);
+    return new Response(
+      JSON.stringify({ error: "Internal server error", details: String(entryError), response_text: "Failed to start plan generation." }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
+
+// ── BACKGROUND WORKER ──────────────────────────────────────────────────────
+// All OpenAI calls (Prompt 3v2 + Prompt 4 per strand + recalibration) run here.
+// On success: updates report row to status='complete' with full activation_plan, market_snapshots,
+// and updated core_report. On error: updates report row to status='failed' with error message.
+
+async function generatePlanInBackground(args: {
+  // deno-lint-ignore no-explicit-any
+  report_id: string; selectedStrands: any[]; isPortfolio: boolean;
+  // deno-lint-ignore no-explicit-any
+  coreReport: any; answers: Record<string, string>; hookInsight: string;
+  profileFlags: Record<string, unknown>; profileConstraints: Record<string, unknown>;
+  // deno-lint-ignore no-explicit-any
+  openai: any; supabase: any;
+}) {
+  const { report_id, selectedStrands, isPortfolio, coreReport, answers, hookInsight,
+    profileFlags, profileConstraints, openai, supabase } = args;
+
+  try {
+    console.log(`bg ${report_id}: starting plan generation`);
 
     // ── Build user context ──
     const userContext = {
@@ -741,51 +805,18 @@ Deno.serve(async (req: Request) => {
       .eq("id", report_id);
 
     if (updateError) {
-      console.error("Error updating report:", JSON.stringify(updateError));
-      return new Response(
-        JSON.stringify({ error: "Failed to save plan", response_text: "Failed to save plan." }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.error(`bg ${report_id} update error:`, JSON.stringify(updateError));
+      await supabase.from("reports").update({ status: "failed", error: String(updateError.message ?? updateError) }).eq("id", report_id);
+      return;
     }
 
-    console.log(`Portfolio plan generated for report ${report_id} (${selectedStrands.length} strands). Move types: ${JSON.stringify(moveTypeDist)}, warmth types: ${JSON.stringify(warmthDist)}. Apollo cold tasks: ${coldTaskCount}/${apolloQueryPopulated} populated.`);
-
-    const strandNames = selectedStrands.map(s => s.model_name);
-
-    return new Response(
-      JSON.stringify({
-        report_id,
-        mode: isPortfolio ? "portfolio" : "single",
-        selected_strands: selectedStrands.map(s => ({
-          strand_id: s.strand_id,
-          rank: s.rank,
-          model_name: s.model_name,
-          business_model_id: s.business_model_id,
-          primary_move_type: s.primary_move_type,
-          structural_warmth: s.structural_warmth,
-          warmth_type: s.warmth_type,
-        })),
-        strand_count: selectedStrands.length,
-        activation_plan: activationPlan,
-        market_snapshots: marketSnapshots,
-        core_report: updatedCoreReport,
-        initial_strand_status: initialStrandStatus,
-        user_context_profile: profileContextForPrompt,
-        response_text: isPortfolio
-          ? `Your portfolio plan across ${selectedStrands.length} strands has been generated: ${strandNames.join(", ")}.`
-          : `Your personalised plan for \"${strandNames[0]}\" has been generated.`,
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.log(`bg ${report_id} done | ${selectedStrands.length} strands | apollo cold=${coldTaskCount}/${apolloQueryPopulated}`);
   } catch (error) {
-    console.error("Error in generate-plan v27:", error);
-    return new Response(
-      JSON.stringify({
-        error: "Internal server error",
-        details: String(error),
-        response_text: "An error occurred generating your plan.",
-      }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error(`bg ${report_id} error:`, error);
+    try {
+      await supabase.from("reports").update({ status: "failed", error: String((error as Error)?.message ?? error) }).eq("id", report_id);
+    } catch (updateErr) {
+      console.error(`bg ${report_id} also failed to mark status=failed:`, updateErr);
+    }
   }
-});
+}
