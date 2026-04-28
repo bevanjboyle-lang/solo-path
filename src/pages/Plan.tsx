@@ -158,9 +158,19 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           setStrands(
             options.map((opt) => ({
               title: (opt.model_name as string) || (opt.title as string) || "Untitled option",
-              pitch: (opt.one_line_pitch as string) || (opt.one_liner as string) || (opt.pitch as string) || "",
+              pitch:
+                (opt.positioning as string) ||
+                (opt.one_line_pitch as string) ||
+                (opt.one_liner as string) ||
+                (opt.pitch as string) ||
+                "",
               primary_move_type: (opt.primary_move_type as string) || null,
-              structural_warmth: (opt.structural_warmth as string) || null,
+              structural_warmth:
+                typeof opt.structural_warmth === "boolean"
+                  ? opt.structural_warmth
+                    ? "Structural"
+                    : "Relational"
+                  : (opt.structural_warmth as string) || null,
             }))
           );
         }
