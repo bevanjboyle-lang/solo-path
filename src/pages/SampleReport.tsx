@@ -43,13 +43,13 @@ export default function SampleReport() {
                   key={opt.key}
                   role="tab"
                   aria-selected={selected}
+                  data-state={selected ? "active" : "inactive"}
                   onClick={() => setView(opt.key)}
                   className="rounded-full px-5 py-1.5 text-sm font-medium transition-colors"
-                  style={
-                    selected
-                      ? { background: "#2ECDB0", color: "#0F1714" }
-                      : { background: "transparent", color: "hsl(var(--muted-foreground))" }
-                  }
+                  style={{
+                    background: selected ? "#2ECDB0" : "transparent",
+                    color: selected ? "#0F1714" : "hsl(var(--muted-foreground))",
+                  }}
                 >
                   {opt.label}
                 </button>
