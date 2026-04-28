@@ -305,7 +305,7 @@ export default function AskSolo() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col text-foreground">
+    <div className="min-h-screen flex flex-col text-foreground bg-[hsl(var(--surface-page))]">
       <TopBar />
 
       {quotaExhausted && (
@@ -317,7 +317,7 @@ export default function AskSolo() {
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden" style={{ height: "calc(100vh - 60px)" }}>
+      <div className="flex flex-1 overflow-hidden bg-[hsl(var(--surface-page))]" style={{ height: "calc(100vh - 60px)" }}>
         {/* Desktop sidebar */}
         <aside className="hidden lg:flex w-[280px] shrink-0 flex-col border-r border-border bg-[hsl(var(--surface-panel))]">
           {threadListContent}
@@ -407,7 +407,7 @@ export default function AskSolo() {
                         }
                       >
                         {msg.role === "assistant" ? (
-                          <div className="prose prose-sm max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 text-foreground">
+                          <div className="prose prose-sm max-w-none [&>p]:mb-2 [&>p:last-child]:mb-0 [&_*]:!text-foreground text-foreground">
                             <ReactMarkdown>{msg.content}</ReactMarkdown>
                           </div>
                         ) : (
