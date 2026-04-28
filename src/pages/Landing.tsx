@@ -214,9 +214,7 @@ export default function Landing() {
                 </button>
               )}
               <a
-                href="/prototypical-report-review.html"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/sample-report"
                 className="rounded-lg border border-white/80 bg-transparent px-8 py-3.5 text-base font-semibold text-white transition-colors hover:bg-white hover:text-[#1A8A72]"
               >
                 See a sample report
@@ -506,9 +504,7 @@ export default function Landing() {
                 </div>
                 <div className="mt-5">
                   <a
-                    href="/prototypical-report-review.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/sample-report"
                     className="text-sm font-medium text-primary hover:underline"
                   >
                     See a sample report first
