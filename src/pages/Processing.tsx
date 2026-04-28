@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
 import { getClientSessionId } from "@/lib/handlers";
+import { isDevBypass } from "@/lib/devBypass";
 
 const CYCLING_MESSAGES = [
   "Reading your answers.",
@@ -44,7 +45,7 @@ export default function Processing() {
 
   // No report_id → redirect home
   useEffect(() => {
-    if (!reportId) {
+    if (!reportId && !isDevBypass()) {
       navigate("/", { replace: true });
     }
   }, [reportId, navigate]);
@@ -124,7 +125,7 @@ export default function Processing() {
     navigate(`/questionnaire?resume=true&session=${sessionId}`);
   };
 
-  if (!reportId) return null;
+  if (!reportId && !isDevBypass()) return null;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

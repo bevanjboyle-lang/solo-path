@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
+import { isDevBypass } from "@/lib/devBypass";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
 import TodayCard, { type PlanState } from "@/components/plan/TodayCard";
@@ -104,6 +105,12 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
+      if (isDevBypass()) {
+        // Render with mock data, skip report fetch
+        setHasPaid(true);
+        setPlanState("day0");
+        return;
+      }
       navigate("/auth?redirect=/plan", { replace: true });
       return;
     }
@@ -129,7 +136,12 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
         if (!data || data.status === "pending" || data.status === "generating") {
           // Authed but no paid plan yet — route to teaser per spec.
-          navigate("/teaser", { replace: true });
+          if (!isDevBypass()) {
+            navigate("/teaser", { replace: true });
+            return;
+          }
+          setHasPaid(true);
+          setPlanState("day0");
           return;
         }
 

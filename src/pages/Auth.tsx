@@ -3,6 +3,7 @@ import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { signIn, startTest } from "@/lib/handlers";
+import { isDevBypass } from "@/lib/devBypass";
 import { Loader2 } from "lucide-react";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
@@ -46,7 +47,7 @@ export default function Auth() {
   }, [redirectTarget]);
 
   // Redirect already-authed users before form paints
-  if (!loading && user) {
+  if (!loading && user && !isDevBypass()) {
     return <Navigate to={redirectTarget} replace />;
   }
   if (loading) return null;

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { isDevBypass } from "@/lib/devBypass";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ export default function PaymentSuccess() {
   // No token → redirect to /
   useEffect(() => {
     // For second_report flow, user is already authed — no token required
-    if (!token && !isSecondReport) navigate("/", { replace: true });
+    if (!token && !isSecondReport && !isDevBypass()) navigate("/", { replace: true });
   }, [token, isSecondReport, navigate]);
 
   // Second-report flow: claim and navigate to /cv-upload

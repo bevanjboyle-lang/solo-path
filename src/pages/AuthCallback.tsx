@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { isDevBypass } from "@/lib/devBypass";
 import TopBar from "@/components/TopBar";
 
 export default function AuthCallback() {
@@ -17,6 +18,10 @@ export default function AuthCallback() {
     const reportId = params.get("reportId") || params.get("report_id");
 
     (async () => {
+      if (isDevBypass()) {
+        navigate("/plan", { replace: true });
+        return;
+      }
       const deadline = Date.now() + 2000;
       while (Date.now() < deadline && !cancelled) {
         const { data: { session } } = await supabase.auth.getSession();
