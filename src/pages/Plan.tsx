@@ -119,7 +119,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     let cancelled = false;
     (async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("reports")
           .select("id, status, hook_insight, core_report, answers, recommended_selection, activation_plan")
           .eq("user_id", user.id)
