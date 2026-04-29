@@ -78,7 +78,7 @@ export default function AuthCallback() {
         .from("reports")
         .select("id, status")
         .eq("user_id", session.user.id)
-        .in("status", ["teaser_ready", "complete", "pending_selection", "generating_plan"])
+        .in("status", ["teaser_ready", "pending_selection", "generating_plan", "complete"])
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -87,10 +87,13 @@ export default function AuthCallback() {
       }
       if (cancelled) return;
 
-      // 5. Route. NEVER redirect to /questionnaire?resume=true — that route
-      // is for users who haven't submitted, not for users who just signed in.
+      // 5. Route based on payment status. Paid users (status >=
+      // pending_selection) go straight to /plan, where the plan either
+      // already exists or is auto-generated. Unpaid users still see the
+      // teaser. NEVER redirect to /questionnaire?resume=true.
       if (report?.id) {
-        if (report.status === "complete") {
+        const PAID_STATUSES = new Set(["pending_selection", "generating_plan", "complete"]);
+        if (PAID_STATUSES.has(report.status)) {
           navigate(`/plan?report_id=${report.id}`, { replace: true });
         } else {
           navigate(`/teaser?report_id=${report.id}`, { replace: true });
