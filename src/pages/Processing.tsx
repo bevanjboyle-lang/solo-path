@@ -159,7 +159,7 @@ export default function Processing() {
               </h1>
 
               <p className="mt-3 text-sm text-muted-foreground">
-                This usually takes about a minute.
+                This usually takes about two minutes.
               </p>
 
               {/* Cycling messages */}
