@@ -1,10 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate, useSearchParams, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { navigateAuthed } from "@/lib/handlers";
 import { isDevBypass } from "@/lib/devBypass";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
@@ -12,57 +11,34 @@ import TodayCard, { type PlanState } from "@/components/plan/TodayCard";
 import TrackerGrid from "@/components/plan/TrackerGrid";
 import CheckInPanel from "@/components/plan/CheckInPanel";
 import ReplanPromptCard from "@/components/plan/ReplanPromptCard";
-import ReportSection from "@/components/ReportSection";
-import LibraryCard from "@/components/plan/LibraryCard";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
-import type { StrandData } from "@/components/StrandCard";
 
-// Mock data for preview (Day 0 default)
-const MOCK_NARRATIVE =
-  "You're a senior product manager with 12 years in fintech. Your experience maps cleanly to three commercial paths, with two requiring minimal ramp-up. Here's what stands out.";
+// Sample-report sections (Phase 3a refactor — all prop-driven, canonical typed)
+import HookInsightSection from "@/components/sample-report/HookInsightSection";
+import ArchetypeSection from "@/components/sample-report/ArchetypeSection";
+import TransferableValueSection from "@/components/sample-report/TransferableValueSection";
+import TransferableSkillsSection from "@/components/sample-report/TransferableSkillsSection";
+import BusinessPaths from "@/components/sample-report/BusinessPaths";
+import RecommendationSection from "@/components/sample-report/RecommendationSection";
+import RealityCheckSection from "@/components/sample-report/RealityCheckSection";
+import IncomeOutlookSection from "@/components/sample-report/IncomeOutlookSection";
+import AIImpactSection from "@/components/sample-report/AIImpactSection";
+import PortfolioSummarySection from "@/components/sample-report/PortfolioSummarySection";
+import MarketSnapshotSection from "@/components/sample-report/MarketSnapshotSection";
+import FirstMoveSection from "@/components/sample-report/FirstMoveSection";
+import PlanSection from "@/components/sample-report/PlanSection";
+import TractionSignalsSection from "@/components/sample-report/TractionSignalsSection";
+import PortfolioReviewSection from "@/components/sample-report/PortfolioReviewSection";
+import NetworkToolkitSection from "@/components/sample-report/NetworkToolkitSection";
 
-const MOCK_STRANDS: StrandData[] = [
-  {
-    title: "Fractional CPO for Series A fintechs",
-    pitch: "Your product leadership experience is directly applicable to early-stage companies that need strategic product direction without a full-time hire.",
-    primary_move_type: "leverage",
-    structural_warmth: "Warm — direct network match",
-  },
-  {
-    title: "Product strategy consultancy",
-    pitch: "Package your methodology into a consultancy offering targeting mid-market fintechs navigating regulatory complexity.",
-    primary_move_type: "anchor",
-    structural_warmth: "Warm — sector credibility",
-  },
-  {
-    title: "B2B SaaS for compliance workflows",
-    pitch: "The compliance pain point you identified is underserved. A focused tool could capture a niche market.",
-    primary_move_type: "moonshot",
-    structural_warmth: "Cold — requires build phase",
-  },
-  {
-    title: "Advisory board positions",
-    pitch: "Your regulatory knowledge makes you valuable to boards. Low commitment, high signal, builds network for other moves.",
-    primary_move_type: "growth",
-    structural_warmth: "Warm — reputation-based",
-  },
-  {
-    title: "Corporate training in product thinking",
-    pitch: "Banks and insurers pay well for structured product training. Your background gives you instant credibility.",
-    primary_move_type: "pivot",
-    structural_warmth: "Neutral — requires outreach",
-  },
-];
-
-const MOCK_GUIDANCE = [
-  { title: "Positioning your expertise", description: "How to articulate what you do in one sentence that lands.", track: "Foundation" },
-  { title: "First outreach templates", description: "Proven message structures for warm and cold contacts.", track: "Activation" },
-  { title: "Pricing your time", description: "How to set rates that reflect your value without pricing yourself out.", track: "Commercial" },
-];
+import type {
+  SoloCoreReport,
+  ActivationPlanOutput,
+  ReportRow,
+} from "@/types/canonical";
 
 interface PlanPageProps {
   initialSessionId?: string;
@@ -75,27 +51,59 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const { toast } = useToast();
   const reportRef = useRef<HTMLDivElement>(null);
 
+  // Tracker / day state
   const [planState, setPlanState] = useState<PlanState>("loading");
   const [dayNumber, setDayNumber] = useState(0);
   const [weekNumber, setWeekNumber] = useState(1);
   const [sessionId, setSessionId] = useState(initialSessionId || "");
   const [checkinOpen, setCheckinOpen] = useState(false);
-  const [narrative, setNarrative] = useState<string | null>(MOCK_NARRATIVE);
-  const [strands, setStrands] = useState<StrandData[]>(MOCK_STRANDS);
   const [trackerDays, setTrackerDays] = useState<{ day: number; completed: boolean; isToday: boolean }[]>([]);
+
+  // Auth / payment state
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [isSubscriber, setIsSubscriber] = useState(false);
   const [showSubscribeWall, setShowSubscribeWall] = useState(false);
+
+  // Report state — canonical-typed
   const [reportId, setReportId] = useState<string>("");
+  const [reportStatus, setReportStatus] = useState<ReportRow["status"] | null>(null);
+  const [coreReport, setCoreReport] = useState<SoloCoreReport | null>(null);
+  const [activationPlan, setActivationPlan] = useState<ActivationPlanOutput | null>(null);
+  const [marketSnapshots, setMarketSnapshots] = useState<ReportRow["market_snapshots"]>(null);
+
+  // Refine + export state
   const [refinementCount, setRefinementCount] = useState(0);
   const [refineOpen, setRefineOpen] = useState(false);
   const [refineLimitReached, setRefineLimitReached] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+
+  // Replan
   const [replanPending, setReplanPending] = useState(false);
   const [replanContext, setReplanContext] = useState<Record<string, unknown> | null>(null);
+
+  // Error
   const [loadError, setLoadError] = useState(false);
-  const [reportStatus, setReportStatus] = useState<string | null>(null);
+
+  // Track which report rows have already had auto-fire generate-plan invoked,
+  // so a polling re-fetch doesn't re-fire the function.
+  const autoFiredRef = useRef<Set<string>>(new Set());
+
+  // Apply the queried row to local state (used by both initial load and polling).
+  const applyReportRow = useCallback((row: Record<string, unknown>) => {
+    setReportId(row.id as string);
+    setReportStatus(row.status as ReportRow["status"]);
+    setCoreReport((row.core_report as SoloCoreReport | null) ?? null);
+    setActivationPlan((row.activation_plan as ActivationPlanOutput | null) ?? null);
+    setMarketSnapshots(
+      (row.market_snapshots as ReportRow["market_snapshots"]) ?? null
+    );
+
+    const cr = (row.core_report as Record<string, unknown> | null) ?? null;
+    const rc = Number((cr?.refinement_count as number) ?? 0) || 0;
+    setRefinementCount(rc);
+    if (rc >= 3) setRefineLimitReached(true);
+  }, []);
 
   // Route guard + plan fetch with explicit error handling.
   // Resolution rules:
@@ -107,7 +115,12 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     if (authLoading) return;
     if (!user) {
       if (isDevBypass()) {
-        // Render with mock data, skip report fetch
+        // Dev-bypass with sample data is not yet supported under the canonical
+        // composition (sampleReportData.ts uses an ad-hoc shape, not SoloCoreReport).
+        // Render a stub so the dev sees structure without crashing.
+        console.warn(
+          "Plan: dev-bypass mode active but no canonical-shape sample data wired in. Sections will be empty."
+        );
         setHasPaid(true);
         setPlanState("day0");
         return;
@@ -121,7 +134,9 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       try {
         const { data, error } = await (supabase as any)
           .from("reports")
-          .select("id, status, hook_insight, core_report, answers, recommended_selection, activation_plan")
+          .select(
+            "id, status, hook_insight, core_report, activation_plan, market_snapshots, recommended_selection, ai_impact_section, selected_strands, selected_option_rank, answers"
+          )
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -155,18 +170,25 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         }
 
         setHasPaid(true);
-        setReportId(data.id);
-        setReportStatus(data.status);
-        setNarrative(data.hook_insight || MOCK_NARRATIVE);
+        applyReportRow(data as Record<string, unknown>);
 
         // Paid user, plan not yet generated. Auto-fire generate-plan with
-        // the backend's recommended_selection (a flat array of ranks).
-        // Fire-and-forget; the polling effect picks up the status change.
-        if (data.status === "pending_selection") {
-          const recommendedRanks = Array.isArray((data as any).recommended_selection)
-            ? ((data as any).recommended_selection as number[])
-            : null;
+        // the backend's recommended_selection. Fire-and-forget; the polling
+        // effect picks up the status change.
+        if (data.status === "pending_selection" && !autoFiredRef.current.has(data.id)) {
+          const recSel = data.recommended_selection as
+            | { selected_ranks?: number[] }
+            | number[]
+            | null;
+          // Backend schema: { selected_ranks, rationale }. Some legacy rows
+          // store a flat array; tolerate both.
+          const recommendedRanks = Array.isArray(recSel)
+            ? (recSel as number[])
+            : Array.isArray(recSel?.selected_ranks)
+              ? recSel!.selected_ranks
+              : null;
           if (recommendedRanks && recommendedRanks.length > 0) {
+            autoFiredRef.current.add(data.id);
             try {
               void supabase.functions.invoke("generate-plan", {
                 body: { report_id: data.id, selected_ranks: recommendedRanks },
@@ -175,32 +197,6 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
               console.error("Plan: generate-plan auto-fire failed", err);
             }
           }
-        }
-
-        const coreReport = data.core_report as Record<string, unknown> | null;
-        const rc = Number((coreReport?.refinement_count as number) ?? 0) || 0;
-        setRefinementCount(rc);
-        if (rc >= 3) setRefineLimitReached(true);
-        const options = (coreReport?.options as Array<Record<string, unknown>>) || [];
-        if (options.length > 0) {
-          setStrands(
-            options.map((opt) => ({
-              title: (opt.model_name as string) || (opt.title as string) || "Untitled option",
-              pitch:
-                (opt.positioning as string) ||
-                (opt.one_line_pitch as string) ||
-                (opt.one_liner as string) ||
-                (opt.pitch as string) ||
-                "",
-              primary_move_type: (opt.primary_move_type as string) || null,
-              structural_warmth:
-                typeof opt.structural_warmth === "boolean"
-                  ? opt.structural_warmth
-                    ? "Structural"
-                    : "Relational"
-                  : (opt.structural_warmth as string) || null,
-            }))
-          );
         }
 
         loadTrackerSession(user.id, data.id);
@@ -215,7 +211,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     return () => {
       cancelled = true;
     };
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, applyReportRow]);
 
   const loadTrackerSession = useCallback(async (uid: string, rid: string) => {
     const { data: session } = await (supabase as any)
@@ -281,42 +277,19 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       if (cancelled) return;
       if (Date.now() - startedAt > POLL_TIMEOUT_MS) return;
 
-      const { data: latest } = await supabase
+      const { data: latest } = await (supabase as any)
         .from("reports")
-        .select("id, status, hook_insight, core_report, answers, activation_plan")
+        .select(
+          "id, status, hook_insight, core_report, activation_plan, market_snapshots, recommended_selection, ai_impact_section, selected_strands, selected_option_rank, answers"
+        )
         .eq("id", reportId)
         .maybeSingle();
 
       if (cancelled || !latest) return;
 
-      if (latest.status !== reportStatus) {
-        setReportStatus(latest.status);
-      }
+      applyReportRow(latest as Record<string, unknown>);
 
       if (latest.status === "complete") {
-        if (typeof latest.hook_insight === "string") setNarrative(latest.hook_insight);
-        const cr = latest.core_report as Record<string, unknown> | null;
-        const options = (cr?.options as Array<Record<string, unknown>>) || [];
-        if (options.length > 0) {
-          setStrands(
-            options.map((opt) => ({
-              title: (opt.model_name as string) || (opt.title as string) || "Untitled option",
-              pitch:
-                (opt.positioning as string) ||
-                (opt.one_line_pitch as string) ||
-                (opt.one_liner as string) ||
-                (opt.pitch as string) ||
-                "",
-              primary_move_type: (opt.primary_move_type as string) || null,
-              structural_warmth:
-                typeof opt.structural_warmth === "boolean"
-                  ? opt.structural_warmth
-                    ? "Structural"
-                    : "Relational"
-                  : (opt.structural_warmth as string) || null,
-            }))
-          );
-        }
         if (user) loadTrackerSession(user.id, reportId);
         return;
       }
@@ -329,9 +302,9 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       cancelled = true;
       clearTimeout(handle);
     };
-  }, [reportId, user, reportStatus, loadTrackerSession]);
+  }, [reportId, user, reportStatus, loadTrackerSession, applyReportRow]);
 
-  
+
   // /checkin/:sessionId deep-link: pre-open drawer immediately on mount
   // and rewrite URL to /plan so the deep-link is not visible in the address bar.
   useEffect(() => {
@@ -413,23 +386,19 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const handleRefined = useCallback((updatedReport: unknown, newCount: number) => {
     const r = updatedReport as Record<string, unknown> | null;
     if (r) {
-      const coreReport = (r.core_report as Record<string, unknown>) || null;
-      if (typeof r.hook_insight === "string") setNarrative(r.hook_insight as string);
-      const options = (coreReport?.options as Array<Record<string, unknown>>) || [];
-      if (options.length > 0) {
-        setStrands(
-          options.map((opt) => ({
-            title: (opt.model_name as string) || (opt.title as string) || "Untitled option",
-            pitch: (opt.one_line_pitch as string) || (opt.one_liner as string) || (opt.pitch as string) || "",
-            primary_move_type: (opt.primary_move_type as string) || null,
-            structural_warmth: (opt.structural_warmth as string) || null,
-          }))
-        );
-      }
+      // Apply the refreshed row back through the same canonical setter.
+      // Refinement only updates core_report; activation_plan and snapshots
+      // remain unchanged but we reapply for safety.
+      const merged = {
+        id: reportId,
+        status: reportStatus,
+        ...r,
+      } as Record<string, unknown>;
+      applyReportRow(merged);
     }
     setRefinementCount(newCount);
     if (newCount >= 3) setRefineLimitReached(true);
-  }, []);
+  }, [reportId, reportStatus, applyReportRow]);
 
   const submitRefinement = useCallback(() => {
     if (refineLimitReached || refinementCount >= 3) return;
@@ -511,6 +480,12 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     );
   }
 
+  // While the plan is being generated post-payment, surface that to the user.
+  // Core report sections still render below; activation_plan sections are
+  // skipped until the row flips to `complete`.
+  const planGenerating =
+    reportStatus === "pending_selection" || reportStatus === "generating_plan";
+
   return (
     <div className="flex min-h-screen flex-col">
       <TopBar />
@@ -568,42 +543,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           </motion.div>
         )}
 
-        {/* §4 Strand summary row */}
-        <motion.div
-          className="mt-10"
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15, duration: 0.4 }}
-        >
-          <h2 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-[0.08em]">
-            Your options
-          </h2>
-          <div className="space-y-3">
-            {strands.map((strand, i) => (
-              <div key={i} className="rounded-lg border border-border bg-[hsl(var(--surface-panel))] px-5 py-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm font-medium text-foreground truncate">{strand.title}</span>
-                    <span className="hidden sm:inline">
-                      {strand.primary_move_type && (
-                        <span className="text-[10px] font-medium text-muted-foreground">
-                          {strand.primary_move_type}
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  {strand.structural_warmth && (
-                    <span className="shrink-0 text-[11px] text-muted-foreground">
-                      {strand.structural_warmth}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* §5 ReportSection */}
+        {/* §4 Report — the canonical sample-report composition.
+            Order matches admin/sample-report-v2.html. Each section guards on
+            its own data slice so missing fields render nothing rather than
+            crashing. */}
         <motion.div
           ref={reportRef}
           className="mt-10"
@@ -650,36 +593,118 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
             </div>
           )}
 
-          <ReportSection
-            narrative={narrative}
-            strands={strands}
-            locked={false}
-            initialExpanded={planState === "day0"}
-            mode="full"
-          />
-        </motion.div>
+          {/* Plan-generation progress notice (post-payment, before activation_plan
+              materialises). Core report sections still render below. */}
+          {planGenerating && !activationPlan && (
+            <div className="mb-6 flex items-center gap-3 rounded-md border border-border bg-[hsl(var(--surface-panel))] px-4 py-3 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <span>Building your plan… this usually takes a minute or two.</span>
+            </div>
+          )}
 
-        {/* §6 Recent guidance teaser */}
-        <motion.div
-          className="mt-14"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.4 }}
-        >
-          <h2 className="mb-4 text-sm font-semibold text-foreground uppercase tracking-[0.08em]">
-            Guidance for you
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {MOCK_GUIDANCE.map((item, i) => (
-              <LibraryCard
-                key={i}
-                title={item.title}
-                description={item.description}
-                track={item.track}
-                onClick={() => navigateAuthed(navigate, "/library")}
+          {/* ----- Core report sections (always when core_report present) ----- */}
+          {coreReport?.hook_insight && (
+            <div className="mb-10">
+              <HookInsightSection hook_insight={coreReport.hook_insight} />
+            </div>
+          )}
+
+          {coreReport?.archetype && (
+            <div className="mb-10">
+              <ArchetypeSection archetype={coreReport.archetype} />
+            </div>
+          )}
+
+          {coreReport?.transferable_value && (
+            <div className="mb-10">
+              <TransferableValueSection transferable_value={coreReport.transferable_value} />
+            </div>
+          )}
+
+          {coreReport?.transferable_skills && coreReport.transferable_skills.length > 0 && (
+            <div className="mb-10">
+              <TransferableSkillsSection transferable_skills={coreReport.transferable_skills} />
+            </div>
+          )}
+
+          {coreReport?.options && coreReport.options.length > 0 && (
+            <div className="mb-10">
+              <BusinessPaths
+                options={coreReport.options}
+                recommended_selection={coreReport.recommended_selection ?? undefined}
               />
-            ))}
-          </div>
+            </div>
+          )}
+
+          {coreReport?.recommendation && (
+            <div className="mb-10">
+              <RecommendationSection
+                recommendation={coreReport.recommendation}
+                options={coreReport.options}
+              />
+            </div>
+          )}
+
+          {coreReport?.reality_check && (
+            <div className="mb-10">
+              <RealityCheckSection reality_check={coreReport.reality_check} />
+            </div>
+          )}
+
+          {coreReport?.income_outlook && (
+            <div className="mb-10">
+              <IncomeOutlookSection income_outlook={coreReport.income_outlook} />
+            </div>
+          )}
+
+          {coreReport?.ai_impact && (
+            <div className="mb-10">
+              <AIImpactSection ai_impact={coreReport.ai_impact} />
+            </div>
+          )}
+
+          {/* ----- Activation-plan sections (only when activation_plan present) ----- */}
+          {activationPlan?.portfolio_summary && (
+            <div className="mb-10">
+              <PortfolioSummarySection portfolio_summary={activationPlan.portfolio_summary} />
+            </div>
+          )}
+
+          {marketSnapshots && Object.keys(marketSnapshots).length > 0 && (
+            <div className="mb-10">
+              <MarketSnapshotSection market_snapshots={marketSnapshots} />
+            </div>
+          )}
+
+          {activationPlan?.first_move && (
+            <div className="mb-10">
+              <FirstMoveSection first_move={activationPlan.first_move} />
+            </div>
+          )}
+
+          {activationPlan?.activation_plan && (
+            <div className="mb-10">
+              <PlanSection activation_plan={activationPlan.activation_plan} />
+            </div>
+          )}
+
+          {activationPlan?.traction_signals && activationPlan.traction_signals.length > 0 && (
+            <div className="mb-10">
+              <TractionSignalsSection traction_signals={activationPlan.traction_signals} />
+            </div>
+          )}
+
+          {activationPlan?.portfolio_review_guide && (
+            <div className="mb-10">
+              <PortfolioReviewSection portfolio_review_guide={activationPlan.portfolio_review_guide} />
+            </div>
+          )}
+
+          {activationPlan?.network_toolkit && (
+            <div className="mb-10">
+              <NetworkToolkitSection network_toolkit={activationPlan.network_toolkit} />
+            </div>
+          )}
         </motion.div>
       </main>
 

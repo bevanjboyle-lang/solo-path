@@ -2,6 +2,9 @@ import { Badge } from "@/components/ui/badge";
 import { SAMPLE_PERSONA } from "@/data/sampleReportData";
 import { User, Briefcase } from "lucide-react";
 
+// TODO Phase 3b: this component renders SAMPLE_PERSONA which has no canonical
+// equivalent (the canonical report shape doesn't track persona separately).
+// Repurpose or delete in the Plan.tsx wiring step.
 export default function PersonaHeader() {
   const p = SAMPLE_PERSONA;
   return (

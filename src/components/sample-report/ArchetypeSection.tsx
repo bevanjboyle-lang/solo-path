@@ -1,29 +1,46 @@
 import GlassCard from "@/components/ui/GlassCard";
-import { SAMPLE_ARCHETYPE } from "@/data/sampleReportData";
+import type { SoloCoreReport } from "@/types/canonical";
 
-export default function ArchetypeSection() {
-  const a = SAMPLE_ARCHETYPE;
+interface Props {
+  archetype: SoloCoreReport["archetype"];
+}
+
+export default function ArchetypeSection({ archetype }: Props) {
+  const { primary, summary, editorial_description, capability_tags } = archetype;
+  // Canonical `editorial_description` is a single string; some narratives use
+  // double newlines to delineate paragraphs. Split on those, fall back to a
+  // single paragraph if none are present.
+  const paragraphs = (editorial_description ?? "")
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
   return (
     <GlassCard noHover className="p-6 sm:p-8">
       <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.15em] text-primary">Your Archetype</h2>
-      <h3 className="mb-4 text-xl font-bold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>
-        {a.title}
+      <h3 className="mb-2 text-xl font-bold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>
+        {primary}
       </h3>
+      {summary && (
+        <p className="mb-4 text-sm font-medium text-foreground/80">{summary}</p>
+      )}
       <div className="space-y-4">
-        {a.description.map((para, i) => (
+        {paragraphs.map((para, i) => (
           <p key={i} className="text-sm leading-relaxed text-muted-foreground">{para}</p>
         ))}
       </div>
-      <div className="mt-6 flex flex-wrap gap-2">
-        {a.tags.map((tag) => (
-          <span
-            key={tag}
-            className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
+      {capability_tags && capability_tags.length > 0 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {capability_tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-medium text-primary"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
     </GlassCard>
   );
 }

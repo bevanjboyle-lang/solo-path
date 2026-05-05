@@ -1,5 +1,11 @@
-import { SAMPLE_TRANSFERABLE_SKILLS, type TransferableSkill } from "@/data/sampleReportData";
 import { Progress } from "@/components/ui/progress";
+import type { SoloCoreReport } from "@/types/canonical";
+
+type Skill = SoloCoreReport["transferable_skills"][number];
+
+interface Props {
+  transferable_skills: SoloCoreReport["transferable_skills"];
+}
 
 function DemandDot({ demand }: { demand: "high" | "medium" | "low" }) {
   const colors = { high: "bg-emerald-500", medium: "bg-amber-500", low: "bg-muted-foreground/50" };
@@ -11,7 +17,7 @@ function DemandDot({ demand }: { demand: "high" | "medium" | "low" }) {
   );
 }
 
-function SkillBar({ skill }: { skill: TransferableSkill }) {
+function SkillBar({ skill }: { skill: Skill }) {
   return (
     <div className="rounded-md bg-card p-5">
       <div className="flex items-center justify-between mb-2">
@@ -27,8 +33,8 @@ function SkillBar({ skill }: { skill: TransferableSkill }) {
   );
 }
 
-export default function TransferableSkillsSection() {
-  const sorted = [...SAMPLE_TRANSFERABLE_SKILLS].sort((a, b) => b.strength - a.strength);
+export default function TransferableSkillsSection({ transferable_skills }: Props) {
+  const sorted = [...(transferable_skills ?? [])].sort((a, b) => b.strength - a.strength);
   return (
     <section>
       <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your Transferable Skills</h2>

@@ -1,4 +1,8 @@
-import { SAMPLE_INCOME_OUTLOOK, type YearProjection } from "@/data/sampleReportData";
+import type { SoloCoreReport, YearProjection } from "@/types/canonical";
+
+interface Props {
+  income_outlook: SoloCoreReport["income_outlook"];
+}
 
 function YearCard({ year, label }: { year: YearProjection; label: string }) {
   return (
@@ -18,15 +22,18 @@ function YearCard({ year, label }: { year: YearProjection; label: string }) {
   );
 }
 
-export default function IncomeOutlookSection() {
-  const io = SAMPLE_INCOME_OUTLOOK;
+export default function IncomeOutlookSection({ income_outlook }: Props) {
+  const io = income_outlook;
   return (
     <section>
       <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your Income Trajectory</h2>
 
       <div className="mb-6">
         <p className="text-sm text-secondary-foreground mb-1">
-          Current salary: <span className="font-bold text-primary">£{io.current_salary_gbp.toLocaleString()}</span>
+          Current salary:{" "}
+          <span className="font-bold text-primary">
+            £{(io.current_salary_gbp ?? 0).toLocaleString()}
+          </span>
         </p>
         <p className="text-sm text-secondary-foreground">{io.salary_replacement_analysis}</p>
       </div>
@@ -48,7 +55,9 @@ export default function IncomeOutlookSection() {
         </div>
       </div>
 
-      <p className="mt-4 text-xs italic text-muted-foreground/70">{io.income_notes}</p>
+      {io.income_notes && (
+        <p className="mt-4 text-xs italic text-muted-foreground/70">{io.income_notes}</p>
+      )}
     </section>
   );
 }

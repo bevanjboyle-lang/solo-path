@@ -1,7 +1,11 @@
 import { useState } from "react";
-import { SAMPLE_TRACTION_SIGNALS, type StrandTractionSignals, type TractionSignal } from "@/data/sampleReportData";
+import type { ActivationPlanOutput, TractionSignal, TractionSignalGroup } from "@/types/canonical";
 
-const weightMeta: Record<string, { label: string; dot: string; order: number }> = {
+interface Props {
+  traction_signals: ActivationPlanOutput["traction_signals"];
+}
+
+const weightMeta: Record<TractionSignal["weight"], { label: string; dot: string; order: number }> = {
   very_strong: { label: "Very strong", dot: "bg-emerald-500", order: 0 },
   strong: { label: "Strong", dot: "bg-emerald-400", order: 1 },
   moderate: { label: "Moderate", dot: "bg-amber-400", order: 2 },
@@ -24,7 +28,7 @@ function SignalRow({ signal }: { signal: TractionSignal }) {
   );
 }
 
-function StrandTab({ strand }: { strand: StrandTractionSignals }) {
+function StrandTab({ strand }: { strand: TractionSignalGroup }) {
   const sorted = [...strand.signals].sort(
     (a, b) => weightMeta[a.weight].order - weightMeta[b.weight].order
   );
@@ -37,8 +41,10 @@ function StrandTab({ strand }: { strand: StrandTractionSignals }) {
   );
 }
 
-export default function TractionSignalsSection() {
+export default function TractionSignalsSection({ traction_signals }: Props) {
   const [active, setActive] = useState(0);
+
+  if (!traction_signals || traction_signals.length === 0) return null;
 
   return (
     <section>
@@ -50,7 +56,7 @@ export default function TractionSignalsSection() {
       <div className="rounded-lg bg-card border border-border overflow-hidden">
         {/* Strand tabs */}
         <div className="flex border-b border-border">
-          {SAMPLE_TRACTION_SIGNALS.map((s, i) => (
+          {traction_signals.map((s, i) => (
             <button
               key={s.strand_id}
               onClick={() => setActive(i)}
@@ -67,7 +73,7 @@ export default function TractionSignalsSection() {
 
         {/* Signal list */}
         <div className="p-5 sm:p-6">
-          <StrandTab strand={SAMPLE_TRACTION_SIGNALS[active]} />
+          <StrandTab strand={traction_signals[active]} />
         </div>
 
         {/* Legend */}

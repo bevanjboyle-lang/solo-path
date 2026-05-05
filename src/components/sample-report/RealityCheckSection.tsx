@@ -1,5 +1,9 @@
-import { SAMPLE_REALITY_CHECK } from "@/data/sampleReportData";
 import { AlertTriangle, Lightbulb, PoundSterling } from "lucide-react";
+import type { SoloCoreReport } from "@/types/canonical";
+
+interface Props {
+  reality_check: SoloCoreReport["reality_check"];
+}
 
 const cards = [
   { key: "most_likely_failure_mode" as const, title: "Biggest Risk", borderColor: "border-red-400", icon: <AlertTriangle className="h-5 w-5 text-red-500" /> },
@@ -8,7 +12,7 @@ const cards = [
   { key: "honest_income_outlook" as const, title: "Income Outlook", borderColor: "border-muted-foreground/40", icon: <PoundSterling className="h-5 w-5 text-muted-foreground" /> },
 ];
 
-export default function RealityCheckSection() {
+export default function RealityCheckSection({ reality_check }: Props) {
   return (
     <section>
       <h2 className="text-[1.8rem] font-bold text-foreground mb-6">The Real Talk</h2>
@@ -19,7 +23,7 @@ export default function RealityCheckSection() {
               {c.icon}
               <h4 className="text-[1.1rem] font-bold text-foreground">{c.title}</h4>
             </div>
-            <p className="text-sm leading-relaxed text-secondary-foreground">{SAMPLE_REALITY_CHECK[c.key]}</p>
+            <p className="text-sm leading-relaxed text-secondary-foreground">{reality_check[c.key]}</p>
           </div>
         ))}
       </div>
