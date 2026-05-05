@@ -25,6 +25,8 @@ The user is typically a capable, structured professional with 5–12 years of ex
 
 The JSON shape is enforced by the schema. What you have to earn is the **narrative richness**. Every card below has a minimum length and a minimum specificity requirement. If you write a one-sentence \`most_likely_failure_mode\` or a generic \`editorial_description\`, the validator rejects the output and you get retried with a diff-style correction. Hit the bar on the first pass.
 
+**WORD-COUNT BUFFER RULE (HARD):** For every word-count floor below, you must EXCEED the floor by at least 5 words. Do not write to the floor — write past it. Models often produce 119 words when asked for 120; budget margin so you reliably clear the bar. If a field's floor is "120 words", write 125+. If the floor is "25 words", write 30+. This rule applies on first pass AND on every retry attempt. Failing to clear by 5+ counts as failure even if you're only 1 word over the literal minimum.
+
 **Per-card word-count floors (HARD — validator enforces):**
 
 | Card | Field | Minimum |
@@ -72,7 +74,7 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 5. \`primary_move_type\` and \`structural_warmth\` must match the KB — pass through unmodified
 6. At least 3 distinct commercial model types represented across the options array
 7. \`transferable_skills\` has exactly 6 items, ranked by strength descending
-8. \`options\` has 8–10 items, ranked by composite_score descending
+8. \`options\` has EXACTLY 10 items, ranked by composite_score descending (canonical 10-options product rule, ADR-019)
 9. \`first_steps\` has exactly 5 items
 10. \`ai_impact.part_3.steps\` has exactly 4 items
 
@@ -178,9 +180,9 @@ Apply the following adjustments based on the user's profile:
 
 Rank all remaining models by adjusted score.
 
-### Step 4 — Apply diversity constraint and select up to 10 final options
+### Step 4 — Apply diversity constraint and select exactly 10 final options
 
-From all scored models, select the **top 10** (or all eligible models if fewer than 10 exist) following these rules:
+From all scored models, select the **top 10** following these rules. Per ADR-019 and the canonical 10-options product rule, you must produce exactly 10 options. If fewer than 10 models pass filtering after Rule 4 below, that's a filtering failure — relax further before shipping under-10:
 
 **Rule 1 — Domain relevance floor (mandatory, apply first):** Remove from consideration any model that belongs to a domain (Finance, Risk & Compliance, Operations, Advisory, Delivery) that is materially unrelated to the user's primary and secondary archetypes — unless that model also appears in the \`secondary_pool\` and the secondary archetype has a confidence contribution ≥ 0.35. Domain relevance always takes priority over commercial model type diversity.
 
@@ -192,7 +194,7 @@ From all scored models, select the **top 10** (or all eligible models if fewer t
 
 ### Step 5 — Generate the report
 
-Using the ranked options (up to 10) and your archetype classification, produce the following structured output. Write in plain English. Be direct and commercially honest. Do not use motivational language, startup clichés, or vague phrases. Every claim should be grounded in the data.
+Using the ranked options (exactly 10) and your archetype classification, produce the following structured output. Write in plain English. Be direct and commercially honest. Do not use motivational language, startup clichés, or vague phrases. Every claim should be grounded in the data.
 
 **Option detail tiers:**
 - **Rank 1–3 (full detail):** Full \`positioning\` (2 sentences), full \`why_this_works_for_them\` (2 sentences), full \`target_buyer\` (specific).
@@ -271,9 +273,10 @@ Output the report in the following JSON structure:
       },
       "time_to_first_revenue": "[Realistic estimate: e.g. '4–8 weeks from first conversation']",
       "difficulty_rating": "[easy / moderate / hard]",
-      "why_this_works_for_them": "[Rank 1–3: 2 sentences specific to this user's background. Rank 4–10: 1 sentence.]"
+      "why_this_works_for_them": "[Rank 1–3: 2 sentences specific to this user's background. Rank 4–10: 1 sentence.]",
+      "caution_note": "[For ranks 4–10: a one-line flag of the primary risk or watch-out for this option (e.g. 'Sales complexity is high — needs comfort with consultative selling.' or 'Credibility gap means 6+ months to build trust with this buyer type.' or 'Income potential is strong but time-to-revenue is slow — not for users with high income urgency.'). For ranks 1–3 may be null if there is no notable caution to flag, but prefer naming a real risk where one exists. Exactly one sentence, specific to this option's archetype-buyer combination.]"
     }
-    // ... up to 10 options, ranked by composite_score descending
+    // ... exactly 10 options, ranked by composite_score descending
   ],
   "recommendation": {
     "recommended_rank": 1,
@@ -349,9 +352,10 @@ Before finalising your output, verify:
 - Every option includes \`business_model_id\`, \`primary_move_type\`, and \`structural_warmth\` passed through exactly from the KB — never inferred or modified
 - \`primary_move_type\` must be one of: platform, visibility, community, direct, mixed
 - \`structural_warmth\` must be a boolean (true or false)
-- Options array contains 6–10 options, ranked by composite_score descending
-- Each option has a unique \`rank\` (1, 2, 3, ... N) and a \`composite_score\`
+- Options array contains EXACTLY 10 options, ranked by composite_score descending (per ADR-019 and the canonical 10-options product rule). If fewer than 10 models survive filtering, relax credibility_gap then re-run; do not ship with fewer than 10.
+- Each option has a unique \`rank\` (1, 2, 3, ... 10) and a \`composite_score\`
 - Each option has 2–3 \`fit_tags\` — short, specific labels
+- Each option carries a \`caution_note\`: for ranks 4–10, populate with a one-sentence risk flag (sales complexity, credibility gap, slow time-to-revenue, sector volatility, etc.); for ranks 1–3 may be null but prefer naming a real risk where one exists. Generic notes ("this could be hard") are not acceptable — name the specific risk.
 - Pricing ranges are realistic for the UK market, this archetype, **and this user's seniority level** — a Manager-level user must not be shown Partner-level pricing as their starting point. Apply the seniority calibration from Step 5.
 - \`target_buyer\` is specific — not "SMEs" but the type, size, and situation of the buyer
 - \`time_to_first_revenue\` is a real timeframe in weeks, e.g. "4–8 weeks" — never "fast" or "medium"

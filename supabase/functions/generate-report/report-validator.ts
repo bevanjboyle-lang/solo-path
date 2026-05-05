@@ -723,6 +723,8 @@ export function buildRetryMessage(result: ValidationResult): string {
     "",
     ...result.retry_prompt_hints.map((h) => `- ${h}`),
     "",
+    "CRITICAL — WORD-COUNT BUFFER RULE: For every word-count floor mentioned above, you must EXCEED it by at least 5 words. Do not write to the floor — write past it. Models often produce 119 words when asked for 120; budget margin so you reliably clear the bar. If a hint says 'expand to 120–220 words', write 125+. If it says '≥25 words', write 30+. Aim 5+ words over every floor; one word over is not enough.",
+    "",
     "Do not shorten other cards to compensate. The final report must meet the spec in every card.",
   ];
   return lines.join("\n");

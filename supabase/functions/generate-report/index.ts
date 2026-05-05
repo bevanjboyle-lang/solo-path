@@ -1,5 +1,6 @@
-// generate-report v45 — canonical ironclad rewrite (ADR-019)
-// 2026-05-05
+// generate-report v45.1 — canonical ironclad rewrite + tuning pass (ADR-019)
+// 2026-05-05  (v45 initial; v45.1 tuning pass: caution_note instruction in
+// canonical prompt, buffer rule in retry message, retries 1→2)
 //
 // Replaces v44.1's inline simplified prompt with the canonical
 // prompts/prompt-1-core-report.md content (embedded as P1_SYSTEM_PROMPT_TEMPLATE
@@ -48,10 +49,15 @@ import {
   P1_SYSTEM_PROMPT_TEMPLATE,
 } from "./p1-system-prompt.ts";
 
-const FUNCTION_VERSION = "v45-ironclad-canonical";
+const FUNCTION_VERSION = "v45.1-ironclad-tuning";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
-const MAX_P1_VALIDATOR_RETRIES = 1; // ADR-019: one retry max on hard failures
+// ADR-019 (amended 2026-05-05 after first live smoke): retry budget bumped
+// from 1 → 2 (giving 3 total attempts) after gpt-5.4 was observed landing
+// 1-3 words under floor on 2/10 narrative cards. Combined with the buffer
+// rule in buildRetryMessage and the canonical prompt's "exceed by 5+" rule,
+// this gives the loop a realistic chance of converging on borderline misses.
+const MAX_P1_VALIDATOR_RETRIES = 2;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
