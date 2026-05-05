@@ -1,30 +1,54 @@
-// payment-webhook v24 — ADR-013 (anonymous-first return-to-spec).
+// payment-webhook v26 — canonical-aligned (ADR-019). 2026-05-05.
 //
-// Additive changes over v23:
-//   1. Accept `client_session_id` in checkout session metadata (new anon flow).
-//   2. Resolve user by Stripe customer email when metadata.userId is absent:
-//      - find existing auth user by email (admin.listUsers + in-memory match), OR
-//      - create a new auth user via admin.createUser (email_confirm=true).
-//   3. After resolution, link any anon rows tagged with the same
-//      client_session_id (reports, questionnaire_responses, payments) to the
-//      resolved user_id. Idempotent — only rows with user_id IS NULL are touched.
+// Change-log (v25 → v26):
+//   - Header comment refreshed. v25 inherited a stale changelog from v24 that listed
+//     "Background generate-plan kick" under Unchanged — but the F60 auto-fire of
+//     generate-plan was removed in v25 in favour of advancing reports.status to
+//     'pending_selection' and letting the frontend StrandSelector fire generate-plan
+//     with explicit selected_ranks (the canonical 10/5 product rule). This v26
+//     comment is the corrected source of truth.
+//   - charge.refunded handler bug fix: the previous SELECT/UPDATE chain at line ~459
+//     filtered only on `status='completed'`, with no payment_intent or session_id
+//     constraint — meaning a single refund event would mark every completed payment
+//     in the table as refunded. v26 narrows the filter to the specific
+//     stripe_payment_intent (or, if not in the event, the session_id) of the refunded
+//     charge. Real bug, surfaced during the Phase 2 step 3 ground-truth pass.
+//   - Status-advance query (lines ~363) gains an order+limit safety so a user with
+//     multiple teaser_ready rows (edge case — should not happen but defensive) only
+//     advances the most recent one.
 //
-// Unchanged:
-//   - Stripe signature verification.
+// Status flow this function participates in:
+//   teaser_ready → (paid £19.99 one-time)  → pending_selection
+//                                                  ↓ user picks up to 5 ranks on /plan
+//                                            generating_plan (set by generate-plan)
+//                                                  ↓
+//                                            complete
+//
+// Per ADR-019 + project memory `project_canonical_10_options_5_selected.md`:
+// payment-webhook does NOT auto-fire generate-plan. It only advances the row status
+// to 'pending_selection' and sends the welcome email + magic link. The user must
+// actively select up to 5 ranks (Phase 4 frontend StrandSelector) to trigger plan
+// generation.
+//
+// Preserved unchanged from v25:
+//   - Stripe signature verification (HMAC-SHA256 against STRIPE_WEBHOOK_SECRET).
 //   - payments.status='completed' update by stripe_session_id.
 //   - user_profiles.stripe_customer_id attach.
-//   - Tranche 1 guidance module unlock (modules 1,2,3).
-//   - Background generate-plan kick.
+//   - Tranche 1 guidance module unlock (modules 1, 2, 3).
 //   - Welcome email with magic-link (Resend + supabase.auth.admin.generateLink).
-//   - second_report branch (non-subscriber £9.99 second purchase).
-//   - charge.refunded handler.
+//   - second_report branch (non-subscriber £9.99 second-report purchase).
+//   - linkAnonRows (anon → authed user_id backfill across reports /
+//     questionnaire_responses / payments) per ADR-013.
+//   - resolveUserForCheckout (legacy authed via metadata.userId + ADR-013 anon-by-email
+//     resolution).
 //
-// The existing authed path (metadata.userId explicit) is byte-equivalent to v23.
+// CORS allow-headers includes stripe-signature (server-side webhook only;
+// x-client-session-id is irrelevant here — Stripe doesn't send it).
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v25-f60-status-advance";
+const FUNCTION_VERSION = "v26-canonical-aligned";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -374,23 +398,44 @@ Deno.serve(async (req: Request) => {
     //   (b) accessed recommended_selection.selected_ranks but generate-report v44.1
     //       writes recommended_selection as a flat array. The condition was never true.
     try {
-      const { data: advancedRows, error: statusErr } = await supabase
+      // v26: select the LATEST teaser_ready row for this user, then advance only
+      // that one. Defensive against the edge case where a user has multiple
+      // teaser_ready rows (PostgREST UPDATE doesn't support ORDER/LIMIT directly).
+      const { data: latestRow, error: latestErr } = await supabase
         .from("reports")
-        .update({ status: "pending_selection" })
+        .select("id")
         .eq("user_id", userId)
         .eq("status", "teaser_ready")
-        .select("id");
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (statusErr) {
-        console.error("v25 status advance failed (non-fatal):", statusErr.message);
-      } else {
-        console.log(
-          `v25 advanced ${advancedRows?.length ?? 0} report(s) to pending_selection for user ${userId}`,
+      if (latestErr) {
+        console.error(
+          "v26 status advance lookup failed (non-fatal):",
+          latestErr.message,
         );
+      } else if (!latestRow?.id) {
+        console.log(
+          `v26 no teaser_ready report to advance for user ${userId} (already advanced or no report yet)`,
+        );
+      } else {
+        const { error: statusErr } = await supabase
+          .from("reports")
+          .update({ status: "pending_selection" })
+          .eq("id", latestRow.id);
+
+        if (statusErr) {
+          console.error("v26 status advance failed (non-fatal):", statusErr.message);
+        } else {
+          console.log(
+            `v26 advanced report ${latestRow.id} to pending_selection for user ${userId}`,
+          );
+        }
       }
     } catch (statusAdvanceErr) {
       console.error(
-        "v25 status advance threw (non-fatal):",
+        "v26 status advance threw (non-fatal):",
         (statusAdvanceErr as Error)?.message ?? statusAdvanceErr,
       );
     }
@@ -447,18 +492,48 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  // ───── charge.refunded (unchanged) ───────────────────────────────────────
+  // ───── charge.refunded (v26: bug-fixed — narrow update to the specific session) ──
   if (event.type === "charge.refunded") {
     const charge = event.data.object as Stripe.Charge;
     const paymentIntentId = charge.payment_intent as string;
 
     if (paymentIntentId) {
-      const { error } = await supabase
-        .from("payments")
-        .update({ status: "refunded" })
-        .eq("status", "completed");
+      // The payments table is keyed by stripe_session_id, not payment_intent.
+      // Resolve the Checkout Session that created this payment_intent before
+      // updating, otherwise we'd mark every completed payment as refunded.
+      let sessionId: string | undefined;
+      try {
+        const sessions = await stripe.checkout.sessions.list({
+          payment_intent: paymentIntentId,
+          limit: 1,
+        });
+        sessionId = sessions.data[0]?.id;
+      } catch (lookupErr) {
+        console.error(
+          `charge.refunded: failed to look up Checkout Session for payment_intent ${paymentIntentId}:`,
+          lookupErr,
+        );
+      }
 
-      if (error) console.error("Error updating refund status:", error);
+      if (sessionId) {
+        const { error, count } = await supabase
+          .from("payments")
+          .update({ status: "refunded" }, { count: "exact" })
+          .eq("stripe_session_id", sessionId)
+          .eq("status", "completed");
+
+        if (error) {
+          console.error(`Error updating refund status for session ${sessionId}:`, error);
+        } else {
+          console.log(
+            `charge.refunded: marked ${count ?? 0} payment row(s) as refunded for session ${sessionId} (payment_intent ${paymentIntentId})`,
+          );
+        }
+      } else {
+        console.warn(
+          `charge.refunded: no Checkout Session found for payment_intent ${paymentIntentId}; refund not recorded in payments table`,
+        );
+      }
     }
 
     console.log(`Charge refunded: ${charge.id}`);

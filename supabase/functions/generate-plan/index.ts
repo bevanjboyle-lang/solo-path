@@ -1,21 +1,52 @@
-// generate-plan v32 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
-// generate-plan v28 — async pattern (mirrors generate-report v44.1)
+// generate-plan v33 — canonical ironclad rewrite (ADR-019) — 2026-05-05
 //
-// Changes from v27:
-//   - Synchronous: validate input, fetch report, mark status='generating_plan',
-//     return { report_id, status: 'generating_plan' } immediately (~2s).
-//   - Background (via EdgeRuntime.waitUntil): all OpenAI calls + final report row update.
+// Mirrors generate-report v45.1's pattern: canonical prompts live in repo (.md → .ts),
+// strict json_schema mode is the structural contract, and runtime adapters bridge any
+// schema-shape vs. legacy-shape gaps.
 //
-// Why: synchronous v27 takes 60-180s for prompt 3 (16384 tokens) plus per-strand market
-// snapshots in parallel. Total time exceeds gateway proxy timeout (60-150s) and the browser
-// sees a hung connection. Frontend should poll reports.status until 'complete'.
+// Change-log (v32-async → v33-ironclad-canonical):
+//   - Replaced inline PROMPT_3V2_SYSTEM with canonical P3_SYSTEM_PROMPT_TEMPLATE import
+//     (from p3-system-prompt.ts). User message now built via P3_USER_MESSAGE_TEMPLATE
+//     substitution per strand.
+//   - Replaced inline PROMPT_4_SYSTEM with canonical P4_SYSTEM_PROMPT_TEMPLATE import
+//     (from p4-system-prompt.ts). User message built via P4_USER_MESSAGE_TEMPLATE per
+//     strand.
+//   - Switched P3 response_format from { type: "json_object" } to { type: "json_schema",
+//     json_schema: ACTIVATION_PLAN_SCHEMA } for structural enforcement.
+//   - Switched P4 response_format to { type: "json_schema", json_schema:
+//     MARKET_SNAPSHOT_SCHEMA }.
+//   - Added time_allocation array→object adapter (canonical schema models the field as
+//     Array<{strand_key, minutes}>; downstream consumers expect the legacy
+//     { strand_key: minutes } object form).
+//   - Wraps each P4 strand response with { strand_id, model_name, location, sections }
+//     envelope before persisting to reports.market_snapshots[strand_id]. Legacy plain-
+//     text reports.market_snapshot column preserved for export-pdf and other readers via
+//     synthesised flat-text view of strand_1's sections.
+//   - Bumped P3 max_completion_tokens 16384 → 24000 (ironclad output is denser).
+//   - Bumped P4 max_completion_tokens 1500 → 2000 (sections required to be substantive).
+//   - FUNCTION_VERSION = "v33-ironclad-canonical".
 //
-// v27 baseline: P0 #22 (2026-04-18) max_tokens → max_completion_tokens for GPT-5.4 compatibility.
+// Preserved unchanged: user-JWT auth (no anon, no csid — generate-plan is post-payment
+// authed-only), async pattern via EdgeRuntime.waitUntil, recalibration block (TIER2),
+// apollo-coverage observability counts, status flow pending_selection → generating_plan
+// → complete (or failed), selected_strands writeback shape, x-client-session-id CORS
+// allow-header, no rate limit, no validator-with-retry.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import OpenAI from "https://esm.sh/openai@4.79.1";
 
-const FUNCTION_VERSION = "v28-async";
+import {
+  ACTIVATION_PLAN_SCHEMA,
+  type ActivationPlanOutput,
+} from "./activation-plan-schema.ts";
+import {
+  MARKET_SNAPSHOT_SCHEMA,
+  type MarketSnapshotOutput,
+} from "./market-snapshot-schema.ts";
+import { P3_SYSTEM_PROMPT_TEMPLATE, P3_USER_MESSAGE_TEMPLATE } from "./p3-system-prompt.ts";
+import { P4_SYSTEM_PROMPT_TEMPLATE, P4_USER_MESSAGE_TEMPLATE } from "./p4-system-prompt.ts";
+
+const FUNCTION_VERSION = "v33-ironclad-canonical";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,298 +87,315 @@ function computeWarmthType(structural_warmth: boolean): "relational" | "structur
   return structural_warmth === true ? "structural" : "relational";
 }
 
-// ── Prompt 3v2.3 system prompt (Apollo sprint — outreach_subtype + apollo_query) ──
-const PROMPT_3V2_SYSTEM = `You are Solo's portfolio activation specialist. Your job is to take a user's selected opportunity portfolio — 2 to 5 business model strands they want to explore in parallel — and produce:
+// ── Adapters ───────────────────────────────────────────────────────────────
 
-1. A 30-Day Portfolio Activation Plan — a single integrated plan that helps the user test all selected strands simultaneously, with shared foundational work front-loaded and strand-specific actions clearly tagged.
-2. Ready-to-send move drafts for every move task, customised per strand and move type.
-3. A Network Activation Toolkit — 4 personalised Direct-type message templates covering the portfolio.
-4. Traction signals for each strand — specific observable events that indicate market response.
-5. Time allocation guidance — how to split limited time across strands.
-
-This is a paid deliverable. The plan must feel like one coherent strategy, not multiple disconnected plans.
-
-CORE PLANNING PHILOSOPHY
-
-The user has chosen multiple paths because they are uncertain which one will work best. Your plan must:
-1. Respect the uncertainty. Each strand gets genuine effort during Phase 2.
-2. Front-load shared work. Phase 1 accomplishes everything that benefits ALL strands.
-3. Create genuine parallel testing. Phase 2 has strand-specific moves for each strand.
-4. Build toward narrowing. By Day 19, the user should have enough evidence to begin narrowing.
-5. End focused. Phase 4 concentrates on the 1-2 strands showing the most promise.
-
-PERSONALISATION INPUTS
-
-Use all context provided in the user message. Q3b (employer/org type) is the single most impactful signal — reference the actual employer name or org type when writing positioning statements and move drafts. Q6 (achievement) builds the Phase 1 war story — name the specific outcome/metric from Q6 in the war story task description. Q11 (sector context) personalises moves per strand — name the specific buyer types from Q11 when describing move targets. Q12 (independent experience) calibrates Phase 1 depth. Q5/Q2 (seniority/years) calibrate move targets. Hook insight must appear as a concrete task assigned to the most relevant strand.
-
-MOVE TYPE AWARENESS — CRITICAL
-
-Each strand carries a primary_move_type field: direct | platform | visibility | community. This is KB-authoritative — do not override it.
-
-Each strand also carries a warmth_type field: relational | structural.
-
-Tailor all strand-specific Phase 2 tasks to the move type:
-- direct strands: named-contact outreach tasks (emails, LinkedIn DMs). warmth_type=relational → leverage existing contacts first.
-- platform strands: marketplace/directory registration tasks. warmth_type=structural → profile setup, platform search optimisation, first response protocol.
-- visibility strands: LinkedIn post or article publishing tasks. Draft a complete post ready to publish.
-- community strands: join a named professional community + first visible contribution.
-
-NETWORK CALIBRATION — DIRECT STRANDS ONLY
-
-The network_quality flag applies ONLY to direct-type strands. Platform, Visibility, and Community moves are not network-dependent.
-
-For direct strands:
-- strong: 12-15 total direct move actions in Phase 2 across direct strands
-- moderate: 8-10 total direct move actions
-- weak: 5-7 total direct move actions
-
-For platform, visibility, and community strands: include the appropriate strand-specific tasks regardless of network_quality.
-
-network_note in output: 1 sentence on Direct-type move volume based on network strength. Note that Platform, Visibility, and Community moves are not constrained by network.
-
-CRITICAL MOVE PERSONALISATION:
-- Direct move drafts MUST reference the user's Q6 achievement and Q3b employer context as the credibility anchor.
-- Platform move tasks must name the specific platform(s) relevant to the model (e.g. Bark, Checkatrade, ISO certification directories).
-- Visibility move tasks must produce a complete, ready-to-publish LinkedIn post draft.
-- Community move tasks must name the specific community relevant to the model.
-- The war story in Phase 1 MUST be built around the specific Q6 achievement.
-
-USER CONTEXT PROFILE (structured flags — use these directly, they are pre-computed from questionnaire answers):
-- can_do_evenings_weekends_only: if true, ALL day labels must be "Evening" or "Weekend Day" — never "Weekday"
-- needs_fast_revenue: if true, weight Phase 2 tasks toward fastest-revenue strand; front-load moves for that strand
-- has_sales_confidence: if false, simplify initial move tasks — warmer targets, shorter asks, lower friction
-- has_advisory_instinct: if true, include a task that leverages existing informal advisory behaviour as a commercial lever
-- network_quality (weak/moderate/strong): use for Direct strand move volume ONLY
-- time_budget: employed_full_time → Evening/Weekend only; on_notice → Weekday 5-6hrs; unemployed → Weekday 5-6hrs; employed_part_time → Weekday 2-3hrs
-
-Do not reference inputs by name or question number in the output.
-
-PACING RULES
-
-Base pacing on the time_budget flag in user_context_profile (takes precedence over inferred employment status).
-- employed_full_time: Evening labels, 1-1.5 hours per evening; Weekend Day labels, 3-4 hours.
-- unemployed / on_notice: Weekday labels, 5-6 hours.
-- employed_part_time: Weekday labels, 2-3 hours.
-
-Time allocation across strands:
-- Phase 1 (shared): 100% on shared foundations
-- Phase 2 (strand activation): Proportional to strand count and composite score. No strand gets less than 20%.
-- Phase 3 (evidence & review): Portfolio Review priority. Remaining time to active strands.
-- Phase 4 (focus): 70-80% on focus strand(s), 20-30% on watching strands.
-
-PLAN PHASES
-
-Phase 1 — Shared Foundations (Days 1-7): Positioning (framed at archetype level, not locked to one model), war story from achievement, LinkedIn, credibility audit, network mapping for direct strands, platform research for platform strands. NOTE: If ALL selected strands carry primary_move_type = direct, do NOT include a platform research day in Phase 1 — replace it with a network segmentation task (categorising existing contacts by strand relevance and ranking outreach priority).
-
-Phase 2 — Strand Activation (Days 8-18): Strand-specific moves and testing. Each strand gets dedicated time blocks. Tasks tagged with strand_id. IMPORTANT: Every day in Phase 2 must have tasks for at least 2 different strands (if 3+ strands selected). Do not leave any day with only one strand's tasks.
-
-Phase 3 — Evidence & Review (Days 19-23): Day 19 is Portfolio Review 1 (check-in system). Days 20-23 execute on narrowed focus. Days 20-23 must be populated — do not leave them empty after the review checkpoint.
-
-Phase 4 — Focus & Accelerate (Days 24-30): Day 26 is Portfolio Review 2 (final focus decision). Concentrate on 1-2 strongest strands. Days 24-30 must all be populated — do not truncate. Include the Day 26 review and the final push through Day 30.
-
-MOVE DRAFT RULES
-
-For every move task, generate an outreach_draft appropriate to the move type:
-- direct: email_reconnect (150-200 words), email_cold (100-140 words), linkedin_dm (80-120 words), verbal (50-70 words)
-- platform: platform_profile_setup — describe the specific profile elements to complete
-- visibility: linkedin_post — complete ready-to-publish post, 150-250 words, include a hook, body, and CTA
-- community: community_intro — introductory message for first community contribution, 80-120 words
-
-Write in the user's voice — calm, professional, direct, not salesy. Include tone_note and personalisation_instructions.
-
-If has_sales_confidence is false: use warmer, lower-stakes opening lines. Prefer reconnect emails over cold outreach. Shorter bodies. Softer ask.
-
-FIRST MOVE
-
-Identify the single most important action within 24 hours. Must be a move action — NOT a research or admin task. Must name a specific type of person or platform to contact/join. Must include a complete, ready-to-send draft appropriate to the strand's primary_move_type.
-
-For direct strands: references the user's Q6 achievement and Q3b employer context as credibility anchor.
-For platform strands: names the specific platform and first registration step.
-For visibility strands: names the specific post topic and includes a draft.
-For community strands: names the specific community and first contribution.
-
-PROHIBITED for first_move: "Conduct market research", "Review your options", "Identify potential clients" as the primary action.
-
-TRACTION SIGNALS
-
-For each strand, generate 5-7 specific observable traction signals appropriate to the move type with weights: negative, moderate, strong, very_strong.
-- direct strands: reply rates, meeting requests, referrals
-- platform strands: profile views, enquiry messages, quote requests
-- visibility strands: post impressions, DMs received, connection requests from target buyers
-- community strands: reactions to first contribution, DMs, invitations to collaborate
-
-PROHIBITED LANGUAGE: Do NOT use motivational clichés anywhere in the output. Banned: "golden opportunity", "this is your moment", "perfect time", "indispensable", "ideal foundation", "exciting opportunity", "transform your career". Solo's tone is direct, commercially grounded, and specific.
-
-OUTPUT FORMAT — Output ONLY this JSON:
-{
-  "portfolio_summary": {
-    "strand_count": number,
-    "strands": [
-      {
-        "strand_id": "strand_1",
-        "model_name": string,
-        "rank": number,
-        "primary_move_type": string,
-        "warmth_type": string,
-        "why_included": string,
-        "time_weight": number
-      }
-    ],
-    "strategy": string,
-    "effort_distribution": string
-  },
-  "first_move": {
-    "action": string,
-    "strand_id": string,
-    "move_type": string,
-    "window": "Within 24 hours",
-    "why_first": string,
-    "outreach_draft": {
-      "format": string,
-      "subject": string | null,
-      "body": string,
-      "tone_note": string,
-      "personalisation_instructions": string
-    },
-    "follow_up_prompt": string
-  },
-  "activation_plan": {
-    "summary": string,
-    "pacing_note": string,
-    "network_note": string,
-    "phases": [
-      {
-        "phase": string,
-        "days": string,
-        "goal": string,
-        "strand_focus": "shared | all_strands | narrowing | focus_strands",
-        "days_detail": [
-          {
-            "day": string,
-            "label": string,
-            "time_required": string,
-            "time_allocation": {},
-            "tasks": [
-              {
-                "task_id": string,
-                "strand_id": string,
-                "task_type": "foundation | outreach | content | research | admin | review",
-                "move_type": string | null,
-                "outreach_subtype": "warm" | "cold" | null,
-                "apollo_query": {
-                  "person_titles": [string],
-                  "sector_keywords": string,
-                  "seniority_levels": [string],
-                  "location": string,
-                  "company_size_ranges": [string]
-                } | null,
-                "description": string,
-                "outreach_draft": null | {
-                  "format": string,
-                  "subject": string | null,
-                  "body": string,
-                  "tone_note": string,
-                  "personalisation_instructions": string
-                }
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "success_metric": string
-  },
-  "traction_signals": [
-    {
-      "strand_id": string,
-      "model_name": string,
-      "move_type": string,
-      "signals": [
-        { "signal": string, "weight": "negative | moderate | strong | very_strong" }
-      ]
+/**
+ * Convert canonical strict-schema time_allocation (Array<{strand_key, minutes}>)
+ * to the legacy object form ({ shared: "90 mins" } or { strand_1: "50 mins", ... })
+ * that downstream consumers (frontend, P5 checkin, P6 replan) have always read.
+ */
+function timeAllocationArrayToObject(
+  arr: Array<{ strand_key: string; minutes: string }>,
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const e of arr || []) {
+    if (e && typeof e.strand_key === "string") {
+      out[e.strand_key] = e.minutes;
     }
-  ],
-  "portfolio_review_guide": {
-    "review_1": { "trigger_day": 19, "questions": [string] },
-    "review_2": { "trigger_day": 26, "questions": [string] }
-  },
-  "network_toolkit": {
-    "intro": string,
-    "templates": [
-      {
-        "type": "reconnect_email | linkedin_dm | referral_ask_email | verbal_positioning_statement",
-        "strand_id": string,
-        "use_case": string,
-        "subject": string | null,
-        "body": string,
-        "statement": string | null
-      }
-    ]
   }
+  return out;
 }
 
-QUALITY RULES
-- first_move must be a move action (not research), with a complete sendable draft appropriate to the strand's move type
-- hook_insight must appear as an explicitly labelled concrete task in the activation plan (not merely paraphrased in the strategy narrative) — the task description must make clear it derives from the hook insight, assigned to the most applicable strand
-- Every day in Phase 2 must have tasks for at least 2 different strands (if 3+ strands selected)
-- Every move task must have a populated outreach_draft
-- Phase 1 tasks must genuinely serve ALL strands
-- Phase 4 tasks should concentrate on 1-2 strands
-- Traction signals must be specific per strand and move type — not copied across strands
-- Direct strand move volume must respect network calibration from user_context_profile.constraints.network_quality
-- Platform/Visibility/Community strand tasks are NOT constrained by network_quality
-- War story in Phase 1 must name the specific Q6 achievement metric/outcome
-- time_weight values and effort_distribution text must agree exactly — if all strands carry equal time weights, effort_distribution must not express a preference for any single strand
-- Every direct outreach draft (email, DM, verbal) — subject line AND opening body — must reference the user's Q6 achievement or name the buyer's specific immediate problem. Generic subjects such as "Reconnecting and Introducing a New Service" are prohibited.
-- If ALL selected strands carry primary_move_type = direct, Phase 1 must not include a platform research day — replace it with a network segmentation task (categorising existing contacts by strand relevance and ranking outreach priority)
-- Traction signals for direct strands must reference the specific deliverable and engagement context unique to each model — not a generic referral/meeting/proposal pattern repeated identically across strands. Examples: Business Case Development → "IC draft endorsed by sponsor and submitted to board"; Financial Modelling → "model used in a live investment or board decision"; Board & Investor Reporting → "board pack redesign confirmed for next board cycle". Signal vocabulary must differ per strand.
-- Portfolio review questions for direct-move portfolios must reference observable outreach signals by name (reply rates, meetings booked, proposal requests) — not generic "interest" or "engagement" language
-- first_steps must be grounded in the user's specific network, employer context, and selected strands — do not include generic advice such as "find a mentor", "seek a coach", or "invest in sales training"
-- All phases (1–4) must be fully populated. Do not truncate Phase 2, 3, or 4. Phase 2 has 11 days, Phase 3 has 5 days, Phase 4 has 7 days — all must have populated days_detail entries.
-- CRITICAL TOKEN BUDGET RULE: Every outreach_draft body within activation_plan.phases days_detail tasks must be abbreviated to 60–80 words maximum — hook + ask only. Do NOT write full 150–200 word drafts inline in phase task outreach_drafts. Full message templates belong in network_toolkit. This compression is mandatory to ensure all 30 days are populated without truncation.
-- HOOK INSIGHT EXPLICIT LABEL: Exactly one task in the activation plan must have a description that begins with the exact phrase "Hook insight task:" followed by the specific action derived from the hook_insight. This task must be placed in Phase 2, assigned to the strand where the insight is most commercially relevant. It must be a distinct task from the war story task. Example: "Hook insight task: Contact a CFO in your network who is preparing for a board restructure — your Q2 insight about enterprise value extraction applies directly here."
-- FIRST MOVE SUBJECT LINE: The first_move outreach_draft subject line must reference the Q6 achievement metric directly or name the buyer's specific immediate problem. It must NOT be a generic service description. Prohibited patterns (do not use): "[Service] Opportunities", "Exploring [Service] Opportunities", "Discussing [Service]", "Reconnecting and Introducing", "Introduction to [Service]". Required: include the specific metric or a named buyer problem — for example: "Your £38M investment case — following up" or "Board pack redesign: following my [Bank] experience".
-- TRACTION SIGNALS NO GENERIC SHARED VOCABULARY: Do not use "meeting request", "meeting requests", "referral to another executive", "referral to a finance executive", "request for proposal", "proposal request", or "request for pricing" as traction signals if the same pattern appears across more than one strand. Every signal across all strands must use vocabulary unique to that strand's deliverable and engagement context. Each signal must name the specific milestone, output, or observable event that only makes sense for that model — not a generic pipeline stage that could apply to any consulting strand.
-- OUTREACH SUBTYPE REQUIRED: Every task with task_type "outreach" must include the field outreach_subtype set to either "warm" or "cold". WARM = the user already has a relationship with this contact type (reconnects with former colleagues or clients, referral asks from existing contacts, warm introductions via a mutual). COLD = the user is reaching out to a stranger matching a buyer profile (prospecting a new sector contact, approaching a hiring manager, reaching out to a platform or community organiser they have never met). Non-outreach tasks must have outreach_subtype: null. Classify accurately — this field controls whether Apollo contact-finding is offered to the user.
-- APOLLO QUERY FOR COLD TASKS: Every task with outreach_subtype "cold" must include an apollo_query object with all five fields: person_titles (array of 3–5 job title variants for the target role — include both Director-level and Head-of variants), sector_keywords (4–8 words capturing the sector and function, e.g. "NHS trust public sector healthcare transformation programme delivery"), seniority_levels (one or more of: "director", "vp", "senior", "manager", "c_suite" — match to the seniority of the target buyer), location (default "United Kingdom" unless Q15 indicates a specific region), company_size_ranges (Apollo range strings matching the typical org size — e.g. "501,1000", "1001,5000"). Tasks with outreach_subtype "warm" must have apollo_query: null. Tasks with outreach_subtype null must have apollo_query: null.`;
+/**
+ * Walk through parsed activation-plan and convert every phase.days_detail[].time_allocation
+ * from array form (strict schema) to object form (legacy).
+ *
+ * Uses a JSON round-trip clone (Deno edge runtime structuredClone availability is
+ * not relied upon).
+ */
+// deno-lint-ignore no-explicit-any
+function adaptParsedPlan(parsed: ActivationPlanOutput): any {
+  // deno-lint-ignore no-explicit-any
+  const adapted: any = JSON.parse(JSON.stringify(parsed));
+  const phases = adapted?.activation_plan?.phases;
+  if (Array.isArray(phases)) {
+    for (const phase of phases) {
+      const days = phase?.days_detail;
+      if (!Array.isArray(days)) continue;
+      for (const day of days) {
+        if (Array.isArray(day?.time_allocation)) {
+          day.time_allocation = timeAllocationArrayToObject(day.time_allocation);
+        }
+      }
+    }
+  }
+  return adapted;
+}
 
-// ── Prompt 4 system prompt (Market Snapshot) ──
-const PROMPT_4_SYSTEM = `You are Solo's market research analyst. Your job is to produce a Local Market Feasibility Snapshot for a specific solo business model in a specific location.
+/**
+ * Wrap a P4 response with the per-strand envelope before persisting to
+ * reports.market_snapshots[strand_id].
+ */
+function buildMarketSnapshotEnvelope(
+  parsed: MarketSnapshotOutput,
+  strand: { strand_id: string; option: { model_name: string } },
+  location: string,
+): {
+  strand_id: string;
+  model_name: string;
+  location: string;
+  sections: MarketSnapshotOutput["sections"];
+} {
+  return {
+    strand_id: strand.strand_id,
+    model_name: strand.option.model_name,
+    location: location || "United Kingdom",
+    sections: parsed.sections,
+  };
+}
 
-This is a paid deliverable. It must feel commercially grounded and locally relevant.
+/**
+ * Synthesise legacy plain-text market snapshot from a parsed envelope, for backwards
+ * compatibility with export-pdf and any other readers of the legacy
+ * reports.market_snapshot text column.
+ */
+function synthesiseLegacyMarketSnapshotText(envelope: {
+  model_name: string;
+  location: string;
+  sections: MarketSnapshotOutput["sections"];
+}): string {
+  const s = envelope.sections;
+  const parts = [
+    "LOCAL MARKET FEASIBILITY SNAPSHOT",
+    `${envelope.model_name} | ${envelope.location}`,
+    "Prepared as indicative research — not primary market data",
+    "",
+    "DEMAND SIGNAL",
+    s.demand_signal,
+    "",
+    "PRICING BENCHMARK",
+    s.pricing_benchmark,
+    "",
+    "COMPETITOR LANDSCAPE",
+    s.competitor_landscape,
+    "",
+    "MARKET ENTRY INSIGHT",
+    s.market_entry_insight,
+    "",
+    "HONEST ASSESSMENT",
+    s.honest_assessment,
+    "",
+    "Disclaimer: This snapshot is based on general market knowledge and reasoning, not primary research or live data.",
+  ];
+  return parts.join("\n");
+}
 
-IMPORTANT: You do not have access to live market data. Be honest about this. Label estimates clearly as indicative.
+// ── Prompt template substitution ───────────────────────────────────────────
 
-Produce a Local Market Feasibility Snapshot covering 5 sections:
+/**
+ * Build the per-strand context block that fills the canonical P3
+ * `{{#each STRANDS}}…{{/each}}` loop.
+ *
+ * The canonical inner template (per p3-system-prompt.ts) is:
+ *
+ *   Strand {{strand_id}}:
+ *     Model: {{model_name}} (rank {{rank}}, composite score {{composite_score}})
+ *     Business model ID: {{business_model_id}}
+ *     Primary move type: {{primary_move_type}}
+ *     Structural warmth: {{structural_warmth}}
+ *     Warmth type: {{warmth_type}}
+ *     Positioning: {{positioning}}
+ *     Target buyer: {{target_buyer}}
+ *     What they're buying: {{what_they_are_buying}}
+ *     Pricing: {{pricing.model}} — £{{pricing.range_low_gbp}}–£{{pricing.range_high_gbp}} {{pricing.cadence}}
+ *     Difficulty: {{difficulty_rating}}
+ *     Fit tags: {{fit_tags}}
+ */
+// deno-lint-ignore no-explicit-any
+function buildStrandsBlock(strands: any[]): string {
+  return strands
+    .map((s) => {
+      const opt = s.option || {};
+      const pricing = opt.pricing || {};
+      const fitTags = Array.isArray(opt.fit_tags) ? opt.fit_tags.join(", ") : (opt.fit_tags ?? "");
+      return [
+        `Strand ${s.strand_id}:`,
+        `  Model: ${opt.model_name ?? s.model_name} (rank ${opt.rank ?? s.rank}, composite score ${opt.composite_score ?? ""})`,
+        `  Business model ID: ${s.business_model_id ?? ""}`,
+        `  Primary move type: ${s.primary_move_type ?? ""}`,
+        `  Structural warmth: ${s.structural_warmth === true ? "true" : "false"}`,
+        `  Warmth type: ${s.warmth_type ?? ""}`,
+        `  Positioning: ${opt.positioning ?? ""}`,
+        `  Target buyer: ${opt.target_buyer ?? ""}`,
+        `  What they're buying: ${opt.what_they_are_buying ?? ""}`,
+        `  Pricing: ${pricing.model ?? ""} — £${pricing.range_low_gbp ?? ""}–£${pricing.range_high_gbp ?? ""} ${pricing.cadence ?? ""}`,
+        `  Difficulty: ${opt.difficulty_rating ?? ""}`,
+        `  Fit tags: ${fitTags}`,
+      ].join("\n");
+    })
+    .join("\n");
+}
 
-1. DEMAND SIGNAL — Is there real demand? Who is the likely buyer concentration?
-2. PRICING BENCHMARK — Open with a caveat. What would a credible independent charge?
-3. COMPETITOR LANDSCAPE — Who are the likely competitors? Name at least one specific boutique firm, specialist consultancy, freelance platform, or relevant directory directly relevant to this exact model type and buyer profile — not just general categories like "Big Four" or "boutique consultancies". Is the market crowded or is there room for a specialist?
-4. MARKET ENTRY INSIGHT — Most realistic first-client path? Which channels work?
-5. HONEST ASSESSMENT — Direct: is this a good market? 1-2 biggest risks?
+/**
+ * Substitute the P3 user-message template placeholders. The canonical template uses
+ * Handlebars-style `{{#each STRANDS}}…{{/each}}` and `{{#if CV_UPLOADED}}…{{/if}}` blocks
+ * — we strip those markers and substitute manually.
+ */
+function buildP3UserMessage(args: {
+  // deno-lint-ignore no-explicit-any
+  selectedStrands: any[];
+  // deno-lint-ignore no-explicit-any
+  coreReport: any;
+  hookInsight: { headline?: string; insight?: string } | string | null | undefined;
+  answers: Record<string, string>;
+  // deno-lint-ignore no-explicit-any
+  cvExtract: any;
+}): string {
+  const { selectedStrands, coreReport, hookInsight, answers, cvExtract } = args;
 
-OUTPUT FORMAT: Plain text with clear section headings.
+  let tpl = P3_USER_MESSAGE_TEMPLATE;
 
-LOCAL MARKET FEASIBILITY SNAPSHOT
-[Model name] | [Location]
-Prepared as indicative research — not primary market data
+  // 1) Strip the {{#each STRANDS}} … {{/each}} block and replace with rendered list.
+  const strandsBlock = buildStrandsBlock(selectedStrands);
+  tpl = tpl.replace(
+    /\{\{#each STRANDS\}\}[\s\S]*?\{\{\/each\}\}/,
+    strandsBlock,
+  );
 
-DEMAND SIGNAL
-[2-3 paragraphs]
+  // 2) Strip the {{#if CV_UPLOADED}} … {{/if}} block. Replace with content if CV is
+  //    present, else remove entirely.
+  const cvUploaded = !!cvExtract && (
+    cvExtract.career_highlights || cvExtract.qualifications ||
+    cvExtract.sectors_worked_in || cvExtract.skills_mentioned ||
+    cvExtract.independent_experience
+  );
+  tpl = tpl.replace(
+    /\{\{#if CV_UPLOADED\}\}([\s\S]*?)\{\{\/if\}\}/,
+    (_match, inner) => {
+      if (!cvUploaded) return "";
+      let block = inner as string;
+      block = block
+        .replace(/\{\{CV_CAREER_HIGHLIGHTS\}\}/g, String(cvExtract.career_highlights ?? ""))
+        .replace(/\{\{CV_QUALIFICATIONS\}\}/g, String(cvExtract.qualifications ?? ""))
+        .replace(/\{\{CV_SECTORS_WORKED_IN\}\}/g, String(cvExtract.sectors_worked_in ?? ""))
+        .replace(/\{\{CV_SKILLS_MENTIONED\}\}/g, String(cvExtract.skills_mentioned ?? ""))
+        .replace(/\{\{CV_INDEPENDENT_EXPERIENCE\}\}/g, String(cvExtract.independent_experience ?? ""));
+      return block;
+    },
+  );
 
-PRICING BENCHMARK
-[1-2 paragraphs with indicative GBP figures]
+  // 3) Archetype + hook insight.
+  const archetype = coreReport?.archetype || {};
+  const primaryArchetype = typeof archetype === "string"
+    ? archetype
+    : (archetype.primary || archetype.name || "");
+  const archetypeSummary = typeof archetype === "object"
+    ? (archetype.summary || archetype.description || "")
+    : "";
+  const whatTheyCanSell = typeof archetype === "object"
+    ? (archetype.what_they_can_sell || archetype.transferable_value || "")
+    : "";
 
-COMPETITOR LANDSCAPE
-[2-3 paragraphs]
+  const hookHeadline = typeof hookInsight === "object" && hookInsight
+    ? (hookInsight.headline ?? "")
+    : "";
+  const hookFull = typeof hookInsight === "object" && hookInsight
+    ? (hookInsight.insight ?? "")
+    : (typeof hookInsight === "string" ? hookInsight : "");
 
-MARKET ENTRY INSIGHT
-[2-3 paragraphs]
+  // 4) First steps (string or array — render as readable list).
+  let firstSteps = "";
+  if (Array.isArray(coreReport?.first_steps)) {
+    firstSteps = coreReport.first_steps
+      .map((step: unknown, i: number) => `${i + 1}. ${step}`)
+      .join("\n");
+  } else if (typeof coreReport?.first_steps === "string") {
+    firstSteps = coreReport.first_steps;
+  }
 
-HONEST ASSESSMENT
-[1-2 paragraphs]
+  // 5) Plain {{KEY}} substitutions.
+  const subs: Record<string, string> = {
+    PRIMARY_ARCHETYPE: String(primaryArchetype ?? ""),
+    ARCHETYPE_SUMMARY: String(archetypeSummary ?? ""),
+    WHAT_THEY_CAN_SELL: String(whatTheyCanSell ?? ""),
+    HOOK_INSIGHT_HEADLINE: String(hookHeadline ?? ""),
+    HOOK_INSIGHT_INSIGHT: String(hookFull ?? ""),
+    Q2: String(answers["2"] ?? ""),
+    Q3B: String(answers["3b"] ?? answers["30"] ?? answers["3"] ?? ""),
+    Q5: String(answers["5"] ?? ""),
+    Q6: String(answers["6"] ?? ""),
+    Q11: String(answers["11"] ?? ""),
+    Q12: String(answers["12"] ?? ""),
+    Q13: String(answers["13"] ?? ""),
+    Q14: String(answers["14"] ?? ""),
+    FIRST_STEPS: firstSteps,
+  };
 
-Disclaimer: This snapshot is based on general market knowledge and reasoning, not primary research or live data.`;
+  for (const [k, v] of Object.entries(subs)) {
+    tpl = tpl.replaceAll(`{{${k}}}`, v);
+  }
+
+  return tpl;
+}
+
+/**
+ * Substitute the P4 user-message template placeholders for a single strand.
+ */
+function buildP4UserMessage(args: {
+  // deno-lint-ignore no-explicit-any
+  strand: any;
+  // deno-lint-ignore no-explicit-any
+  coreReport: any;
+  answers: Record<string, string>;
+  // deno-lint-ignore no-explicit-any
+  cvExtract: any;
+}): string {
+  const { strand, coreReport, answers, cvExtract } = args;
+  const opt = strand.option || {};
+  const pricing = opt.pricing || {};
+
+  let tpl = P4_USER_MESSAGE_TEMPLATE;
+
+  const cvUploaded = !!cvExtract && (
+    cvExtract.career_highlights || cvExtract.sectors_worked_in
+  );
+  tpl = tpl.replace(
+    /\{\{#if CV_UPLOADED\}\}([\s\S]*?)\{\{\/if\}\}/,
+    (_match, inner) => {
+      if (!cvUploaded) return "";
+      let block = inner as string;
+      block = block
+        .replace(/\{\{CV_SECTORS_WORKED_IN\}\}/g, String(cvExtract.sectors_worked_in ?? ""))
+        .replace(/\{\{CV_CAREER_HIGHLIGHTS\}\}/g, String(cvExtract.career_highlights ?? ""));
+      return block;
+    },
+  );
+
+  const archetype = coreReport?.archetype || {};
+  const archetypeName = typeof archetype === "string"
+    ? archetype
+    : (archetype.primary || archetype.name || "");
+
+  const subs: Record<string, string> = {
+    RECOMMENDED_MODEL: String(opt.model_name ?? ""),
+    ARCHETYPE: String(archetypeName ?? ""),
+    TARGET_BUYER: String(opt.target_buyer ?? ""),
+    PRICING_LOW: String(pricing.range_low_gbp ?? ""),
+    PRICING_HIGH: String(pricing.range_high_gbp ?? ""),
+    CADENCE: String(pricing.cadence ?? ""),
+    Q3B_EMPLOYER_ORG_TYPE: String(answers["3b"] ?? answers["30"] ?? answers["3"] ?? ""),
+    Q11_SECTOR_CONTEXT: String(answers["11"] ?? ""),
+    Q15_LOCATION: String(answers["15"] ?? ""),
+  };
+
+  for (const [k, v] of Object.entries(subs)) {
+    tpl = tpl.replaceAll(`{{${k}}}`, v);
+  }
+
+  return tpl;
+}
+
+// ── Entry point ────────────────────────────────────────────────────────────
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -418,13 +466,14 @@ Deno.serve(async (req: Request) => {
     const coreReport = report.core_report;
     const answers = report.answers || {};
     const hookInsight = report.hook_insight;
+    const cvExtract = report.cv_extract || null;
 
     // ── Read user context profile (generated by generate-report) ──
     const userContextProfile = (report.user_context_profile as Record<string, unknown>) || {};
     const profileConstraints = (userContextProfile.constraints as Record<string, unknown>) || {};
     const profileFlags = (userContextProfile.derived_flags as Record<string, unknown>) || {};
 
-    console.log("generate-plan v27 — P0 #22: max_tokens → max_completion_tokens (GPT-5.4 compatibility)");
+    console.log(`${FUNCTION_VERSION} — canonical ironclad rewrite (ADR-019)`);
     console.log("User context profile loaded:", {
       network_quality: profileConstraints.network_quality,
       time_budget: profileConstraints.time_budget,
@@ -482,7 +531,7 @@ Deno.serve(async (req: Request) => {
       acc[s.warmth_type] = (acc[s.warmth_type] || 0) + 1;
       return acc;
     }, {});
-    console.log(`v27 strand distribution — move_types: ${JSON.stringify(moveTypeDist)}, warmth_types: ${JSON.stringify(warmthDist)}`);
+    console.log(`${FUNCTION_VERSION} strand distribution — move_types: ${JSON.stringify(moveTypeDist)}, warmth_types: ${JSON.stringify(warmthDist)}`);
 
     const missingMoveMetadata = selectedStrands.filter(s => !s.business_model_id).length;
     if (missingMoveMetadata > 0) {
@@ -512,7 +561,7 @@ Deno.serve(async (req: Request) => {
     // ── ASYNC: kick off the slow OpenAI work in background, return immediately ──
     // @ts-expect-error EdgeRuntime is provided by Supabase Deno deploy runtime
     EdgeRuntime.waitUntil(generatePlanInBackground({
-      report_id, selectedStrands, isPortfolio, coreReport, answers, hookInsight,
+      report_id, selectedStrands, isPortfolio, coreReport, answers, hookInsight, cvExtract,
       profileFlags, profileConstraints, openai, supabase,
     }));
 
@@ -546,26 +595,27 @@ Deno.serve(async (req: Request) => {
 });
 
 // ── BACKGROUND WORKER ──────────────────────────────────────────────────────
-// All OpenAI calls (Prompt 3v2 + Prompt 4 per strand + recalibration) run here.
-// On success: updates report row to status='complete' with full activation_plan, market_snapshots,
-// and updated core_report. On error: updates report row to status='failed' with error message.
+// All OpenAI calls (Prompt 3 canonical + Prompt 4 per strand + recalibration) run here.
+// On success: updates report row to status='complete' with full activation_plan,
+// market_snapshots, and updated core_report. On error: updates report row to
+// status='failed' with error message.
 
 async function generatePlanInBackground(args: {
   // deno-lint-ignore no-explicit-any
   report_id: string; selectedStrands: any[]; isPortfolio: boolean;
   // deno-lint-ignore no-explicit-any
-  coreReport: any; answers: Record<string, string>; hookInsight: string;
+  coreReport: any; answers: Record<string, string>; hookInsight: any; cvExtract: any;
   profileFlags: Record<string, unknown>; profileConstraints: Record<string, unknown>;
   // deno-lint-ignore no-explicit-any
   openai: any; supabase: any;
 }) {
-  const { report_id, selectedStrands, isPortfolio, coreReport, answers, hookInsight,
+  const { report_id, selectedStrands, isPortfolio, coreReport, answers, hookInsight, cvExtract,
     profileFlags, profileConstraints, openai, supabase } = args;
 
   try {
     console.log(`bg ${report_id}: starting plan generation`);
 
-    // ── Build user context ──
+    // ── Build user context (used in recalibration block, mirrored from v28) ──
     const userContext = {
       years_experience: answers["2"] || "",
       employer_org_type: answers["3b"] || answers["30"] || answers["3"] || "",
@@ -579,7 +629,7 @@ async function generatePlanInBackground(args: {
 
     console.log("Employer org type resolved:", userContext.employer_org_type || "EMPTY — check Q3b key");
 
-    // ── strandContextArray includes all 4 move metadata fields ──
+    // ── strandContextArray includes all 4 move metadata fields (used for recalibration) ──
     const strandContextArray = selectedStrands.map((s) => ({
       strand_id: s.strand_id,
       model_name: s.option.model_name,
@@ -614,60 +664,48 @@ async function generatePlanInBackground(args: {
       },
     };
 
-    const prompt3UserMessage = JSON.stringify({
-      user_context_profile: profileContextForPrompt,
-      portfolio_strands: strandContextArray,
-      archetype: coreReport.archetype,
-      transferable_value: coreReport.transferable_value,
-      first_steps: coreReport.first_steps,
-      hook_insight: hookInsight,
-      reality_check: coreReport.reality_check,
-      context: userContext,
-      personalisation_signals: {
-        q6_achievement: answers["6"] || "",
-        q3b_employer: answers["3b"] || answers["30"] || "",
-        q11_target_buyers: answers["11"] || "",
-        q7_advisory: answers["7"] || "",
-      },
+    // ── P3 user message — built from canonical user-message template ──
+    const prompt3UserMessage = buildP3UserMessage({
+      selectedStrands,
+      coreReport,
+      hookInsight,
+      answers,
+      cvExtract,
     });
 
-    // ── Build Prompt 4 user messages (one per strand) ──
+    // ── Build P4 user messages (one per strand) — from canonical user-message template ──
     const prompt4Messages = selectedStrands.map((s) => ({
       strand_id: s.strand_id,
-      message: JSON.stringify({
-        recommended_model: s.option.model_name,
-        archetype: coreReport.archetype?.primary || "",
-        target_buyer: s.option.target_buyer,
-        pricing_low: s.option.pricing?.range_low_gbp,
-        pricing_high: s.option.pricing?.range_high_gbp,
-        pricing_cadence: s.option.pricing?.cadence,
-        employer_org_type: answers["3b"] || answers["30"] || answers["3"] || "",
-        sector_client_context: answers["11"] || "",
-        location: answers["15"] || "",
+      message: buildP4UserMessage({
+        strand: s,
+        coreReport,
+        answers,
+        cvExtract,
       }),
     }));
 
-    // ── Run Prompt 3v2 (TIER1) + all Prompt 4s (TIER3) in parallel ──
+    // ── Run P3 (TIER1, strict schema) + all P4s (TIER3, strict schema) in parallel ──
     const apiCalls: Promise<unknown>[] = [
       openai.chat.completions.create({
         model: MODEL_TIER1,
         temperature: 0.5,
-        max_completion_tokens: 16384,
+        max_completion_tokens: 24000,
         messages: [
-          { role: "system", content: PROMPT_3V2_SYSTEM },
+          { role: "system", content: P3_SYSTEM_PROMPT_TEMPLATE },
           { role: "user", content: prompt3UserMessage },
         ],
-        response_format: { type: "json_object" },
+        response_format: { type: "json_schema", json_schema: ACTIVATION_PLAN_SCHEMA },
       }),
       ...prompt4Messages.map((pm) =>
         openai.chat.completions.create({
           model: MODEL_TIER3,
           temperature: 0.3,
-          max_completion_tokens: 1500,
+          max_completion_tokens: 2000,
           messages: [
-            { role: "system", content: PROMPT_4_SYSTEM },
+            { role: "system", content: P4_SYSTEM_PROMPT_TEMPLATE },
             { role: "user", content: pm.message },
           ],
+          response_format: { type: "json_schema", json_schema: MARKET_SNAPSHOT_SCHEMA },
         })
       ),
     ];
@@ -683,10 +721,13 @@ async function generatePlanInBackground(args: {
       console.error("WARNING: Activation plan response was truncated (finish_reason=length). Consider further compression.");
     }
 
-    const activationPlan = parseJ(rawActivationContent);
-    console.log(`Activation plan parsed. Top-level keys: ${Object.keys(activationPlan).join(", ")}`);
+    const parsedPlan = parseJ(rawActivationContent) as ActivationPlanOutput;
+    console.log(`Activation plan parsed. Top-level keys: ${Object.keys(parsedPlan || {}).join(", ")}`);
 
-    // ── Log apollo_query coverage for observability ──
+    // ── Adapt time_allocation array → legacy object form ──
+    const activationPlan = adaptParsedPlan(parsedPlan);
+
+    // ── Log apollo_query coverage for observability (mirrored from v28) ──
     let coldTaskCount = 0;
     let apolloQueryPopulated = 0;
     try {
@@ -694,7 +735,8 @@ async function generatePlanInBackground(args: {
       for (const phase of phases) {
         for (const day of (phase.days_detail || [])) {
           for (const task of (day.tasks || [])) {
-            if (task.task_type === "outreach") {
+            // Strict schema uses task_type "activation"; v28 used "outreach". Count both.
+            if (task.task_type === "outreach" || task.task_type === "activation") {
               if (task.outreach_subtype === "cold") {
                 coldTaskCount++;
                 if (task.apollo_query && task.apollo_query.person_titles?.length > 0) {
@@ -705,7 +747,7 @@ async function generatePlanInBackground(args: {
           }
         }
       }
-      console.log(`v27 apollo coverage — cold_tasks: ${coldTaskCount}, apollo_query_populated: ${apolloQueryPopulated}`);
+      console.log(`${FUNCTION_VERSION} apollo coverage — cold_tasks: ${coldTaskCount}, apollo_query_populated: ${apolloQueryPopulated}`);
     } catch (e) {
       console.error("Failed to compute apollo coverage:", e);
     }
@@ -714,13 +756,27 @@ async function generatePlanInBackground(args: {
       console.error("WARNING: Activation plan missing expected fields. Parse may have failed or response was truncated.");
     }
 
-    const marketSnapshots: Record<string, string> = {};
+    // ── Build per-strand market snapshot envelopes ──
+    const q15Location = String(answers["15"] || "United Kingdom");
+    const marketSnapshots: Record<string, unknown> = {};
     for (let i = 0; i < prompt4Messages.length; i++) {
       const marketResult = results[i + 1] as { choices: Array<{ message: { content: string | null } }> };
-      marketSnapshots[prompt4Messages[i].strand_id] = marketResult.choices[0].message.content || "";
+      const rawSnap = marketResult.choices[0].message.content || "{}";
+      const parsedSnap = parseJ(rawSnap) as MarketSnapshotOutput;
+      const strand = selectedStrands[i];
+      const envelope = buildMarketSnapshotEnvelope(parsedSnap, strand, q15Location);
+      marketSnapshots[strand.strand_id] = envelope;
     }
 
-    // ── Generate portfolio-level reality_check (TIER2) ──
+    // ── Synthesise legacy plain-text market_snapshot column for backwards compatibility ──
+    const firstStrandEnvelope = marketSnapshots[selectedStrands[0].strand_id] as
+      | ReturnType<typeof buildMarketSnapshotEnvelope>
+      | undefined;
+    const legacyMarketSnapshotText = firstStrandEnvelope
+      ? synthesiseLegacyMarketSnapshotText(firstStrandEnvelope)
+      : "";
+
+    // ── Generate portfolio-level reality_check (TIER2) — preserved from v28 ──
     let updatedCoreReport = coreReport;
     if (isPortfolio || selectedStrands[0].rank !== 1) {
       const recalibrationRes = await openai.chat.completions.create({
@@ -788,7 +844,7 @@ async function generatePlanInBackground(args: {
       .update({
         core_report: updatedCoreReport,
         activation_plan: activationPlan,
-        market_snapshot: marketSnapshots[selectedStrands[0].strand_id] || "",
+        market_snapshot: legacyMarketSnapshotText,
         market_snapshots: marketSnapshots,
         selected_strands: selectedStrands.map(s => ({
           strand_id: s.strand_id,
