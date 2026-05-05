@@ -95,6 +95,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [replanPending, setReplanPending] = useState(false);
   const [replanContext, setReplanContext] = useState<Record<string, unknown> | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [reportStatus, setReportStatus] = useState<string | null>(null);
 
   // Route guard + plan fetch with explicit error handling.
   // Resolution rules:
@@ -118,9 +119,9 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     let cancelled = false;
     (async () => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from("reports")
-          .select("id, status, hook_insight, core_report, answers")
+          .select("id, status, hook_insight, core_report, answers, recommended_selection, activation_plan")
           .eq("user_id", user.id)
           .order("created_at", { ascending: false })
           .limit(1)
@@ -145,9 +146,36 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           return;
         }
 
+        // Unpaid users (teaser_ready) — bounce back to teaser.
+        if (data.status === "teaser_ready") {
+          if (!isDevBypass()) {
+            navigate(`/teaser?report_id=${data.id}`, { replace: true });
+            return;
+          }
+        }
+
         setHasPaid(true);
         setReportId(data.id);
+        setReportStatus(data.status);
         setNarrative(data.hook_insight || MOCK_NARRATIVE);
+
+        // Paid user, plan not yet generated. Auto-fire generate-plan with
+        // the backend's recommended_selection (a flat array of ranks).
+        // Fire-and-forget; the polling effect picks up the status change.
+        if (data.status === "pending_selection") {
+          const recommendedRanks = Array.isArray((data as any).recommended_selection)
+            ? ((data as any).recommended_selection as number[])
+            : null;
+          if (recommendedRanks && recommendedRanks.length > 0) {
+            try {
+              void supabase.functions.invoke("generate-plan", {
+                body: { report_id: data.id, selected_ranks: recommendedRanks },
+              });
+            } catch (err) {
+              console.error("Plan: generate-plan auto-fire failed", err);
+            }
+          }
+        }
 
         const coreReport = data.core_report as Record<string, unknown> | null;
         const rc = Number((coreReport?.refinement_count as number) ?? 0) || 0;
@@ -158,9 +186,19 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           setStrands(
             options.map((opt) => ({
               title: (opt.model_name as string) || (opt.title as string) || "Untitled option",
-              pitch: (opt.one_line_pitch as string) || (opt.one_liner as string) || (opt.pitch as string) || "",
+              pitch:
+                (opt.positioning as string) ||
+                (opt.one_line_pitch as string) ||
+                (opt.one_liner as string) ||
+                (opt.pitch as string) ||
+                "",
               primary_move_type: (opt.primary_move_type as string) || null,
-              structural_warmth: (opt.structural_warmth as string) || null,
+              structural_warmth:
+                typeof opt.structural_warmth === "boolean"
+                  ? opt.structural_warmth
+                    ? "Structural"
+                    : "Relational"
+                  : (opt.structural_warmth as string) || null,
             }))
           );
         }
@@ -226,6 +264,72 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     const completedDays = new Set((checkins || []).map((c) => c.day_number));
     buildTrackerDays(currentDay, Array.from(completedDays));
   }, []);
+
+  // Poll for status transitions while the plan is being generated.
+  // pending_selection → generating_plan → complete (~90-120s).
+  useEffect(() => {
+    if (!reportId || !user) return;
+    if (!reportStatus) return;
+    if (reportStatus !== "pending_selection" && reportStatus !== "generating_plan") return;
+
+    let cancelled = false;
+    const startedAt = Date.now();
+    const POLL_INTERVAL_MS = 3000;
+    const POLL_TIMEOUT_MS = 5 * 60 * 1000;
+
+    const tick = async () => {
+      if (cancelled) return;
+      if (Date.now() - startedAt > POLL_TIMEOUT_MS) return;
+
+      const { data: latest } = await supabase
+        .from("reports")
+        .select("id, status, hook_insight, core_report, answers, activation_plan")
+        .eq("id", reportId)
+        .maybeSingle();
+
+      if (cancelled || !latest) return;
+
+      if (latest.status !== reportStatus) {
+        setReportStatus(latest.status);
+      }
+
+      if (latest.status === "complete") {
+        if (typeof latest.hook_insight === "string") setNarrative(latest.hook_insight);
+        const cr = latest.core_report as Record<string, unknown> | null;
+        const options = (cr?.options as Array<Record<string, unknown>>) || [];
+        if (options.length > 0) {
+          setStrands(
+            options.map((opt) => ({
+              title: (opt.model_name as string) || (opt.title as string) || "Untitled option",
+              pitch:
+                (opt.positioning as string) ||
+                (opt.one_line_pitch as string) ||
+                (opt.one_liner as string) ||
+                (opt.pitch as string) ||
+                "",
+              primary_move_type: (opt.primary_move_type as string) || null,
+              structural_warmth:
+                typeof opt.structural_warmth === "boolean"
+                  ? opt.structural_warmth
+                    ? "Structural"
+                    : "Relational"
+                  : (opt.structural_warmth as string) || null,
+            }))
+          );
+        }
+        if (user) loadTrackerSession(user.id, reportId);
+        return;
+      }
+
+      setTimeout(tick, POLL_INTERVAL_MS);
+    };
+
+    const handle = setTimeout(tick, POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
+  }, [reportId, user, reportStatus, loadTrackerSession]);
 
   
   // /checkin/:sessionId deep-link: pre-open drawer immediately on mount

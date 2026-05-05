@@ -15,31 +15,92 @@ export default function AuthCallback() {
 
   useEffect(() => {
     let cancelled = false;
-    const reportId = params.get("reportId") || params.get("report_id");
+    const reportIdParam = params.get("reportId") || params.get("report_id");
 
     (async () => {
       if (isDevBypass()) {
         navigate("/plan", { replace: true });
         return;
       }
-      const deadline = Date.now() + 2000;
+
+      // 1. Wait until the session is definitively readable (with access_token).
+      // exchangeCodeForSession resolves before supabase-js finishes propagating
+      // the session to localStorage / its internal state, so functions.invoke
+      // would otherwise fire without a valid Authorization header → 401.
+      const deadline = Date.now() + 5000;
+      let session: Awaited<ReturnType<typeof supabase.auth.getSession>>["data"]["session"] = null;
       while (Date.now() < deadline && !cancelled) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          if (cancelled) return;
-          if (reportId) navigate(`/teaser?reportId=${reportId}`, { replace: true });
-          else navigate("/plan", { replace: true });
-          return;
-        }
-        await new Promise((r) => setTimeout(r, 150));
+        const { data } = await supabase.auth.getSession();
+        if (data.session?.access_token) { session = data.session; break; }
+        await new Promise((r) => setTimeout(r, 100));
       }
       if (cancelled) return;
-      // Still no session after the poll window — link expired or invalid.
-      if (reportId) {
-        navigate(`/teaser?reportId=${reportId}`, { replace: true });
+
+      if (!session) {
+        // Magic link expired or invalid.
+        if (reportIdParam) {
+          navigate(`/teaser?report_id=${reportIdParam}`, { replace: true });
+          return;
+        }
+        setExpired(true);
         return;
       }
-      setExpired(true);
+
+      // 2. Best-effort: link any anon-keyed rows to this user before routing.
+      const clientSessionId =
+        (typeof window !== "undefined" &&
+          (localStorage.getItem("solo_client_session_id") ||
+            localStorage.getItem("solo.client_session_id"))) ||
+        null;
+      if (clientSessionId) {
+        try {
+          // Pass the access token explicitly so the edge function always
+          // receives a valid Authorization header, even if supabase-js's
+          // internal token state is still settling.
+          await supabase.functions.invoke("link-anon-session", {
+            body: { client_session_id: clientSessionId },
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          });
+        } catch (err) {
+          console.warn("link-anon-session call failed (non-fatal):", err);
+        }
+      }
+      if (cancelled) return;
+
+      // 3. Honour an explicit reportId in the callback URL first.
+      if (reportIdParam) {
+        navigate(`/teaser?report_id=${reportIdParam}`, { replace: true });
+        return;
+      }
+
+      // 4. Find the user's most recent teaser-or-better report.
+      const { data: report, error: reportLookupError } = await supabase
+        .from("reports")
+        .select("id, status")
+        .eq("user_id", session.user.id)
+        .in("status", ["teaser_ready", "pending_selection", "generating_plan", "complete"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (reportLookupError) {
+        console.error("Report lookup after auth failed:", reportLookupError);
+      }
+      if (cancelled) return;
+
+      // 5. Route based on payment status. Paid users (status >=
+      // pending_selection) go straight to /plan, where the plan either
+      // already exists or is auto-generated. Unpaid users still see the
+      // teaser. NEVER redirect to /questionnaire?resume=true.
+      if (report?.id) {
+        const PAID_STATUSES = new Set(["pending_selection", "generating_plan", "complete"]);
+        if (PAID_STATUSES.has(report.status)) {
+          navigate(`/plan?report_id=${report.id}`, { replace: true });
+        } else {
+          navigate(`/teaser?report_id=${report.id}`, { replace: true });
+        }
+        return;
+      }
+      navigate("/", { replace: true });
     })();
 
     return () => { cancelled = true; };

@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
-import { getClientSessionId } from "@/lib/handlers";
 import { isDevBypass } from "@/lib/devBypass";
 
 const CYCLING_MESSAGES = [
@@ -15,7 +14,7 @@ const CYCLING_MESSAGES = [
 ];
 
 const CYCLE_INTERVAL = 2800;
-const TIMEOUT_MS = 60_000;
+const TIMEOUT_MS = 300_000;
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -121,8 +120,11 @@ export default function Processing() {
   }, [reportId, poll, state]);
 
   const handleRetry = () => {
-    const sessionId = getClientSessionId();
-    navigate(`/questionnaire?resume=true&session=${sessionId}`);
+    // Reset timer and restart polling — DO NOT navigate to /questionnaire,
+    // which would wipe the user's Q1-Q17 answers.
+    startRef.current = Date.now();
+    setState("generating");
+    // The useEffect on state === "generating" will start a fresh poll cycle.
   };
 
   if (!reportId && !isDevBypass()) return null;
@@ -157,7 +159,7 @@ export default function Processing() {
               </h1>
 
               <p className="mt-3 text-sm text-muted-foreground">
-                This takes about five seconds.
+                This usually takes about two minutes.
               </p>
 
               {/* Cycling messages */}
@@ -179,6 +181,10 @@ export default function Processing() {
                   </motion.p>
                 </AnimatePresence>
               </div>
+
+              <p className="mt-8 max-w-md text-xs leading-relaxed text-muted-foreground/70">
+                No need to wait here — we've also emailed you a link to your report. You can close this tab and come back when you're ready.
+              </p>
             </motion.div>
           )}
 
@@ -237,17 +243,17 @@ export default function Processing() {
               className="flex max-w-md flex-col items-center text-center"
             >
               <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                This is taking longer than usual.
+                Still working on your report.
               </h1>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                Your answers are saved. You can retry now, or come back via the email we just sent and we'll pick up where we left off.
+                This is taking longer than usual. Your answers are saved. You can keep waiting, or check the email we just sent and come back later via the link.
               </p>
               <button
                 onClick={handleRetry}
                 className="mt-8 rounded-lg px-8 py-2.5 text-sm font-semibold text-primary-foreground transition-colors"
                 style={{ backgroundColor: "hsl(var(--primary))" }}
               >
-                Try again
+                Keep waiting
               </button>
               <a
                 href="mailto:support@soloplan.ai"
