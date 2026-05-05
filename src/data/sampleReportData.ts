@@ -433,9 +433,6 @@ export interface YearProjection {
 
 export const SAMPLE_INCOME_OUTLOOK = {
   primary_option_rank: 1,
-  current_salary_gbp: 85000,
-  salary_replacement_analysis:
-    "Salary replacement happens in Year 2 under the mid-case scenario. By the end of Year 2, you're running 2–3 concurrent retainers and/or project work totalling £78k–£105k annually. This assumes consistent execution in Year 1 and successful conversion of early conversations into repeat business or retainer relationships.",
   year_1: {
     low_gbp: 25000,
     mid_gbp: 48000,

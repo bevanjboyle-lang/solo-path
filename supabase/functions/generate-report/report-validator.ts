@@ -172,7 +172,6 @@ export function validateReport(
     "recommendation",
     "reality_check",
     "income_outlook",
-    "first_steps",
     "recommended_selection",
     "hook_insight",
     "ai_impact",
@@ -518,10 +517,6 @@ export function validateReport(
         score = Math.min(score, 30);
       }
     }
-    if (wordCount(io.salary_replacement_analysis) < 50) {
-      hard.push("IO_SALARY_REPLACEMENT_TOO_SHORT");
-      score = Math.min(score, 40);
-    }
     if (wordCount(io.sensitivity_factors) < 40) {
       hard.push("IO_SENSITIVITY_TOO_SHORT");
       score = Math.min(score, 40);
@@ -539,36 +534,12 @@ export function validateReport(
   }
 
   // ------------------------------------------------------------------
-  // Card: first_steps (spec §2.8) — exactly 5
+  // Note: `first_steps` was removed in F68 cleanup (2026-05-05).
+  // Day-by-day actionable steps live in the activation plan (P3) instead;
+  // P1 no longer emits a top-level first_steps array. The validator block
+  // that previously enforced "exactly 5 items + time deadline on item 0"
+  // has been deleted to match.
   // ------------------------------------------------------------------
-  if (report.first_steps) {
-    const fs = report.first_steps;
-    let score = 100;
-    if (fs.length !== 5) {
-      hard.push("FS_COUNT");
-      hints.push(`first_steps has ${fs.length} items — produce exactly 5.`);
-      score = 20;
-    }
-    fs.forEach((step, i) => {
-      if (wordCount(step) < 20) {
-        hard.push(`FS_${i + 1}_TOO_SHORT`);
-        hints.push(`first_steps[${i}] is ${wordCount(step)} words — each step must be specific and actionable (≥20 words).`);
-        score = Math.min(score, 40);
-      }
-    });
-    // first_steps[0] must include a time deadline
-    const step0 = fs[0] ?? "";
-    if (
-      !/within\s+\d/.test(step0) &&
-      !/by\s+(end|next|this|the)/i.test(step0) &&
-      !/\d+\s+(day|week|month)/i.test(step0)
-    ) {
-      hard.push("FS_0_NO_DEADLINE");
-      hints.push(`first_steps[0] must include an explicit time deadline (e.g. "within 7 days", "by end of this week") and reference Q6 or Q7.`);
-      score = Math.min(score, 40);
-    }
-    cardScores.first_steps = clamp01to100(score);
-  }
 
   // ------------------------------------------------------------------
   // Card: hook_insight (spec §2.9)

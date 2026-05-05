@@ -1,3 +1,10 @@
+// generate-plan v34 — F68 cleanup (drop FIRST_STEPS substitution + first_steps recalibration) — 2026-05-05
+//
+// v34 (F68 cleanup): coreReport no longer carries first_steps (deleted in P1 v45.2).
+// Removed the firstSteps build from buildP3UserMessage, dropped FIRST_STEPS from the
+// substitution map, removed first_steps from the portfolio recalibration prompt + JSON
+// schema + updatedCoreReport assignment. Reality-check recalibration retained.
+//
 // generate-plan v33 — canonical ironclad rewrite (ADR-019) — 2026-05-05
 //
 // Mirrors generate-report v45.1's pattern: canonical prompts live in repo (.md → .ts),
@@ -303,17 +310,11 @@ function buildP3UserMessage(args: {
     ? (hookInsight.insight ?? "")
     : (typeof hookInsight === "string" ? hookInsight : "");
 
-  // 4) First steps (string or array — render as readable list).
-  let firstSteps = "";
-  if (Array.isArray(coreReport?.first_steps)) {
-    firstSteps = coreReport.first_steps
-      .map((step: unknown, i: number) => `${i + 1}. ${step}`)
-      .join("\n");
-  } else if (typeof coreReport?.first_steps === "string") {
-    firstSteps = coreReport.first_steps;
-  }
-
-  // 5) Plain {{KEY}} substitutions.
+  // 4) Plain {{KEY}} substitutions.
+  // Note: `first_steps` was removed from P1 in the F68 cleanup (2026-05-05)
+  // so there is no longer a FIRST_STEPS context block to substitute into the
+  // P3 user message. Day-by-day actionable tasks are now produced solely by
+  // P3 (activation_plan.phases) instead of being seeded by P1.
   const subs: Record<string, string> = {
     PRIMARY_ARCHETYPE: String(primaryArchetype ?? ""),
     ARCHETYPE_SUMMARY: String(archetypeSummary ?? ""),
@@ -328,7 +329,6 @@ function buildP3UserMessage(args: {
     Q12: String(answers["12"] ?? ""),
     Q13: String(answers["13"] ?? ""),
     Q14: String(answers["14"] ?? ""),
-    FIRST_STEPS: firstSteps,
   };
 
   for (const [k, v] of Object.entries(subs)) {
@@ -786,7 +786,7 @@ async function generatePlanInBackground(args: {
         messages: [
           {
             role: "system",
-            content: `You are Solo's intelligence engine. The user selected ${selectedStrands.length} business model strands to pursue as a portfolio. Regenerate the reality_check and first_steps for their portfolio. The reality_check should address the portfolio as a whole — the risk of spreading too thin, the benefit of diversification, and the most likely failure mode. first_steps should be the 5 most important shared actions — must be specific to this user's context, network, employer background, and selected strands. Do not include generic advice such as "find a mentor", "seek a coach", or "invest in sales training" — every step must be grounded in the user's actual situation. Do not reference inputs by name or question number in the output. Return JSON only: { "reality_check": { "most_likely_failure_mode": string, "second_failure_mode": string, "what_they_will_find_hard": string, "honest_income_outlook": string }, "first_steps": [string, string, string, string, string] }`,
+            content: `You are Solo's intelligence engine. The user selected ${selectedStrands.length} business model strands to pursue as a portfolio. Regenerate the reality_check for their portfolio. The reality_check should address the portfolio as a whole — the risk of spreading too thin, the benefit of diversification, and the most likely failure mode. Do not reference inputs by name or question number in the output. Return JSON only: { "reality_check": { "most_likely_failure_mode": string, "second_failure_mode": string, "what_they_will_find_hard": string, "honest_income_outlook": string } }`,
           },
           {
             role: "user",
@@ -807,7 +807,6 @@ async function generatePlanInBackground(args: {
         updatedCoreReport = {
           ...coreReport,
           reality_check: recalibrated.reality_check,
-          first_steps: recalibrated.first_steps || coreReport.first_steps,
           recommendation: {
             ...coreReport.recommendation,
             recommended_rank: selectedStrands[0].rank,

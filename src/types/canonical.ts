@@ -92,8 +92,6 @@ export interface SoloCoreReport {
   };
   income_outlook: {
     primary_option_rank: number;
-    current_salary_gbp: number;
-    salary_replacement_analysis: string;
     year_1: YearProjection;
     year_2: YearProjection;
     year_3: YearProjection;
@@ -101,7 +99,6 @@ export interface SoloCoreReport {
     income_floor_analysis: string;
     income_notes: string;
   };
-  first_steps: string[];
   recommended_selection: {
     selected_ranks: number[];
     rationale: string;

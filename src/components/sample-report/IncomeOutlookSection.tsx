@@ -26,17 +26,10 @@ export default function IncomeOutlookSection({ income_outlook }: Props) {
   const io = income_outlook;
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your Income Trajectory</h2>
-
-      <div className="mb-6">
-        <p className="text-sm text-secondary-foreground mb-1">
-          Current salary:{" "}
-          <span className="font-bold text-primary">
-            £{(io.current_salary_gbp ?? 0).toLocaleString()}
-          </span>
-        </p>
-        <p className="text-sm text-secondary-foreground">{io.salary_replacement_analysis}</p>
-      </div>
+      <h2 className="text-[1.8rem] font-bold text-foreground mb-2">Your Income Trajectory</h2>
+      <p className="text-sm text-muted-foreground mb-6">
+        Three-year projection for your #1 path. Low / mid / high scenarios per year.
+      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <YearCard year={io.year_1} label="Year 1" />

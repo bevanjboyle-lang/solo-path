@@ -380,7 +380,7 @@ Output ONLY the following JSON, nothing else. No preamble, no explanation:
 - If ALL selected strands carry primary_move_type = direct, Phase 1 must not include a platform research day — replace it with a network segmentation task (categorising existing contacts by strand relevance and ranking outreach priority)
 - Traction signals for direct strands must reference the specific deliverable and engagement context unique to each model — not a generic referral/meeting/proposal pattern repeated identically across strands. Examples: Business Case Development → "IC draft endorsed by sponsor and submitted to board"; Financial Modelling → "model used in a live investment or board decision"; Board & Investor Reporting → "board pack redesign confirmed for next board cycle". Signal vocabulary must differ per strand.
 - Portfolio review questions for direct-move portfolios must reference observable outreach signals by name (reply rates, meetings booked, proposal requests) — not generic "interest" or "engagement" language
-- first_steps must be grounded in the user's specific network, employer context, and selected strands — do not include generic advice such as "find a mentor", "seek a coach", or "invest in sales training"
+- All actions in Phase 1 (especially day 1–3 tasks) must be grounded in the user's specific network, employer context, and selected strands — do not include generic advice such as "find a mentor", "seek a coach", or "invest in sales training"
 - hook_insight must appear as an explicitly labelled concrete task in the activation plan (not merely paraphrased in the strategy narrative) — the task description must make clear it derives from the hook insight, assigned to the most applicable strand
 - All phases (1–4) must be fully populated. Phase 2 has 11 days, Phase 3 has 5 days, Phase 4 has 7 days — all must have populated days_detail entries. Do not truncate output mid-phase.
 - CRITICAL TOKEN BUDGET RULE: Every outreach_draft body within activation_plan.phases days_detail tasks must be abbreviated to 60–80 words maximum — hook + ask only. Full message templates belong in network_toolkit. This compression is mandatory to ensure all 30 days are populated without truncation.
@@ -435,8 +435,5 @@ Sectors worked in: {{CV_SECTORS_WORKED_IN}}
 Skills: {{CV_SKILLS_MENTIONED}}
 Independent experience: {{CV_INDEPENDENT_EXPERIENCE}}
 {{/if}}
-
-FIRST STEPS (from report, for the #1 ranked option — use as additional context):
-{{FIRST_STEPS}}
 
 Please produce the 30-Day Portfolio Activation Plan with outreach drafts, traction signals, review guide, and Network Toolkit for this user's opportunity portfolio.`;

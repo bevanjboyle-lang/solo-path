@@ -399,9 +399,6 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
   },
   income_outlook: {
     primary_option_rank: 1,
-    current_salary_gbp: 85000,
-    salary_replacement_analysis:
-      "Salary replacement happens in Year 2 under the mid-case scenario. By the end of Year 2, you're running 2–3 concurrent retainers and/or project work totalling £78k–£105k annually. This assumes consistent execution in Year 1 and successful conversion of early conversations into repeat business.",
     year_1: {
       low_gbp: 25000,
       mid_gbp: 48000,
@@ -442,12 +439,6 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
     income_notes:
       "The income projection assumes you want to run independent work alongside employment initially, then decide on full-time independence. Your current salary provides runway; use it.",
   },
-  first_steps: [
-    "Update LinkedIn headline to commercial finance independent positioning",
-    "Identify 3 warm contacts in PE-backed mid-market and send the reconnect email",
-    "Write the £38M business case story in 3 sentences — your credibility signal for 6 months",
-    "Practice the one-sentence positioning statement out loud until it feels natural",
-  ],
   recommended_selection: {
     selected_ranks: [1, 2, 6],
     rationale:

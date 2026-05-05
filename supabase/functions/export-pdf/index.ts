@@ -1,3 +1,4 @@
+// export-pdf v17 — 2026-05-05: F68 cleanup — removed dead First Steps render block (P1 no longer emits first_steps[])
 // export-pdf v16 — 2026-05-05: F65 CORS — x-client-session-id + apikey + x-client-info added to Access-Control-Allow-Headers
 // export-pdf — Supabase Edge Function v3
 // Fixes: verify_jwt false, core_report column name
@@ -207,16 +208,9 @@ async function generatePdf(reportData: ReportData): Promise<Uint8Array> {
     yOffset -= 10;
   }
 
-  // === FIRST STEPS ===
-  if (report.first_steps && Array.isArray(report.first_steps)) {
-    drawSection('First Steps');
-    const steps = report.first_steps as string[];
-    for (let i = 0; i < steps.length; i++) {
-      ensureSpace(20);
-      drawBody(`${i + 1}. ${steps[i]}`);
-    }
-    yOffset -= 10;
-  }
+  // Note: the previous "First Steps" PDF block was removed in F68 cleanup
+  // (2026-05-05). P1 no longer emits a top-level first_steps array; the
+  // activation plan day-by-day tasks live in a separate plan output.
 
   // === FOOTER on every page ===
   const pages = doc.getPages();

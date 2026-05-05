@@ -36,7 +36,6 @@ export const REPORT_SCHEMA = {
       "recommendation",
       "reality_check",
       "income_outlook",
-      "first_steps",
       "recommended_selection",
       "hook_insight",
       "ai_impact",
@@ -217,14 +216,16 @@ export const REPORT_SCHEMA = {
 
       // ================================================================
       // 7. Income outlook
+      //   Note: `current_salary_gbp` and `salary_replacement_analysis` were
+      //   removed in F68 cleanup (2026-05-05). The questionnaire never
+      //   collected salary; the schema fabricated it. Year-1/2/3 trajectory
+      //   carries the income story without a baseline comparison.
       // ================================================================
       income_outlook: {
         type: "object",
         additionalProperties: false,
         required: [
           "primary_option_rank",
-          "current_salary_gbp",
-          "salary_replacement_analysis",
           "year_1",
           "year_2",
           "year_3",
@@ -234,8 +235,6 @@ export const REPORT_SCHEMA = {
         ],
         properties: {
           primary_option_rank: { type: "integer" },
-          current_salary_gbp: { type: "number" },
-          salary_replacement_analysis: { type: "string" },
           year_1: { $ref: "#/$defs/yearProjection" },
           year_2: { $ref: "#/$defs/yearProjection" },
           year_3: { $ref: "#/$defs/yearProjection" },
@@ -246,15 +245,7 @@ export const REPORT_SCHEMA = {
       },
 
       // ================================================================
-      // 8. First steps (exactly 5, enforced in validator)
-      // ================================================================
-      first_steps: {
-        type: "array",
-        items: { type: "string" },
-      },
-
-      // ================================================================
-      // 9. Recommended selection
+      // 8. Recommended selection
       //   Per project memory `project_canonical_10_options_5_selected.md`:
       //   `selected_ranks` is an array of 1..5 ints from options[].rank.
       // ================================================================
@@ -272,7 +263,7 @@ export const REPORT_SCHEMA = {
       },
 
       // ================================================================
-      // 10. Hook insight
+      // 9. Hook insight
       // ================================================================
       hook_insight: {
         type: "object",
@@ -303,7 +294,7 @@ export const REPORT_SCHEMA = {
       },
 
       // ================================================================
-      // 11. AI impact (three-part)
+      // 10. AI impact (three-part)
       // ================================================================
       ai_impact: {
         type: "object",
@@ -436,8 +427,6 @@ export interface SoloCoreReport {
   };
   income_outlook: {
     primary_option_rank: number;
-    current_salary_gbp: number;
-    salary_replacement_analysis: string;
     year_1: YearProjection;
     year_2: YearProjection;
     year_3: YearProjection;
@@ -445,7 +434,6 @@ export interface SoloCoreReport {
     income_floor_analysis: string;
     income_notes: string;
   };
-  first_steps: string[];
   recommended_selection: {
     selected_ranks: number[];
     rationale: string;

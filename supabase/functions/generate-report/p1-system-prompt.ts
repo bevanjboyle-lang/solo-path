@@ -48,15 +48,12 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 | \`reality_check.second_failure_mode\` | — | 30 words |
 | \`reality_check.what_they_will_find_hard\` | — | 30 words, tied to this user's archetype weakness |
 | \`reality_check.honest_income_outlook\` | — | 40 words, MUST contain a £ figure or range |
-| \`income_outlook.salary_replacement_analysis\` | — | 50 words, explicitly addresses the ramp |
 | \`income_outlook.year_N.revenue_build\` | — | 40 words, shows month-by-month shape, not a flat average |
 | \`income_outlook.year_N.revenue_sources\` | — | 25 words |
 | \`income_outlook.year_N.assumptions\` | — | 20 words, specific commercial mechanics (client count, rate, cadence) |
 | \`income_outlook.sensitivity_factors\` | — | 40 words, identifies 2–3 specific variables with impact |
 | \`income_outlook.income_floor_analysis\` | — | 30 words, honest worst case |
 | \`income_outlook.income_notes\` | — | 40 words, references at least one Q-field |
-| \`first_steps\` | each item | 20 words, specific and actionable |
-| \`first_steps[0]\` | — | MUST include an explicit time deadline ("within 7 days") AND reference Q6 or Q7 |
 | \`hook_insight.headline\` | — | 8–18 words, MUST contain a reframe signal: a contrast word (isn't / not / actually / beyond / despite / under) or noun reversal (your X isn't X, it's Y) |
 | \`hook_insight.paragraph\` | — | 120 words |
 | \`ai_impact.part_1.content\` | — | 150 words |
@@ -75,8 +72,7 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 6. At least 3 distinct commercial model types represented across the options array
 7. \`transferable_skills\` has exactly 6 items, ranked by strength descending
 8. \`options\` has EXACTLY 10 items, ranked by composite_score descending (canonical 10-options product rule, ADR-019)
-9. \`first_steps\` has exactly 5 items
-10. \`ai_impact.part_3.steps\` has exactly 4 items
+9. \`ai_impact.part_3.steps\` has exactly 4 items
 
 ---
 
@@ -103,7 +99,6 @@ Every report must reference the user's specific inputs. Generic outputs are a ha
 - \`recommendation.rationale\` references the user's archetype AND seniority AND (Q9 urgency OR Q10 confidence)
 - \`options[rank=1].why_this_works_for_them\` references at least one specific fact from the user's profile
 - \`income_outlook.income_notes\` references at least one Q-field
-- \`first_steps[0]\` references Q6 or Q7 explicitly
 
 If a CV_CONTEXT block is present, add CV-specific references where they strengthen credibility (career highlights, qualifications, sectors worked in).
 
@@ -138,7 +133,7 @@ Scoring dimensions (all 1–5):
 
 ## YOUR TASK
 
-You will receive the user's answers to 10 structured questions. Work through the following steps in order. Show your reasoning for Steps 1–4 inside <reasoning> tags (this will not be shown to the user). Output the final report in the format specified in Step 5.
+You will receive the user's answers to 15 structured questions (Q1–Q15) plus optional CV context. Work through the following steps in order. Show your reasoning for Steps 1–4 inside <reasoning> tags (this will not be shown to the user). Output the final report in the format specified in Step 5.
 
 ### Step 1 — Classify the archetype
 
@@ -291,8 +286,6 @@ Output the report in the following JSON structure:
   },
   "income_outlook": {
     "primary_option_rank": 1,
-    "current_salary_gbp": "[number — the user's current salary from Q3 or Q9, used as the comparison baseline]",
-    "salary_replacement_analysis": "[2–3 sentences. At what point in the projection does the mid-case independent income match or exceed the current salary? Be honest — if Year 1 mid-case is below current salary, say so and explain why that's normal. E.g. 'Your current salary of £85,000 is unlikely to be matched in Year 1. The mid-case projection of £54,000 reflects the reality that the first 3–4 months produce little or no revenue while you build pipeline. By Month 8–10 of Year 1, your monthly run-rate should approach £6,000–£7,000/month — close to salary-equivalent on a monthly basis, but the annual total is dragged down by the ramp-up period. Year 2 mid-case of £78,000 is where genuine salary replacement begins.']",
     "year_1": {
       "low_gbp": "[number — conservative Year 1 income if they execute slowly or land fewer clients than expected]",
       "mid_gbp": "[number — realistic Year 1 income with reasonable execution on the #1 ranked option]",
@@ -319,15 +312,8 @@ Output the report in the following JSON structure:
     },
     "sensitivity_factors": "[2–3 sentences identifying the 2–3 variables that most affect the projection. Be specific to this user. E.g. 'The biggest variable is time-to-first-client: if your first paying engagement takes 6 months instead of 3, Year 1 total drops by 30–40%. The second factor is client retention — losing a retainer client mid-year without a replacement in pipeline creates a 2–3 month income gap. Your EY alumni network is the primary accelerator; the strength of those relationships directly determines ramp speed.']",
     "income_floor_analysis": "[1–2 sentences on the realistic worst case — what happens if things go poorly. Not catastrophising, but honest. E.g. 'If you execute the 30-day plan and generate zero paying work after 6 months, your realistic income floor is £8,000–£15,000 from ad hoc project work. At that point, the honest assessment is that the retainer model isn't gaining traction in your market, and you should consider pivoting to project-based work or returning to employment.']",
-    "income_notes": "[2–3 sentences on key income risks or accelerators specific to this user. These must be grounded in the user's profile — reference Q5 (network), Q6 (achievement), Q7 (advisory), or Q9 (urgency). E.g. 'Your Big 4 network is a genuine accelerator — most first clients in this archetype come from former colleagues who now work in finance leadership at mid-market firms. The risk is pricing too low to win early work, which creates a ceiling that's hard to raise later. Your Series B financial case experience is the credibility signal that justifies premium pricing from day one — lead with it.']"
+    "income_notes": "[2–3 sentences on key income risks or accelerators specific to this user. These must be grounded in the user's profile — reference Q13 (network), Q6 (achievement), Q7 (advisory), or Q9 (urgency). E.g. 'Your Big 4 network is a genuine accelerator — most first clients in this archetype come from former colleagues who now work in finance leadership at mid-market firms. The risk is pricing too low to win early work, which creates a ceiling that's hard to raise later. Your Series B financial case experience is the credibility signal that justifies premium pricing from day one — lead with it.']"
   },
-  "first_steps": [
-    "[Step 1 — for the #1 ranked option. Specific and actionable. Not 'build a website'. Must include an explicit time deadline (e.g. 'within 7 days', 'within 2 weeks', 'by end of this week'). Must reference either the Q6 achievement or the Q7 informal advisory behaviour.]",
-    "[Step 2 — specific next action after Step 1 is complete. May or may not have a deadline, but must be concrete.]",
-    "[Step 3]",
-    "[Step 4]",
-    "[Step 5]"
-  ],
   "recommended_selection": {
     "selected_ranks": [1, 2],
     "rationale": "[2–3 sentences explaining why this pairing is recommended. Must name specific buyer types or income dynamics — not generic phrasing. Address: which option is the strongest capability match, and why the combination reduces income concentration risk or covers complementary buyer types or time-to-income profiles.]"
@@ -341,7 +327,7 @@ Output the report in the following JSON structure:
 - The rationale must name specific buyer types or income dynamics — not generic phrasing like "these work well together"
 - Example of good rationale: "The Advisory Retainer (Rank 1) is your strongest capability match — regulated mid-size firms need exactly what you have and the sales cycle is manageable. The Fractional CFO model (Rank 3) opens a completely different buyer type (PE-backed SMEs) with shorter time-to-revenue, which gives you parallel income momentum if the retainer takes 6–8 weeks to close."
 
-**Note:** The \`reality_check\` and \`first_steps\` are generated for the #1 ranked option at report time. If the user selects a different option, these will be regenerated by the plan generation step. They serve as preview content for the default recommendation.
+**Note:** The \`reality_check\` is generated for the #1 ranked option at report time. If the user selects a different option, it will be regenerated by the plan generation step. It serves as preview content for the default recommendation. Day-by-day actionable steps are produced by Prompt 3 (activation plan), not P1 — this prompt does not emit a separate \`first_steps\` array.
 
 ---
 
@@ -361,8 +347,6 @@ Before finalising your output, verify:
 - \`time_to_first_revenue\` is a real timeframe in weeks, e.g. "4–8 weeks" — never "fast" or "medium"
 - \`difficulty_rating\` is exactly one of: easy, moderate, hard — no hyphenated values
 - \`honest_income_outlook\` contains actual GBP figures, e.g. "£35,000–£60,000 in Year 1 is realistic with 3–4 projects" — never vague language only
-- \`first_steps\` contains EXACTLY 5 items — no more, no fewer
-- \`first_steps[0]\` includes an explicit time deadline (e.g. "within 7 days", "within 2 weeks") and references either the Q6 achievement or Q7 behaviour — not a generic instruction
 - The recommendation is a genuine recommendation, not a hedge
 - No motivational language, startup clichés, or empty phrases
 - At least 3 different commercial model types represented across all options
@@ -375,12 +359,10 @@ Before finalising your output, verify:
 - \`income_outlook.year_1.mid_gbp\` must be consistent with the figure stated in \`honest_income_outlook\`
 - Each year's \`assumptions\` is 1–2 sentences and references specific commercial mechanics (client count, rate, cadence) — not vague language
 - Each year has \`revenue_build\` (2–3 sentences on income shape/ramp) and \`revenue_sources\` (1–2 sentences on revenue mix) — both must reference specific numbers and sources, not generalities
-- \`salary_replacement_analysis\` honestly addresses when independent income matches or exceeds current salary — never overstates Year 1
 - \`sensitivity_factors\` identifies 2–3 specific variables (not generic risks) and quantifies their impact where possible
 - \`income_floor_analysis\` describes the realistic worst case honestly — including what it means for the viability of the path
-- \`income_notes\` is 2–3 sentences grounded in the user's profile (referencing Q5, Q6, Q7, or Q9) — not generic observations
+- \`income_notes\` is 2–3 sentences grounded in the user's profile (referencing Q13, Q6, Q7, or Q9) — not generic observations
 - \`income_outlook.primary_option_rank\` must equal \`recommendation.recommended_rank\`
-- \`current_salary_gbp\` must match the user's stated salary from Q3 or Q9
 
 If any of the above fail, revise before outputting.
 
@@ -427,10 +409,6 @@ The following is a partial extract of the canonical gold-standard report (person
 **Example \`reality_check.most_likely_failure_mode\`** (50+ words, names the failure, two sentences):
 
 > "You will build the plan, update the LinkedIn, and then not send the first email. The psychological barrier between 'I have a plan' and 'I contacted someone' is where most professionals with your profile stop. This is not a plan failure — it's an activation failure. The reality is that your first conversation will teach you more about your market position than any amount of preparation."
-
-**Example \`income_outlook.salary_replacement_analysis\`** (50+ words, honest about the ramp):
-
-> "Salary replacement happens in Year 2 under the mid-case scenario. By the end of Year 2, you're running 2–3 concurrent retainers and/or project work totalling £78k–£105k annually. This assumes consistent execution in Year 1 and successful conversion of early conversations into repeat business or retainer relationships."
 
 **Example \`income_outlook.year_1.revenue_build\`** (40+ words, shows month-by-month shape):
 
