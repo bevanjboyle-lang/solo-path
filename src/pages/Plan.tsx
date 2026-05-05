@@ -16,6 +16,8 @@ import StrandSelector from "@/components/plan/StrandSelector";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
+import { useActiveSection } from "@/hooks/useActiveSection";
+import PlanSidebar, { type SidebarItem } from "@/components/plan/PlanSidebar";
 
 // Sample-report sections (Phase 3a refactor — all prop-driven, canonical typed)
 import HookInsightSection from "@/components/sample-report/HookInsightSection";
@@ -466,6 +468,75 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   // If not, render a loud fallback Banner so a regression is never silent.
   const renderRegression = useMainContentSelfCheck(hasPaid === true && !loadError);
 
+  // Sidebar items + active-section tracking — must be derived BEFORE early
+  // returns so the useActiveSection hook order stays stable across renders.
+  // Pre-computed here; used in the main render branch below.
+  const awaitingSelectionPre =
+    reportStatus === "pending_selection" && !activationPlan;
+  const sidebarItems: SidebarItem[] = [];
+  if (!awaitingSelectionPre) {
+    sidebarItems.push({
+      id: "sect-today",
+      label: "Today",
+      group: "today",
+      available: planState !== "loading",
+    });
+  }
+  if (planState !== "day0" && trackerDays.length > 0) {
+    sidebarItems.push({
+      id: "sect-tracker",
+      label: "30-day tracker",
+      group: "today",
+      available: true,
+    });
+  }
+  if (awaitingSelectionPre && coreReport?.options && coreReport.options.length > 0) {
+    sidebarItems.push({
+      id: "sect-strand-selector",
+      label: "Pick your paths",
+      group: "today",
+      available: true,
+    });
+  }
+  if (coreReport) {
+    if (coreReport.hook_insight)
+      sidebarItems.push({ id: "sect-hook", label: "Your edge", group: "report", available: true });
+    if (coreReport.archetype)
+      sidebarItems.push({ id: "sect-archetype", label: "Your archetype", group: "report", available: true });
+    if (coreReport.transferable_value)
+      sidebarItems.push({ id: "sect-transferable-value", label: "What you can sell", group: "report", available: true });
+    if (coreReport.transferable_skills && coreReport.transferable_skills.length > 0)
+      sidebarItems.push({ id: "sect-transferable-skills", label: "Your transferable skills", group: "report", available: true });
+    if (coreReport.options && coreReport.options.length > 0)
+      sidebarItems.push({ id: "sect-business-paths", label: "Your 10 paths", group: "report", available: true });
+    if (coreReport.recommendation)
+      sidebarItems.push({ id: "sect-recommendation", label: "Our recommendation", group: "report", available: true });
+    if (coreReport.reality_check)
+      sidebarItems.push({ id: "sect-reality-check", label: "Reality check", group: "report", available: true });
+    if (coreReport.income_outlook)
+      sidebarItems.push({ id: "sect-income-outlook", label: "Income outlook", group: "report", available: true });
+    if (coreReport.ai_impact)
+      sidebarItems.push({ id: "sect-ai-impact", label: "AI & your future", group: "report", available: true });
+  }
+  if (activationPlan) {
+    if (activationPlan.portfolio_summary)
+      sidebarItems.push({ id: "sect-portfolio-summary", label: "Portfolio strategy", group: "plan", available: true });
+    if (marketSnapshots && Object.keys(marketSnapshots).length > 0)
+      sidebarItems.push({ id: "sect-market-snapshot", label: "Market feasibility", group: "plan", available: true });
+    if (activationPlan.first_move)
+      sidebarItems.push({ id: "sect-first-move", label: "Your first move", group: "plan", available: true });
+    if (activationPlan.activation_plan)
+      sidebarItems.push({ id: "sect-plan", label: "Your 30-day plan", group: "plan", available: true });
+    if (activationPlan.traction_signals && activationPlan.traction_signals.length > 0)
+      sidebarItems.push({ id: "sect-traction", label: "Traction signals", group: "plan", available: true });
+    if (activationPlan.portfolio_review_guide)
+      sidebarItems.push({ id: "sect-portfolio-review", label: "Review checkpoints", group: "plan", available: true });
+    if (activationPlan.network_toolkit)
+      sidebarItems.push({ id: "sect-network-toolkit", label: "Network toolkit", group: "plan", available: true });
+  }
+  const sectionIds = sidebarItems.map((i) => i.id);
+  const activeSectionId = useActiveSection(sectionIds);
+
   // ERROR state — fetch failed. Keep TopBar visible, render a Banner.
   if (loadError) {
     return (
@@ -503,8 +574,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   //                       StrandSelector is rendered; TodayCard is hidden.
   //   planBuilding      — generate-plan is in flight or just kicked off.
   //                       "Building your plan…" notice is shown.
-  const awaitingSelection =
-    reportStatus === "pending_selection" && !activationPlan;
+  const awaitingSelection = awaitingSelectionPre;
   const planBuilding =
     reportStatus === "generating_plan" ||
     (awaitingSelection && strandSubmitting);
@@ -526,7 +596,23 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         </Banner>
       )}
 
-      <main className="mx-auto w-full max-w-3xl px-6 pt-8 pb-24">
+      {/* Mobile sidebar (sticky chip + sheet). Hidden on lg via component. */}
+      {sidebarItems.length > 0 && (
+        <PlanSidebar items={sidebarItems} activeId={activeSectionId} variant="mobile" />
+      )}
+
+      <div className="mx-auto w-full max-w-screen-xl px-6">
+        <div className="flex gap-10">
+          {/* Desktop sidebar — sticky left rail. */}
+          {sidebarItems.length > 0 && (
+            <aside className="hidden lg:block w-56 shrink-0 pt-8">
+              <div className="sticky top-20">
+                <PlanSidebar items={sidebarItems} activeId={activeSectionId} variant="desktop" />
+              </div>
+            </aside>
+          )}
+
+          <main className="flex-1 min-w-0 mx-auto w-full max-w-3xl pt-8 pb-24">
         <h1 className="sr-only">Your plan</h1>
         {/* §1 ReplanPromptCard — only when a replan is pending */}
         {replanPending && sessionId && user && (
@@ -545,14 +631,14 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
             ADR-019. While visible, TodayCard is suppressed so selection is
             the unambiguous primary action. */}
         {awaitingSelection && coreReport?.options && coreReport.options.length > 0 && (
-          <div className="mb-8">
+          <section id="sect-strand-selector" className="mb-8 scroll-mt-24">
             <StrandSelector
               options={coreReport.options}
               recommended_selection={coreReport.recommended_selection ?? null}
               onSubmit={handleStrandSubmit}
               submitting={strandSubmitting}
             />
-          </div>
+          </section>
         )}
 
         {/* §2b "Building your plan…" notice — shown once the user has
@@ -568,20 +654,23 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         {/* §2c TodayCard — primary action once a plan exists. Hidden during
             the selection step so the StrandSelector is the unambiguous CTA. */}
         {!awaitingSelection && (
-          <TodayCard
-            state={planState}
-            dayNumber={dayNumber}
-            weekNumber={weekNumber}
-            sessionId={sessionId}
-            onScrollToReport={scrollToReport}
-            onOpenCheckin={openCheckin}
-          />
+          <section id="sect-today" className="scroll-mt-24">
+            <TodayCard
+              state={planState}
+              dayNumber={dayNumber}
+              weekNumber={weekNumber}
+              sessionId={sessionId}
+              onScrollToReport={scrollToReport}
+              onOpenCheckin={openCheckin}
+            />
+          </section>
         )}
 
         {/* §3 TrackerGrid */}
         {planState !== "day0" && trackerDays.length > 0 && (
-          <motion.div
-            className="mt-10"
+          <motion.section
+            id="sect-tracker"
+            className="mt-10 scroll-mt-24"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.4 }}
@@ -591,7 +680,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
               variant={isSubscriber ? "rolling-weekly" : "thirty-day"}
               onDayClick={handleDayClick}
             />
-          </motion.div>
+          </motion.section>
         )}
 
         {/* §4 Report — the canonical sample-report composition.
@@ -646,110 +735,112 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
           {/* ----- Core report sections (always when core_report present) ----- */}
           {coreReport?.hook_insight && (
-            <div className="mb-10">
+            <section id="sect-hook" className="mb-10 scroll-mt-24">
               <HookInsightSection hook_insight={coreReport.hook_insight} />
-            </div>
+            </section>
           )}
 
           {coreReport?.archetype && (
-            <div className="mb-10">
+            <section id="sect-archetype" className="mb-10 scroll-mt-24">
               <ArchetypeSection archetype={coreReport.archetype} />
-            </div>
+            </section>
           )}
 
           {coreReport?.transferable_value && (
-            <div className="mb-10">
+            <section id="sect-transferable-value" className="mb-10 scroll-mt-24">
               <TransferableValueSection transferable_value={coreReport.transferable_value} />
-            </div>
+            </section>
           )}
 
           {coreReport?.transferable_skills && coreReport.transferable_skills.length > 0 && (
-            <div className="mb-10">
+            <section id="sect-transferable-skills" className="mb-10 scroll-mt-24">
               <TransferableSkillsSection transferable_skills={coreReport.transferable_skills} />
-            </div>
+            </section>
           )}
 
           {coreReport?.options && coreReport.options.length > 0 && (
-            <div className="mb-10">
+            <section id="sect-business-paths" className="mb-10 scroll-mt-24">
               <BusinessPaths
                 options={coreReport.options}
                 recommended_selection={coreReport.recommended_selection ?? undefined}
                 locked={false}
               />
-            </div>
+            </section>
           )}
 
           {coreReport?.recommendation && (
-            <div className="mb-10">
+            <section id="sect-recommendation" className="mb-10 scroll-mt-24">
               <RecommendationSection
                 recommendation={coreReport.recommendation}
                 options={coreReport.options}
               />
-            </div>
+            </section>
           )}
 
           {coreReport?.reality_check && (
-            <div className="mb-10">
+            <section id="sect-reality-check" className="mb-10 scroll-mt-24">
               <RealityCheckSection reality_check={coreReport.reality_check} />
-            </div>
+            </section>
           )}
 
           {coreReport?.income_outlook && (
-            <div className="mb-10">
+            <section id="sect-income-outlook" className="mb-10 scroll-mt-24">
               <IncomeOutlookSection income_outlook={coreReport.income_outlook} />
-            </div>
+            </section>
           )}
 
           {coreReport?.ai_impact && (
-            <div className="mb-10">
+            <section id="sect-ai-impact" className="mb-10 scroll-mt-24">
               <AIImpactSection ai_impact={coreReport.ai_impact} />
-            </div>
+            </section>
           )}
 
           {/* ----- Activation-plan sections (only when activation_plan present) ----- */}
           {activationPlan?.portfolio_summary && (
-            <div className="mb-10">
+            <section id="sect-portfolio-summary" className="mb-10 scroll-mt-24">
               <PortfolioSummarySection portfolio_summary={activationPlan.portfolio_summary} />
-            </div>
+            </section>
           )}
 
           {marketSnapshots && Object.keys(marketSnapshots).length > 0 && (
-            <div className="mb-10">
+            <section id="sect-market-snapshot" className="mb-10 scroll-mt-24">
               <MarketSnapshotSection market_snapshots={marketSnapshots} />
-            </div>
+            </section>
           )}
 
           {activationPlan?.first_move && (
-            <div className="mb-10">
+            <section id="sect-first-move" className="mb-10 scroll-mt-24">
               <FirstMoveSection first_move={activationPlan.first_move} />
-            </div>
+            </section>
           )}
 
           {activationPlan?.activation_plan && (
-            <div className="mb-10">
+            <section id="sect-plan" className="mb-10 scroll-mt-24">
               <PlanSection activation_plan={activationPlan.activation_plan} />
-            </div>
+            </section>
           )}
 
           {activationPlan?.traction_signals && activationPlan.traction_signals.length > 0 && (
-            <div className="mb-10">
+            <section id="sect-traction" className="mb-10 scroll-mt-24">
               <TractionSignalsSection traction_signals={activationPlan.traction_signals} />
-            </div>
+            </section>
           )}
 
           {activationPlan?.portfolio_review_guide && (
-            <div className="mb-10">
+            <section id="sect-portfolio-review" className="mb-10 scroll-mt-24">
               <PortfolioReviewSection portfolio_review_guide={activationPlan.portfolio_review_guide} />
-            </div>
+            </section>
           )}
 
           {activationPlan?.network_toolkit && (
-            <div className="mb-10">
+            <section id="sect-network-toolkit" className="mb-10 scroll-mt-24">
               <NetworkToolkitSection network_toolkit={activationPlan.network_toolkit} />
-            </div>
+            </section>
           )}
         </motion.div>
-      </main>
+          </main>
+        </div>
+      </div>
 
       {/* CheckInPanel — Drawer, not a route */}
       <CheckInPanel
