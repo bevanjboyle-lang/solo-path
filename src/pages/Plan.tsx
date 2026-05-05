@@ -638,6 +638,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
               <BusinessPaths
                 options={coreReport.options}
                 recommended_selection={coreReport.recommended_selection ?? undefined}
+                locked={false}
               />
             </div>
           )}
