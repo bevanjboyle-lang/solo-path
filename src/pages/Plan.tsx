@@ -39,6 +39,11 @@ import type {
   ActivationPlanOutput,
   ReportRow,
 } from "@/types/canonical";
+import {
+  SAMPLE_CORE_REPORT,
+  SAMPLE_ACTIVATION_PLAN,
+  SAMPLE_MARKET_SNAPSHOTS,
+} from "@/data/canonicalSampleReport";
 
 interface PlanPageProps {
   initialSessionId?: string;
@@ -115,13 +120,14 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     if (authLoading) return;
     if (!user) {
       if (isDevBypass()) {
-        // Dev-bypass with sample data is not yet supported under the canonical
-        // composition (sampleReportData.ts uses an ad-hoc shape, not SoloCoreReport).
-        // Render a stub so the dev sees structure without crashing.
-        console.warn(
-          "Plan: dev-bypass mode active but no canonical-shape sample data wired in. Sections will be empty."
-        );
+        // Dev-bypass: load the canonical sample fixture so every section renders
+        // against real-shaped data without going through auth/payment.
         setHasPaid(true);
+        setReportId("dev-bypass-sample");
+        setReportStatus("complete");
+        setCoreReport(SAMPLE_CORE_REPORT);
+        setActivationPlan(SAMPLE_ACTIVATION_PLAN);
+        setMarketSnapshots(SAMPLE_MARKET_SNAPSHOTS);
         setPlanState("day0");
         return;
       }
