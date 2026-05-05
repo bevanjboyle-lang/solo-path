@@ -1,10 +1,11 @@
+// claim-second-report v16 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // claim-second-report v13 — Audit P0 #7: STRIPE_PRICE_SECOND_REPORT env var support
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 // £9.99 GBP one-time price for a second Plan B Report (non-subscribers)

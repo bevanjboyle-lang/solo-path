@@ -24,7 +24,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v24-adr013";
+const FUNCTION_VERSION = "v25-f60-status-advance";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -360,36 +360,39 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Payment completed for user ${userId}, session ${session.id}`);
 
-    // Background plan generation — runs after linkAnonRows, so the lookup works.
+    // F60 fix (v25): advance the latest paid report's status from
+    // 'teaser_ready' to 'pending_selection'. The frontend's /plan route detects
+    // this status on first authed mount and fires generate-plan with the user's
+    // session JWT (cleaner than service-role-to-edge-function plumbing).
+    //
+    // This also auto-fixes F59: Teaser.tsx and AuthCallback can route paid users
+    // to /plan based on status alone, no payments-table lookup needed.
+    //
+    // Replaces v24's "Background plan generation" block, which had two bugs:
+    //   (a) queried for status='pending_selection' but the row was at 'teaser_ready'
+    //       (nothing transitioned it; the lookup always returned 0 rows).
+    //   (b) accessed recommended_selection.selected_ranks but generate-report v44.1
+    //       writes recommended_selection as a flat array. The condition was never true.
     try {
-      const { data: report } = await supabase
+      const { data: advancedRows, error: statusErr } = await supabase
         .from("reports")
-        .select("id, recommended_selection, status")
+        .update({ status: "pending_selection" })
         .eq("user_id", userId)
-        .eq("status", "pending_selection")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+        .eq("status", "teaser_ready")
+        .select("id");
 
-      if (report?.id && report?.recommended_selection?.selected_ranks?.length > 0) {
-        fetch(`${supabaseUrl}/functions/v1/generate-plan`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${supabaseServiceKey}`,
-          },
-          body: JSON.stringify({
-            report_id: report.id,
-            selected_ranks: report.recommended_selection.selected_ranks,
-            background: true,
-          }),
-        }).catch((err: Error) => {
-          console.error("Background generate-plan trigger failed:", err.message);
-        });
-        console.log(`Background plan generation triggered for report ${report.id}`);
+      if (statusErr) {
+        console.error("v25 status advance failed (non-fatal):", statusErr.message);
+      } else {
+        console.log(
+          `v25 advanced ${advancedRows?.length ?? 0} report(s) to pending_selection for user ${userId}`,
+        );
       }
-    } catch (bgErr) {
-      console.error("Background generation lookup failed (non-fatal):", bgErr);
+    } catch (statusAdvanceErr) {
+      console.error(
+        "v25 status advance threw (non-fatal):",
+        (statusAdvanceErr as Error)?.message ?? statusAdvanceErr,
+      );
     }
 
     // Welcome email with magic link (unchanged).

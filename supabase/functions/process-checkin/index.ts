@@ -1,3 +1,4 @@
+// process-checkin v32 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // process-checkin v29 — F45 (2026-04-19): accept `response` key in userMessage OR chain so /plan CheckInPanel callers work (Plan.tsx sends {session_id, response}). Backward-compatible with /checkin long-schema callers.
 // v28: P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
 // v27 baseline: 2026-04-17 Audit P1 #9 fix — traction signals parameterised by move type.
@@ -10,7 +11,7 @@ import OpenAI from "https://esm.sh/openai@4.28.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 // Model tier constants — ADR-012 (2026-04-17)

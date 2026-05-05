@@ -1,3 +1,4 @@
+// ask-solo v28 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // ask-solo v25 — 2026-04-18: bundle of 3 E2E audit fixes
 //   • F5 (P0): align tracker_sessions SELECT with real schema — use focus_strands + strand_status + last_checkin_date;
 //              drop 3 non-existent cols (current_phase, progress_pct, checkin_trajectory); derive replacements from
@@ -11,7 +12,7 @@ import OpenAI from "https://esm.sh/openai@4.28.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 // Model tier constants — ADR-012 (2026-04-17)

@@ -1,3 +1,4 @@
+// draft-outreach v26 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // draft-outreach v23 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
 // v22 baseline: 2026-04-17 Audit P2 #16 — source-header reconciled with deploy counter.
 // Earlier history:
@@ -15,7 +16,7 @@ import OpenAI from "https://esm.sh/openai@4.28.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 // Model tier constants — ADR-012 (2026-04-17)

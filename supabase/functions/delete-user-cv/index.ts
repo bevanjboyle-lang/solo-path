@@ -1,8 +1,9 @@
+// delete-user-cv v13 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 function getUserIdFromJwt(authHeader: string | null): string | null {

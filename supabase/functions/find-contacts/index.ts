@@ -1,3 +1,4 @@
+// find-contacts v13 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // find-contacts v1 — Apollo.io People Search wrapper
 // Part of the Apollo Contact Finding sprint (admin/apollo-sprint-design.md)
 //
@@ -10,7 +11,7 @@
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 function getUserIdFromJwt(authHeader: string | null): string | null {

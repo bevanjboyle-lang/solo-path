@@ -1,3 +1,4 @@
+// parse-cv v27 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // parse-cv v15 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
 // v14 baseline: P3 #18 (2026-04-17): switched from `serve()` import to `Deno.serve()` per CLAUDE.md §4
 // Earlier history:
@@ -7,7 +8,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 // Model tier constants — ADR-012 (2026-04-17)

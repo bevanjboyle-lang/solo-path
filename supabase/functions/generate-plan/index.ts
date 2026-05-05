@@ -1,3 +1,4 @@
+// generate-plan v32 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // generate-plan v28 — async pattern (mirrors generate-report v44.1)
 //
 // Changes from v27:
@@ -19,7 +20,7 @@ const FUNCTION_VERSION = "v28-async";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 // Model tier constants — ADR-012 (2026-04-17)

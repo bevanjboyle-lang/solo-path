@@ -1,10 +1,11 @@
+// create-subscription v24 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // create-subscription v21 — Audit P0 #6,#7,#8: Stripe API version standardised to 2025-01-27.acacia, price IDs via env vars, APP_URL fail-loud
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 function getUserIdFromJwt(authHeader: string | null): string | null {

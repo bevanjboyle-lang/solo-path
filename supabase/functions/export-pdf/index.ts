@@ -1,3 +1,4 @@
+// export-pdf v16 — 2026-05-05: F65 CORS — x-client-session-id + apikey + x-client-info added to Access-Control-Allow-Headers
 // export-pdf — Supabase Edge Function v3
 // Fixes: verify_jwt false, core_report column name
 
@@ -10,7 +11,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 interface ExportRequest {

@@ -1,3 +1,4 @@
+// refine-report v17 — 2026-05-05: F65 CORS — x-client-session-id + apikey + x-client-info added to Access-Control-Allow-Headers
 // refine-report v14 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
 // v13 baseline: 2026-04-17 Audit P2 #16 — source-header reconciled with deploy counter.
 // Earlier history:
@@ -12,7 +13,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
   "Content-Type": "application/json",
 };
 

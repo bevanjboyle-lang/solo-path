@@ -31,6 +31,13 @@ export default function PaymentSuccess() {
   const elapsedRef = useRef(0);
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
+  // F64 fix (2026-05-05): hold the freshly-minted access token from
+  // exchange-payment-token so we can attach it explicitly to subsequent
+  // get-account-readiness invokes. supabase-js sometimes does not pick up the
+  // session set by setSession() on the same tick, so the polling fetch falls
+  // back to the anon key and get-account-readiness 401s. Passing Authorization
+  // explicitly removes the race.
+  const sessionTokenRef = useRef<string | null>(null);
 
   // No token → redirect. /plan if authed, / if not.
   // For second_report flow, user is already authed — no token required.
@@ -83,8 +90,13 @@ export default function PaymentSuccess() {
     if (!mountedRef.current) return;
 
     try {
+      // F64 fix: pass the access token explicitly. See sessionTokenRef declaration above.
+      const headers = sessionTokenRef.current
+        ? { Authorization: `Bearer ${sessionTokenRef.current}` }
+        : undefined;
       const { data, error } = await supabase.functions.invoke("get-account-readiness", {
         body: {},
+        headers,
       });
 
       if (!mountedRef.current) return;
@@ -163,6 +175,8 @@ export default function PaymentSuccess() {
           return;
         }
 
+        // F64: capture token for explicit Authorization on poll calls.
+        sessionTokenRef.current = data.session.access_token;
         setHasSession(true);
         setState("polling");
         pollReadiness();

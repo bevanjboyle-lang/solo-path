@@ -1,3 +1,4 @@
+// get-account-readiness v16 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 /**
  * get-account-readiness v2 — F43 (2026-04-19)
  *
@@ -19,7 +20,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
 // F43: JWT verification via supabase.auth.getClaims(token) — works for both
