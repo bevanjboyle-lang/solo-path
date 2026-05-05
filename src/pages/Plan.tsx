@@ -12,6 +12,7 @@ import TrackerGrid from "@/components/plan/TrackerGrid";
 import CheckInPanel from "@/components/plan/CheckInPanel";
 import ReplanPromptCard from "@/components/plan/ReplanPromptCard";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
+import StrandSelector from "@/components/plan/StrandSelector";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
@@ -90,9 +91,9 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   // Error
   const [loadError, setLoadError] = useState(false);
 
-  // Track which report rows have already had auto-fire generate-plan invoked,
-  // so a polling re-fetch doesn't re-fire the function.
-  const autoFiredRef = useRef<Set<string>>(new Set());
+  // StrandSelector: true while generate-plan invocation is in flight.
+  // Cleared once polling sees the row flip to `generating_plan` (or `complete`).
+  const [strandSubmitting, setStrandSubmitting] = useState(false);
 
   // Apply the queried row to local state (used by both initial load and polling).
   const applyReportRow = useCallback((row: Record<string, unknown>) => {
@@ -178,32 +179,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         setHasPaid(true);
         applyReportRow(data as Record<string, unknown>);
 
-        // Paid user, plan not yet generated. Auto-fire generate-plan with
-        // the backend's recommended_selection. Fire-and-forget; the polling
-        // effect picks up the status change.
-        if (data.status === "pending_selection" && !autoFiredRef.current.has(data.id)) {
-          const recSel = data.recommended_selection as
-            | { selected_ranks?: number[] }
-            | number[]
-            | null;
-          // Backend schema: { selected_ranks, rationale }. Some legacy rows
-          // store a flat array; tolerate both.
-          const recommendedRanks = Array.isArray(recSel)
-            ? (recSel as number[])
-            : Array.isArray(recSel?.selected_ranks)
-              ? recSel!.selected_ranks
-              : null;
-          if (recommendedRanks && recommendedRanks.length > 0) {
-            autoFiredRef.current.add(data.id);
-            try {
-              void supabase.functions.invoke("generate-plan", {
-                body: { report_id: data.id, selected_ranks: recommendedRanks },
-              });
-            } catch (err) {
-              console.error("Plan: generate-plan auto-fire failed", err);
-            }
-          }
-        }
+        // NOTE: previously auto-fired generate-plan here using the backend's
+        // recommended_selection. Per ADR-019, the user must actively choose
+        // their strands via <StrandSelector />. The render branch below
+        // handles `pending_selection` + null activation_plan.
 
         loadTrackerSession(user.id, data.id);
       } catch (err) {
@@ -295,6 +274,12 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
       applyReportRow(latest as Record<string, unknown>);
 
+      // Once the row has moved off pending_selection, the StrandSelector is
+      // unmounted by the render branch — stop blocking its UI.
+      if (latest.status !== "pending_selection") {
+        setStrandSubmitting(false);
+      }
+
       if (latest.status === "complete") {
         if (user) loadTrackerSession(user.id, reportId);
         return;
@@ -343,6 +328,33 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const scrollToReport = useCallback(() => {
     reportRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
+
+  // StrandSelector submit — fires generate-plan with the user's chosen ranks.
+  // The polling effect picks up the resulting status transition (pending_selection
+  // → generating_plan → complete) and clears `strandSubmitting`.
+  const handleStrandSubmit = useCallback(
+    async (selected_ranks: number[]) => {
+      if (!reportId) return;
+      setStrandSubmitting(true);
+      try {
+        const { error } = await supabase.functions.invoke("generate-plan", {
+          body: { report_id: reportId, selected_ranks },
+        });
+        if (error) throw error;
+        // Safety net: if polling never observes a status change within ~12s,
+        // release the UI so the user isn't stuck. The polling effect will
+        // also clear it as soon as the row moves off pending_selection.
+        setTimeout(() => setStrandSubmitting(false), 12000);
+      } catch (err) {
+        console.error("Plan: generate-plan invoke failed", err);
+        setStrandSubmitting(false);
+        toast({
+          title: "We couldn't start your plan. Please try again.",
+        });
+      }
+    },
+    [reportId, toast],
+  );
 
   const openCheckin = useCallback(() => {
     setCheckinOpen(true);
@@ -486,11 +498,16 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     );
   }
 
-  // While the plan is being generated post-payment, surface that to the user.
-  // Core report sections still render below; activation_plan sections are
-  // skipped until the row flips to `complete`.
-  const planGenerating =
-    reportStatus === "pending_selection" || reportStatus === "generating_plan";
+  // Render-state derivations driven by report status + presence of plan.
+  //   awaitingSelection — paid, plan not yet built, user must choose strands.
+  //                       StrandSelector is rendered; TodayCard is hidden.
+  //   planBuilding      — generate-plan is in flight or just kicked off.
+  //                       "Building your plan…" notice is shown.
+  const awaitingSelection =
+    reportStatus === "pending_selection" && !activationPlan;
+  const planBuilding =
+    reportStatus === "generating_plan" ||
+    (awaitingSelection && strandSubmitting);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -523,15 +540,43 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           />
         )}
 
-        {/* §2 TodayCard — always first, always primary */}
-        <TodayCard
-          state={planState}
-          dayNumber={dayNumber}
-          weekNumber={weekNumber}
-          sessionId={sessionId}
-          onScrollToReport={scrollToReport}
-          onOpenCheckin={openCheckin}
-        />
+        {/* §2a StrandSelector — shown when the user is paid but hasn't yet
+            chosen their strands. Replaces the F60 auto-fire bridge per
+            ADR-019. While visible, TodayCard is suppressed so selection is
+            the unambiguous primary action. */}
+        {awaitingSelection && coreReport?.options && coreReport.options.length > 0 && (
+          <div className="mb-8">
+            <StrandSelector
+              options={coreReport.options}
+              recommended_selection={coreReport.recommended_selection ?? null}
+              onSubmit={handleStrandSubmit}
+              submitting={strandSubmitting}
+            />
+          </div>
+        )}
+
+        {/* §2b "Building your plan…" notice — shown once the user has
+            submitted their selection and we're waiting for generate-plan
+            to finish. The StrandSelector unmounts at this point. */}
+        {planBuilding && !awaitingSelection && (
+          <div className="mb-8 flex items-center gap-3 rounded-xl border border-border bg-[hsl(var(--surface-panel))] px-5 py-4 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            <span>Building your plan… this usually takes a minute or two.</span>
+          </div>
+        )}
+
+        {/* §2c TodayCard — primary action once a plan exists. Hidden during
+            the selection step so the StrandSelector is the unambiguous CTA. */}
+        {!awaitingSelection && (
+          <TodayCard
+            state={planState}
+            dayNumber={dayNumber}
+            weekNumber={weekNumber}
+            sessionId={sessionId}
+            onScrollToReport={scrollToReport}
+            onOpenCheckin={openCheckin}
+          />
+        )}
 
         {/* §3 TrackerGrid */}
         {planState !== "day0" && trackerDays.length > 0 && (
@@ -596,15 +641,6 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
               {pdfError && (
                 <p className="text-[11px] text-red-500">{pdfError}</p>
               )}
-            </div>
-          )}
-
-          {/* Plan-generation progress notice (post-payment, before activation_plan
-              materialises). Core report sections still render below. */}
-          {planGenerating && !activationPlan && (
-            <div className="mb-6 flex items-center gap-3 rounded-md border border-border bg-[hsl(var(--surface-panel))] px-4 py-3 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              <span>Building your plan… this usually takes a minute or two.</span>
             </div>
           )}
 
