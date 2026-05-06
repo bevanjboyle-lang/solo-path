@@ -41,11 +41,42 @@ export default function Questionnaire() {
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
 
   // Ensure client_session_id exists before any submit fires.
+  //
+  // F54 fix: must validate the session against the server, not just check
+  // whether one exists locally. supabase.auth.getSession() returns the
+  // cached session object even when the JWT is expired or has been revoked
+  // server-side; if we trust that and skip the email-capture step, the
+  // submit will fail (server rejects the JWT) and the row will be created
+  // anonymously with user_id=null — an orphan that the user can't see in
+  // their authed view. supabase.auth.getUser() round-trips to GoTrue and
+  // returns a clean null+error when the token is stale; we treat that as
+  // anon and clear the bad local tokens so the next mount doesn't fall
+  // into the same trap.
   useEffect(() => {
     getClientSessionId();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthed(session !== null);
-    });
+    let cancelled = false;
+
+    (async () => {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (cancelled) return;
+      if (error || !user) {
+        if (error) {
+          console.warn("Questionnaire: stale auth session, treating as anon:", error.message);
+          // Clear the local cached session so subsequent calls aren't poisoned
+          // by the bad JWT. scope: 'local' avoids notifying GoTrue (which would
+          // fail anyway with an expired token) and avoids signing the user out
+          // in any other tab that has a valid session.
+          await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+        }
+        setIsAuthed(false);
+        return;
+      }
+      setIsAuthed(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Authed users skip the email-capture step entirely.
