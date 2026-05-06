@@ -1,3 +1,4 @@
+// parse-cv v28 — 2026-05-06: F51 — bump server file-size cap 5MB → 10MB to match client (CVUploadZone) cap
 // parse-cv v27 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // parse-cv v15 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
 // v14 baseline: P3 #18 (2026-04-17): switched from `serve()` import to `Deno.serve()` per CLAUDE.md §4
@@ -54,8 +55,14 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      return new Response(JSON.stringify({ error: "file_too_large", message: "File exceeds 5MB limit" }), {
+    // Aligned with client cap in CVUploadZone.tsx (10 MB). Previously the
+    // server rejected at 5 MB, leaving a 5–10 MB window where the upload
+    // succeeded against Supabase Storage but parse-cv returned 400 — the
+    // user would see their CV as "uploaded" but the report would generate
+    // without CV context. Most CVs are well under 1 MB; CVs with embedded
+    // photos / scanned signatures occasionally hit 6–8 MB.
+    if (file.size > 10 * 1024 * 1024) {
+      return new Response(JSON.stringify({ error: "file_too_large", message: "File exceeds 10MB limit" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
