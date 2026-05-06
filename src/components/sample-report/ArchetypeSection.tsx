@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function ArchetypeSection({ archetype }: Props) {
-  const { primary, summary, editorial_description, capability_tags } = archetype;
+  const { primary, secondary, summary, editorial_description, capability_tags } = archetype;
   // Canonical `editorial_description` is a single string; some narratives use
   // double newlines to delineate paragraphs. Split on those, fall back to a
   // single paragraph if none are present.
@@ -21,6 +21,11 @@ export default function ArchetypeSection({ archetype }: Props) {
       <h3 className="mb-2 text-xl font-bold tracking-tight text-foreground" style={{ letterSpacing: "-0.02em" }}>
         {primary}
       </h3>
+      {secondary && (
+        <p className="mb-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          Secondary: <span className="text-foreground/70 normal-case tracking-normal">{secondary}</span>
+        </p>
+      )}
       {summary && (
         <p className="mb-4 text-sm font-medium text-foreground/80">{summary}</p>
       )}

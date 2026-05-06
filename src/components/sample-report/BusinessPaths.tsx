@@ -74,7 +74,12 @@ function FullOptionCard({
           <p className="mt-0.5 text-sm text-foreground">{option.target_buyer}</p>
         </div>
         <div className="rounded-md bg-surface-panel p-3">
-          <span className="text-[10px] text-muted-foreground">{option.pricing.cadence}</span>
+          <span className="text-[10px] text-muted-foreground">
+            {option.pricing.cadence}
+            {option.pricing.model && (
+              <span className="text-muted-foreground/70"> · {option.pricing.model}</span>
+            )}
+          </span>
           <p className="mt-0.5 text-sm font-medium text-primary">{formatPriceRange(option)}</p>
         </div>
         <div className="rounded-md bg-surface-panel p-3">
@@ -186,11 +191,18 @@ export default function BusinessPaths({
           className="mb-4 rounded-md border border-border bg-surface-card p-6"
           style={{ borderTop: "3px solid hsl(var(--mint))" }}
         >
-          {(selectedRanks.has(featured.rank) || featured.rank === 1) && (
-            <span className="mb-3 inline-block rounded-md bg-surface-mint-tint px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--mint-text))]">
-              Best Fit
-            </span>
-          )}
+          <div className="mb-3 flex items-center gap-2 flex-wrap">
+            {(selectedRanks.has(featured.rank) || featured.rank === 1) && (
+              <span className="inline-block rounded-md bg-surface-mint-tint px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--mint-text))]">
+                Best Fit
+              </span>
+            )}
+            {featured.primary_move_type && (
+              <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                {featured.primary_move_type}
+              </span>
+            )}
+          </div>
           <h3 className="mt-1 text-base font-semibold text-foreground">
             {featured.model_name}
           </h3>
@@ -203,6 +215,9 @@ export default function BusinessPaths({
             <div className="rounded-md bg-surface-panel p-3">
               <span className="text-[10px] text-muted-foreground">
                 {featured.pricing.cadence}
+                {featured.pricing.model && (
+                  <span className="text-muted-foreground/70"> · {featured.pricing.model}</span>
+                )}
               </span>
               <p className="mt-0.5 text-sm font-medium text-primary">
                 {formatPriceRange(featured)}
@@ -250,10 +265,20 @@ export default function BusinessPaths({
             key={opt.rank}
             className="relative mb-4 overflow-hidden rounded-md border border-border bg-surface-card p-6"
           >
+            {opt.primary_move_type && (
+              <span className="mb-2 inline-block rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+                {opt.primary_move_type}
+              </span>
+            )}
             <h3 className="text-base font-semibold text-foreground">{opt.model_name}</h3>
             <div className="mt-3 grid grid-cols-2 gap-3">
               <div className="rounded-md bg-surface-panel p-3">
-                <span className="text-[10px] text-muted-foreground">{opt.pricing.cadence}</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {opt.pricing.cadence}
+                  {opt.pricing.model && (
+                    <span className="text-muted-foreground/70"> · {opt.pricing.model}</span>
+                  )}
+                </span>
                 <p className="mt-0.5 text-sm text-foreground">{formatPriceRange(opt)}</p>
               </div>
               <div className="rounded-md bg-surface-panel p-3">
