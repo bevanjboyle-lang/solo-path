@@ -42,6 +42,30 @@ function validateFile(file: File): string | null {
   return null;
 }
 
+/**
+ * Build a Supabase-Storage-safe object name from the user's filename.
+ *
+ * Supabase Storage object names reject spaces and most special characters
+ * with a 400. The user's display name is preserved separately (we still
+ * show `file.name` in the uploaded-state UI); this helper only governs
+ * the path the file is *stored* under.
+ *
+ * Strategy: keep the extension intact, replace any character that isn't
+ * a word character / hyphen / dot with an underscore, collapse runs, and
+ * lowercase. Falls back to "cv" if sanitisation strips everything.
+ */
+function sanitiseStorageName(originalName: string): string {
+  const lastDot = originalName.lastIndexOf(".");
+  const stem = lastDot > 0 ? originalName.slice(0, lastDot) : originalName;
+  const ext = lastDot > 0 ? originalName.slice(lastDot).toLowerCase() : "";
+  const cleanedStem = stem
+    .replace(/[^\w-]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
+  return (cleanedStem || "cv") + ext;
+}
+
 export default function CVUploadZone({
   clientSessionId,
   onUploadComplete,
@@ -67,12 +91,17 @@ export default function CVUploadZone({
       setError(null);
       setState("uploading");
 
-      const storagePath = `${clientSessionId}/${file.name}`;
+      // Supabase Storage rejects spaces and most special characters in object
+      // names with a 400. Sanitise before upload but keep `file.name` for the
+      // user-facing display.
+      const safeName = sanitiseStorageName(file.name);
+      const storagePath = `${clientSessionId}/${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from("cv-uploads")
         .upload(storagePath, file, { upsert: true });
 
       if (uploadError) {
+        console.warn("CV upload failed:", uploadError);
         setError("Upload failed, please try again.");
         setState("error");
         return;

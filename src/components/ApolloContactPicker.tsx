@@ -11,8 +11,8 @@ interface ApolloContactPickerProps {
 
 type State =
   | { kind: "loading" }
-  | { kind: "success"; contacts: ApolloContact[] }
-  | { kind: "error" };
+  | { kind: "success"; contacts: ApolloContact[]; responseText: string | null }
+  | { kind: "error"; responseText: string | null };
 
 export default function ApolloContactPicker({ apolloQuery, onContactSelected, onClose }: ApolloContactPickerProps) {
   const [state, setState] = useState<State>({ kind: "loading" });
@@ -28,13 +28,22 @@ export default function ApolloContactPicker({ apolloQuery, onContactSelected, on
         });
         if (cancelled) return;
         if (error) {
-          setState({ kind: "error" });
+          // Surface the upstream message so we can distinguish missing API key,
+          // Apollo HTTP error, and genuinely-empty result rather than show a
+          // single generic "couldn't load" line for all three.
+          const msg = typeof (data as { response_text?: unknown })?.response_text === "string"
+            ? ((data as { response_text: string }).response_text)
+            : null;
+          setState({ kind: "error", responseText: msg });
           return;
         }
         const contacts: ApolloContact[] = Array.isArray(data?.contacts) ? data.contacts.slice(0, 8) : [];
-        setState({ kind: "success", contacts });
+        const responseText = typeof (data as { response_text?: unknown })?.response_text === "string"
+          ? ((data as { response_text: string }).response_text)
+          : null;
+        setState({ kind: "success", contacts, responseText });
       } catch {
-        if (!cancelled) setState({ kind: "error" });
+        if (!cancelled) setState({ kind: "error", responseText: null });
       }
     })();
     return () => { cancelled = true; };
@@ -57,7 +66,9 @@ export default function ApolloContactPicker({ apolloQuery, onContactSelected, on
 
       {state.kind === "error" && (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground">Could not load contacts right now.</p>
+          <p className="text-xs text-muted-foreground">
+            {state.responseText ?? "Could not load contacts right now."}
+          </p>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setAttempt((n) => n + 1)}
@@ -78,7 +89,7 @@ export default function ApolloContactPicker({ apolloQuery, onContactSelected, on
       {state.kind === "success" && state.contacts.length === 0 && (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
-            No contacts found for this profile. The draft is still ready to use.
+            {state.responseText ?? "No contacts found for this profile. The draft is still ready to use."}
           </p>
           <button
             onClick={onClose}

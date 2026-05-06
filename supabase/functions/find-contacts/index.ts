@@ -1,3 +1,32 @@
+// find-contacts v16 — 2026-05-06: detect Apollo API_INACCESSIBLE (free-plan paywall)
+//
+// Confirmed via Supabase logs 2026-05-06 that Apollo's free tier returns:
+//   HTTP 403
+//   { "error":"api/v1/mixed_people/api_search is not accessible with this api_key on a free plan...",
+//     "error_code":"API_INACCESSIBLE" }
+// for ALL calls to /api/v1/mixed_people/api_search. The 100 credits visible in
+// developer.apollo.io are for the dashboard search UI, not API access. The
+// api_search endpoint is fully paywalled on free.
+//
+// v16 detects API_INACCESSIBLE specifically and surfaces a precise response_text
+// so the frontend can show "Named contact lookup launches with the paid version"
+// instead of the generic "Could not find contacts right now". Defence-in-depth:
+// the frontend now hides the button entirely behind the APOLLO_ENABLED feature
+// flag (src/lib/featureFlags.ts), so this path should not normally be reached
+// in production. It exists for the case where the flag is flipped before the
+// Apollo plan is actually upgraded.
+//
+// find-contacts v15 — 2026-05-05: defensive response parsing + diagnostic logging
+//
+// v15 adds:
+//   - Defensive `apolloData.contacts` fallback when `people` is missing (in
+//     case Apollo's api_search uses a different top-level key for results).
+//   - Logs Apollo response shape (top-level keys, people/contacts counts,
+//     pagination) to help debug empty-result cases.
+//   - Logs a 500-char sample of the raw Apollo body when the parsed contacts
+//     list is empty. Distinguishes "Apollo returned 0 matches" from "Apollo
+//     returned data in a shape we don't recognise".
+//
 // find-contacts v14 — 2026-05-05: switch to credit-free /api/v1/mixed_people/api_search
 //
 // Endpoint changed from /v1/mixed_people/search (older dashboard endpoint that
@@ -125,19 +154,61 @@ Deno.serve(async (req: Request) => {
     if (!apolloResponse.ok) {
       const errorText = await apolloResponse.text();
       console.error("Apollo API error:", apolloResponse.status, errorText);
+
+      // Detect Apollo's "free plan can't access this endpoint" error code so
+      // we can surface a precise message. Apollo's response body for this case:
+      //   { "error":"...not accessible with this api_key on a free plan...",
+      //     "error_code":"API_INACCESSIBLE" }
+      let parsedError: { error?: string; error_code?: string } = {};
+      try {
+        parsedError = JSON.parse(errorText);
+      } catch {
+        // Body wasn't JSON — fall through to generic handling
+      }
+      const isPlanGated =
+        apolloResponse.status === 403 &&
+        parsedError.error_code === "API_INACCESSIBLE";
+
       // Degrade gracefully — do not fail the whole task view
       return new Response(
         JSON.stringify({
           contacts: [],
           total: 0,
-          response_text: "Could not find contacts right now. Try again in a moment.",
+          apollo_status: apolloResponse.status,
+          apollo_error_code: parsedError.error_code ?? null,
+          response_text: isPlanGated
+            ? "Named contact lookup launches with the paid version. The draft is still ready to use."
+            : "Could not find contacts right now. Try again in a moment.",
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const apolloData = await apolloResponse.json();
-    const people: Array<Record<string, unknown>> = apolloData.people || [];
+    // Defensive: Apollo's api_search endpoint historically returns matched
+    // people under `people`, but some response variants use `contacts`. Try
+    // both before giving up.
+    const peopleRaw =
+      (Array.isArray(apolloData?.people) && apolloData.people) ||
+      (Array.isArray(apolloData?.contacts) && apolloData.contacts) ||
+      [];
+    const people: Array<Record<string, unknown>> = peopleRaw;
+
+    // Log what we got back from Apollo for diagnostic purposes — top-level
+    // keys + counts. This lets us distinguish a 200-OK-but-empty response
+    // (genuine 0 matches) from a 200-OK-but-different-shape response (Apollo
+    // changed something under us).
+    const topLevelKeys = apolloData && typeof apolloData === "object"
+      ? Object.keys(apolloData)
+      : [];
+    const pagination = (apolloData as { pagination?: Record<string, unknown> })?.pagination ?? null;
+    console.log("find-contacts v14: Apollo response shape", {
+      http_status: apolloResponse.status,
+      top_level_keys: topLevelKeys,
+      people_count: Array.isArray(apolloData?.people) ? apolloData.people.length : null,
+      contacts_count: Array.isArray(apolloData?.contacts) ? apolloData.contacts.length : null,
+      pagination,
+    });
 
     const contacts = people
       .filter((p) => p.name && p.title)
@@ -151,6 +222,13 @@ Deno.serve(async (req: Request) => {
         linkedin_url: (p.linkedin_url as string) ?? null,
       }));
 
+    if (contacts.length === 0) {
+      // Surface a sample of the raw response body so we can understand WHY
+      // Apollo didn't return matches. Capped at 500 chars so we don't blow up
+      // log volume on a populated response that happened to filter to zero.
+      const sample = JSON.stringify(apolloData).slice(0, 500);
+      console.log("find-contacts v14: empty result — apollo response sample:", sample);
+    }
     console.log(`find-contacts v14: returned ${contacts.length} contacts`);
 
     return new Response(

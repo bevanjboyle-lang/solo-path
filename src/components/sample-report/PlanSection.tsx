@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import type { ActivationPlanOutput, DayDetail, Task } from "@/types/canonical";
 import type { ApolloContact } from "@/types/apollo";
 import ApolloContactPicker from "@/components/ApolloContactPicker";
+import { APOLLO_ENABLED } from "@/lib/featureFlags";
 
 /**
  * Personalise a draft by substituting common placeholder patterns with the
@@ -148,7 +149,13 @@ function TaskCard({ task }: { task: Task }) {
   // Apollo "Find named contacts" affordance is only offered for cold outreach
   // tasks that carry an apollo_query payload. Warm tasks use the user's own
   // network and don't benefit from contact discovery.
+  // Additionally gated by the APOLLO_ENABLED feature flag — set to false
+  // until the Apollo account is upgraded from Free to a paid plan with API
+  // access (Free returns HTTP 403 API_INACCESSIBLE which would surface as a
+  // dead-end empty picker). See src/lib/featureFlags.ts for launch flip
+  // pre-requisites.
   const canFindContacts =
+    APOLLO_ENABLED &&
     task.outreach_subtype === "cold" &&
     !!task.apollo_query &&
     Array.isArray(task.apollo_query.person_titles) &&
