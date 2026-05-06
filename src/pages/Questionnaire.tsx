@@ -1,9 +1,10 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown, AlertCircle } from "lucide-react";
 import { questions, Question } from "@/data/questions";
 import { getClientSessionId, generateReport } from "@/lib/handlers";
+import { readCvPrefill } from "@/lib/cvPrefill";
 import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
 import ProgressHeader from "@/components/ProgressHeader";
@@ -22,10 +23,16 @@ import {
 
 export default function Questionnaire() {
   const navigate = useNavigate();
+  // F52: pre-fill objective answers from cv_extract if a CV was uploaded earlier
+  // in this session. Read once at mount via useMemo + useState lazy init so the
+  // user sees pre-filled fields on the first render rather than a flash of
+  // empty inputs that fill in via useEffect. Subjective text questions (Q6,
+  // Q7, Q8, Q11, Q12) are deliberately left blank — see cvPrefill.ts.
+  const cvPrefill = useMemo(() => readCvPrefill(), []);
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [answers, setAnswers] = useState<Record<number, string | string[]>>({});
-  const [firstName, setFirstName] = useState("");
+  const [answers, setAnswers] = useState<Record<number, string | string[]>>(cvPrefill.answers);
+  const [firstName, setFirstName] = useState(cvPrefill.firstName);
   const [email, setEmail] = useState("");
   const [emailRefused, setEmailRefused] = useState(false);
   const [showRefusalModal, setShowRefusalModal] = useState(false);
