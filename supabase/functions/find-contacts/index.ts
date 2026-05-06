@@ -1,3 +1,17 @@
+// find-contacts v14 — 2026-05-05: switch to credit-free /api/v1/mixed_people/api_search
+//
+// Endpoint changed from /v1/mixed_people/search (older dashboard endpoint that
+// consumed 1 Apollo credit per contact returned, and is the path triggering the
+// "API key in URL parameters will be deprecated" deprecation notice when used
+// from the Apollo web app) to /api/v1/mixed_people/api_search (the dedicated
+// API endpoint that does NOT consume credits for searches). Same auth pattern
+// (x-api-key header), same request body shape, same response shape — strictly
+// an upgrade. Free-tier accounts can now search without burning credits.
+//
+// Refs:
+//   - https://docs.apollo.io/reference/people-api-search (canonical endpoint)
+//   - admin/apollo-sprint-design.md
+//
 // find-contacts v13 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // find-contacts v1 — Apollo.io People Search wrapper
 // Part of the Apollo Contact Finding sprint (admin/apollo-sprint-design.md)
@@ -89,13 +103,16 @@ Deno.serve(async (req: Request) => {
       searchBody.organization_num_employees_ranges = apollo_query.company_size_ranges;
     }
 
-    console.log("find-contacts v1: querying Apollo People Search", {
+    console.log("find-contacts v14: querying Apollo People Search (credit-free api_search endpoint)", {
       person_titles: apollo_query.person_titles,
       sector_keywords: apollo_query.sector_keywords,
       location: apollo_query.location,
     });
 
-    const apolloResponse = await fetch("https://api.apollo.io/v1/mixed_people/search", {
+    // /api/v1/mixed_people/api_search is the dedicated API endpoint and does
+    // NOT consume Apollo credits per contact returned (vs /v1/mixed_people/search
+    // which does). Same auth + body shape.
+    const apolloResponse = await fetch("https://api.apollo.io/api/v1/mixed_people/api_search", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -134,7 +151,7 @@ Deno.serve(async (req: Request) => {
         linkedin_url: (p.linkedin_url as string) ?? null,
       }));
 
-    console.log(`find-contacts v1: returned ${contacts.length} contacts`);
+    console.log(`find-contacts v14: returned ${contacts.length} contacts`);
 
     return new Response(
       JSON.stringify({
@@ -148,7 +165,7 @@ Deno.serve(async (req: Request) => {
     );
 
   } catch (error) {
-    console.error("find-contacts v1 error:", error);
+    console.error("find-contacts v14 error:", error);
     return new Response(
       JSON.stringify({
         contacts: [],
