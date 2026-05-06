@@ -259,7 +259,7 @@ export function BottomCTA() {
         >
           Take the test →
         </Button>
-        <p className="mt-3 text-xs text-primary-foreground/50">15-question questionnaire. No credit card required to start.</p>
+        <p className="mt-3 text-xs text-primary-foreground/50">12-question questionnaire. No credit card required to start.</p>
       </div>
     </section>
   );

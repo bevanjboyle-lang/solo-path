@@ -42,7 +42,7 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 | \`options\` Rank 1–3 | \`target_buyer\` | 25 words |
 | \`options\` Rank 1–3 | \`why_this_works_for_them\` | 40 words |
 | \`options\` Rank 4–10 | \`why_this_works_for_them\` | 15 words (still required) |
-| \`recommendation.rationale\` | — | 80 words, ≥3 sentences, must reference archetype AND seniority AND Q10 (independence_confidence). Q9 (urgency) should be referenced where it materially affects the recommendation. |
+| \`recommendation.rationale\` | — | 80 words, ≥3 sentences, must reference archetype AND seniority AND (Q9 OR Q10) |
 | \`recommendation.key_condition\` | — | 25 words, action-forcing (a specific thing that must be true — not "you must be committed") |
 | \`reality_check.most_likely_failure_mode\` | — | 50 words, ≥2 sentences, NAMES the failure mode |
 | \`reality_check.second_failure_mode\` | — | 30 words |
@@ -96,7 +96,7 @@ Every report must reference the user's specific inputs. Generic outputs are a ha
 
 - \`archetype.editorial_description\` references the Q6 achievement and Q3b employer by name or description
 - At least 4 of the 6 \`transferable_skills.evidence\` fields cite specific Q-fields (Q6, Q7, Q8, Q3b, or CV data)
-- \`recommendation.rationale\` references the user's archetype AND seniority AND Q10 (independence_confidence). Q9 (urgency) should be referenced where it materially affects the recommendation but is not strictly required.
+- \`recommendation.rationale\` references the user's archetype AND seniority AND (Q9 urgency OR Q10 confidence)
 - \`options[rank=1].why_this_works_for_them\` references at least one specific fact from the user's profile
 - \`income_outlook.income_notes\` references at least one Q-field
 

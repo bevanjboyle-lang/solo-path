@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,8 +9,6 @@ import Banner from "@/components/Banner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useActiveSection } from "@/hooks/useActiveSection";
-import PlanSidebar, { type SidebarItem } from "@/components/plan/PlanSidebar";
 
 // Sample-report sections (Phase 3a refactor — all prop-driven, canonical typed)
 import HookInsight from "@/components/sample-report/HookInsight";
@@ -241,39 +239,6 @@ export default function Teaser() {
   // and the locked teaser stack so the CTA is still reachable.
   const hasCore = !!coreReport;
 
-  // Sidebar — only the visible sections are listed (locked teasers below
-  // are conversion bait, not navigable content). Built only when core_report
-  // is present so the sidebar doesn't render against the generic fallback.
-  const sidebarItems: SidebarItem[] = useMemo(() => {
-    if (!hasCore || !coreReport) return [];
-    const items: SidebarItem[] = [];
-    if (coreReport.hook_insight) {
-      items.push({ id: "sect-hook", label: "Your edge", group: "report", available: true });
-    }
-    if (coreReport.archetype) {
-      items.push({ id: "sect-archetype", label: "Your archetype", group: "report", available: true });
-    }
-    if (coreReport.transferable_value) {
-      items.push({ id: "sect-transferable-value", label: "What you can sell", group: "report", available: true });
-    }
-    if (coreReport.transferable_skills && coreReport.transferable_skills.length > 0) {
-      items.push({ id: "sect-transferable-skills", label: "Your transferable skills", group: "report", available: true });
-    }
-    if (coreReport.options && coreReport.options.length > 0) {
-      items.push({ id: "sect-business-paths", label: "Your 10 paths", group: "report", available: true });
-    }
-    return items;
-  }, [hasCore, coreReport]);
-
-  const sectionIds = useMemo(
-    () => sidebarItems.map((i) => i.id),
-    // Stable string-key dep avoids re-running when the array identity changes
-    // but the underlying ids don't.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sidebarItems.map((i) => i.id).join("|")],
-  );
-  const activeSectionId = useActiveSection(sectionIds);
-
   return (
     <div className="flex min-h-screen flex-col">
       <TopBar minimal />
@@ -291,30 +256,12 @@ export default function Teaser() {
         <Banner variant="info">Your report is still generating. This page will update when it's ready.</Banner>
       ) : null}
 
-      {/* Mobile sidebar (sticky chip + sheet). Hidden on lg via component. */}
-      {sidebarItems.length > 0 && (
-        <PlanSidebar items={sidebarItems} activeId={activeSectionId} variant="mobile" />
-      )}
-
       {/* Content */}
-      <div className="mx-auto w-full max-w-screen-xl px-6">
-        <div className="flex gap-10">
-          {/* Desktop sidebar — sticky left rail. */}
-          {sidebarItems.length > 0 && (
-            <aside className="hidden lg:block w-56 shrink-0 pt-12">
-              <div className="sticky top-20">
-                <PlanSidebar items={sidebarItems} activeId={activeSectionId} variant="desktop" />
-              </div>
-            </aside>
-          )}
-
-          <main className="flex-1 min-w-0 mx-auto w-full max-w-2xl pt-12 pb-32 sm:pt-16">
+      <main className="mx-auto w-full max-w-2xl px-6 pt-12 pb-32 sm:pt-16">
         {hasCore ? (
           <>
             {/* §1 HookInsight — locked-teaser variant (headline visible, paragraph blurred) */}
             <motion.div
-              id="sect-hook"
-              className="scroll-mt-24"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
@@ -325,8 +272,7 @@ export default function Teaser() {
             {/* §2 Archetype — visible */}
             {coreReport!.archetype && (
               <motion.div
-                id="sect-archetype"
-                className="mt-10 scroll-mt-24"
+                className="mt-10"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08, duration: 0.4 }}
@@ -338,8 +284,7 @@ export default function Teaser() {
             {/* §3 Transferable value — visible */}
             {coreReport!.transferable_value && (
               <motion.div
-                id="sect-transferable-value"
-                className="mt-10 scroll-mt-24"
+                className="mt-10"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12, duration: 0.4 }}
@@ -351,8 +296,7 @@ export default function Teaser() {
             {/* §4 Transferable skills — visible (shows analysis depth) */}
             {coreReport!.transferable_skills && coreReport!.transferable_skills.length > 0 && (
               <motion.div
-                id="sect-transferable-skills"
-                className="mt-10 scroll-mt-24"
+                className="mt-10"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.16, duration: 0.4 }}
@@ -365,8 +309,7 @@ export default function Teaser() {
                 BusinessPaths handles the locked chrome internally. */}
             {coreReport!.options && coreReport!.options.length > 0 && (
               <motion.div
-                id="sect-business-paths"
-                className="mt-10 scroll-mt-24"
+                className="mt-10"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.4 }}
@@ -461,9 +404,7 @@ export default function Teaser() {
             One-time payment. No subscription. No auto-renewal.
           </p>
         </motion.div>
-          </main>
-        </div>
-      </div>
+      </main>
 
       {/* Mobile sticky CTA */}
       {showSticky && (

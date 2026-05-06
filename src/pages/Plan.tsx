@@ -810,10 +810,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
           {activationPlan?.first_move && (
             <section id="sect-first-move" className="mb-10 scroll-mt-24">
-              <FirstMoveSection
-                first_move={activationPlan.first_move}
-                portfolio_summary={activationPlan.portfolio_summary}
-              />
+              <FirstMoveSection first_move={activationPlan.first_move} />
             </section>
           )}
 

@@ -1,9 +1,8 @@
-// generate-report v45.3 — F68 audit residue (B1: tighten Q10 reference rule in recommendation.rationale)
+// generate-report v45.2 — F68 cleanup (kill salary fields + first_steps + Q5→Q13 fix)
 // 2026-05-05  (v45 initial; v45.1 tuning pass: caution_note + buffer rule + retries 1→2;
 // v45.2 F68 cleanup: removed current_salary_gbp + salary_replacement_analysis +
 // first_steps from schema/prompt/validator; fixed Q5(network)→Q13(network) in P1:385;
-// extended USER PROFILE SCHEMA + EXAMPLE TEST INPUT to Q1–Q15;
-// v45.3 F68 audit residue B1: rationale rule "(Q9 OR Q10)" → "Q10 mandatory, Q9 if material")
+// extended USER PROFILE SCHEMA + EXAMPLE TEST INPUT to Q1–Q15)
 //
 // Replaces v44.1's inline simplified prompt with the canonical
 // prompts/prompt-1-core-report.md content (embedded as P1_SYSTEM_PROMPT_TEMPLATE

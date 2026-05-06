@@ -6,12 +6,6 @@ import type { ActivationPlanOutput, Move } from "@/types/canonical";
 
 interface Props {
   first_move: ActivationPlanOutput["first_move"];
-  /**
-   * Optional portfolio_summary so we can resolve `first_move.strand_id`
-   * to a human-readable model_name for multi-strand contexts. When omitted,
-   * the strand label is hidden.
-   */
-  portfolio_summary?: ActivationPlanOutput["portfolio_summary"];
 }
 
 const moveTypeMeta: Record<
@@ -169,13 +163,10 @@ function MoveDraft({ move }: { move: Move }) {
   }
 }
 
-export default function FirstMoveSection({ first_move, portfolio_summary }: Props) {
+export default function FirstMoveSection({ first_move }: Props) {
   const fm = first_move;
   const meta = moveTypeMeta[fm.move?.type ?? "direct"] ?? moveTypeMeta.direct;
   const Icon = meta.icon;
-  // Resolve the strand_id to its model_name for multi-strand portfolios.
-  const strandModelName = portfolio_summary?.strands?.find((s) => s.strand_id === fm.strand_id)?.model_name;
-  const showStrandLabel = !!strandModelName && (portfolio_summary?.strand_count ?? 0) > 1;
 
   return (
     <section>
@@ -189,11 +180,6 @@ export default function FirstMoveSection({ first_move, portfolio_summary }: Prop
             <Icon className="h-3 w-3" />
             {meta.label}
           </Badge>
-          {showStrandLabel && (
-            <span className="text-[11px] font-medium text-muted-foreground">
-              For: <span className="text-foreground/80">{strandModelName}</span>
-            </span>
-          )}
         </div>
         <h3 className="text-[1.3rem] font-bold text-foreground mb-4">{fm.action}</h3>
 
