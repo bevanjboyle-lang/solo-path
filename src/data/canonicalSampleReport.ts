@@ -810,55 +810,6 @@ Sarah`,
                 move: null,
                 outreach_draft: null,
               },
-              {
-                task_id: "12_2",
-                strand_id: "strand_2",
-                task_type: "activation",
-                move_type: "direct",
-                description:
-                  "Cold outreach to a Finance Director at a PE-backed mid-market business. Aim: open a 20-minute exploratory conversation about commercial finance partnership. One contact, one email — quality over volume.",
-                outreach_subtype: "cold",
-                apollo_query: {
-                  person_titles: [
-                    "Finance Director",
-                    "Director of Finance",
-                    "Head of Finance",
-                    "Finance Lead",
-                  ],
-                  sector_keywords: "private equity backed mid-market finance commercial transformation",
-                  seniority_levels: ["director", "vp", "senior"],
-                  location: "United Kingdom",
-                  company_size_ranges: ["51,200", "201,500", "501,1000"],
-                },
-                move: {
-                  type: "direct",
-                  format: "email_cold",
-                  subject: "Commercial finance support — following my £38M business case work",
-                  draft: `Hi [Name],
-
-I came across [Company] while researching PE-backed businesses in the mid-market and wanted to reach out directly.
-
-I've spent the last 11 years in commercial finance at FTSE 100 retail bank, most recently leading the £38M digital transformation investment case end-to-end — model, narrative, and board defence in a single hand. I'm now moving into independent advisory specifically for PE-backed businesses preparing for board-level investment decisions.
-
-I'd value a 20-minute conversation about what commercial finance support looks like at [Company] today, even just to understand the typical sequence of decisions. No agenda beyond that.
-
-Open to a call in the next two weeks?
-
-Best,
-Sarah`,
-                  platform_name: null,
-                  platform_url: null,
-                  profile_setup_guide: null,
-                  inbound_timing: null,
-                  post_draft: null,
-                  communities: null,
-                  first_contribution_prompt: null,
-                  tone_note: "Cold but specific. Opens with a concrete reason for reaching out. Anchors credibility in the £38M number, not in titles.",
-                  personalisation_instructions:
-                    "Replace [Name] with their first name and [Company] with the company name. The £38M anchor is the same across cold sends — it's the credibility signal, not the personalisation.",
-                },
-                outreach_draft: null,
-              },
             ],
           },
         ],
