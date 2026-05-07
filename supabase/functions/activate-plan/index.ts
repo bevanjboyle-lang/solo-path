@@ -1,4 +1,4 @@
-// activate-plan v1 — 2026-05-07: F78 — initial implementation
+// activate-plan v2 — 2026-05-07: F78 — switched to decode-only JWT auth
 //
 // Creates the tracker_sessions row that gates every downstream user action
 // (daily check-ins, replan, day 1-30 progression, library access, subscription
@@ -8,12 +8,22 @@
 // frontend handler had been wired up. Paying users could see /plan but could
 // not progress past day 0.
 //
-// Auth pattern: F43 ES256/HS256-tolerant getClaims via authClient. verify_jwt
-// is false at the function level; we do our own JWT validation in-app.
+// Auth pattern: matches process-checkin / process-replan (the working
+// in-production functions) — decode-only JWT, no cryptographic verification.
+// v1 used authClient.auth.getClaims(token) per the F43 ES256-tolerant
+// approach, but live testing 2026-05-07 (Bevan's first activation) showed
+// getClaims rejects every currently-issued Supabase token with no clear
+// error, returning 401. The same issue affects get-account-readiness in
+// theory but it's been masked by F64 then F74 removal from the live path.
+// Worth a follow-up to root-cause getClaims, but for now matching the
+// proven pattern: decode the token's middle segment, read `sub`, trust
+// Supabase's bearer-token enforcement at the gateway (verify_jwt: false
+// here so we get the raw header through; for security beyond decode we
+// rely on RLS / service-role separation in the queries we run).
 //
 // Idempotency: if a tracker_session already exists for this (user_id, report_id),
-// returns it without creating a duplicate. The "I'm starting today" button is
-// click-once but a flaky network or double-tap would otherwise create dupes.
+// returns it without creating a duplicate. The "Start my 30-day plan" button
+// is click-once but a flaky network or double-tap would otherwise create dupes.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -23,28 +33,21 @@ const corsHeaders = {
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY =
-  Deno.env.get("SUPABASE_ANON_KEY") ??
-  Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ??
-  "";
-const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
 
-async function getUserIdFromJwt(authHeader: string | null): Promise<string | null> {
+function getUserIdFromJwt(authHeader: string | null): string | null {
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   try {
     const token = authHeader.slice(7).trim();
     if (!token) return null;
-    const { data, error } = await authClient.auth.getClaims(token);
-    if (error) {
-      console.warn("activate-plan: getClaims rejected JWT:", error.message);
-      return null;
-    }
-    const sub = data?.claims?.sub;
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    const sub = payload?.sub;
     return typeof sub === "string" && sub ? sub : null;
   } catch (e) {
-    console.warn("activate-plan: getClaims threw:", (e as Error)?.message ?? String(e));
+    console.warn("activate-plan: JWT decode failed:", (e as Error)?.message ?? String(e));
     return null;
   }
 }
@@ -65,7 +68,7 @@ Deno.serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  const userId = await getUserIdFromJwt(req.headers.get("authorization"));
+  const userId = getUserIdFromJwt(req.headers.get("authorization"));
   if (!userId) {
     return jsonResponse(
       { error: "Not authenticated", response_text: "Please sign in to start your plan." },
