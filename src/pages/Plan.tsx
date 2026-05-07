@@ -8,6 +8,7 @@ import { isDevBypass } from "@/lib/devBypass";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
 import TodayCard, { type PlanState } from "@/components/plan/TodayCard";
+import ActivationDialog from "@/components/plan/ActivationDialog";
 import TrackerGrid from "@/components/plan/TrackerGrid";
 import CheckInPanel from "@/components/plan/CheckInPanel";
 import ReplanPromptCard from "@/components/plan/ReplanPromptCard";
@@ -65,6 +66,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [weekNumber, setWeekNumber] = useState(1);
   const [sessionId, setSessionId] = useState(initialSessionId || "");
   const [checkinOpen, setCheckinOpen] = useState(false);
+  // F78: activation dialog state. Opens from TodayCard's day0 state via the
+  // "Start my 30-day plan" button. On success we refetch the tracker session
+  // so TodayCard transitions to "active" with current_day=1.
+  const [activationOpen, setActivationOpen] = useState(false);
   const [trackerDays, setTrackerDays] = useState<{ day: number; completed: boolean; isToday: boolean }[]>([]);
 
   // Auth / payment state
@@ -662,6 +667,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
               sessionId={sessionId}
               onScrollToReport={scrollToReport}
               onOpenCheckin={openCheckin}
+              onOpenActivation={() => setActivationOpen(true)}
             />
           </section>
         )}
@@ -876,6 +882,22 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           onToast={(message) => toast({ title: message })}
         />
       )}
+
+      {/* F78 — Activation dialog. Mounted at the page root so it sits above
+          the sticky TopBar and sidebar. Calls activate-plan → tracker_sessions
+          insert. On success we reload the tracker session, which flips
+          planState from "day0" to "active" via loadTrackerSession. */}
+      <ActivationDialog
+        open={activationOpen}
+        onOpenChange={setActivationOpen}
+        reportId={reportId}
+        onActivated={() => {
+          if (user && reportId) {
+            loadTrackerSession(user.id, reportId);
+          }
+          toast({ title: "Plan activated. Day 1 starts now." });
+        }}
+      />
     </div>
   );
 }

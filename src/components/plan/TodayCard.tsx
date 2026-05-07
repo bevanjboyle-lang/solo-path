@@ -21,6 +21,8 @@ interface TodayCardProps {
   sessionId?: string;
   onScrollToReport?: () => void;
   onOpenCheckin?: () => void;
+  /** F78 — opens the activation dialog from day0 state. */
+  onOpenActivation?: () => void;
 }
 
 const stateConfig: Record<Exclude<PlanState, "loading">, {
@@ -28,8 +30,9 @@ const stateConfig: Record<Exclude<PlanState, "loading">, {
   cta: (props: TodayCardProps) => { label: string; variant: "primary" | "secondary"; action: string };
 }> = {
   day0: {
-    body: () => "Your report is ready. Read it first — then we'll start your 30-day plan tomorrow.",
-    cta: () => ({ label: "Read your report", variant: "primary", action: "scrollToReport" }),
+    body: () =>
+      "Your report is ready. Read it through, then start your 30-day plan when you're ready.",
+    cta: () => ({ label: "Start my 30-day plan", variant: "primary", action: "openActivation" }),
   },
   active: {
     body: (p) => `Day ${p.dayNumber || 1} of 30. Today's check-in takes two minutes.`,
@@ -60,6 +63,7 @@ export default function TodayCard({
   sessionId,
   onScrollToReport,
   onOpenCheckin,
+  onOpenActivation,
 }: TodayCardProps) {
   const navigate = useNavigate();
 
@@ -71,6 +75,9 @@ export default function TodayCard({
       case "openCheckin":
         onOpenCheckin?.();
         break;
+      case "openActivation":
+        onOpenActivation?.();
+        break;
       case "navigateLibrary":
         navigateAuthed(navigate, "/library");
         break;
@@ -78,7 +85,7 @@ export default function TodayCard({
         navigateAuthed(navigate, "/subscribe");
         break;
     }
-  }, [onScrollToReport, onOpenCheckin, navigate]);
+  }, [onScrollToReport, onOpenCheckin, onOpenActivation, navigate]);
 
   if (state === "loading") {
     return (
@@ -111,8 +118,9 @@ export default function TodayCard({
 
       <p className="text-[15px] leading-relaxed text-muted-foreground">{body}</p>
 
-      <div className="mt-6">
+      <div className="mt-6 flex flex-wrap items-center gap-4">
         <Button
+          type="button"
           variant={cta.variant === "primary" ? "default" : "secondary"}
           size="lg"
           onClick={() => handleCTA(cta.action)}
@@ -124,6 +132,15 @@ export default function TodayCard({
         >
           {cta.label}
         </Button>
+        {state === "day0" && onScrollToReport && (
+          <button
+            type="button"
+            onClick={onScrollToReport}
+            className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline transition-colors"
+          >
+            Read it first →
+          </button>
+        )}
       </div>
     </motion.div>
   );
