@@ -25,19 +25,14 @@ export default function PaymentSuccess() {
   const flowType = searchParams.get("type");
   const isSecondReport = flowType === "second_report";
 
+  const reportId = searchParams.get("report_id");
+
   const [state, setState] = useState<BridgeState>(token ? "exchanging" : "no_token");
   const [hasSession, setHasSession] = useState(false);
   const [secondReportClaiming, setSecondReportClaiming] = useState(isSecondReport);
   const elapsedRef = useRef(0);
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
-  // F64 fix (2026-05-05): hold the freshly-minted access token from
-  // exchange-payment-token so we can attach it explicitly to subsequent
-  // get-account-readiness invokes. supabase-js sometimes does not pick up the
-  // session set by setSession() on the same tick, so the polling fetch falls
-  // back to the anon key and get-account-readiness 401s. Passing Authorization
-  // explicitly removes the race.
-  const sessionTokenRef = useRef<string | null>(null);
 
   // No token → redirect. /plan if authed, / if not.
   // For second_report flow, user is already authed — no token required.
@@ -85,43 +80,75 @@ export default function PaymentSuccess() {
     };
   }, []);
 
-  // Poll readiness
+  // F74 fix (2026-05-07): query reports.status directly instead of polling
+  // get-account-readiness. The readiness function checks tracker_sessions for
+  // an `active` row, which only exists once generate-plan has completed. But
+  // per ADR-019/Phase 4 generate-plan no longer auto-fires after payment —
+  // the user must first land on /plan, see the StrandSelector, pick 1-5
+  // options, and submit, which fires generate-plan. So waiting for
+  // tracker_sessions.active here would hang forever (the user is supposed
+  // to be on /plan making their selection). Direct status query lets us
+  // route correctly:
+  //   pending_selection → redirect to /plan, StrandSelector takes over
+  //   generating_plan   → keep polling, redirect when complete
+  //   complete          → redirect to /plan immediately
+  //   anything else     → keep polling
+  // This also bypasses the get-account-readiness 401s (F75) that the
+  // previous polling path was hitting; we never call that function from
+  // this flow now. The function still exists for any other path that
+  // needs a tracker-session readiness check.
   const pollReadiness = useCallback(async () => {
     if (!mountedRef.current) return;
 
     try {
-      // F64 fix: pass the access token explicitly. See sessionTokenRef declaration above.
-      const headers = sessionTokenRef.current
-        ? { Authorization: `Bearer ${sessionTokenRef.current}` }
-        : undefined;
-      const { data, error } = await supabase.functions.invoke("get-account-readiness", {
-        body: {},
-        headers,
-      });
+      // If we don't have a report_id from the URL, we can't run the direct
+      // status query. Bounce to /plan and let it figure out the user's
+      // most-recent row via auth.uid().
+      if (!reportId) {
+        if (mountedRef.current) navigate("/plan", { replace: true });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("reports")
+        .select("status")
+        .eq("id", reportId)
+        .maybeSingle();
 
       if (!mountedRef.current) return;
 
       if (error) {
-        // Single poll failure — self-recovering, don't change state
+        // Single poll failure — self-recovering, don't change state.
         scheduleNextPoll();
         return;
       }
 
-      if (data?.ready) {
+      const status = data?.status;
+
+      // ADR-019 happy path: user must select strands before generation runs.
+      // Redirect immediately so the StrandSelector on /plan takes over.
+      if (status === "pending_selection") {
+        navigate("/plan", { replace: true });
+        return;
+      }
+
+      // Plan is fully ready — flash the success state then redirect.
+      if (status === "complete") {
         setState("ready");
-        // Brief flash then navigate
         setTimeout(() => {
           if (mountedRef.current) navigate("/plan", { replace: true });
         }, 400);
         return;
       }
 
-      // Not ready yet
+      // Anything else (paid_pending_plan, generating_plan, or any
+      // intermediate state we don't explicitly recognise) — keep polling
+      // and let the next status transition resolve it.
       scheduleNextPoll();
     } catch {
       if (mountedRef.current) scheduleNextPoll();
     }
-  }, [navigate]);
+  }, [navigate, reportId]);
 
   const scheduleNextPoll = useCallback(() => {
     if (!mountedRef.current) return;
@@ -175,8 +202,6 @@ export default function PaymentSuccess() {
           return;
         }
 
-        // F64: capture token for explicit Authorization on poll calls.
-        sessionTokenRef.current = data.session.access_token;
         setHasSession(true);
         setState("polling");
         pollReadiness();
