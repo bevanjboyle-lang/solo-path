@@ -111,8 +111,25 @@ function TaskCard({ task }: { task: Task }) {
   const [showDraft, setShowDraft] = useState(false);
   const hasMove = !!task.move;
 
+  // F93 (2026-05-07): surface task.status (set by process-checkin's applyPlanUpdates
+  // when a check-in marks a task completed/missed/moved). The canonical Task type
+  // doesn't carry status today, so we cast through Record to read it safely without
+  // touching the type contract.
+  const taskExtra = task as unknown as Record<string, unknown>;
+  const status = (taskExtra.status as string | undefined) || "pending";
+  const updateNotes = taskExtra.update_notes as string | undefined;
+  const targetDate = taskExtra.target_date as string | undefined;
+  const isCompleted = status === "completed";
+  const isMoved = status === "moved";
+  const isMissed = status === "missed";
+  const hasStatusChange = isCompleted || isMoved || isMissed;
+
   return (
-    <div className={`rounded bg-background border-l-[3px] ${strandBorderClass(task.strand_id)} p-4`}>
+    <div
+      className={`rounded bg-background border-l-[3px] ${strandBorderClass(task.strand_id)} p-4 ${
+        hasStatusChange ? "opacity-90" : ""
+      }`}
+    >
       <div className="flex items-center gap-2 flex-wrap mb-2">
         <Badge variant="outline" className={`text-[10px] font-medium border ${strandColorClass(task.strand_id)}`}>
           {task.strand_id === "shared" ? "Shared" : task.strand_id.replace(/_/g, " ")}
@@ -130,8 +147,44 @@ function TaskCard({ task }: { task: Task }) {
             {task.outreach_subtype}
           </Badge>
         )}
+        {/* F93: status badges */}
+        {isCompleted && (
+          <Badge
+            variant="outline"
+            className="text-[10px] font-semibold bg-[hsl(var(--surface-mint-tint))] text-primary border-primary/40"
+          >
+            ✓ Completed
+          </Badge>
+        )}
+        {isMoved && (
+          <Badge
+            variant="outline"
+            className="text-[10px] font-semibold bg-amber-50 text-amber-700 border-amber-200"
+          >
+            → Moved{targetDate ? ` to ${targetDate}` : ""}
+          </Badge>
+        )}
+        {isMissed && (
+          <Badge
+            variant="outline"
+            className="text-[10px] font-semibold bg-rose-50 text-rose-700 border-rose-200"
+          >
+            Missed
+          </Badge>
+        )}
       </div>
-      <p className="text-sm leading-relaxed text-secondary-foreground">{task.description}</p>
+      <p
+        className={`text-sm leading-relaxed text-secondary-foreground ${
+          isCompleted ? "line-through decoration-primary/60 decoration-1" : ""
+        }`}
+      >
+        {task.description}
+      </p>
+
+      {/* F93: surface update_notes when present (e.g., reason a task was moved). */}
+      {updateNotes && hasStatusChange && (
+        <p className="mt-2 text-xs italic text-muted-foreground">{updateNotes}</p>
+      )}
 
       {hasMove && (
         <>
