@@ -175,6 +175,50 @@ export default function Teaser() {
     }
   }, [reportId]);
 
+  // CRITICAL — Rules of Hooks: every hook below MUST run on every render.
+  // Do not move any of these below the early returns for loading / error /
+  // !reportId. React error #310 ("Rendered more hooks than during the
+  // previous render") is what 0afec17 originally tripped and what F72 hit
+  // again on re-apply: when loading=true the early return short-circuits
+  // before these hooks; when loading=false they run; React sees a different
+  // hook count between renders and bails. Took us a long, painful bisect
+  // (twice) before the diagnostic ErrorBoundary surfaced the actual
+  // Teaser.tsx:247 frame. Keep this block above all conditional returns.
+  const hasCore = !!coreReport;
+
+  // Sidebar — only the visible sections are listed (locked teaser stubs below
+  // are conversion bait, not navigable content). Built only when core_report
+  // is present so the sidebar doesn't render against the generic fallback.
+  const sidebarItems: SidebarItem[] = useMemo(() => {
+    if (!hasCore || !coreReport) return [];
+    const items: SidebarItem[] = [];
+    if (coreReport.hook_insight) {
+      items.push({ id: "sect-hook", label: "Your edge", group: "report", available: true });
+    }
+    if (coreReport.archetype) {
+      items.push({ id: "sect-archetype", label: "Your archetype", group: "report", available: true });
+    }
+    if (coreReport.transferable_value) {
+      items.push({ id: "sect-transferable-value", label: "What you can sell", group: "report", available: true });
+    }
+    if (coreReport.transferable_skills && coreReport.transferable_skills.length > 0) {
+      items.push({ id: "sect-transferable-skills", label: "Your transferable skills", group: "report", available: true });
+    }
+    if (coreReport.options && coreReport.options.length > 0) {
+      items.push({ id: "sect-business-paths", label: "Your 10 paths", group: "report", available: true });
+    }
+    return items;
+  }, [hasCore, coreReport]);
+
+  const sectionIds = useMemo(
+    () => sidebarItems.map((i) => i.id),
+    // Stable string-key dep avoids re-running when the array identity changes
+    // but the underlying ids don't.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sidebarItems.map((i) => i.id).join("|")],
+  );
+  const activeSectionId = useActiveSection(sectionIds);
+
   // No report_id and not dev-bypass — already redirected above.
   if (!reportId && !isDevBypass()) return null;
 
@@ -235,44 +279,6 @@ export default function Teaser() {
     "Daily check-ins to keep you honest",
     "Guidance library when you get stuck",
   ];
-
-  // Fallback header when core_report is missing (e.g. row exists but generation
-  // didn't materialise core_report). Render the generic "Your plan" framing
-  // and the locked teaser stack so the CTA is still reachable.
-  const hasCore = !!coreReport;
-
-  // Sidebar — only the visible sections are listed (locked teaser stubs below
-  // are conversion bait, not navigable content). Built only when core_report
-  // is present so the sidebar doesn't render against the generic fallback.
-  const sidebarItems: SidebarItem[] = useMemo(() => {
-    if (!hasCore || !coreReport) return [];
-    const items: SidebarItem[] = [];
-    if (coreReport.hook_insight) {
-      items.push({ id: "sect-hook", label: "Your edge", group: "report", available: true });
-    }
-    if (coreReport.archetype) {
-      items.push({ id: "sect-archetype", label: "Your archetype", group: "report", available: true });
-    }
-    if (coreReport.transferable_value) {
-      items.push({ id: "sect-transferable-value", label: "What you can sell", group: "report", available: true });
-    }
-    if (coreReport.transferable_skills && coreReport.transferable_skills.length > 0) {
-      items.push({ id: "sect-transferable-skills", label: "Your transferable skills", group: "report", available: true });
-    }
-    if (coreReport.options && coreReport.options.length > 0) {
-      items.push({ id: "sect-business-paths", label: "Your 10 paths", group: "report", available: true });
-    }
-    return items;
-  }, [hasCore, coreReport]);
-
-  const sectionIds = useMemo(
-    () => sidebarItems.map((i) => i.id),
-    // Stable string-key dep avoids re-running when the array identity changes
-    // but the underlying ids don't.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sidebarItems.map((i) => i.id).join("|")],
-  );
-  const activeSectionId = useActiveSection(sectionIds);
 
   return (
     <div className="flex min-h-screen flex-col">
