@@ -168,9 +168,17 @@ export default function PlanSidebar({ items, activeId, variant }: PlanSidebarPro
 
   if (variant === "desktop") {
     // Caller wraps in a sticky aside; we render only the list.
+    //
+    // F76 fix: the global office-bg.jpg fixed background sits behind every
+    // page (App.tsx adds it at z-index -10). Without a backdrop on this
+    // sidebar, inactive nav items (text-muted-foreground) are nearly
+    // invisible against the photo and the whole sidebar reads as
+    // "missing". A translucent surface-panel backdrop with backdrop-blur
+    // gives the sidebar enough surface to make the items readable while
+    // staying lightweight against the editorial design direction.
     return (
-      <div className="hidden lg:block">
-        <div className="max-h-[calc(100vh-6rem)] overflow-y-auto pr-2">
+      <div className="hidden lg:block rounded-md border border-border/40 bg-[hsl(var(--surface-panel))]/85 p-2 shadow-sm backdrop-blur-md">
+        <div className="max-h-[calc(100vh-6rem)] overflow-y-auto pr-1">
           <GroupedList
             items={items}
             activeId={activeId}
