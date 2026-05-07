@@ -1,3 +1,36 @@
+// process-checkin v35 — 2026-05-07: F85 follow-up — days_detail.day is a STRING ("Day 1",
+//   "Day 2"), not a number. My v34 cast it directly as number, got NaN, and relevantTasks
+//   was still empty. Added parseDayNumber() to extract the digit out of strings like "Day 1"
+//   so the filter actually accepts tasks. Confirmed live shape via execute_sql probe.
+// process-checkin v34 — 2026-05-07: F85 — flattenTasks + applyPlanUpdates now handle both
+//   working_plan shapes that exist in the live system: pre-replan deep
+//   (working_plan.activation_plan.phases[].days_detail[].tasks[] with task.task_id, day on
+//   the parent days_detail entry) AND post-replan flat (working_plan.phases[].tasks[] with
+//   task.id, day on the task). Previously flattenTasks expected only the flat shape, so
+//   for any user before their first replan, relevantTasks was empty, P5 saw no tasks, and
+//   couldn't emit plan_updates. Worked example in the prompt updated to use canonical
+//   D{day}_T{n} task IDs and task_id field (matching the actual live data shape).
+// process-checkin v33 — 2026-05-07: F84 — explicit plan_updates entry schema in prompt + tighter
+//   state classifier. Two upstream gaps were producing four observed bugs (F79/F81/F82/F83):
+//
+//   (1) PROMPT_5_SYSTEM never specified the schema for plan_updates entries — the output
+//   format just showed `"plan_updates": []`. The model invented its own schema (e.g. {tasks:
+//   [...], action: "move", to_day: 3, from_day: 2}), which applyPlanUpdates couldn't match
+//   against any task.id, so working_plan never mutated and tasks_completed never incremented.
+//   Fix: declare the canonical entry schema in-line ({task_id, new_status, new_target_date,
+//   notes}) and add a worked example for the "user reports being behind" scenario.
+//
+//   (2) State determination rules let "0-1 days since last check-in" override the other two
+//   conditions, so a user reporting "i didn't do today's tasks, i'm overwhelmed" got
+//   classified on_track. With state stuck at on_track, replan_required stayed false and the
+//   replan path never fired. Fix: on_track now requires ALL THREE conditions (day count +
+//   completion + no overwhelm/stuck signals); explicit drifting fallback for "tasks missed
+//   today" or "user expresses being overwhelmed/stuck/behind"; explicit
+//   significantly_behind escalation for "user explicitly asks for replan".
+//
+//   F79 + F83 are downstream of the above and resolve when the contract is correct.
+//   F80 (TodayCard not flipping to done_today after first check-in) is a separate Plan.tsx
+//   issue, intermittent — not addressed here.
 // process-checkin v32 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // process-checkin v29 — F45 (2026-04-19): accept `response` key in userMessage OR chain so /plan CheckInPanel callers work (Plan.tsx sends {session_id, response}). Backward-compatible with /checkin long-schema callers.
 // v28: P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
@@ -91,38 +124,140 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   });
 }
 
+// F85 (2026-05-07): handle both shapes of working_plan that exist in the live system.
+//
+// PRE-REPLAN (from generate-plan / P3): nested 3 levels deep
+//   working_plan.activation_plan.phases[].days_detail[].tasks[]
+//   - task identifier key: task_id
+//   - day number lives on the parent days_detail entry (.day), not the task
+//   - task.status may be missing entirely on first read
+//
+// POST-REPLAN (from process-replan's buildReplanWorkingPlan): flat 1 level
+//   working_plan.phases[].tasks[]
+//   - task identifier key: id
+//   - task carries .day directly
+//   - task.status is set ("pending"/"completed"/etc.)
+//
+// flattenTasks must return tasks normalised so downstream code can read
+// task.task_id (the canonical id) and task.day (the day number) regardless
+// of which shape the row was in. We do NOT mutate the source — we shallow-
+// clone each task and add normalised fields if missing.
+// F85 v35 (2026-05-07): the live deep shape stores the day number as a STRING
+// ("Day 1", "Day 2") on the days_detail entry, NOT as a number. We parse the
+// digit out of whatever we find. Accepts: number directly, string like "Day 1",
+// strings with leading whitespace, etc.
+function parseDayNumber(raw: unknown): number | null {
+  if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+  if (typeof raw === "string") {
+    const match = raw.match(/\d+/);
+    if (match) {
+      const n = parseInt(match[0], 10);
+      return Number.isFinite(n) ? n : null;
+    }
+  }
+  return null;
+}
+
 function flattenTasks(workingPlan: Record<string, unknown>): unknown[] {
   const tasks: unknown[] = [];
-  const phases = (workingPlan?.phases as unknown[]) || [];
+  if (!workingPlan) return tasks;
+
+  // Resolve where phases live: prefer activation_plan.phases (deep shape),
+  // fall back to phases (flat shape from process-replan).
+  const innerActivationPlan = workingPlan.activation_plan as Record<string, unknown> | undefined;
+  const phases =
+    (innerActivationPlan?.phases as unknown[]) ||
+    (workingPlan.phases as unknown[]) ||
+    [];
+
   for (const phase of phases) {
     const p = phase as Record<string, unknown>;
-    const phaseTasks = (p.tasks as unknown[]) || [];
-    for (const t of phaseTasks) {
-      tasks.push(t);
+
+    // Flat shape: phase.tasks[] (post-replan). Tasks already carry .id and .day.
+    const directTasks = (p.tasks as Record<string, unknown>[]) || [];
+    if (directTasks.length > 0) {
+      for (const t of directTasks) {
+        // Normalise: ensure task_id is present (mirror id) so downstream code
+        // can match either key without caring about shape.
+        const normalised = {
+          ...t,
+          task_id: (t.task_id as string) || (t.id as string) || null,
+        };
+        tasks.push(normalised);
+      }
+      continue;
+    }
+
+    // Deep shape: phase.days_detail[].tasks[] (pre-replan from P3).
+    // Day number lives on the days_detail entry — annotate each task with it.
+    // The live shape stores .day as a string ("Day 1") not a number — parse it.
+    const daysDetail = (p.days_detail as Record<string, unknown>[]) || [];
+    for (const dayEntry of daysDetail) {
+      const dayNum =
+        parseDayNumber(dayEntry.day) ??
+        parseDayNumber(dayEntry.day_number) ??
+        null;
+      const dayTasks = (dayEntry.tasks as Record<string, unknown>[]) || [];
+      for (const t of dayTasks) {
+        const taskOwnDay = parseDayNumber(t.day);
+        const normalised = {
+          ...t,
+          day: taskOwnDay ?? dayNum,
+          task_id: (t.task_id as string) || (t.id as string) || null,
+        };
+        tasks.push(normalised);
+      }
     }
   }
   return tasks;
 }
 
+// F85 (2026-05-07): descend through both shapes (pre-replan deep, post-replan flat)
+// and match either task.task_id (canonical, P3 output) OR task.id (process-replan output).
 function applyPlanUpdates(
   workingPlan: Record<string, unknown>,
   planUpdates: Record<string, unknown>[]
 ): Record<string, unknown> {
   if (!planUpdates || planUpdates.length === 0) return workingPlan;
   const updated = JSON.parse(JSON.stringify(workingPlan));
-  const phases = (updated.phases as Record<string, unknown>[]) || [];
+
+  // Resolve phases container: deep shape uses updated.activation_plan.phases,
+  // flat shape uses updated.phases.
+  const innerActivationPlan = updated.activation_plan as Record<string, unknown> | undefined;
+  const phases =
+    ((innerActivationPlan?.phases as Record<string, unknown>[]) ||
+      (updated.phases as Record<string, unknown>[]) ||
+      []);
+
+  function tryUpdate(task: Record<string, unknown>, taskId: string, newStatus: string, newTargetDate: string | null, notes: string | undefined): boolean {
+    if (task.task_id === taskId || task.id === taskId) {
+      task.status = newStatus;
+      if (newTargetDate) task.target_date = newTargetDate;
+      if (notes) task.update_notes = notes;
+      return true;
+    }
+    return false;
+  }
+
   for (const update of planUpdates) {
     const taskId = update.task_id as string;
     const newStatus = update.new_status as string;
     const newTargetDate = update.new_target_date as string | null;
     const notes = update.notes as string | undefined;
+    if (!taskId || !newStatus) continue;
+
     for (const phase of phases) {
-      const tasks = (phase.tasks as Record<string, unknown>[]) || [];
-      for (const task of tasks) {
-        if (task.id === taskId) {
-          task.status = newStatus;
-          if (newTargetDate) task.target_date = newTargetDate;
-          if (notes) task.update_notes = notes;
+      // Flat shape: phase.tasks[]
+      const directTasks = (phase.tasks as Record<string, unknown>[]) || [];
+      for (const task of directTasks) {
+        tryUpdate(task, taskId, newStatus, newTargetDate, notes);
+      }
+      // Deep shape: phase.days_detail[].tasks[]
+      const daysDetail = (phase.days_detail as Record<string, unknown>[]) || [];
+      for (const dayEntry of daysDetail) {
+        const dayTasks = (dayEntry.tasks as Record<string, unknown>[]) || [];
+        for (const task of dayTasks) {
+          tryUpdate(task, taskId, newStatus, newTargetDate, notes);
         }
       }
     }
@@ -299,18 +434,53 @@ You must close the check-in within 3 exchanges. If the user's first response is 
 
 ### State determination rules
 
-on_track: 0-1 days since last check-in. All or most tasks completed. Minor slippage only.
-drifting: 2-3 days since last check-in, OR 2-3 tasks missed across the last 3 days.
-significantly_behind: 4+ days since last check-in, OR user signals a material change.
+For state = "on_track", ALL THREE conditions must hold:
+1. 0-1 days since last check-in
+2. The user confirms most/all of today's planned tasks were completed
+3. The user does NOT express being overwhelmed, behind, stuck, unable to keep up, or unsure about the plan
 
+state = "drifting" when ANY of:
+- 2-3 days since last check-in
+- 0-1 days since last check-in BUT the user reports they did not complete today's tasks (for any reason)
+- 2-3 tasks missed across the last 3 days
+- The user expresses mild frustration, busy stretch, partial slippage, or feeling overwhelmed
+
+state = "significantly_behind" when ANY of:
+- 4+ days since last check-in
+- The user signals a material change (job change, life event, loss of confidence in the plan)
+- The user reports they cannot complete tasks AND no meaningful progress has been made for 2+ check-ins
+- The user explicitly asks for the plan to be redone
+
+When in doubt between on_track and drifting, choose drifting.
 When in doubt between drifting and significantly_behind, choose drifting.
+
+CRITICAL: do NOT classify a check-in as on_track simply because the user has just checked in. The user can check in 1 day after the last check-in and still be drifting if today's tasks were missed or they signal being overwhelmed.
 
 ### Task update rules
 
 - Only mark a task as completed if the user explicitly confirms it was done.
-- If a task was not done and no replan is triggered, move it to the next available day.
-- Do not drop tasks silently. Every unfinished task is either moved or explicitly noted.
+- If a task was not done and no replan is triggered, move it forward by emitting a plan_updates entry with new_status: "moved".
+- Do not drop tasks silently. Every unfinished task is either moved (new_status: "moved") or explicitly noted as missed (new_status: "missed").
 - Maximum tasks moved forward in a single check-in without triggering replan: 5.
+
+### plan_updates entry schema (CRITICAL — do not deviate)
+
+Each entry in plan_updates MUST follow this exact schema:
+
+{
+  "task_id": "<exact task.id from the working_plan tasks given to you>",
+  "new_status": "completed | missed | moved",
+  "new_target_date": "YYYY-MM-DD or null",
+  "notes": "<short reason or null>"
+}
+
+Hard rules:
+- task_id MUST match an id present in the working_plan.tasks given to you. If you cannot find a matching id, omit the entry rather than inventing one.
+- new_status: "completed" if the user explicitly confirmed done; "missed" if not done and not being rescheduled; "moved" if not done and being rescheduled forward.
+- new_target_date: populate with a YYYY-MM-DD date string only when new_status is "moved" (typically tomorrow). Otherwise null.
+- notes: a 1-line reason; null if no reason needed.
+
+DO NOT use any other field names. DO NOT emit aggregate entries like {"tasks": [...], "action": "move"}. Each affected task gets its own entry.
 
 ### Opening message rules (call_type: "opening")
 
@@ -333,6 +503,61 @@ Set replan_required: true when:
 
 When replan_required is true, your closing message must NOT promise that the plan has already been rebuilt. The system will surface a confirmation to the user ("Update my plan" / "Not yet") before any rebuild happens. Phrase your close like: "Based on this, it looks like the plan needs refreshing — I'll check with you before rebuilding anything."
 
+### Worked example — user reports being behind (state = drifting, no replan)
+
+User says (Day 2, 1 day since last check-in): "i havent been able to do the tasks today, im a bit overwhelmed and had a crazy day"
+
+working_plan.tasks (relevant slice given to you — note: real task IDs use the D{day}_T{n} format):
+[
+  {"task_id": "D2_T1", "day": 2, "description": "Update LinkedIn headline, About section, and Featured section to support the recommended positioning", "status": "pending"},
+  {"task_id": "D2_T2", "day": 2, "description": "Identify 3 named contacts to reconnect with this week — write down their names and roles", "status": "pending"}
+]
+
+Your output:
+{
+  "state": "drifting",
+  "response_text": "Got it. I've moved today's two tasks to tomorrow. Tomorrow: do the minimum viable version — just one of the two. See you tomorrow.",
+  "plan_updates": [
+    {"task_id": "D2_T1", "new_status": "moved", "new_target_date": "2026-05-08", "notes": "User overwhelmed; moved to next workable day"},
+    {"task_id": "D2_T2", "new_status": "moved", "new_target_date": "2026-05-08", "notes": "User overwhelmed; moved to next workable day"}
+  ],
+  "outreach_outcomes": [],
+  "narrative_addition": "User reported being overwhelmed and unable to complete today's tasks. Both tasks moved forward.",
+  "replan_required": false,
+  "replan_context": null,
+  "check_in_complete": true,
+  "exchange_count": 2,
+  "strand_signals": [],
+  "strand_status_updates": [],
+  "portfolio_review_record": null
+}
+
+Note the state is "drifting", NOT "on_track" — the user explicitly reported tasks not done and overwhelm, which fails on_track conditions 2 and 3.
+
+### Worked example — user reports a material change (state = significantly_behind, replan triggered)
+
+User says (Day 2, exchange 2, in response to the diagnosis question): "Honestly, I've been made redundant since we last spoke and I'm not sure this direction is still right for me."
+
+Your output:
+{
+  "state": "significantly_behind",
+  "response_text": "That's a real change. Based on this, it looks like the plan needs refreshing — I'll check with you before rebuilding anything.",
+  "plan_updates": [],
+  "outreach_outcomes": [],
+  "narrative_addition": "User reported being made redundant since the last check-in and uncertainty about the chosen direction. Replan flagged for confirmation.",
+  "replan_required": true,
+  "replan_context": {
+    "circumstance_type": "job_change",
+    "circumstance_detail": "User made redundant since last check-in; expressed doubt about the chosen direction.",
+    "triggered_at": "<ISO timestamp>"
+  },
+  "check_in_complete": true,
+  "exchange_count": 2,
+  "strand_signals": [],
+  "strand_status_updates": [],
+  "portfolio_review_record": null
+}
+
 ### Exchange count rules
 
 - Exchange 1: Opening
@@ -348,7 +573,14 @@ Return a single JSON object only.
 {
   "state": "on_track | drifting | significantly_behind",
   "response_text": "The exact message to display to the user.",
-  "plan_updates": [],
+  "plan_updates": [
+    {
+      "task_id": "<id from working_plan.tasks>",
+      "new_status": "completed | missed | moved",
+      "new_target_date": "YYYY-MM-DD or null",
+      "notes": "<reason or null>"
+    }
+  ],
   "outreach_outcomes": [],
   "narrative_addition": "Brief third-person past tense summary. Max 40 words.",
   "replan_required": false,

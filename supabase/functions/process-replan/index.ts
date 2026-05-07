@@ -1,3 +1,9 @@
+// process-replan v23 — 2026-05-07: F88 — max_completion_tokens 4000 → 12000.
+//   Original 4000 cap was truncating a 29-days-remaining replan output (current_day=2,
+//   29 days × ~3 tasks per day + phases + rebalancing = 6000+ tokens of JSON), causing
+//   JSON.parse to fail and return 500 ("Failed to generate replan"). 12000 gives a comfortable
+//   ceiling for the worst case (Day 1 replan with full 30-day rebuild). Also added
+//   finish_reason logging so future truncation events are diagnosable from the logs.
 // process-replan v22 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // process-replan v19 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
 // v18 baseline: 2026-04-17 Audit P2 #16 — source-header reconciled with deploy counter.
@@ -621,7 +627,7 @@ Deno.serve(async (req: Request) => {
     const completion = await openai.chat.completions.create({
       model: MODEL_TIER2,
       temperature: 0.5,
-      max_completion_tokens: 4000,
+      max_completion_tokens: 12000,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: JSON.stringify(prompt6Input) },
@@ -629,16 +635,34 @@ Deno.serve(async (req: Request) => {
       response_format: { type: "json_object" },
     });
 
+    // F88: log finish_reason so we can spot truncation in the logs.
+    const finishReason = completion.choices[0]?.finish_reason || "unknown";
+    const usage = completion.usage || {};
+    console.log(
+      `process-replan v23: openai finish_reason=${finishReason} ` +
+      `prompt_tokens=${(usage as Record<string, number>).prompt_tokens ?? "?"} ` +
+      `completion_tokens=${(usage as Record<string, number>).completion_tokens ?? "?"}`
+    );
+
     const rawOutput = completion.choices[0].message.content || "{}";
     let p6Output: Record<string, unknown>;
     try {
       p6Output = JSON.parse(rawOutput);
-    } catch {
-      console.error("Failed to parse Prompt 6 output:", rawOutput);
+    } catch (parseErr) {
+      console.error(
+        "process-replan v23: JSON.parse failed.",
+        "finish_reason=", finishReason,
+        "raw_length=", rawOutput.length,
+        "raw_tail=", rawOutput.slice(-200),
+        "err=", String(parseErr)
+      );
       return jsonResponse(
         {
           error: "Failed to generate replan",
-          response_text: "I wasn't able to rebuild the plan right now. Let's try again tomorrow.",
+          response_text: finishReason === "length"
+            ? "The plan rebuild ran out of room. Please try again — we've adjusted the cap."
+            : "I wasn't able to rebuild the plan right now. Let's try again tomorrow.",
+          finish_reason: finishReason,
         },
         500
       );

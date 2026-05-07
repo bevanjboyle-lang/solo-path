@@ -255,12 +255,35 @@ export const getClientSessionId = _getClientSessionId;
 
 /**
  * Trigger Stripe checkout — creates a session via edge function and redirects.
- * THE canonical handler for every "Unlock" CTA on /teaser and PricingCard.
+ * THE canonical handler for every "Unlock" / "Subscribe" CTA on /teaser, /subscribe, and PricingCard.
+ *
+ * F91 (2026-05-07): subscription priceIds (price_sub_monthly | price_sub_annual) route to
+ * create-subscription (mode: subscription); everything else routes to create-payment
+ * (mode: payment). Previously every priceId went to create-payment, which ignores
+ * body.price_id and uses STRIPE_PRICE_ONETIME — so subscription clicks were charging
+ * a £19.99 one-off instead of opening a recurring subscription.
  */
 export async function triggerStripeCheckout(
 	priceId: string,
 	metadata: Record<string, unknown>
 ): Promise<void> {
+	const isSubscription =
+		priceId === "price_sub_monthly" || priceId === "price_sub_annual";
+
+	if (isSubscription) {
+		const planType =
+			priceId === "price_sub_annual" ? "annual" : "monthly";
+		const { data, error } = await supabase.functions.invoke(
+			"create-subscription",
+			{ body: { plan_type: planType, ...metadata } }
+		);
+		if (error) throw error;
+		const redirectUrl = data?.sessionUrl || data?.url;
+		if (redirectUrl) window.location.href = redirectUrl;
+		return;
+	}
+
+	// Default: one-off payment (report, second report, etc.) via create-payment.
 	const { data, error } = await supabase.functions.invoke("create-payment", {
 		body: { price_id: priceId, ...metadata },
 	});
