@@ -457,6 +457,7 @@ export default function Teaser() {
         >
           <Button
             size="lg"
+            type="button"
             onClick={handleUnlock}
             disabled={payLoading}
             className="rounded-lg bg-primary px-8 py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
@@ -476,6 +477,7 @@ export default function Teaser() {
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-[hsl(var(--surface-panel))] p-4 md:hidden">
           <Button
             size="lg"
+            type="button"
             onClick={handleUnlock}
             disabled={payLoading}
             className="w-full rounded-lg bg-primary py-3 text-base font-semibold text-primary-foreground hover:bg-primary/90"
