@@ -1,5 +1,4 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
-import ServerError from "@/pages/ServerError";
 
 interface Props {
   children: ReactNode;
@@ -48,9 +47,54 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       const { error, errorInfo } = this.state;
+      // CRITICAL: this fallback must be self-contained. It cannot use any React
+      // Router hooks (useNavigate etc.), AuthProvider context, or any component
+      // that depends on those — because ErrorBoundary sits ABOVE BrowserRouter
+      // in App.tsx. When the boundary catches an error from inside the router
+      // tree, the fallback renders OUTSIDE that tree, and any context hook
+      // throws, cascading into a blank-screen meta-bug that hides the real
+      // error. (We hit this on 2026-05-06 — the previous fallback rendered
+      // <ServerError /> which calls useNavigate() on line 9; useNavigate
+      // without a BrowserRouter ancestor throws "useNavigate() may be used
+      // only in the context of a <Router> component", swallowing the diagnostic
+      // block underneath. Hours of bisecting before source maps surfaced the
+      // ServerError.tsx:9 frame.)
+      //
+      // Use plain HTML + window.location for navigation. No imports beyond
+      // React. The diagnostic block is the load-bearing debugging surface
+      // for the rest of pre-launch.
       return (
-        <>
-          <ServerError />
+        <div className="flex min-h-screen flex-col bg-background text-foreground">
+          <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
+            <div className="w-full max-w-[560px] text-center">
+              <p className="font-mono text-sm text-muted-foreground tracking-widest uppercase">500</p>
+              <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+                Something went wrong on our end.
+              </h1>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
+                Try refreshing the page. If the problem continues, email{" "}
+                <a href="mailto:support@solo-plan.com" className="underline underline-offset-4 hover:text-foreground transition-colors">
+                  support@solo-plan.com
+                </a>
+              </p>
+
+              <div className="mt-8 flex flex-col items-center gap-3">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90"
+                >
+                  Refresh
+                </button>
+                <a
+                  href="/"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Go home
+                </a>
+              </div>
+            </div>
+          </main>
+
           {/* Pre-launch diagnostic — see file header. Remove or gate before production traffic. */}
           <div className="mx-auto w-full max-w-3xl px-6 pb-16 text-left text-xs">
             <details className="rounded-md border border-border bg-[hsl(var(--surface-panel))] p-4">
@@ -84,7 +128,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               </div>
             </details>
           </div>
-        </>
+        </div>
       );
     }
     return this.props.children;
