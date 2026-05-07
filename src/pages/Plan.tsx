@@ -208,7 +208,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const loadTrackerSession = useCallback(async (uid: string, rid: string) => {
     const { data: session } = await (supabase as any)
       .from("tracker_sessions")
-      .select("id, current_day, activated_at, subscription_status, last_checkin_date, replan_pending, replan_context")
+      .select("id, current_day, activated_at, subscription_status, last_checkin_date, replan_pending, replan_context, working_plan")
       .eq("user_id", uid)
       .eq("report_id", rid)
       .maybeSingle();
@@ -230,6 +230,17 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
     setReplanPending(!!session.replan_pending);
     setReplanContext((session.replan_context as Record<string, unknown> | null) ?? null);
+
+    // F89 (2026-05-07): prefer tracker_sessions.working_plan over reports.activation_plan
+    // when present and shaped like the canonical deep structure. This is what makes
+    // post-checkin status mutations and post-replan rebuilds visible to the user.
+    // process-checkin v35 mutates working_plan in deep shape in place; process-replan
+    // v24 emits the same deep shape on rebuild. Both keep top-level siblings intact.
+    const wp = session.working_plan as Record<string, unknown> | null;
+    const wpInner = wp?.activation_plan as Record<string, unknown> | undefined;
+    if (wp && Array.isArray(wpInner?.phases) && wpInner.phases.length > 0) {
+      setActivationPlan(wp as ActivationPlanOutput);
+    }
 
     const today = new Date().toISOString().slice(0, 10);
     const checkedInToday = session.last_checkin_date === today;
@@ -369,7 +380,12 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   const checkinReplanPendingRef = useRef(false);
 
-  const handleCheckinSubmit = useCallback(async (response: string) => {
+  // F87 (2026-05-07): returns the AI's response_text so CheckInPanel can render
+  // the closing message inline before the drawer closes. Previously this just
+  // returned void and showed a generic "Check-in saved." toast — the AI's
+  // contextual reply ("Got it. I've moved today's two tasks to tomorrow…") was
+  // computed and stored but never surfaced to the user.
+  const handleCheckinSubmit = useCallback(async (response: string): Promise<string | null> => {
     // Call existing submit-checkin edge function
     const { data, error } = await supabase.functions.invoke("process-checkin", {
       body: { session_id: sessionId, response },
@@ -390,17 +406,21 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       prev.map((d) => (d.isToday ? { ...d, completed: true } : d))
     );
 
-    // Don't show "Plan updated" framing when a replan is pending — the AI
-    // output already states the plan hasn't been rebuilt yet.
-    if (!replanPendingFromCheckin) {
-      toast({ title: "Check-in saved." });
-    }
-
     // If opened via deep-link, update URL
     if (initialSessionId) {
       window.history.replaceState(null, "", "/plan");
     }
-  }, [sessionId, initialSessionId, toast]);
+
+    // Return the AI's response_text for inline display in CheckInPanel.
+    // Falls back to a sensible default if the field is missing.
+    const aiText =
+      (data as { response_text?: string; response?: string; message?: string } | null)?.response_text
+      || (data as { response?: string } | null)?.response
+      || (data as { message?: string } | null)?.message
+      || null;
+
+    return aiText;
+  }, [sessionId, initialSessionId]);
 
   const handleDayClick = useCallback((day: number) => {
     // Open read-only drawer for completed day

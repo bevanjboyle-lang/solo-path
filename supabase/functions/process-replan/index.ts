@@ -1,3 +1,14 @@
+// process-replan v24 — 2026-05-07: F89 + F86 — buildReplanWorkingPlan now emits the
+//   canonical DEEP SHAPE (working_plan.activation_plan.phases[].days_detail[].tasks[])
+//   instead of a flat shape. This matches what generate-plan / P3 produces, so
+//   tracker_sessions.working_plan can be safely consumed by the same UI rendering path
+//   (Plan.tsx → PlanSection) that reads reports.activation_plan. Top-level siblings
+//   (first_move, network_toolkit, traction_signals, portfolio_summary,
+//   portfolio_review_guide) from the original working_plan are preserved verbatim;
+//   only activation_plan.phases is replaced. Day strings use the canonical "Day N"
+//   format with absolute day numbers (currentDay + p6_day_number - 1).
+//   Also fixed flattenTasks (F86) to handle the deep shape, matching the F85 fix
+//   in process-checkin so tasks_completed counting works after a replan.
 // process-replan v23 — 2026-05-07: F88 — max_completion_tokens 4000 → 12000.
 //   Original 4000 cap was truncating a 29-days-remaining replan output (current_day=2,
 //   29 days × ~3 tasks per day + phases + rebalancing = 6000+ tokens of JSON), causing
@@ -50,89 +61,173 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   });
 }
 
+// F86 (2026-05-07): handle both working_plan shapes.
+//   Deep shape (canonical, post-F89 + pre-replan from P3):
+//     working_plan.activation_plan.phases[].days_detail[].tasks[] — task.task_id, day on days_detail (string "Day N")
+//   Legacy flat shape (pre-F89 process-replan output):
+//     working_plan.phases[].tasks[] — task.id, day on the task
+//   Returns tasks normalised so callers can read task.task_id and task.status.
+function parseDayNumberLocal(raw: unknown): number | null {
+  if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+  if (typeof raw === "string") {
+    const m = raw.match(/\d+/);
+    if (m) {
+      const n = parseInt(m[0], 10);
+      return Number.isFinite(n) ? n : null;
+    }
+  }
+  return null;
+}
+
 function flattenTasks(
   workingPlan: Record<string, unknown>
 ): Record<string, unknown>[] {
   const tasks: Record<string, unknown>[] = [];
-  const phases = (workingPlan?.phases as unknown[]) || [];
+  if (!workingPlan) return tasks;
+
+  const innerActivationPlan = workingPlan.activation_plan as Record<string, unknown> | undefined;
+  const phases =
+    (innerActivationPlan?.phases as unknown[]) ||
+    (workingPlan.phases as unknown[]) ||
+    [];
+
   for (const phase of phases) {
     const p = phase as Record<string, unknown>;
-    const phaseTasks = (p.tasks as unknown[]) || [];
-    for (const t of phaseTasks) {
-      tasks.push(t as Record<string, unknown>);
+
+    // Flat shape: phase.tasks[]
+    const directTasks = (p.tasks as Record<string, unknown>[]) || [];
+    if (directTasks.length > 0) {
+      for (const t of directTasks) {
+        tasks.push({
+          ...t,
+          task_id: (t.task_id as string) || (t.id as string) || null,
+        });
+      }
+      continue;
+    }
+
+    // Deep shape: phase.days_detail[].tasks[]
+    const daysDetail = (p.days_detail as Record<string, unknown>[]) || [];
+    for (const dayEntry of daysDetail) {
+      const dayNum =
+        parseDayNumberLocal(dayEntry.day) ??
+        parseDayNumberLocal(dayEntry.day_number) ??
+        null;
+      const dayTasks = (dayEntry.tasks as Record<string, unknown>[]) || [];
+      for (const t of dayTasks) {
+        const taskOwnDay = parseDayNumberLocal(t.day);
+        tasks.push({
+          ...t,
+          day: taskOwnDay ?? dayNum,
+          task_id: (t.task_id as string) || (t.id as string) || null,
+        });
+      }
     }
   }
   return tasks;
 }
 
+// F89 (2026-05-07): emit the canonical deep shape that matches generate-plan / P3.
+//   Output structure:
+//     {
+//       ...originalWorkingPlan,             // first_move, network_toolkit, etc. preserved
+//       activation_plan: {
+//         ...originalWorkingPlan.activation_plan,  // success_metric and other top-level fields
+//         phases: [{                          // replaced with the new replan content
+//           phase, label, days, focus,
+//           days_detail: [{
+//             day: "Day N",                   // absolute day number, string, e.g. "Day 5"
+//             label: "Weekday Evening" | ...,
+//             tasks: [{ task_id, description, strand_id, task_type, move, move_type, ... }]
+//           }]
+//         }]
+//       },
+//       replan_applied_at, replan_from_day, replan_total_days
+//     }
+//
+//   This lets Plan.tsx render the post-replan state via the same PlanSection that
+//   reads reports.activation_plan today (F89). Day numbering is absolute (currentDay
+//   + p6_day_number - 1), so a Day 2 replan with P6 day_number=1 becomes "Day 2",
+//   day_number=2 becomes "Day 3", etc. The 30-day grid stays consistent with
+//   tracker_sessions.current_day.
 function buildReplanWorkingPlan(
   originalWorkingPlan: Record<string, unknown>,
   p6Output: Record<string, unknown>,
   currentDay: number
 ): Record<string, unknown> {
-  const completedTasks: Record<string, unknown>[] = [];
-  const oldTasks = flattenTasks(originalWorkingPlan);
-  for (const t of oldTasks) {
-    if (t.status === "completed") {
-      completedTasks.push(t);
-    }
-  }
-
   const p6Phases = (p6Output.phases as Record<string, unknown>[]) || [];
   const p6Days = (p6Output.days as Record<string, unknown>[]) || [];
 
-  const phaseTasksMap: Record<number, Record<string, unknown>[]> = {};
-  for (const dayEntry of p6Days) {
-    const dayNum = dayEntry.day_number as number;
-    const phaseNum = dayEntry.phase as number;
-    const dayTasks = (dayEntry.tasks as Record<string, unknown>[]) || [];
-
-    if (!phaseTasksMap[phaseNum]) phaseTasksMap[phaseNum] = [];
-
-    for (const task of dayTasks) {
-      phaseTasksMap[phaseNum].push({
-        id: task.task_id || `RP_D${dayNum}_T${phaseTasksMap[phaseNum].length + 1}`,
-        day: currentDay + (dayNum as number) - 1,
-        type: "action",
-        description: task.description || "",
-        duration_minutes: task.duration_minutes || null,
-        notes: task.notes || null,
-        status: "pending",
-        strand_id: task.strand_id || null,
-        move_type: task.move_type || null,
-      });
-    }
+  // Group P6 day entries by phase_number, sorted by day_number within each phase.
+  const phaseDaysMap: Record<number, Record<string, unknown>[]> = {};
+  for (const d of p6Days) {
+    const phaseNum = d.phase as number;
+    if (!phaseDaysMap[phaseNum]) phaseDaysMap[phaseNum] = [];
+    phaseDaysMap[phaseNum].push(d);
+  }
+  for (const phaseNum of Object.keys(phaseDaysMap)) {
+    phaseDaysMap[Number(phaseNum)].sort(
+      (a, b) => (a.day_number as number) - (b.day_number as number)
+    );
   }
 
+  // Build deep-shape phases with days_detail.
   const newPhases: Record<string, unknown>[] = [];
-
-  if (completedTasks.length > 0) {
-    newPhases.push({
-      phase: 0,
-      label: "Completed",
-      days: "Prior",
-      tasks: completedTasks,
-    });
-  }
-
   for (const p6Phase of p6Phases) {
     const phaseNum = p6Phase.phase_number as number;
+    const phaseDays = phaseDaysMap[phaseNum] || [];
+
+    const daysDetail = phaseDays.map((dayEntry) => {
+      const dayNum = dayEntry.day_number as number;
+      const absoluteDay = currentDay + dayNum - 1;
+      const dayTasks = (dayEntry.tasks as Record<string, unknown>[]) || [];
+
+      return {
+        day: `Day ${absoluteDay}`,
+        label: (dayEntry.day_type as string) || "",
+        time_required: "",
+        time_allocation: "",
+        tasks: dayTasks.map((task, taskIdx) => ({
+          task_id: (task.task_id as string) || `RP_D${dayNum}_T${taskIdx + 1}`,
+          description: (task.description as string) || "",
+          strand_id: (task.strand_id as string) || "shared",
+          task_type: "action",
+          move: null,
+          move_type: (task.move_type as string) || null,
+          apollo_query: null,
+          outreach_draft: null,
+          outreach_subtype: null,
+          duration_minutes: (task.duration_minutes as number) ?? null,
+          notes: (task.notes as string) ?? null,
+          status: "pending",
+        })),
+      };
+    });
+
     newPhases.push({
       phase: phaseNum,
-      label: p6Phase.phase_name || `Phase ${phaseNum}`,
-      days: p6Phase.days || "",
-      focus: p6Phase.focus || "",
-      tasks: phaseTasksMap[phaseNum] || [],
+      label: (p6Phase.phase_name as string) || `Phase ${phaseNum}`,
+      days: (p6Phase.days as string) || "",
+      focus: (p6Phase.focus as string) || "",
+      days_detail: daysDetail,
     });
   }
 
+  // Preserve originalWorkingPlan's top-level siblings (first_move, network_toolkit,
+  // traction_signals, portfolio_summary, portfolio_review_guide) by spreading the
+  // original. Replace ONLY activation_plan.phases.
+  const originalActivationPlan =
+    (originalWorkingPlan.activation_plan as Record<string, unknown>) || {};
+
   return {
-    phases: newPhases,
+    ...originalWorkingPlan,
+    activation_plan: {
+      ...originalActivationPlan,
+      phases: newPhases,
+    },
     replan_applied_at: new Date().toISOString(),
     replan_from_day: currentDay,
-    total_days: p6Output.total_days || 30,
-    success_metric:
-      (originalWorkingPlan as Record<string, unknown>).success_metric || null,
+    replan_total_days: p6Output.total_days || 30,
   };
 }
 

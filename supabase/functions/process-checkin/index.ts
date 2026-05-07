@@ -1,3 +1,8 @@
+// process-checkin v36 — 2026-05-07: F79 — added worked example for the on_track +
+//   tasks completed scenario. Without it, the AI was conservative about emitting
+//   plan_updates with new_status="completed" even when the user explicitly confirmed
+//   all today's tasks were done — leaving tracker_sessions.tasks_completed at 0. The
+//   on_track example makes the expected behaviour explicit.
 // process-checkin v35 — 2026-05-07: F85 follow-up — days_detail.day is a STRING ("Day 1",
 //   "Day 2"), not a number. My v34 cast it directly as number, got NaN, and relevantTasks
 //   was still empty. Added parseDayNumber() to extract the digit out of strings like "Day 1"
@@ -502,6 +507,39 @@ Set replan_required: true when:
 - OR more than 5 tasks need moving
 
 When replan_required is true, your closing message must NOT promise that the plan has already been rebuilt. The system will surface a confirmation to the user ("Update my plan" / "Not yet") before any rebuild happens. Phrase your close like: "Based on this, it looks like the plan needs refreshing — I'll check with you before rebuilding anything."
+
+### Worked example — user confirms all tasks done (state = on_track, all completed)
+
+User says (Day 1, 0 days since last check-in): "I did all today's tasks — wrote the positioning statement, updated my LinkedIn, and listed the 20 organisations."
+
+working_plan.tasks (relevant slice given to you):
+[
+  {"task_id": "D1_T1", "day": 1, "description": "Draft a 2-sentence positioning statement", "status": "pending"},
+  {"task_id": "D1_T2", "day": 1, "description": "Update LinkedIn headline and About section", "status": "pending"},
+  {"task_id": "D1_T3", "day": 1, "description": "List 20 target organisations to research", "status": "pending"}
+]
+
+Your output:
+{
+  "state": "on_track",
+  "response_text": "Good. I've marked all three of today's tasks as done. Tomorrow: pick the top 5 organisations from your list and identify a named contact at each. See you tomorrow.",
+  "plan_updates": [
+    {"task_id": "D1_T1", "new_status": "completed", "new_target_date": null, "notes": null},
+    {"task_id": "D1_T2", "new_status": "completed", "new_target_date": null, "notes": null},
+    {"task_id": "D1_T3", "new_status": "completed", "new_target_date": null, "notes": null}
+  ],
+  "outreach_outcomes": [],
+  "narrative_addition": "User confirmed all three Day 1 tasks completed: positioning statement, LinkedIn update, and 20-organisation list.",
+  "replan_required": false,
+  "replan_context": null,
+  "check_in_complete": true,
+  "exchange_count": 2,
+  "strand_signals": [],
+  "strand_status_updates": [],
+  "portfolio_review_record": null
+}
+
+When the user explicitly confirms completion ("did them all", "all done", "ticked everything off"), emit a plan_updates entry with new_status: "completed" for EACH task in the relevant working_plan slice. Do not skip emitting these — the system tracks completion via these entries.
 
 ### Worked example — user reports being behind (state = drifting, no replan)
 
