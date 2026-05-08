@@ -20,6 +20,7 @@ import Landing from "./pages/Landing";
 import CVUpload from "./pages/CVUpload";
 import Auth from "./pages/Auth";
 import AuthCallback from "./pages/AuthCallback";
+import AuthConfirm from "./pages/AuthConfirm";
 import Questionnaire from "./pages/Questionnaire";
 import Processing from "./pages/Processing";
 // F47 (2026-04-19): Results import removed — /results is not in route map v1.2.
@@ -75,6 +76,8 @@ function AnimatedRoutes() {
 						<Route path="/terms" element={<TermsOfService />} />
 						<Route path="/auth" element={<Auth />} />
 						<Route path="/auth/callback" element={<AuthCallback />} />
+						{/* F94 v25: non-PKCE magic-link entry for server-minted links (daily check-in emails). */}
+						<Route path="/auth/confirm" element={<AuthConfirm />} />
 
 						{/* Activation funnel — anonymous */}
 						<Route path="/cv-upload" element={<CVUpload />} />

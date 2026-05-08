@@ -1,3 +1,34 @@
+// send-checkin-email v25 — 2026-05-08: F94 third try — use token_hash + a Solo
+//   /auth/confirm route that calls supabase.auth.verifyOtp() client-side. Live
+//   testing of v24 showed: /auth/v1/verify created a fresh auth.sessions row on
+//   the user's tap, AND redirected to /auth/callback as configured, BUT the
+//   client AuthCallback timed out polling for a session and rendered "expired".
+//   Root cause: client.ts has flowType: 'pkce'. Supabase /verify on a PKCE
+//   project redirects with ?code=... requiring exchangeCodeForSession with a
+//   PKCE code_verifier from localStorage — but admin.generateLink produces
+//   server-side magic links with no client-side verifier ever created. So the
+//   exchange fails silently, getSession() returns null, AuthCallback gives up.
+//   Canonical fix per Supabase docs (Magic Link section, "If you're using PKCE
+//   flow, edit the Magic Link email template to send a token hash"):
+//   - admin.generateLink response includes properties.hashed_token
+//   - Email button URL: https://solo-plan.com/auth/confirm?token_hash=...&type=magiclink
+//   - /auth/confirm calls supabase.auth.verifyOtp({ token_hash, type: 'magiclink' })
+//   - verifyOtp does a direct POST to /auth/v1/verify, no PKCE roundtrip,
+//     session lands directly in localStorage. No redirect, no fragment, no
+//     verifier needed. Then /auth/confirm routes to /plan.
+// send-checkin-email v24 — 2026-05-08: F94 follow-up — switch redirectTo from
+//   /plan to /auth/callback. Live testing showed v23's magic-link mint
+//   succeeded (auth.sessions row created on user's tap) but the /verify
+//   endpoint redirected the user to /auth instead of /plan, because
+//   https://solo-plan.com/plan is not in the project's Auth → URL
+//   Configuration → Redirect URLs allowlist. Supabase /verify silently falls
+//   back to the Site URL when redirect_to is not allowlisted.
+//   /auth/callback IS allowlisted (it's the canonical post-auth landing page
+//   used by every other sign-in flow) and AuthCallback.tsx already polls for
+//   the session that supabase-js picks up from the URL hash fragment, then
+//   routes the user to /plan based on report status. So clicking the email
+//   button now lands the user on /auth/callback for ~1s, which forwards to
+//   /plan with a valid session. Same end-state, no dashboard config needed.
 // send-checkin-email v23 — 2026-05-08: F94 — embed magic-link auth URL in the
 //   "Check in now" button. Previously the button linked to bare /plan with no
 //   auth, so users who clicked it on phones (where Gmail's in-app browser does
@@ -135,21 +166,28 @@ Deno.serve(async (req: Request) => {
   // still send rather than silently dropping.
   async function getCheckinUrl(email: string): Promise<string> {
     try {
+      // F94 v25: use admin.generateLink to get a hashed_token, then construct
+      // a Solo-controlled URL. The client at /auth/confirm calls verifyOtp
+      // directly with the token_hash — no PKCE verifier required, no redirect
+      // dance, session lands in localStorage on the first POST.
       const { data, error } = await supabase.auth.admin.generateLink({
         type: "magiclink",
         email,
         options: { redirectTo: `${appUrl}/plan` },
       });
-      const link = (data as { properties?: { action_link?: string } } | null)?.properties?.action_link;
-      if (error || !link) {
+      const props = (data as {
+        properties?: { hashed_token?: string; action_link?: string };
+      } | null)?.properties;
+      const hashedToken = props?.hashed_token;
+      if (error || !hashedToken) {
         console.warn(
-          `generateLink failed for ${email} — falling back to bare /plan. err=`,
+          `generateLink missing hashed_token for ${email} — falling back to bare /plan. err=`,
           error
         );
         magicLinkFailures++;
         return `${appUrl}/plan`;
       }
-      return link;
+      return `${appUrl}/auth/confirm?token_hash=${encodeURIComponent(hashedToken)}&type=magiclink`;
     } catch (err) {
       console.warn(
         `generateLink threw for ${email} — falling back to bare /plan. err=`,
