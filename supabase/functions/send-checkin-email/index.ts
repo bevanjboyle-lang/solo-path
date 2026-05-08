@@ -1,3 +1,29 @@
+// send-checkin-email v23 — 2026-05-08: F94 — embed magic-link auth URL in the
+//   "Check in now" button. Previously the button linked to bare /plan with no
+//   auth, so users who clicked it on phones (where Gmail's in-app browser does
+//   not share PKCE state with the user's main browser) hit a 2-step flow:
+//     /plan → /auth → enter email → magic link → AuthCallback → "expired"
+//   The "expired" copy is the silent-failure rendering for PKCE
+//   exchangeCodeForSession when the code verifier is missing from localStorage
+//   (because the magic link opened in a different browser context than the
+//   /auth form did). Cross-browser PKCE failure is unfixable on mobile email.
+//
+//   This version mints a magic-link URL server-side via supabase.auth.admin
+//   .generateLink({ type: "magiclink" }) for each recipient and uses that as
+//   the button href. The action_link goes through Supabase /auth/v1/verify
+//   (token-hash flow, no PKCE) and redirects to /plan with auth tokens in the
+//   URL fragment, which supabase-js picks up via detectSessionInUrl: true.
+//   Result: user clicks → lands on /plan already authenticated, no second
+//   email, no PKCE roundtrip, works in any browser.
+//
+//   Caveat: token TTL is the project's email_otp_expiry seconds (default
+//   3600 = 1 hour). Bevan must bump this in Supabase Auth settings to
+//   something more user-friendly (24h) so users who click later in the day
+//   don't get re-auth'd anyway.
+//
+//   If generateLink fails for any reason, we fall back to the bare /plan URL
+//   so the email still sends — preserves the prior (broken) flow rather than
+//   silently dropping emails.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -75,7 +101,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const userIds = sessions.map((s) => s.user_id);
-  let userMap: Record<string, string> = {};
+  const userMap: Record<string, string> = {};
 
   const { data: authUsers, error: authError } = await supabase.rpc("get_user_emails_for_checkin", {
     user_ids: userIds,
@@ -101,6 +127,38 @@ Deno.serve(async (req: Request) => {
   let sentStandard = 0;
   let sentReentry = 0;
   let errorCount = 0;
+  let magicLinkFailures = 0;
+
+  // F94 (2026-05-08): server-side magic-link minter. Returns a one-click auth URL
+  // that lands the user on /plan with a session, bypassing the broken PKCE
+  // 2-step flow. Falls back to bare /plan if generateLink errors so emails
+  // still send rather than silently dropping.
+  async function getCheckinUrl(email: string): Promise<string> {
+    try {
+      const { data, error } = await supabase.auth.admin.generateLink({
+        type: "magiclink",
+        email,
+        options: { redirectTo: `${appUrl}/plan` },
+      });
+      const link = (data as { properties?: { action_link?: string } } | null)?.properties?.action_link;
+      if (error || !link) {
+        console.warn(
+          `generateLink failed for ${email} — falling back to bare /plan. err=`,
+          error
+        );
+        magicLinkFailures++;
+        return `${appUrl}/plan`;
+      }
+      return link;
+    } catch (err) {
+      console.warn(
+        `generateLink threw for ${email} — falling back to bare /plan. err=`,
+        (err as Error)?.message ?? String(err)
+      );
+      magicLinkFailures++;
+      return `${appUrl}/plan`;
+    }
+  }
 
   for (const session of sessions) {
     const email = userMap[session.user_id];
@@ -119,6 +177,9 @@ Deno.serve(async (req: Request) => {
     let subject: string;
     let htmlBody: string;
 
+    // F94: mint a fresh magic-link URL for this recipient before composing the email.
+    const checkinUrl = await getCheckinUrl(email);
+
     if (isReentry && !reentryDeduped) {
       subject = "Your plan is still here — whenever you're ready";
       htmlBody = `
@@ -132,7 +193,7 @@ Deno.serve(async (req: Request) => {
           <p style="color: #4a4a4a; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
             There's no catching up required. Just check in when you're ready and we'll start from where you actually are today.
           </p>
-          <a href="${appUrl}/plan" style="display: inline-block; background: #2ECDB0; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 15px;">
+          <a href="${checkinUrl}" style="display: inline-block; background: #2ECDB0; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 15px;">
             Check in now &rarr;
           </a>
           <p style="color: #4a4a4a; font-size: 15px; line-height: 1.6; margin-top: 24px; margin-bottom: 0;">
@@ -163,7 +224,7 @@ Deno.serve(async (req: Request) => {
           <p style="color: #4a4a4a; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
             Take 2 minutes to check in — log what you did, what's next, and how you're tracking against your plan.
           </p>
-          <a href="${appUrl}/plan" style="display: inline-block; background: #2ECDB0; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 15px;">
+          <a href="${checkinUrl}" style="display: inline-block; background: #2ECDB0; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 15px;">
             Check in now
           </a>
           <p style="color: #999; font-size: 13px; margin-top: 32px; line-height: 1.5;">
@@ -201,19 +262,23 @@ Deno.serve(async (req: Request) => {
         errorCount++;
       }
     } catch (err) {
-      console.error(`Error sending email to ${email}:`, err.message);
+      console.error(`Error sending email to ${email}:`, (err as Error)?.message ?? String(err));
       errorCount++;
     }
   }
 
   const totalSent = sentStandard + sentReentry;
-  console.log(`Check-in emails: ${sentStandard} standard, ${sentReentry} re-entry, ${errorCount} errors, ${sessions.length} total sessions`);
+  console.log(
+    `Check-in emails: ${sentStandard} standard, ${sentReentry} re-entry, ${errorCount} errors, ` +
+    `${magicLinkFailures} magic-link mint failures (fell back to bare /plan), ${sessions.length} total sessions`
+  );
   return new Response(
     JSON.stringify({
       sent: totalSent,
       sent_standard: sentStandard,
       sent_reentry: sentReentry,
       errors: errorCount,
+      magic_link_failures: magicLinkFailures,
       total_sessions: sessions.length,
       response_text: `Sent ${totalSent} emails (${sentStandard} standard, ${sentReentry} re-entry)`,
     }),
