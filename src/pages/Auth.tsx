@@ -10,11 +10,29 @@ import Banner from "@/components/Banner";
 
 type ViewState = "form" | "sent";
 
+// F95 (2026-05-08): Validate that a `?redirect=...` param is a same-origin
+// internal path before honouring it. Without this an attacker can craft
+// solo-plan.com/auth?redirect=//evil.com (or javascript:..., or
+// https://evil.com) and the post-auth Navigate would send the user offsite —
+// the open-redirect / XSS pattern flagged in @remix-run/router GHSA-2w69-qvjg-hvjx.
+function safeRedirectTarget(raw: string | null): string {
+  const fallback = "/plan";
+  if (!raw) return fallback;
+  // Must start with a single slash. Reject //evil.com (protocol-relative),
+  // javascript:..., https:..., mailto:..., and anything that doesn't look
+  // like an in-app path.
+  if (!raw.startsWith("/")) return fallback;
+  if (raw.startsWith("//")) return fallback;
+  // Reject backslash variants and any control chars.
+  if (/[\\\x00-\x1f]/.test(raw)) return fallback;
+  return raw;
+}
+
 export default function Auth() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const redirectTarget = params.get("redirect") || "/plan";
+  const redirectTarget = safeRedirectTarget(params.get("redirect"));
   const expired = params.get("expired") === "true";
   const prefillEmail = params.get("email") || "";
 
