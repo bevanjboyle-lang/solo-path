@@ -17,15 +17,17 @@
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+// V-036 (vibe code review 2026-05-14): TRANCHE_1_MODULES sourced from shared module.
+import { TRANCHE_1_MODULES } from "../_shared/constants.ts";
 
-const FUNCTION_VERSION = "v6-vibe-review-fixes";
+const FUNCTION_VERSION = "v7-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
-const TRANCHE_1_MODULES = [1, 2, 3];
+// V-036: TRANCHE_1_MODULES imported above from _shared/constants.ts
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {

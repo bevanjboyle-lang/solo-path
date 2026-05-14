@@ -1,14 +1,24 @@
+// refine-report v19 — vibe code review V-051 — 2026-05-14
+// V-051: migrated from raw `fetch()` to supabase-js + OpenAI SDK. Previously the
+//        four helpers (getReport / getUserContext / callGptForRefinement /
+//        updateReport) hand-rolled REST calls with brittle header strings, and
+//        `getUserIdFromJwt` used `replace("Bearer ", "")` with no prefix guard.
+//        SDK migration brings this function in line with the rest of the fleet
+//        and gives us typed errors, automatic retries, and a single source of
+//        truth for auth header parsing.
+//
+// refine-report v18 — V-052 vibe review fix — 2026-05-14
+// V-052: dropped unused MODEL_TIER2/3 declarations and the `void` suppression
+//        idiom. Only MODEL_TIER1 was used.
+//
 // refine-report v17 — 2026-05-05: F65 CORS — x-client-session-id + apikey + x-client-info added to Access-Control-Allow-Headers
 // refine-report v14 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
 // v13 baseline: 2026-04-17 Audit P2 #16 — source-header reconciled with deploy counter.
 // Earlier history:
 //   - v4 (pre-reconciliation): ADR-012 (2026-04-17) — model tier constants, MODEL_TIER1 (gpt-5.4).
 
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import OpenAI from "https://esm.sh/openai@4.28.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,12 +29,7 @@ const corsHeaders = {
 
 // Model tier constants — ADR-012 (2026-04-17)
 const MODEL_TIER1 = "gpt-5.4";        // High-stakes synthesis and user-facing copy
-const MODEL_TIER2 = "gpt-5.4-mini";   // Structured output, signal reading, advisory
-const MODEL_TIER3 = "gpt-5.4-nano";   // Classification, extraction, low-temp structured tasks
-
-// Suppress unused variable warnings
-void MODEL_TIER2;
-void MODEL_TIER3;
+// V-052 (vibe review 2026-05-14): MODEL_TIER2/3 removed — only TIER1 used here.
 
 interface RefinementRequest {
   report_id: string;
@@ -47,59 +52,55 @@ interface RefinedReport {
 interface ReportData {
   id: string;
   user_id: string;
-  core_report: RefinedReport;  // correct column name
+  core_report: RefinedReport;
   refinement_count: number;
   refinement_history: RefinementHistoryEntry[];
   created_at: string;
 }
 
-function getUserIdFromJwt(authHeader: string): string | null {
-  const token = authHeader?.replace("Bearer ", "");
-  if (!token) return null;
+// V-051 (vibe review 2026-05-14): standard prefix-checked JWT decode. Was
+// previously `replace("Bearer ", "")` which silently accepted malformed headers.
+function getUserIdFromJwt(authHeader: string | null): string | null {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   try {
-    const [, payload] = token.split(".");
-    const decoded = JSON.parse(atob(payload));
-    return decoded.sub;
+    const token = authHeader.slice(7);
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return payload.sub || null;
   } catch {
     return null;
   }
 }
 
-async function getReport(reportId: string): Promise<ReportData> {
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/reports?id=eq.${reportId}`,
-    {
-      headers: {
-        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-      },
-    }
-  );
-  if (!response.ok) throw new Error(`Failed to fetch report: ${response.statusText}`);
-  const data = await response.json();
-  if (data.length === 0) throw new Error("Report not found");
-  return data[0];
+type SupabaseClient = ReturnType<typeof createClient>;
+
+// V-051: SDK-backed report fetch. Replaces hand-rolled REST call.
+async function getReport(supabase: SupabaseClient, reportId: string): Promise<ReportData> {
+  const { data, error } = await supabase
+    .from("reports")
+    .select("id, user_id, core_report, refinement_count, refinement_history, created_at")
+    .eq("id", reportId)
+    .single();
+  if (error) throw new Error(`Failed to fetch report: ${error.message}`);
+  if (!data) throw new Error("Report not found");
+  return data as ReportData;
 }
 
-async function getUserContext(userId: string): Promise<unknown> {
-  // FIXED: user_profiles uses user_id column (not id)
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/user_profiles?user_id=eq.${userId}`,
-    {
-      headers: {
-        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-      },
-    }
-  );
-  if (!response.ok) throw new Error(`Failed to fetch user context: ${response.statusText}`);
-  const data = await response.json();
-  return data.length > 0 ? data[0] : {};
+// V-051: SDK-backed user context fetch. user_profiles is keyed on user_id.
+async function getUserContext(supabase: SupabaseClient, userId: string): Promise<unknown> {
+  const { data, error } = await supabase
+    .from("user_profiles")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (error) throw new Error(`Failed to fetch user context: ${error.message}`);
+  return data || {};
 }
 
+// V-051: OpenAI SDK call. Was raw fetch against api.openai.com.
 async function callGptForRefinement(
+  openai: OpenAI,
   questionnaireContext: unknown,
   currentReport: RefinedReport,
   feedbackText: string
@@ -137,32 +138,19 @@ Return ONLY a valid JSON object representing the updated sections. Do not includ
 
   const userMessage = `User's questionnaire context:\n${JSON.stringify(questionnaireContext, null, 2)}\n\nCurrent report (full JSON):\n${JSON.stringify(currentReport, null, 2)}\n\nUser's feedback:\n${feedbackText}\n\nBased on the user's feedback, identify which sections need updating and return ONLY those updated sections as a JSON object. Return ONLY valid JSON, no other text.`;
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${OPENAI_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: MODEL_TIER1,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userMessage },
-      ],
-      temperature: 0.7,
-      max_completion_tokens: 4000,
-    }),
+  const completion = await openai.chat.completions.create({
+    model: MODEL_TIER1,
+    temperature: 0.7,
+    max_completion_tokens: 4000,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userMessage },
+    ],
   });
 
-  if (!response.ok) {
-    const error = await response.text();
-    console.error("OpenAI API error:", error);
-    throw new Error(`OpenAI API error: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  const content = data.choices[0].message.content;
-  const tokensUsed = data.usage.completion_tokens;
+  const content = completion.choices[0]?.message?.content || "{}";
+  const tokensUsed = completion.usage?.completion_tokens || 0;
 
   let refinedSections: RefinedReport;
   try {
@@ -195,34 +183,28 @@ function mergeRefinements(
   return merged;
 }
 
+// V-051: SDK-backed update. Was hand-rolled PATCH fetch.
 async function updateReport(
+  supabase: SupabaseClient,
   reportId: string,
   updatedCoreReport: RefinedReport,
   refinementCount: number,
   existingHistory: RefinementHistoryEntry[],
   historyEntry: RefinementHistoryEntry
 ): Promise<void> {
-  // Append history entry to the existing array
   const updatedHistory = [...(existingHistory || []), historyEntry];
 
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/reports?id=eq.${reportId}`,
-    {
-      method: "PATCH",
-      headers: {
-        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_SERVICE_ROLE_KEY,
-      },
-      body: JSON.stringify({
-        core_report: updatedCoreReport,  // FIXED: was 'report', correct column is 'core_report'
-        refinement_count: refinementCount,
-        last_refined_at: new Date().toISOString(),
-        refinement_history: updatedHistory,
-      }),
-    }
-  );
-  if (!response.ok) throw new Error(`Failed to update report: ${response.statusText}`);
+  const { error } = await supabase
+    .from("reports")
+    .update({
+      core_report: updatedCoreReport,
+      refinement_count: refinementCount,
+      last_refined_at: new Date().toISOString(),
+      refinement_history: updatedHistory,
+    })
+    .eq("id", reportId);
+
+  if (error) throw new Error(`Failed to update report: ${error.message}`);
 }
 
 Deno.serve(async (req: Request) => {
@@ -231,7 +213,7 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization") || "";
+    const authHeader = req.headers.get("Authorization") || req.headers.get("authorization");
     const userId = getUserIdFromJwt(authHeader);
 
     if (!userId) {
@@ -251,7 +233,15 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const reportData = await getReport(reportId);
+    // V-051: single supabase + openai client per invocation. Was env-vars+fetch.
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") || "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "",
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    );
+    const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") });
+
+    const reportData = await getReport(supabase, reportId);
 
     if (reportData.user_id !== userId) {
       return new Response(
@@ -267,10 +257,14 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const userContext = await getUserContext(userId);
-    // FIXED: read from core_report (correct column name)
+    const userContext = await getUserContext(supabase, userId);
     const currentCoreReport = reportData.core_report || {};
-    const { refinedSections, tokensUsed } = await callGptForRefinement(userContext, currentCoreReport, feedbackText);
+    const { refinedSections, tokensUsed } = await callGptForRefinement(
+      openai,
+      userContext,
+      currentCoreReport,
+      feedbackText
+    );
     const updatedCoreReport = mergeRefinements(currentCoreReport, refinedSections);
 
     const newRefinementNumber = (reportData.refinement_count || 0) + 1;
@@ -283,7 +277,14 @@ Deno.serve(async (req: Request) => {
       merge_status: "success",
     };
 
-    await updateReport(reportId, updatedCoreReport, newRefinementNumber, reportData.refinement_history || [], historyEntry);
+    await updateReport(
+      supabase,
+      reportId,
+      updatedCoreReport,
+      newRefinementNumber,
+      reportData.refinement_history || [],
+      historyEntry
+    );
 
     return new Response(
       JSON.stringify({

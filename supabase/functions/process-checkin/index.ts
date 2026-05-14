@@ -1,3 +1,14 @@
+// process-checkin v38 — vibe code review fixes — 2026-05-14
+//
+// V-042: PROMPT_5_SYSTEM + CATCH_UP_ADDENDUM + PORTFOLIO_ADDENDUM extracted to
+//        sibling file p5-checkin-prompt.ts. Same ADR-019 pattern as P1/P3.
+//        Prompt content is unchanged; only the location moved.
+// V-045: switched both OpenAI calls from response_format json_object to strict
+//        json_schema so the model's output is structurally guaranteed (matches
+//        the schema in p5-checkin-prompt.ts header). Removes a class of parse
+//        fallback paths that V-043 was guarding against. The V-043 502 guard
+//        stays — strict mode does not eliminate every truncation/parse case.
+//
 // process-checkin v37 — vibe code review fixes — 2026-05-14
 //
 // V-041: added FUNCTION_VERSION constant (previously missing — the only authed function
@@ -59,9 +70,141 @@
 //   - v26: user-confirmed replan (v17 narrative).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import OpenAI from "https://esm.sh/openai@4.28.0";
+// V-042 (vibe code review 2026-05-14): prompt content lives in sibling file.
+import { PROMPT_5_SYSTEM, CATCH_UP_ADDENDUM, PORTFOLIO_ADDENDUM } from "./p5-checkin-prompt.ts";
 
 // V-041 (vibe code review 2026-05-14): added FUNCTION_VERSION constant.
-const FUNCTION_VERSION = "v37-vibe-review-fixes";
+const FUNCTION_VERSION = "v38-vibe-review-fixes";
+
+// V-045 (vibe code review 2026-05-14): strict json_schema for the P5 response.
+// Replaces response_format: { type: "json_object" } which only ensured *some*
+// JSON, not a structurally valid one. With strict:true the model is forced to
+// emit exactly these fields, types, and (where enumerated) values.
+//
+// All top-level fields are required (strict-mode requirement). Optional fields
+// are typed as nullable in the schema. Array-typed fields are always required
+// and may be empty.
+const P5_RESPONSE_SCHEMA = {
+  name: "p5_checkin_response",
+  strict: true,
+  schema: {
+    type: "object",
+    additionalProperties: false,
+    required: [
+      "state",
+      "response_text",
+      "plan_updates",
+      "outreach_outcomes",
+      "narrative_addition",
+      "replan_required",
+      "replan_context",
+      "check_in_complete",
+      "exchange_count",
+      "strand_signals",
+      "strand_status_updates",
+      "portfolio_review_record",
+    ],
+    properties: {
+      state: {
+        type: "string",
+        enum: ["on_track", "drifting", "significantly_behind"],
+      },
+      response_text: { type: "string" },
+      plan_updates: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["task_id", "new_status", "new_target_date", "notes"],
+          properties: {
+            task_id: { type: "string" },
+            new_status: { type: "string", enum: ["completed", "missed", "moved"] },
+            new_target_date: { type: ["string", "null"] },
+            notes: { type: ["string", "null"] },
+          },
+        },
+      },
+      outreach_outcomes: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["strand_id", "outcome", "notes"],
+          properties: {
+            strand_id: { type: ["string", "null"] },
+            outcome: { type: "string" },
+            notes: { type: ["string", "null"] },
+          },
+        },
+      },
+      narrative_addition: { type: ["string", "null"] },
+      replan_required: { type: "boolean" },
+      replan_context: {
+        type: ["object", "null"],
+        additionalProperties: false,
+        required: ["circumstance_type", "circumstance_detail", "triggered_at"],
+        properties: {
+          circumstance_type: { type: "string" },
+          circumstance_detail: { type: "string" },
+          triggered_at: { type: "string" },
+        },
+      },
+      check_in_complete: { type: "boolean" },
+      exchange_count: { type: "integer" },
+      strand_signals: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["strand_id", "signal_type", "signal", "source"],
+          properties: {
+            strand_id: { type: "string" },
+            signal_type: {
+              type: "string",
+              enum: ["moderate", "strong", "very_strong", "negative"],
+            },
+            signal: { type: "string" },
+            source: { type: ["string", "null"] },
+          },
+        },
+      },
+      strand_status_updates: {
+        type: "array",
+        items: {
+          type: "object",
+          additionalProperties: false,
+          required: ["strand_id", "new_status", "reason"],
+          properties: {
+            strand_id: { type: "string" },
+            new_status: {
+              type: "string",
+              enum: ["active", "watching", "paused", "graduated"],
+            },
+            reason: { type: ["string", "null"] },
+          },
+        },
+      },
+      portfolio_review_record: {
+        type: ["object", "null"],
+        additionalProperties: false,
+        required: ["review_number", "day", "strand_assessments", "focus_strands_after", "summary"],
+        properties: {
+          review_number: { type: "integer" },
+          day: { type: "integer" },
+          strand_assessments: {
+            type: "array",
+            items: { type: "object", additionalProperties: true },
+          },
+          focus_strands_after: {
+            type: "array",
+            items: { type: "string" },
+          },
+          summary: { type: "string" },
+        },
+      },
+    },
+  },
+} as const;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -428,6 +571,11 @@ function buildTractionSignalsReference(
   });
 }
 
+// V-042 (vibe code review 2026-05-14): the three prompt blocks below previously
+// lived inline (~300 lines of template string). They now live in
+// p5-checkin-prompt.ts and are imported at the top of this file. The block
+// below intentionally stays commented out as a marker; remove on next session.
+/* MOVED TO ./p5-checkin-prompt.ts
 const PROMPT_5_SYSTEM = `You are the check-in processor for Solo's Adaptive Tracker. Your job is to conduct a brief, intelligent daily check-in conversation with a user who is executing their 30-day Plan B activation plan.
 
 You know exactly what was planned for each day. You know what has been completed so far. You know what the user has told you in previous check-ins. You are not a general-purpose assistant. You are focused entirely on this plan, this user, and this check-in.
@@ -740,6 +888,7 @@ Populate strand_status_updates ONLY during portfolio review closing exchanges.
 "portfolio_review_record": Populate ONLY on the closing exchange of a portfolio review:
 { "review_number": 1, "day": 19, "strand_assessments": [...], "focus_strands_after": [...], "summary": string }
 `;
+END MOVED TO ./p5-checkin-prompt.ts */
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -961,7 +1110,9 @@ Deno.serve(async (req: Request) => {
           { role: "system", content: systemPrompt },
           { role: "user", content: JSON.stringify(prompt5Input) },
         ],
-        response_format: { type: "json_object" },
+        // V-045 (vibe code review 2026-05-14): strict json_schema mode. The model is
+        // forced to emit the exact P5 response shape declared at file top.
+        response_format: { type: "json_schema", json_schema: P5_RESPONSE_SCHEMA },
       });
 
       const rawOutput = completion.choices[0].message.content || "{}";

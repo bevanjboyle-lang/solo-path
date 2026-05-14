@@ -72,8 +72,10 @@
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+// V-036 (vibe code review 2026-05-14): TRANCHE_1_MODULES sourced from shared module.
+import { TRANCHE_1_MODULES } from "../_shared/constants.ts";
 
-const FUNCTION_VERSION = "v30-vibe-review-fixes";
+const FUNCTION_VERSION = "v31-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,8 +83,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
-// Tranche 1 modules — unlocked with one-time £19.99 Plan B Report purchase
-const TRANCHE_1_MODULES = [1, 2, 3];
 
 async function sendWelcomeEmail(
   resendApiKey: string,

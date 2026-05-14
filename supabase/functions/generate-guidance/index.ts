@@ -1,10 +1,12 @@
+// generate-guidance v24 — vibe code review V-054 — 2026-05-14
+// V-054: MODULES library now imported from _shared/modules-library.ts. Previously
+//        duplicated (and drifted in field shape) with get-library-content's copy.
+//
 // generate-guidance v23 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // generate-guidance v20 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
-// v19 baseline: 2026-04-17 Audit P2 #16 — source-header reconciled with deploy counter.
-// Earlier history:
-//   - v10 (pre-reconciliation): ADR-012 (2026-04-17) — upgraded to MODEL_TIER1 (gpt-5.4)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import OpenAI from "https://esm.sh/openai@4.28.0";
+import { MODULES_LIBRARY as MODULES } from "../_shared/modules-library.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,35 +29,6 @@ function getUserIdFromJwt(authHeader: string | null): string | null {
   } catch { return null; }
 }
 
-// Canonical 25-module library — tracks A-E, tiers tranche_1/subscription
-// Matches knowledge-bank/guidance_modules.json exactly
-const MODULES: Record<number, { name: string; track: string; access_tier: string; descr: string }> = {
-  1:  { name: "Business Structure",                    track: "A", access_tier: "tranche_1",  descr: "Sole trader, limited company, or umbrella — the foundational decision everything else sits on." },
-  2:  { name: "Registration & Setup",                  track: "A", access_tier: "tranche_1",  descr: "Exactly what to register, in what order, with timeframes — tailored to your chosen structure." },
-  3:  { name: "Professional Presence",                 track: "A", access_tier: "tranche_1",  descr: "Domain, email, LinkedIn positioning, and the website question — with a direct opinion on each." },
-  4:  { name: "Tax Basics & Self Assessment",          track: "B", access_tier: "subscription", descr: "Your tax obligations, key dates, and the Year 1 traps that catch most new independents." },
-  5:  { name: "VAT",                                   track: "B", access_tier: "subscription", descr: "Whether to register for VAT, and if so which scheme — the decision most consultants get wrong." },
-  6:  { name: "IR35 Risk & Protection",                track: "B", access_tier: "subscription", descr: "Your IR35 risk profile and practical steps to protect your position before your first contract." },
-  7:  { name: "Contracts & Statements of Work",        track: "B", access_tier: "subscription", descr: "The contractual protection you need before your first engagement — clause by clause." },
-  8:  { name: "Data Protection & GDPR",                track: "B", access_tier: "subscription", descr: "Whether you need to register with the ICO, what a data processing agreement actually requires." },
-  9:  { name: "Insurance",                             track: "B", access_tier: "subscription", descr: "What insurance you actually need — business and personal — before your first engagement." },
-  10: { name: "Record Keeping & Bookkeeping",          track: "C", access_tier: "subscription", descr: "The habits, tools, and setup to have in place before your first invoice goes out." },
-  11: { name: "Invoicing & Cash Flow",                 track: "C", access_tier: "subscription", descr: "How to invoice correctly, protect your cash position, and stop getting paid late." },
-  12: { name: "Pricing Strategy & Rate Setting",       track: "C", access_tier: "subscription", descr: "What to charge, how to structure it, and why most independents start too low and how to fix it." },
-  13: { name: "Expenses & Allowable Deductions",       track: "C", access_tier: "subscription", descr: "What you can legitimately claim, what you cannot, and how to handle the grey areas." },
-  14: { name: "Pension & Long-term Financial Planning",track: "C", access_tier: "subscription", descr: "The pension gap most independents ignore for too long, and the tax-efficient structures available." },
-  15: { name: "Pipeline & Opportunity Management",     track: "D", access_tier: "subscription", descr: "How to track your pipeline, prioritise your time, and avoid the feast-and-famine cycle." },
-  16: { name: "Proposal & Scoping Framework",          track: "D", access_tier: "subscription", descr: "How to write proposals that win without over-committing — and how to scope engagements correctly." },
-  17: { name: "Client Onboarding & Delivery Framework",track: "D", access_tier: "subscription", descr: "How to start an engagement well, set the right expectations, and build delivery confidence." },
-  18: { name: "Managing Client Relationships",         track: "D", access_tier: "subscription", descr: "How to maintain client relationships that generate repeat work and referrals." },
-  19: { name: "Growing & Scaling Your Practice",       track: "D", access_tier: "subscription", descr: "The transition from landing clients to building a practice — how to systematise and grow." },
-  20: { name: "Financial Services Independence",       track: "E", access_tier: "subscription", descr: "The specific regulatory, commercial, and reputational considerations for operating independently in FS." },
-  21: { name: "Public Sector & Government Consulting", track: "E", access_tier: "subscription", descr: "How public sector procurement actually works and why the standard independent commercial approach fails." },
-  22: { name: "Technology & Digital Consulting",       track: "E", access_tier: "subscription", descr: "The specific commercial dynamics, IP considerations, and rate structures for tech consulting." },
-  23: { name: "Healthcare & Life Sciences",            track: "E", access_tier: "subscription", descr: "The regulatory, commercial, and ethical framework for operating independently in health and life sciences." },
-  24: { name: "Professional Services & Legal",         track: "E", access_tier: "subscription", descr: "The specific commercial and professional considerations for operating independently in professional services." },
-  25: { name: "Creative & Marketing Independence",     track: "E", access_tier: "subscription", descr: "The commercial realities of independent work in creative and marketing — including IP and pricing." },
-};
 
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -158,7 +131,7 @@ Deno.serve(async (req: Request) => {
     const systemPrompt = `You are an expert career and business coach helping a senior professional go independent.
 
 The user is completing the Solo guidance module: "${moduleDef.name}" (Track ${moduleDef.track}).
-Module purpose: ${moduleDef.descr}
+Module purpose: ${moduleDef.description}
 
 User profile context: ${JSON.stringify(user_profile)}
 
