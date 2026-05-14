@@ -1,3 +1,10 @@
+// stripe-subscription-webhook v23 — vibe code review V-057 — 2026-05-14
+//
+// V-057: getApplicableTrackEModules now imported from _shared/track-e-mapping.ts.
+//        Previously duplicated as inline regex (and drifted) with the copy in
+//        get-library-content. Single source of truth now lives in the shared
+//        module.
+//
 // stripe-subscription-webhook v22 — vibe code review fixes — 2026-05-14
 //
 // V-023 + V-037: subscription_sessions race fix. Both subscription_sessions touch
@@ -12,8 +19,10 @@
 // stripe-subscription-webhook v20 — Audit P0 #7: price IDs via env vars with fallback
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+// V-057 (vibe code review 2026-05-14): shared Track-E classifier
+import { getApplicableTrackEModules } from "../_shared/track-e-mapping.ts";
 
-const FUNCTION_VERSION = "v22-vibe-review-fixes";
+const FUNCTION_VERSION = "v23-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,18 +30,6 @@ const corsHeaders = {
 };
 
 const BASE_SUBSCRIPTION_MODULES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-
-function getApplicableTrackEModules(q3a: string, q11: string, archetype: string): number[] {
-  const s = (q3a + ' ' + q11 + ' ' + archetype).toLowerCase();
-  const applicable: number[] = [];
-  if (/financial services|banking|insurance|asset management|wealth|fintech|risk.*compli|compliance.*risk|audit/.test(s)) applicable.push(20);
-  if (/public sector|government|local authority|nhs|central government|defence|education|regulatory bod/.test(s)) applicable.push(21);
-  if (/technology|digital|software|data.*analytic|analytic.*data|\bai\b|machine learning|cloud|cybersecurity|product manager|product director|tech/.test(s)) applicable.push(22);
-  if (/healthcare|\bnhs\b|life sciences|pharma|medical device|biotech|clinical|health tech/.test(s)) applicable.push(23);
-  if (/legal|management consult|strategy consult|\bhr\b|people.*consult|executive coach|talent|organisational development|\bod\b/.test(s)) applicable.push(24);
-  if (/marketing|creative|advertising|\bbrand\b|content|\bdesign\b|communications|\bpr\b|public relations|digital marketing|growth market/.test(s)) applicable.push(25);
-  return applicable;
-}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {

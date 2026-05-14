@@ -1,4 +1,14 @@
-// generate-report v45.4 — vibe code review fixes round A — 2026-05-14
+// generate-report v45.6 — vibe code review V-076 Option C — 2026-05-14
+//
+// V-076: Curated per-model AI Impact entries (kb_ai_impact, 20 entries with content
+//        out of 81 stub rows) are now loaded alongside kb_models and injected into
+//        the P1 prompt as "Curated AI impact reference". P1 is instructed to use the
+//        curated entry verbatim when its recommended_selection matches one; falls
+//        back to model-generated ai_impact when no curated entry exists.
+//        Eliminates the architectural drift where prompts/prompt-7-ai-impact.md was
+//        designed to inject this KB but production never wired it.
+//
+// generate-report v45.5 — vibe code review V-001/V-007/V-008/V-009/V-010 — 2026-05-14
 //
 // V-001 (already shipped in v45.3, re-applied here): dropped the legacy
 //        body.questionnaireData branch that accepted client-supplied userId.
@@ -66,7 +76,7 @@ import {
 // own .ts file (build-extract of prompts/prompt-0b-domain-classifier.md per ADR-019).
 import { P0B_SYSTEM_PROMPT } from "./p0b-classifier-prompt.ts";
 
-const FUNCTION_VERSION = "v45.5-vibe-review-fixes";
+const FUNCTION_VERSION = "v45.6-vibe-review-fixes";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
 // ADR-019 (amended 2026-05-05 after first live smoke): retry budget bumped
@@ -235,14 +245,22 @@ function buildP1SystemPrompt(args: {
   archetypesText: string;
   modelsText: string;
   mappingText: string;
+  aiImpactText: string;
 }): string {
   // The canonical P1_SYSTEM_PROMPT_TEMPLATE uses {{ARCHETYPES}},
   // {{BUSINESS_MODELS}}, {{MAPPING_TABLE}}. {{USER_PROFILE}} is substituted
   // in the user-message builder, not the system prompt.
+  //
+  // V-076 (vibe code review 2026-05-14): {{AI_IMPACT_REFERENCE}} carries the
+  // curated per-model AI impact entries from kb_ai_impact. The template includes
+  // instructions for using these verbatim when the recommended_selection matches.
+  // Empty string when no curated entries exist for the candidate models — the
+  // template handles that gracefully.
   return P1_SYSTEM_PROMPT_TEMPLATE
     .replace("{{ARCHETYPES}}", args.archetypesText)
     .replace("{{BUSINESS_MODELS}}", args.modelsText)
-    .replace("{{MAPPING_TABLE}}", args.mappingText);
+    .replace("{{MAPPING_TABLE}}", args.mappingText)
+    .replace("{{AI_IMPACT_REFERENCE}}", args.aiImpactText || "(no curated AI impact entries available for the candidate models — generate from general knowledge)");
 }
 
 function buildP1UserMessage(qd: Qd, cvExtract: Record<string, unknown> | undefined): string {
@@ -506,6 +524,19 @@ async function generateReportInBackground(args: BgArgs) {
       )
       .in("id", modelIds);
 
+    // V-076 (vibe code review 2026-05-14): load curated AI impact entries for the
+    // candidate models. Only entries with non-empty `opportunity` content count —
+    // the loaded set includes 60 model_name-only stubs that should not be injected.
+    // generate-report falls back to P1-generated ai_impact for models without a
+    // curated entry, so partial coverage is graceful.
+    const { data: aiImpactRows } = await supabase
+      .from("kb_ai_impact")
+      .select("model_id, model_name, displacement_risk, opportunity, resilient_positioning, adaptation_skills")
+      .in("model_id", modelIds);
+    const curatedAiImpact = (aiImpactRows || []).filter(
+      (r) => typeof r.opportunity === "string" && r.opportunity.trim().length > 0,
+    );
+
     // ---- Step 3: format KB injection text ---------------------------
     const archetypesText = (archetypeRows || [])
       .map(
@@ -547,8 +578,26 @@ async function generateReportInBackground(args: BgArgs) {
       )
       .join("\n");
 
+    // V-076 (vibe code review 2026-05-14): curated AI impact reference text.
+    // Empty string when no curated entries match the candidate models; P1 then
+    // generates ai_impact from general knowledge as it did before V-076.
+    const aiImpactText = curatedAiImpact
+      .map((r) => {
+        const skills = Array.isArray(r.adaptation_skills)
+          ? (r.adaptation_skills as string[])
+          : [];
+        return (
+          `[${r.model_id}] ${r.model_name}\n` +
+          `displacement_risk: ${r.displacement_risk}\n` +
+          `opportunity: ${r.opportunity}\n` +
+          `resilient_positioning: ${r.resilient_positioning}\n` +
+          `adaptation_skills:\n${skills.map((s) => `  - ${s}`).join("\n")}`
+        );
+      })
+      .join("\n\n---\n\n");
+
     // ---- Step 4: build P1 prompts -----------------------------------
-    const systemPrompt = buildP1SystemPrompt({ archetypesText, modelsText, mappingText });
+    const systemPrompt = buildP1SystemPrompt({ archetypesText, modelsText, mappingText, aiImpactText });
     const userMessage = buildP1UserMessage(questionnaireData, cvExtract);
 
     // Validator context — KB ids the prompt was allowed to use.

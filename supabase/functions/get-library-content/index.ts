@@ -1,3 +1,10 @@
+// get-library-content v15 — vibe code review V-057 — 2026-05-14
+// V-057: getApplicableTrackEModules now imported from _shared/track-e-mapping.ts.
+//        Previously inline regex that had drifted vs stripe-subscription-webhook's
+//        copy (stripe was more comprehensive — superset is now the canonical set).
+//        Local wrapper getTrackEModulesForUser kept for callsite compatibility:
+//        this function doesn't have archetype at hand, so it passes "" for that arg.
+//
 // get-library-content v14 — vibe code review V-054 — 2026-05-14
 // V-054: MODULES library now imported from _shared/modules-library.ts. Previously
 //        duplicated with generate-guidance's simpler-shaped copy.
@@ -5,6 +12,8 @@
 // get-library-content v13 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { MODULES_LIBRARY as MODULES } from "../_shared/modules-library.ts";
+// V-057 (vibe code review 2026-05-14): shared Track-E classifier
+import { getApplicableTrackEModules } from "../_shared/track-e-mapping.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,16 +40,10 @@ const TRACK_METADATA: Record<string, { name: string; description: string }> = {
   E: { name: "Sector Specialisms", description: "Sector-specific guidance tailored to your market." },
 };
 
+// V-057 (vibe code review 2026-05-14): thin wrapper around the shared helper.
+// get-library-content doesn't have archetype at call time, so pass "" for that arg.
 function getTrackEModulesForUser(q3a: string, q11: string): number[] {
-  const s = (q3a + ' ' + q11).toLowerCase();
-  const ids: number[] = [];
-  if (/financial services|banking|insurance|fintech|compliance|risk/.test(s)) ids.push(20);
-  if (/public sector|government|nhs|local authority|central government/.test(s)) ids.push(21);
-  if (/technology|digital|software|\bdata\b|\btech\b|product manager|product director/.test(s)) ids.push(22);
-  if (/healthcare|life sciences|pharma|medical|clinical|\bhealth\b/.test(s)) ids.push(23);
-  if (/legal|management consult|strategy consult|\bhr\b|professional services|executive coach/.test(s)) ids.push(24);
-  if (/marketing|creative|advertising|\bbrand\b|content|\bdesign\b|communications/.test(s)) ids.push(25);
-  return ids;
+  return getApplicableTrackEModules(q3a, q11, "");
 }
 
 function getRecommendedModuleIds(
