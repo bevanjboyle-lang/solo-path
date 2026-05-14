@@ -133,16 +133,16 @@ Scoring dimensions (all 1–5):
 
 The entries below contain curated, hand-researched AI impact analysis for specific business models. Each entry includes:
 
-- `displacement_risk`: how exposed this model is to AI displacement (low / low-medium / medium / medium-high / high / very low)
-- `opportunity`: 60–90 words on what AI changes for this model
-- `resilient_positioning`: how the practitioner adapts to remain valuable
-- `adaptation_skills`: 3 concrete capabilities the practitioner should build
+- \`displacement_risk\`: how exposed this model is to AI displacement (low / low-medium / medium / medium-high / high / very low)
+- \`opportunity\`: 60–90 words on what AI changes for this model
+- \`resilient_positioning\`: how the practitioner adapts to remain valuable
+- \`adaptation_skills\`: 3 concrete capabilities the practitioner should build
 
 **How to use these:**
 
-1. When you finalise `recommended_selection.business_model_id`, look it up in the entries below.
-2. **If a curated entry exists** for the recommended model, use its `displacement_risk`, `opportunity`, `resilient_positioning`, and `adaptation_skills` as the foundation for your `ai_impact` output — quote the curated text closely (preserving named tools and specifics) while adapting tone and length to the format required (part_1.content ≥150 words, part_2.content 120 words, part_3.steps exactly 4 items). The curated content's specificity — named platforms like ChatFin / Datarails / Drata / Wrike AI Agents — is its primary value; do not strip it out.
-3. **If no curated entry exists** for the recommended model, generate `ai_impact` from your general knowledge of AI's impact on that type of work, following the format requirements. This is the fallback path.
+1. When you finalise \`recommended_selection.business_model_id\`, look it up in the entries below.
+2. **If a curated entry exists** for the recommended model, use its \`displacement_risk\`, \`opportunity\`, \`resilient_positioning\`, and \`adaptation_skills\` as the foundation for your \`ai_impact\` output — quote the curated text closely (preserving named tools and specifics) while adapting tone and length to the format required (part_1.content ≥150 words, part_2.content 120 words, part_3.steps exactly 4 items). The curated content's specificity — named platforms like ChatFin / Datarails / Drata / Wrike AI Agents — is its primary value; do not strip it out.
+3. **If no curated entry exists** for the recommended model, generate \`ai_impact\` from your general knowledge of AI's impact on that type of work, following the format requirements. This is the fallback path.
 
 {{AI_IMPACT_REFERENCE}}
 
