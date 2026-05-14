@@ -1,3 +1,12 @@
+// stripe-subscription-webhook v21 — V-056 event-id idempotency (2026-05-14).
+//
+// V-056 (admin/vibe-review-findings.md): same idempotency gap as V-022 on
+// payment-webhook. Without an event_id-keyed guard, Stripe retries re-stamp
+// subscription_started_at, re-run the user_profiles update, and could double-
+// transition through state if metadata changed between retries.
+// v21 adds the stripe_webhook_events upsert ignoreDuplicates pattern at handler
+// entry, returning 200 immediately on duplicate.
+//
 // stripe-subscription-webhook v20 — Audit P0 #7: price IDs via env vars with fallback
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
@@ -56,11 +65,39 @@ Deno.serve(async (req: Request) => {
   try {
     event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
   } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
+    console.error("Webhook signature verification failed:", (err as Error).message);
     return new Response(
       JSON.stringify({ error: "Invalid signature", response_text: "Invalid webhook signature" }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+  }
+
+  // V-056 fix (2026-05-14): event-id idempotency guard. See payment-webhook v27
+  // for the same pattern. Without this, Stripe retries re-run user_profiles
+  // updates and re-stamp subscription_started_at.
+  {
+    const { data: idempotencyRow, error: idempotencyError } = await supabase
+      .from("stripe_webhook_events")
+      .upsert(
+        {
+          event_id: event.id,
+          event_type: event.type,
+          function_name: "stripe-subscription-webhook",
+          context: `${event.type} sub=${(event.data?.object as { id?: string })?.id ?? "?"}`.slice(0, 1000),
+        },
+        { onConflict: "event_id", ignoreDuplicates: true },
+      )
+      .select("event_id");
+
+    if (idempotencyError) {
+      console.error(`v21 idempotency insert error (proceeding):`, idempotencyError.message);
+    } else if (!idempotencyRow || idempotencyRow.length === 0) {
+      console.log(`v21 idempotent — event ${event.id} (${event.type}) already processed`);
+      return new Response(
+        JSON.stringify({ received: true, idempotent: true, response_text: "Event already processed." }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
   }
 
   const allowedEvents = [

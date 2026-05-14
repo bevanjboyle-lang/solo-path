@@ -317,7 +317,7 @@ export default function PaymentSuccess() {
                     Try now
                   </Button>
                   <a
-                    href="mailto:support@soloplanb.com"
+                    href="mailto:support@solo-plan.com"
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Contact support
@@ -359,7 +359,7 @@ export default function PaymentSuccess() {
                   Your report is safe. We're having trouble completing the handover. Please email support — we'll sort it out manually.
                 </p>
                 <a
-                  href="mailto:support@soloplanb.com"
+                  href="mailto:support@solo-plan.com"
                   className="mt-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
                 >
                   Contact support

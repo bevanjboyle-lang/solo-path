@@ -1,3 +1,11 @@
+// create-payment v22 — V-030 fix (2026-05-14): drop client-supplied body.userId
+// fallback. V-030 (admin/vibe-review-findings.md) showed the fallback chained
+// with payment-webhook's metadata.userId trust to enable paid identity spoofing
+// — any caller could pay £19.99 and have the resulting payment, customer_id,
+// tranche-1 unlock, welcome email, and report attributed to a victim's account.
+// userId now comes only from a verified JWT; anon path uses client_session_id
+// only.
+//
 // create-payment v21 — ADR-013 (2026-04-19): anonymous-first checkout.
 //                       Accept checkouts keyed by client_session_id (UUID from
 //                       localStorage, round-tripped via body.clientSessionId or the
@@ -13,7 +21,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
-const FUNCTION_VERSION = "v21-adr013";
+const FUNCTION_VERSION = "v22-v030-no-body-userid";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -60,7 +68,9 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json().catch(() => ({}));
 
-    const userId = getUserIdFromJwt(req.headers.get('authorization')) || body.userId || null;
+    // V-030 fix: userId is ONLY derived from the JWT. The legacy body.userId
+    // fallback enabled paid identity spoofing — see admin/vibe-review-findings.md.
+    const userId = getUserIdFromJwt(req.headers.get('authorization'));
     const clientSessionId = extractClientSessionId(req, body);
 
     // ADR-013: at least one identity is required. Authed path still works as it did

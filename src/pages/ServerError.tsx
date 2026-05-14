@@ -53,7 +53,7 @@ export default function ServerError() {
               </button>
             )}
             <a
-              href="mailto:support@solo.so"
+              href="mailto:support@solo-plan.com"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Contact support

@@ -1,8 +1,21 @@
-// generate-report v45.2 — F68 cleanup (kill salary fields + first_steps + Q5→Q13 fix)
-// 2026-05-05  (v45 initial; v45.1 tuning pass: caution_note + buffer rule + retries 1→2;
-// v45.2 F68 cleanup: removed current_salary_gbp + salary_replacement_analysis +
-// first_steps from schema/prompt/validator; fixed Q5(network)→Q13(network) in P1:385;
-// extended USER PROFILE SCHEMA + EXAMPLE TEST INPUT to Q1–Q15)
+// generate-report v45.3 — V-001/V-003 dead-branch removal — 2026-05-14
+//
+// Vibe code review (admin/vibe-review-findings.md):
+//   V-001 (P0 SECURITY): the legacy `body.questionnaireData` branch read userId
+//     directly from the request body, bypassing JWT verification entirely.
+//     Combined with verify_jwt: false at the gateway (required for ADR-013 anon
+//     first), any external caller could POST `{ questionnaireData: {...},
+//     userId: <victim-uuid> }` and produce a report attributed to the victim.
+//   V-003 (P2 DEAD CODE): grep across src/ confirmed no live frontend caller
+//     uses this branch — only `{ answers, cvExtract }` is sent.
+//
+// v45.3 collapses the three input-shape branches down to the single shape the
+// live frontend actually sends, eliminating the spoof primitive while keeping
+// the proven anon-first + authed paths working.
+//
+// Earlier history:
+// v45.2 — F68 cleanup: kill salary fields + first_steps + Q5→Q13 fix (2026-05-05)
+// v45.1 — Ironclad tuning: caution_note + buffer rule + retries 1→2
 //
 // Replaces v44.1's inline simplified prompt with the canonical
 // prompts/prompt-1-core-report.md content (embedded as P1_SYSTEM_PROMPT_TEMPLATE
@@ -51,7 +64,7 @@ import {
   P1_SYSTEM_PROMPT_TEMPLATE,
 } from "./p1-system-prompt.ts";
 
-const FUNCTION_VERSION = "v45.1-ironclad-tuning";
+const FUNCTION_VERSION = "v45.3-v001-deadbranch";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
 // ADR-019 (amended 2026-05-05 after first live smoke): retry budget bumped
@@ -296,22 +309,14 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json();
 
-    let userId: string | null = null;
-    let rawAnswers: Record<string, string>;
-    let cvExtract: Record<string, unknown> | undefined;
-
-    if (body.answers) {
-      userId = await getUserIdFromJwt(req.headers.get("authorization"));
-      rawAnswers = body.answers;
-      cvExtract = body.cvExtract;
-    } else if (body.questionnaireData) {
-      userId = body.userId ?? null;
-      rawAnswers = body.questionnaireData;
-      cvExtract = body.cvExtract;
-    } else {
-      userId = await getUserIdFromJwt(req.headers.get("authorization"));
-      rawAnswers = {};
-    }
+    // V-001 fix (2026-05-14): identity is ALWAYS derived from the JWT (when present)
+    // or the client_session_id (anon path). The legacy body.questionnaireData branch
+    // that accepted client-supplied body.userId has been removed — see vibe-review
+    // V-001/V-003 in admin/vibe-review-findings.md.
+    const userId: string | null = await getUserIdFromJwt(req.headers.get("authorization"));
+    const rawAnswers: Record<string, string> = (body.answers as Record<string, string>) ?? {};
+    const cvExtract: Record<string, unknown> | undefined =
+      body.cvExtract as Record<string, unknown> | undefined;
 
     const clientSessionId = extractClientSessionId(req, body);
 

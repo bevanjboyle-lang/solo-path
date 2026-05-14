@@ -52,7 +52,7 @@ const categories: FAQCategory[] = [
     items: [
       { id: "faq-data-stored", q: "Is my data stored?", a: "[Placeholder] Yes, securely. We don't sell data or use it for advertising." },
       { id: "faq-ai-training", q: "Do you use my data to train AI?", a: "[Placeholder] No. Your responses are used solely to generate your report." },
-      { id: "faq-delete", q: "Can I delete my data?", a: "[Placeholder] Yes. Email support@solo.so and we'll delete your account and data within 30 days." },
+      { id: "faq-delete", q: "Can I delete my data?", a: "[Placeholder] Yes. Email support@solo-plan.com and we'll delete your account and data within 30 days." },
     ],
   },
   {
@@ -234,8 +234,8 @@ export default function FAQ() {
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm text-muted-foreground">
             Still stuck? Email{" "}
-            <a href="mailto:support@solo.so" className="font-medium text-primary hover:text-primary/80">
-              support@solo.so
+            <a href="mailto:support@solo-plan.com" className="font-medium text-primary hover:text-primary/80">
+              support@solo-plan.com
             </a>
           </p>
         </div>

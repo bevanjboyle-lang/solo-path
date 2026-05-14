@@ -14,7 +14,7 @@ const sections: LegalSection[] = [
   { id: "liability", title: "Limitation of Liability", content: <p>Solo's total liability is limited to the amount you have paid. Solo is not liable for business decisions made based on its outputs.</p> },
   { id: "changes", title: "Changes to Terms", content: <p>Material changes notified via email to registered users. Continued use constitutes acceptance.</p> },
   { id: "governing-law", title: "Governing Law", content: <p>These terms are governed by English law. Disputes subject to the jurisdiction of the courts of England and Wales.</p> },
-  { id: "contact", title: "Contact", content: <p><a href="mailto:questions@solopath.co.uk" className="text-primary hover:text-primary/80">questions@solopath.co.uk</a></p> },
+  { id: "contact", title: "Contact", content: <p><a href="mailto:questions@solo-plan.com" className="text-primary hover:text-primary/80">questions@solo-plan.com</a></p> },
 ];
 
 export default function TermsOfService() {

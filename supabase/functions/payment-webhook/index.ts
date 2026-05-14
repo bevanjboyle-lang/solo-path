@@ -1,3 +1,18 @@
+// payment-webhook v27 — V-022 event-id idempotency (2026-05-14).
+//
+// V-022 (admin/vibe-review-findings.md): Stripe retries any webhook that doesn't
+// return 2xx, plus manual replays via the dashboard. Without an event_id-keyed
+// idempotency guard, every retry re-sent the welcome email + magic link, re-ran
+// the subscription_sessions UPSERT block, and re-stamped subscription_started_at.
+//
+// v27 adds an idempotency check immediately after signature verification: try to
+// insert the event_id into stripe_webhook_events (PK on event_id). On unique
+// conflict (ignoreDuplicates), return 200 immediately with `idempotent: true`.
+// On insert success, proceed with the side-effect branch.
+//
+// Closes V-022 for this webhook. Same fix shape applied to stripe-subscription-
+// webhook v21 closes V-056.
+//
 // payment-webhook v26 — canonical-aligned (ADR-019). 2026-05-05.
 //
 // Change-log (v25 → v26):
@@ -48,7 +63,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v26-canonical-aligned";
+const FUNCTION_VERSION = "v27-v022-idempotency";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -246,6 +261,40 @@ Deno.serve(async (req: Request) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );
+  }
+
+  // V-022 fix (2026-05-14): event-id idempotency guard. Stripe retries any non-2xx
+  // response, plus manual replays from the dashboard. Without this guard, retries
+  // re-sent the welcome email + magic link, re-ran subscription_sessions writes, and
+  // re-stamped subscription_started_at. The stripe_webhook_events table (PK on
+  // event_id) is the standard idempotency layer.
+  {
+    const { data: idempotencyRow, error: idempotencyError } = await supabase
+      .from("stripe_webhook_events")
+      .upsert(
+        {
+          event_id: event.id,
+          event_type: event.type,
+          function_name: "payment-webhook",
+          context: `${event.type} session=${(event.data?.object as { id?: string })?.id ?? "?"}`.slice(0, 1000),
+        },
+        { onConflict: "event_id", ignoreDuplicates: true },
+      )
+      .select("event_id");
+
+    if (idempotencyError) {
+      // Hard error inserting the idempotency row — log and proceed defensively
+      // rather than fail the webhook (proceeding is at-least-once; failing is no-times).
+      console.error(`${FUNCTION_VERSION} idempotency insert error (proceeding):`, idempotencyError.message);
+    } else if (!idempotencyRow || idempotencyRow.length === 0) {
+      // Conflict — this event was already processed. Return 200 to acknowledge
+      // and stop Stripe retrying.
+      console.log(`${FUNCTION_VERSION} idempotent — event ${event.id} (${event.type}) already processed`);
+      return new Response(
+        JSON.stringify({ received: true, idempotent: true, response_text: "Event already processed." }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
   }
 
   // ───── checkout.session.completed ────────────────────────────────────────

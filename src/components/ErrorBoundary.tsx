@@ -95,39 +95,45 @@ export default class ErrorBoundary extends Component<Props, State> {
             </div>
           </main>
 
-          {/* Pre-launch diagnostic — see file header. Remove or gate before production traffic. */}
-          <div className="mx-auto w-full max-w-3xl px-6 pb-16 text-left text-xs">
-            <details className="rounded-md border border-border bg-[hsl(var(--surface-panel))] p-4">
-              <summary className="cursor-pointer select-none font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-                Diagnostic — error details (engineers only)
-              </summary>
-              <div className="mt-3 space-y-3">
-                <div>
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Message</p>
-                  <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">
-                    {error?.name ? `${error.name}: ` : ""}
-                    {error?.message || "(no message)"}
-                  </pre>
+          {/* V-062 fix (2026-05-14): the diagnostic block is now gated on
+              import.meta.env.DEV per the file header's own "remove or gate
+              before production traffic" note. Production users see no stack
+              traces, no component paths, no internal Solo file structure.
+              Engineers in dev / preview still see the full diagnostic block. */}
+          {import.meta.env.DEV && (
+            <div className="mx-auto w-full max-w-3xl px-6 pb-16 text-left text-xs">
+              <details className="rounded-md border border-border bg-[hsl(var(--surface-panel))] p-4">
+                <summary className="cursor-pointer select-none font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Diagnostic — error details (engineers only)
+                </summary>
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Message</p>
+                    <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[11px] text-foreground">
+                      {error?.name ? `${error.name}: ` : ""}
+                      {error?.message || "(no message)"}
+                    </pre>
+                  </div>
+                  {error?.stack && (
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Stack</p>
+                      <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[10px] text-muted-foreground">
+                        {error.stack}
+                      </pre>
+                    </div>
+                  )}
+                  {errorInfo?.componentStack && (
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Component stack</p>
+                      <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[10px] text-muted-foreground">
+                        {errorInfo.componentStack}
+                      </pre>
+                    </div>
+                  )}
                 </div>
-                {error?.stack && (
-                  <div>
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Stack</p>
-                    <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[10px] text-muted-foreground">
-                      {error.stack}
-                    </pre>
-                  </div>
-                )}
-                {errorInfo?.componentStack && (
-                  <div>
-                    <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Component stack</p>
-                    <pre className="mt-1 whitespace-pre-wrap break-words font-mono text-[10px] text-muted-foreground">
-                      {errorInfo.componentStack}
-                    </pre>
-                  </div>
-                )}
-              </div>
-            </details>
-          </div>
+              </details>
+            </div>
+          )}
         </div>
       );
     }

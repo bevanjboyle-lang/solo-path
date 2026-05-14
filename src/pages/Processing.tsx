@@ -227,7 +227,7 @@ export default function Processing() {
                 Try again
               </button>
               <a
-                href="mailto:support@soloplan.ai"
+                href="mailto:support@solo-plan.com"
                 className="mt-4 text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
               >
                 Contact support
@@ -256,7 +256,7 @@ export default function Processing() {
                 Keep waiting
               </button>
               <a
-                href="mailto:support@soloplan.ai"
+                href="mailto:support@solo-plan.com"
                 className="mt-4 text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
               >
                 Contact support

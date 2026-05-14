@@ -8,8 +8,8 @@ const sections: LegalSection[] = [
       <p>
         Solo is the data controller for all personal data collected through the Service. For privacy
         questions, contact us at{" "}
-        <a href="mailto:privacy@solopath.co.uk" className="text-primary hover:text-primary/80">
-          privacy@solopath.co.uk
+        <a href="mailto:privacy@solo-plan.com" className="text-primary hover:text-primary/80">
+          privacy@solo-plan.com
         </a>
         .
       </p>
@@ -86,8 +86,8 @@ const sections: LegalSection[] = [
         </p>
         <p>
           Contact{" "}
-          <a href="mailto:privacy@solopath.co.uk" className="text-primary hover:text-primary/80">
-            privacy@solopath.co.uk
+          <a href="mailto:privacy@solo-plan.com" className="text-primary hover:text-primary/80">
+            privacy@solo-plan.com
           </a>
           . We respond within 30 days.
         </p>
