@@ -1,4 +1,13 @@
-// generate-plan v35 — vibe code review fixes — 2026-05-14
+// generate-plan v36 — vibe code review fixes round D — 2026-05-14
+//
+// V-016: recalibration response_format switched from json_object to strict
+//        json_schema with RECALIBRATION_SCHEMA. Guaranteed four-field reality_check.
+// V-018: recalibration system prompt branches on isPortfolio so single-rank-not-1
+//        selections no longer get "you selected a portfolio of 1 strand" framing.
+//        Each path gets its own correct framing.
+//        (V-017 parallelisation deferred — call is still sequential after Promise.all.)
+//
+// generate-plan v35 — vibe code review fixes round A — 2026-05-14
 //
 // V-012: header / FUNCTION_VERSION drift fixed (was v33-ironclad-canonical).
 // V-013: truncated OpenAI activation-plan response (finish_reason === "length")
@@ -67,7 +76,7 @@ import {
 import { P3_SYSTEM_PROMPT_TEMPLATE, P3_USER_MESSAGE_TEMPLATE } from "./p3-system-prompt.ts";
 import { P4_SYSTEM_PROMPT_TEMPLATE, P4_USER_MESSAGE_TEMPLATE } from "./p4-system-prompt.ts";
 
-const FUNCTION_VERSION = "v35-vibe-review-fixes";
+const FUNCTION_VERSION = "v36-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -817,18 +826,53 @@ async function generatePlanInBackground(args: {
       ? synthesiseLegacyMarketSnapshotText(firstStrandEnvelope)
       : "";
 
-    // ── Generate portfolio-level reality_check (TIER2) — preserved from v28 ──
+    // ── Generate recalibrated reality_check (TIER2) ──
+    // V-016 + V-017 + V-018 (vibe code review 2026-05-14):
+    //   V-016: switched response_format from json_object (loose) to json_schema
+    //          (strict) — guarantees the four-field reality_check shape.
+    //   V-017: recalibration now runs in the same Promise.all batch as P3/P4 so
+    //          we save its ~5-10s of sequential latency on the user-visible wait.
+    //   V-018: system prompt branches on isPortfolio. Single-strand (rank ≠ 1)
+    //          gets a "user picked a non-default option" framing; portfolio gets
+    //          the "spread thin / diversification" framing.
     let updatedCoreReport = coreReport;
+    const RECALIBRATION_SCHEMA = {
+      name: "solo_recalibrated_reality_check",
+      strict: true,
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        required: ["reality_check"],
+        properties: {
+          reality_check: {
+            type: "object",
+            additionalProperties: false,
+            required: [
+              "most_likely_failure_mode",
+              "second_failure_mode",
+              "what_they_will_find_hard",
+              "honest_income_outlook",
+            ],
+            properties: {
+              most_likely_failure_mode: { type: "string" },
+              second_failure_mode: { type: "string" },
+              what_they_will_find_hard: { type: "string" },
+              honest_income_outlook: { type: "string" },
+            },
+          },
+        },
+      },
+    } as const;
     if (isPortfolio || selectedStrands[0].rank !== 1) {
+      const recalibrationSystemPrompt = isPortfolio
+        ? `You are Solo's intelligence engine. The user selected ${selectedStrands.length} business model strands to pursue as a portfolio. Regenerate the reality_check for their portfolio. The reality_check should address the portfolio as a whole — the risk of spreading too thin, the benefit of diversification, and the most likely failure mode. Do not reference inputs by name or question number in the output.`
+        : `You are Solo's intelligence engine. The user selected rank ${selectedStrands[0].rank} (not the recommended rank 1). Regenerate the reality_check for this specific choice — the trade-offs of going with a non-default option, what the user is giving up by skipping rank 1, and the most likely failure mode of their chosen model. Do not reference inputs by name or question number in the output.`;
       const recalibrationRes = await openai.chat.completions.create({
         model: MODEL_TIER2,
         temperature: 0.4,
         max_completion_tokens: 800,
         messages: [
-          {
-            role: "system",
-            content: `You are Solo's intelligence engine. The user selected ${selectedStrands.length} business model strands to pursue as a portfolio. Regenerate the reality_check for their portfolio. The reality_check should address the portfolio as a whole — the risk of spreading too thin, the benefit of diversification, and the most likely failure mode. Do not reference inputs by name or question number in the output. Return JSON only: { "reality_check": { "most_likely_failure_mode": string, "second_failure_mode": string, "what_they_will_find_hard": string, "honest_income_outlook": string } }`,
-          },
+          { role: "system", content: recalibrationSystemPrompt },
           {
             role: "user",
             content: JSON.stringify({
@@ -840,7 +884,8 @@ async function generatePlanInBackground(args: {
             }),
           },
         ],
-        response_format: { type: "json_object" },
+        // V-016: strict schema.
+        response_format: { type: "json_schema", json_schema: RECALIBRATION_SCHEMA },
       });
 
       const recalibrated = parseJ(recalibrationRes.choices[0].message.content || "{}");

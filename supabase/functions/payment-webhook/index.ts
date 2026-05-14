@@ -1,18 +1,27 @@
-// payment-webhook v28 — vibe code review fixes — 2026-05-14
+// payment-webhook v30 — vibe code review fixes — 2026-05-14
+//
+// V-028: refund revokes product access. When charge.refunded fires, in addition to
+//        marking the payments row refunded, we now:
+//        - look up the refunded payment's user_id
+//        - reset their subscription_sessions.modules_unlocked to [] (no modules)
+//        - flag user_profiles.subscription_active = false (if it was set)
+//        - mark the associated reports row(s) status='refunded_revoked'
+//        Policy: "refunds revoke access" (locked 2026-05-14, see ADR-018 follow-up).
+//
+// payment-webhook v29 — vibe code review fixes — 2026-05-14
 //
 // V-022: event-id idempotency guard at handler entry. Inserts into
 //        stripe_webhook_events on first delivery; returns 200 with idempotent:true
 //        on duplicate, stopping Stripe retries from re-running side effects.
+// V-023: subscription_sessions race fix. Replaced SELECT-then-INSERT-or-UPDATE with
+//        a single upsert(onConflict:'user_id'). Safe under the new
+//        unique(user_id) constraint applied 2026-05-14.
 // V-024: module unlock failure is now fatal — returns 500 to Stripe so the webhook
-//        retries (idempotency-safe under V-022). Customers no longer pay £19.99 and
-//        end up with locked tranche-1 modules.
-// V-025: welcome email failure is now fatal — same pattern. Customers no longer pay
-//        £19.99 and never receive the magic-link sign-in email.
-// V-026: findUserIdByEmail now queries auth.users directly via service-role rather than
-//        paginating admin.listUsers (which capped at 1000 users — would silently break
-//        at user 1001).
-// V-027: magic-link redirectTo now reads from APP_BASE_URL env var with fallback to
-//        https://solo-plan.com/plan. Previously hardcoded.
+//        retries (idempotency-safe under V-022).
+// V-025: welcome email failure is now fatal — same pattern.
+// V-026: findUserIdByEmail now queries auth.users directly via service-role rather
+//        than paginating admin.listUsers (had a hard 1000-user ceiling).
+// V-027: magic-link redirectTo now reads from APP_BASE_URL env var.
 //
 // payment-webhook v26 — canonical-aligned (ADR-019). 2026-05-05.
 //
@@ -64,7 +73,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v28-vibe-review-fixes";
+const FUNCTION_VERSION = "v30-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -389,41 +398,35 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // ── DEFAULT BRANCH: initial £19.99 report purchase (unchanged) ──────────
+    // ── DEFAULT BRANCH: initial £19.99 report purchase ──────────
+    // V-023 (vibe code review 2026-05-14): switched from SELECT-then-INSERT-or-UPDATE
+    // to a single upsert keyed on the new unique(user_id) constraint (migration
+    // v023_subscription_sessions_unique_user_id applied 2026-05-14). Race-safe under
+    // concurrent webhook retries.
     try {
       const { data: existingSession } = await supabase
         .from("subscription_sessions")
-        .select("id, modules_unlocked")
+        .select("modules_unlocked")
         .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      if (existingSession) {
-        const currentUnlocked: number[] = existingSession.modules_unlocked || [];
-        const merged = Array.from(
-          new Set([...currentUnlocked, ...TRANCHE_1_MODULES]),
-        ).sort((a, b) => a - b);
-        const { error: updateErr } = await supabase
-          .from("subscription_sessions")
-          .update({ modules_unlocked: merged, updated_at: new Date().toISOString() })
-          .eq("id", existingSession.id);
-        if (updateErr) console.error("Error updating modules_unlocked:", updateErr);
-        else console.log(`Tranche 1 modules unlocked for user ${userId}: ${merged}`);
-      } else {
-        const { error: insertErr } = await supabase.from("subscription_sessions").insert({
-          user_id: userId,
-          modules_unlocked: TRANCHE_1_MODULES,
-          modules_completed: [],
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-        if (insertErr) console.error("Error inserting subscription_sessions:", insertErr);
-        else
-          console.log(
-            `New subscription_sessions row created for user ${userId}, modules [1,2,3] unlocked`,
-          );
+        .maybeSingle();
+      const currentUnlocked: number[] = existingSession?.modules_unlocked || [];
+      const merged = Array.from(new Set([...currentUnlocked, ...TRANCHE_1_MODULES])).sort((a, b) => a - b);
+      const { error: upsertErr } = await supabase
+        .from("subscription_sessions")
+        .upsert(
+          {
+            user_id: userId,
+            modules_unlocked: merged,
+            modules_completed: existingSession ? undefined : [],
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" },
+        );
+      if (upsertErr) {
+        console.error("Error upserting subscription_sessions:", upsertErr);
+        throw upsertErr; // bubble to outer catch → V-024 fatal path
       }
+      console.log(`Tranche 1 modules unlocked for user ${userId}: ${merged}`);
     } catch (moduleErr) {
       // V-024 (vibe code review 2026-05-14): fatal. Was "non-fatal" — customer paid
       // £19.99 and ended up with locked modules. Return 500 so Stripe retries; V-022
@@ -585,6 +588,15 @@ Deno.serve(async (req: Request) => {
       }
 
       if (sessionId) {
+        // Look up the payments row to get the user_id BEFORE we update it.
+        // V-028 needs user_id to revoke downstream access.
+        const { data: refundedPayment } = await supabase
+          .from("payments")
+          .select("user_id")
+          .eq("stripe_session_id", sessionId)
+          .eq("status", "completed")
+          .maybeSingle();
+
         const { error, count } = await supabase
           .from("payments")
           .update({ status: "refunded" }, { count: "exact" })
@@ -597,6 +609,55 @@ Deno.serve(async (req: Request) => {
           console.log(
             `charge.refunded: marked ${count ?? 0} payment row(s) as refunded for session ${sessionId} (payment_intent ${paymentIntentId})`,
           );
+        }
+
+        // V-028 (vibe code review 2026-05-14): refund revokes product access.
+        // Policy locked 2026-05-14: when Solo issues a refund, the customer
+        // loses access to their plan and modules. (Customer service refunds
+        // that should NOT revoke access should be handled manually in the
+        // Stripe dashboard without firing a charge.refunded event, or by
+        // explicitly setting a metadata.preserve_access=true flag at refund
+        // time and special-casing here.)
+        const refundedUserId = refundedPayment?.user_id as string | null | undefined;
+        const preserveAccess = (charge.metadata?.preserve_access as string | undefined) === "true";
+        if (refundedUserId && !preserveAccess) {
+          // 1. Reset modules_unlocked to [] so they see the locked library.
+          const { error: modErr } = await supabase
+            .from("subscription_sessions")
+            .update({
+              modules_unlocked: [],
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", refundedUserId);
+          if (modErr) console.error(`${FUNCTION_VERSION} V-028 modules revoke failed:`, modErr.message);
+          else console.log(`${FUNCTION_VERSION} V-028 modules revoked for user ${refundedUserId}`);
+
+          // 2. Flag user_profiles.subscription_active=false (if set).
+          const { error: profErr } = await supabase
+            .from("user_profiles")
+            .update({
+              subscription_active: false,
+              subscription_plan: null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("user_id", refundedUserId)
+            .eq("subscription_active", true); // no-op if it wasn't true
+          if (profErr) console.error(`${FUNCTION_VERSION} V-028 profile revoke failed:`, profErr.message);
+
+          // 3. Mark the reports for this user that were paid via this session
+          //    as refunded_revoked. We don't know exactly which report the
+          //    refund covers from the Stripe payload — most users will have one
+          //    paid report, so revoke ALL of theirs that are at pending_selection
+          //    or beyond. (One-report-per-purchase invariant per ADR-019.)
+          const { error: reportErr, count: reportCount } = await supabase
+            .from("reports")
+            .update({ status: "refunded_revoked" }, { count: "exact" })
+            .eq("user_id", refundedUserId)
+            .in("status", ["pending_selection", "generating_plan", "complete"]);
+          if (reportErr) console.error(`${FUNCTION_VERSION} V-028 reports revoke failed:`, reportErr.message);
+          else console.log(`${FUNCTION_VERSION} V-028 marked ${reportCount ?? 0} report row(s) as refunded_revoked for user ${refundedUserId}`);
+        } else if (preserveAccess) {
+          console.log(`${FUNCTION_VERSION} V-028: preserve_access=true on refund, skipping revoke for user ${refundedUserId}`);
         }
       } else {
         console.warn(

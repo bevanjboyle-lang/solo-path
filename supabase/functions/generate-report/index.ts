@@ -1,21 +1,20 @@
-// generate-report v45.3 — V-001/V-003 dead-branch removal — 2026-05-14
+// generate-report v45.4 — vibe code review fixes round A — 2026-05-14
 //
-// Vibe code review (admin/vibe-review-findings.md):
-//   V-001 (P0 SECURITY): the legacy `body.questionnaireData` branch read userId
-//     directly from the request body, bypassing JWT verification entirely.
-//     Combined with verify_jwt: false at the gateway (required for ADR-013 anon
-//     first), any external caller could POST `{ questionnaireData: {...},
-//     userId: <victim-uuid> }` and produce a report attributed to the victim.
-//   V-003 (P2 DEAD CODE): grep across src/ confirmed no live frontend caller
-//     uses this branch — only `{ answers, cvExtract }` is sent.
+// V-001 (already shipped in v45.3, re-applied here): dropped the legacy
+//        body.questionnaireData branch that accepted client-supplied userId.
+// V-007: parseJ now console.warn's on JSON parse failure with the first 200
+//        chars of content, so operators can diagnose model misbehaviour.
+// V-008: callP1WithRetry now types `openai` as the real OpenAI class instead
+//        of `any`. deno-lint-ignore removed.
+// V-009: skeleton report row carries function_version and started_at for
+//        provenance. Orphan-row diagnosis (Session 57 P0) gets easier.
+// V-010: completion update no longer null-stamps activation_plan /
+//        market_snapshot / market_snapshots. These fields are owned by
+//        generate-plan; generate-report leaves them alone. Comment added.
 //
-// v45.3 collapses the three input-shape branches down to the single shape the
-// live frontend actually sends, eliminating the spoof primitive while keeping
-// the proven anon-first + authed paths working.
-//
-// Earlier history:
-// v45.2 — F68 cleanup: kill salary fields + first_steps + Q5→Q13 fix (2026-05-05)
-// v45.1 — Ironclad tuning: caution_note + buffer rule + retries 1→2
+// generate-report v45.3 — V-001 dead-branch removal — 2026-05-14
+// generate-report v45.2 — F68 cleanup — 2026-05-05
+// generate-report v45.1 — Ironclad tuning
 //
 // Replaces v44.1's inline simplified prompt with the canonical
 // prompts/prompt-1-core-report.md content (embedded as P1_SYSTEM_PROMPT_TEMPLATE
@@ -63,8 +62,11 @@ import {
 import {
   P1_SYSTEM_PROMPT_TEMPLATE,
 } from "./p1-system-prompt.ts";
+// V-005 (vibe code review 2026-05-14): P0b classifier prompt now lives in its
+// own .ts file (build-extract of prompts/prompt-0b-domain-classifier.md per ADR-019).
+import { P0B_SYSTEM_PROMPT } from "./p0b-classifier-prompt.ts";
 
-const FUNCTION_VERSION = "v45.3-v001-deadbranch";
+const FUNCTION_VERSION = "v45.5-vibe-review-fixes";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
 // ADR-019 (amended 2026-05-05 after first live smoke): retry budget bumped
@@ -215,7 +217,12 @@ function parseJ(s: string): Record<string, unknown> {
   try {
     const cleaned = s.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     return JSON.parse(cleaned);
-  } catch {
+  } catch (err) {
+    // V-007 (vibe review 2026-05-14): make parse failures visible in logs so
+    // operators can distinguish "validator rejected" from "JSON malformed".
+    console.warn(
+      `parseJ failed: ${(err as Error)?.message ?? String(err)}; head=${s.slice(0, 200)}`,
+    );
     return {};
   }
 }
@@ -309,10 +316,9 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json();
 
-    // V-001 fix (2026-05-14): identity is ALWAYS derived from the JWT (when present)
-    // or the client_session_id (anon path). The legacy body.questionnaireData branch
-    // that accepted client-supplied body.userId has been removed — see vibe-review
-    // V-001/V-003 in admin/vibe-review-findings.md.
+    // V-001 fix: identity is ALWAYS derived from the JWT (when present) or the
+    // client_session_id (anon path). The legacy body.questionnaireData branch
+    // that accepted client-supplied body.userId has been removed.
     const userId: string | null = await getUserIdFromJwt(req.headers.get("authorization"));
     const rawAnswers: Record<string, string> = (body.answers as Record<string, string>) ?? {};
     const cvExtract: Record<string, unknown> | undefined =
@@ -353,6 +359,9 @@ Deno.serve(async (req: Request) => {
     const questionnaireData = mapAnswersToQuestionnaireData(rawAnswers);
 
     // Skeleton row inserted up front so polling has something to look at.
+    // V-009 (vibe review 2026-05-14): include version + start time on the row.
+    // If the bg task crashes mid-flight, orphan-row diagnosis can read provenance
+    // from the row itself rather than inferring from edge-function logs.
     const { data: skeletonReport, error: skeletonError } = await supabase
       .from("reports")
       .insert({
@@ -361,6 +370,8 @@ Deno.serve(async (req: Request) => {
         answers: rawAnswers || null,
         status: "generating",
         created_at: new Date().toISOString(),
+        function_version: FUNCTION_VERSION,
+        started_at: new Date().toISOString(),
       })
       .select("id")
       .single();
@@ -446,18 +457,8 @@ async function generateReportInBackground(args: BgArgs) {
       max_completion_tokens: 250,
       response_format: { type: "json_object" },
       messages: [
-        {
-          role: "system",
-          content:
-            'Classify primary domain from this list:\n\n' +
-            'Finance | Finance & Accounting | Risk & Governance | Strategy & Advisory | ' +
-            'Change & Delivery | Operations & Efficiency | Tech & Digital | HR & People | ' +
-            'Sales & Commercial | Legal | Marketing & Communications | Public Sector & Policy | ' +
-            'Procurement & Supply Chain | Property & Real Estate | ESG & Sustainability | ' +
-            'Healthcare & Life Sciences | Customer Experience & Service Design\n\n' +
-            'Return JSON only: { "primary_domain": string, "secondary_domain": string|null, ' +
-            '"archetype_summary": string, "key_signals": string[] }',
-        },
+        // V-005: P0b prompt now imported from p0b-classifier-prompt.ts
+        { role: "system", content: P0B_SYSTEM_PROMPT },
         {
           role: "user",
           content: JSON.stringify({
@@ -653,13 +654,14 @@ async function generateReportInBackground(args: BgArgs) {
     };
 
     // ---- Step 7: write reports row ----------------------------------
+    // V-010 (vibe review 2026-05-14): activation_plan / market_snapshot /
+    // market_snapshots removed from the update. Those columns are owned by
+    // generate-plan, not generate-report. The skeleton insert at entry leaves
+    // them null; this update doesn't touch them.
     const { error: updateError } = await supabase
       .from("reports")
       .update({
         core_report: finalReport,
-        activation_plan: null,
-        market_snapshot: null,
-        market_snapshots: null,
         hook_insight: hookInsightText,
         ai_impact_section: aiImpactSection,
         user_context_profile: userContextProfile,
@@ -704,8 +706,8 @@ async function generateReportInBackground(args: BgArgs) {
 // =====================================================================
 
 async function callP1WithRetry(args: {
-  // deno-lint-ignore no-explicit-any
-  openai: any;
+  // V-008 (vibe review 2026-05-14): typed properly (was `any` + deno-lint-ignore).
+  openai: OpenAI;
   systemPrompt: string;
   userMessage: string;
   validationContext: ValidationContext;

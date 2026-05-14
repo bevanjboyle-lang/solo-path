@@ -1,3 +1,8 @@
+// process-replan v25 — V-048 vibe review fix — 2026-05-14
+// V-048: buildReplanWorkingPlan now preserves time_required + time_allocation
+//        from P6 output (was writing empty strings, breaking shape contract
+//        with the deep-shape from generate-plan).
+//
 // process-replan v24 — 2026-05-07: F89 + F86 — buildReplanWorkingPlan now emits the
 //   canonical DEEP SHAPE (working_plan.activation_plan.phases[].days_detail[].tasks[])
 //   instead of a flat shape. This matches what generate-plan / P3 produces, so
@@ -182,11 +187,21 @@ function buildReplanWorkingPlan(
       const absoluteDay = currentDay + dayNum - 1;
       const dayTasks = (dayEntry.tasks as Record<string, unknown>[]) || [];
 
+      // V-048 (vibe code review 2026-05-14): preserve time fields from P6 output
+      // when present, instead of writing empty strings. Pre-replan working plans
+      // (from generate-plan) carry time_required + time_allocation; post-replan
+      // shape must match so downstream consumers (Plan.tsx, check-in flow) see a
+      // consistent shape across the working_plan lifecycle.
+      const timeRequired = (dayEntry.time_required as string) ??
+        (dayEntry.day_minutes ? `${dayEntry.day_minutes} mins` : "");
+      const timeAllocation =
+        (dayEntry.time_allocation as Record<string, string> | string | undefined) ?? {};
+
       return {
         day: `Day ${absoluteDay}`,
         label: (dayEntry.day_type as string) || "",
-        time_required: "",
-        time_allocation: "",
+        time_required: timeRequired,
+        time_allocation: timeAllocation,
         tasks: dayTasks.map((task, taskIdx) => ({
           task_id: (task.task_id as string) || `RP_D${dayNum}_T${taskIdx + 1}`,
           description: (task.description as string) || "",

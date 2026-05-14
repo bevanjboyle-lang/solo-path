@@ -1,16 +1,24 @@
 /**
+ * exchange-payment-token v6 — vibe code review fixes — 2026-05-14
+ *
+ * V-034 + V-035: single-use token guard via payment_token_exchanges table.
+ *   The Stripe checkout session ID was effectively a bearer token — anyone who
+ *   captured the post-payment URL (browser history, screenshot, referer leak)
+ *   could replay it to take over the session. v6 records each exchanged token
+ *   in payment_token_exchanges (PK on token); a re-exchange attempt returns
+ *   410 GONE with a message pointing the user to the magic link in their email.
+ * V-037: subscription_sessions race fix — switches the SELECT-then-INSERT-or-
+ *   UPDATE block to a single upsert(onConflict:'user_id'). Now safe under the
+ *   V-023 unique constraint applied 2026-05-14.
+ *
  * exchange-payment-token v5 — use supabase-js verifyOtp(token_hash).
  * Frontend contract unchanged: returns { session: { access_token, refresh_token } }.
- *
- * v4 used POST /auth/v1/verify with `token` parameter, got otp_expired (param name wrong).
- * v5 uses supabase-js anon client's verifyOtp({ type: 'magiclink', token_hash }) which
- * sends the correct parameter to GoTrue.
  */
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v5-verifyotp-tokenhash";
+const FUNCTION_VERSION = "v6-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,6 +76,33 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // V-034 + V-035 (vibe code review 2026-05-14): single-use guard.
+    // Tries to atomically claim the token. If a row with this token already exists,
+    // the upsert returns empty (ignoreDuplicates) and we reject with 410 GONE.
+    // The user's magic-link email remains the canonical sign-in path.
+    {
+      const { data: claimRow, error: claimError } = await supabase
+        .from("payment_token_exchanges")
+        .upsert(
+          { token },
+          { onConflict: "token", ignoreDuplicates: true },
+        )
+        .select("token");
+      if (claimError) {
+        // Defense-in-depth: proceed if we can't read the table (the worst case is at-least-once exchange).
+        console.error(`${FUNCTION_VERSION} V-034 claim error (proceeding):`, claimError.message);
+      } else if (!claimRow || claimRow.length === 0) {
+        console.log(`${FUNCTION_VERSION} V-034 reject: token ${token.slice(0, 16)}… already exchanged`);
+        return new Response(
+          JSON.stringify({
+            error: "token_already_exchanged",
+            response_text: "This payment session has already been used. Sign in via the magic link we emailed you, or request a new sign-in from the home page.",
+          }),
+          { status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     const { data: paymentRow } = await supabase
       .from("payments")
       .select("id, status, user_id")
@@ -112,30 +147,31 @@ Deno.serve(async (req: Request) => {
         .update({ status: "completed" })
         .eq("id", paymentRow.id);
 
+      // V-037 (vibe code review 2026-05-14): race fix via single upsert. Replaces
+      // the SELECT-then-INSERT-or-UPDATE pattern that could produce duplicate rows
+      // under concurrent invocations. Safe under the V-023 unique(user_id)
+      // constraint applied 2026-05-14.
       try {
         const { data: existingSubSession } = await supabase
           .from("subscription_sessions")
-          .select("id, modules_unlocked")
+          .select("modules_unlocked")
           .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (existingSubSession) {
-          const current: number[] = existingSubSession.modules_unlocked || [];
-          const merged = Array.from(new Set([...current, ...TRANCHE_1_MODULES])).sort((a, b) => a - b);
-          await supabase
-            .from("subscription_sessions")
-            .update({ modules_unlocked: merged, updated_at: new Date().toISOString() })
-            .eq("id", existingSubSession.id);
-        } else {
-          await supabase.from("subscription_sessions").insert({
-            user_id: userId,
-            modules_unlocked: TRANCHE_1_MODULES,
-            modules_completed: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          });
+          .maybeSingle();
+        const currentUnlocked: number[] = existingSubSession?.modules_unlocked || [];
+        const merged = Array.from(new Set([...currentUnlocked, ...TRANCHE_1_MODULES])).sort((a, b) => a - b);
+        const { error: upsertErr } = await supabase
+          .from("subscription_sessions")
+          .upsert(
+            {
+              user_id: userId,
+              modules_unlocked: merged,
+              modules_completed: existingSubSession ? undefined : [],
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id" },
+          );
+        if (upsertErr) {
+          console.error(`${FUNCTION_VERSION} module unlock upsert failed (non-fatal):`, upsertErr.message);
         }
       } catch (modErr) {
         console.error(`${FUNCTION_VERSION} module unlock failed (non-fatal):`, modErr);

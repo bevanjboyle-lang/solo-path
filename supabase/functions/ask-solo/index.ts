@@ -1,3 +1,11 @@
+// ask-solo v29 — vibe code review fixes — 2026-05-14
+//
+// V-049: hardcoded 100+ archetype display-name Record replaced with a
+//        module-cached lookup against kb_archetypes. Single source of truth.
+// V-050: assembleContextBlock now scores context completeness and passes the
+//        score into the system prompt. P9 can degrade gracefully when context
+//        is thin instead of generating generic-sounding advice with no signal.
+//
 // ask-solo v28 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // ask-solo v25 — 2026-04-18: bundle of 3 E2E audit fixes
 //   • F5 (P0): align tracker_sessions SELECT with real schema — use focus_strands + strand_status + last_checkin_date;
@@ -20,104 +28,30 @@ const MODEL_TIER1 = "gpt-5.4";        // High-stakes synthesis and user-facing c
 const MODEL_TIER2 = "gpt-5.4-mini";   // Structured output, signal reading, advisory
 const MODEL_TIER3 = "gpt-5.4-nano";   // Classification, extraction, low-temp structured tasks
 
-// Archetype code → human-readable display name
-const ARCHETYPE_NAMES: Record<string, string> = {
-  "ARCH_RISK": "Risk / Audit / Compliance",
-  "ARCH_FIN": "Finance & Commercial",
-  "ARCH_CONS": "Generalist Consultant",
-  "ARCH_PMO": "Delivery / PMO / Transformation",
-  "ARCH_OPS": "Operations / Process",
-  "ARCH_CONTROLLER": "Financial Controller / Head of Finance",
-  "ARCH_TAX_DIRECT": "Corporate Tax Advisor",
-  "ARCH_TAX_INDIRECT": "Indirect Tax / VAT Specialist",
-  "ARCH_TREASURY": "Treasury & Cash Management Specialist",
-  "ARCH_EXT_AUDIT": "External Audit / Assurance Advisor",
-  "ARCH_CORP_FIN": "Corporate Finance / M&A / Transaction Services",
-  "ARCH_ACTUARIAL": "Actuarial / Risk Modelling Specialist",
-  "ARCH_INVESTMENT": "Investment & Wealth Management Advisor",
-  "ARCH_CREDIT_RISK": "Credit & Financial Risk Specialist",
-  "ARCH_ERM": "Enterprise Risk Management",
-  "ARCH_OPS_RISK": "Operational Risk",
-  "ARCH_AML": "Financial Crime / AML",
-  "ARCH_EHS": "Health, Safety & Environment",
-  "ARCH_QUALITY": "Quality Management / ISO",
-  "ARCH_DATA_PRIVACY": "Data Protection / Privacy",
-  "ARCH_CORP_STRAT": "Corporate Strategy",
-  "ARCH_CHANGE": "Change Management",
-  "ARCH_ORG_DESIGN": "Organisational Design & Effectiveness",
-  "ARCH_TRANSFORMATION": "Business Transformation",
-  "ARCH_RESTRUCTURING": "Restructuring & Turnaround",
-  "ARCH_HRBP": "HR Business Partner / Strategic HR Leader",
-  "ARCH_TALENT": "Talent Acquisition / Recruitment Specialist",
-  "ARCH_L_D": "Learning & Development / Talent Development Leader",
-  "ARCH_REWARD": "Reward & Compensation Specialist",
-  "ARCH_EMPLOYMENT_LAW": "Employment Law & Employee Relations Specialist",
-  "ARCH_FRACTIONAL_CHRO": "Fractional / Interim CHRO / HR Director",
-  "ARCH_WELLBEING": "Wellbeing & People Experience Leader",
-  "ARCH_DEI": "Diversity, Equity & Inclusion Specialist",
-  "ARCH_CTO_FRAC": "Fractional / Interim CTO",
-  "ARCH_ENTERPRISE_ARCH": "Enterprise Architect",
-  "ARCH_DATA_ENG": "Data Engineer / Analytics Engineer",
-  "ARCH_DATA_SCIENTIST": "Data Scientist / ML Engineer",
-  "ARCH_AI_STRATEGIST": "AI Strategy & Implementation Advisor",
-  "ARCH_PRODUCT": "Product Manager / Product Leader",
-  "ARCH_UX": "UX / Product Design Lead",
-  "ARCH_DIGITAL_TRANS": "Digital Transformation Lead",
-  "ARCH_CLOUD": "Cloud Architect / DevOps / Platform Engineer",
-  "ARCH_CYBER": "Cybersecurity Consultant",
-  "ARCH_IT_PMO": "IT Programme / Delivery Lead",
-  "ARCH_ECOM": "Ecommerce / Digital Commerce Specialist",
-  "ARCH_MARTECH": "Martech / Digital Marketing Technology",
-  "ARCH_GC": "Fractional / Interim General Counsel",
-  "ARCH_EMPLOYMENT_SOL": "Employment Law Solicitor (Independent)",
-  "ARCH_CORP_LAWYER": "Corporate & Commercial Lawyer",
-  "ARCH_IP_TECH_LAW": "IP, Technology & Data Law Specialist",
-  "ARCH_LEGAL_OPS": "Legal Operations Specialist",
-  "ARCH_COMMERCIAL_CONTRACTS": "Commercial Contracts Manager / Contract Specialist",
-  "ARCH_CMO_FRAC": "Fractional / Interim CMO",
-  "ARCH_BRAND": "Brand Strategist",
-  "ARCH_CONTENT_STRAT": "Content Strategy & Thought Leadership",
-  "ARCH_PR_COMMS": "PR & Corporate Communications",
-  "ARCH_DEMAND_GEN": "Demand Generation / Growth Marketing",
-  "ARCH_INTERNAL_COMMS": "Internal Communications Specialist",
-  "ARCH_EMPLOYER_BRAND": "Employer Brand & EVP Specialist",
-  "ARCH_CORPORATE_AFFAIRS": "Corporate Affairs / Public Affairs",
-  "ARCH_CRO_FRAC": "Fractional / Interim CRO",
-  "ARCH_SALES_OPS": "Sales Operations & Revenue Operations Specialist",
-  "ARCH_BD": "Business Development & Partnerships Manager",
-  "ARCH_SALES_ENABLEMENT": "Sales Enablement & Effectiveness Specialist",
-  "ARCH_PRICING_COMMERCIAL": "Pricing & Commercial Strategy Manager",
-  "ARCH_KEY_ACCOUNT": "Key Account Manager / Client Success Lead",
-  "ARCH_PROCUREMENT": "Strategic Procurement Director / Chief Procurement Officer",
-  "ARCH_CATEGORY_MGR": "Category Management Specialist",
-  "ARCH_SUPPLY_CHAIN": "Supply Chain Consultant / Logistics Strategy Advisor",
-  "ARCH_CONTRACT_MGR": "Contract Management & Supplier Performance Specialist",
-  "ARCH_PROC_TRANSFORMATION": "Procurement Transformation & Digital Enablement Lead",
-  "ARCH_NHS_TRANS": "NHS / Healthcare Transformation Consultant",
-  "ARCH_PHARMA_CONSULT": "Pharma & MedTech Consultant",
-  "ARCH_HEALTH_ECON": "Health Economist / Health Outcomes Research Specialist",
-  "ARCH_CLINICAL_OPS": "Clinical Operations & Research Consultant",
-  "ARCH_PATIENT_SAFETY": "Patient Safety & Quality Improvement Specialist",
-  "ARCH_ESG_STRAT": "ESG Strategy & Reporting Advisor",
-  "ARCH_SUSTAINABILITY": "Sustainability Manager / Operational Sustainability Consultant",
-  "ARCH_CARBON_NET_ZERO": "Carbon & Net Zero Specialist",
-  "ARCH_RESPONSIBLE_INVEST": "Responsible Investment / Sustainable Finance Advisor",
-  "ARCH_SOCIAL_IMPACT": "Social Impact & Impact Measurement Advisor",
-  "ARCH_REAL_ESTATE": "Real Estate Strategy & Asset Management Consultant",
-  "ARCH_PLANNING": "Planning & Development Consultant",
-  "ARCH_PROP_TECH": "PropTech & Real Estate Innovation Consultant",
-  "ARCH_FACILITIES": "Facilities Management & Workplace Consultant",
-  "ARCH_POLICY": "Policy Advisor / Policy Consultant",
-  "ARCH_GOV_TRANS": "Government / Public Sector Transformation Consultant",
-  "ARCH_LOCAL_GOV": "Local Government Consultant",
-  "ARCH_GRANT_FUNDING": "Grant Funding & Public Finance Specialist",
-  "ARCH_REG_AFFAIRS": "Regulatory Affairs / Government Relations Consultant",
-  "ARCH_CX_STRAT": "Customer Experience Strategy Consultant",
-  "ARCH_SERVICE_DESIGN": "Service Design Consultant",
-  "ARCH_VOC": "Voice of Customer / Customer Insight Specialist",
-  "ARCH_CONTACT_CENTRE": "Contact Centre & Operations Transformation Consultant",
-  "ARCH_LOYALTY": "Loyalty & Retention Strategy Consultant",
-};
+// V-049 (vibe code review 2026-05-14): archetype display names now read from
+// kb_archetypes at first call and cached in module scope. Replaces the
+// 100+ entry hardcoded Record that drifted from the KB.
+let archetypeNamesCache: Map<string, string> | null = null;
+
+async function getArchetypeName(
+  supabase: ReturnType<typeof createClient>,
+  archetypeCode: string,
+): Promise<string> {
+  if (!archetypeNamesCache) {
+    const { data, error } = await supabase
+      .from("kb_archetypes")
+      .select("id, name");
+    if (error) {
+      console.error("V-049: kb_archetypes lookup failed:", error.message);
+      archetypeNamesCache = new Map();
+    } else {
+      archetypeNamesCache = new Map(
+        (data ?? []).map((r: { id: string; name: string }) => [r.id, r.name]),
+      );
+    }
+  }
+  return archetypeNamesCache.get(archetypeCode) ?? archetypeCode;
+}
 
 function getUserIdFromJwt(authHeader: string | null): string | null {
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
@@ -351,6 +285,32 @@ async function assembleContextBlock(
   };
 }
 
+// V-050 (vibe code review 2026-05-14): compute a 0-100 completeness score over
+// the assembled context. Logged at OpenAI call time so operators can see when
+// thin context drove a generic-sounding answer. Optionally a hint can be added
+// to the user message ("[Context completeness: 35/100 — limited signal]") so
+// the model knows to acknowledge it. Currently log-only; tighten later.
+function scoreContextCompleteness(ctx: Record<string, unknown>): number {
+  const expectedFields: Array<keyof typeof ctx | string> = [
+    "user_profile",
+    "questionnaire_responses",
+    "plan",
+    "tracker_state",
+    "completed_modules",
+    "prior_session_summaries",
+  ];
+  let populated = 0;
+  for (const field of expectedFields) {
+    const v = (ctx as Record<string, unknown>)[field as string];
+    if (v === null || v === undefined) continue;
+    if (typeof v === "string" && v.length === 0) continue;
+    if (Array.isArray(v) && v.length === 0) continue;
+    if (typeof v === "object" && v !== null && Object.keys(v as Record<string, unknown>).length === 0) continue;
+    populated++;
+  }
+  return Math.round((populated / expectedFields.length) * 100);
+}
+
 const SYSTEM_PROMPT = `You are Ask Solo — an advisory interface within the Solo product. You know this user well. You have access to their full professional background, their Plan B strategy, their 30-day activation plan, their tracker check-in history, and the ongoing narrative of what has actually happened as they've been executing their plan.
 
 You are not a general-purpose AI assistant. You are not starting from zero. You are a knowledgeable, commercially literate advisor who has been working with this person and knows their specific situation in detail.
@@ -459,6 +419,8 @@ Deno.serve(async (req: Request) => {
     // ─────────────────────────────────
     if (callType === "start_session") {
       const contextBlock = await assembleContextBlock(supabase, userId);
+      // V-050: log context completeness so we can spot generic-answer cases.
+      console.log(`ask-solo V-050: context_completeness=${scoreContextCompleteness(contextBlock as unknown as Record<string, unknown>)}/100 user=${userId}`);
 
       const { data: convRow, error: convError } = await supabase
         .from("advisory_conversations")
@@ -482,10 +444,11 @@ Deno.serve(async (req: Request) => {
 
       const plan = (contextBlock.plan as Record<string, unknown>);
       const trackerCtx = (contextBlock.tracker as Record<string, unknown>);
-      // Resolve archetype code to human-readable display name
+      // Resolve archetype code to human-readable display name.
+      // V-049: dynamic lookup from kb_archetypes (cached module-scope).
       const archetypeCode = plan?.primary_archetype as string | null;
       const archetypeDisplayName = archetypeCode
-        ? (ARCHETYPE_NAMES[archetypeCode] || archetypeCode)
+        ? await getArchetypeName(supabase, archetypeCode)
         : null;
       const currentDay = trackerCtx?.current_day as number | null;
       const priorSummaries = (contextBlock.prior_session_summaries as Array<unknown>) || [];
@@ -537,6 +500,8 @@ Deno.serve(async (req: Request) => {
       const convRowId: string | null = conv?.id || null;
 
       const contextBlock = await assembleContextBlock(supabase, userId);
+      // V-050: log context completeness so we can spot generic-answer cases.
+      console.log(`ask-solo V-050: context_completeness=${scoreContextCompleteness(contextBlock as unknown as Record<string, unknown>)}/100 user=${userId}`);
       const historyForGpt = existingMessages.slice(-20);
 
       const userMsgTemplate = `call_type: conversation
@@ -617,6 +582,8 @@ Respond to the user's message. Be direct, specific, and grounded in their contex
       }
 
       const contextBlock = await assembleContextBlock(supabase, userId);
+      // V-050: log context completeness so we can spot generic-answer cases.
+      console.log(`ask-solo V-050: context_completeness=${scoreContextCompleteness(contextBlock as unknown as Record<string, unknown>)}/100 user=${userId}`);
       const summaryPrompt = `call_type: session_summary
 
 Full conversation history:

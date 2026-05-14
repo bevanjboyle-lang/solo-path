@@ -1,15 +1,19 @@
-// stripe-subscription-webhook v21 — V-056 event-id idempotency (2026-05-14).
+// stripe-subscription-webhook v22 — vibe code review fixes — 2026-05-14
 //
-// V-056 (admin/vibe-review-findings.md): same idempotency gap as V-022 on
-// payment-webhook. Without an event_id-keyed guard, Stripe retries re-stamp
-// subscription_started_at, re-run the user_profiles update, and could double-
-// transition through state if metadata changed between retries.
-// v21 adds the stripe_webhook_events upsert ignoreDuplicates pattern at handler
-// entry, returning 200 immediately on duplicate.
+// V-023 + V-037: subscription_sessions race fix. Both subscription_sessions touch
+//        points (active path and lapse/cancel path) switched from
+//        SELECT-then-INSERT-or-UPDATE to single upsert(onConflict:'user_id').
+//        Safe under the unique(user_id) constraint applied 2026-05-14.
+// V-056: event-id idempotency guard at handler entry (re-applied from v21 after
+//        cp-overwrite during the vibe review fix workflow). Inserts into
+//        stripe_webhook_events on first delivery; returns 200 with idempotent:true
+//        on duplicate.
 //
 // stripe-subscription-webhook v20 — Audit P0 #7: price IDs via env vars with fallback
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+const FUNCTION_VERSION = "v22-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -90,9 +94,9 @@ Deno.serve(async (req: Request) => {
       .select("event_id");
 
     if (idempotencyError) {
-      console.error(`v21 idempotency insert error (proceeding):`, idempotencyError.message);
+      console.error(`${FUNCTION_VERSION} idempotency insert error (proceeding):`, idempotencyError.message);
     } else if (!idempotencyRow || idempotencyRow.length === 0) {
-      console.log(`v21 idempotent — event ${event.id} (${event.type}) already processed`);
+      console.log(`${FUNCTION_VERSION} idempotent — event ${event.id} (${event.type}) already processed`);
       return new Response(
         JSON.stringify({ received: true, idempotent: true, response_text: "Event already processed." }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -211,59 +215,41 @@ Deno.serve(async (req: Request) => {
         const trackEModules = getApplicableTrackEModules(q3a, q11, archetype);
         const allUnlocked = [...BASE_SUBSCRIPTION_MODULES, ...trackEModules].sort((a, b) => a - b);
 
+        // V-023 (vibe code review 2026-05-14): single upsert keyed on unique(user_id).
         const { data: existingSession } = await supabase
           .from("subscription_sessions")
-          .select("id, modules_unlocked")
+          .select("modules_completed")
           .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-
-        if (existingSession) {
-          const { error: updateErr } = await supabase
-            .from("subscription_sessions")
-            .update({
-              modules_unlocked: allUnlocked,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existingSession.id);
-          if (updateErr) console.error("Error updating modules_unlocked:", updateErr);
-          else console.log(`Subscription modules unlocked for user ${userId}: ${allUnlocked}`);
-        } else {
-          const { error: insertErr } = await supabase
-            .from("subscription_sessions")
-            .insert({
+          .maybeSingle();
+        const { error: upsertErr } = await supabase
+          .from("subscription_sessions")
+          .upsert(
+            {
               user_id: userId,
               modules_unlocked: allUnlocked,
-              modules_completed: [],
-              created_at: new Date().toISOString(),
+              modules_completed: existingSession ? undefined : [],
               updated_at: new Date().toISOString(),
-            });
-          if (insertErr) console.error("Error inserting subscription_sessions:", insertErr);
-          else console.log(`New subscription_sessions row created for user ${userId}, modules ${allUnlocked} unlocked`);
-        }
+            },
+            { onConflict: "user_id" },
+          );
+        if (upsertErr) console.error("Error upserting subscription_sessions:", upsertErr);
+        else console.log(`Subscription modules unlocked for user ${userId}: ${allUnlocked}`);
       } catch (moduleErr) {
         console.error("Module unlock failed (non-fatal):", moduleErr);
       }
     } else if (!subscriptionActive && event.type === "customer.subscription.updated") {
+      // V-023 (vibe code review 2026-05-14): downgrade-on-lapse via direct update on
+      // user_id. No need to select first — if no row exists, the update is a no-op.
       try {
-        const { data: existingSession } = await supabase
+        const { error: downgradeErr } = await supabase
           .from("subscription_sessions")
-          .select("id")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single();
-        if (existingSession) {
-          await supabase
-            .from("subscription_sessions")
-            .update({
-              modules_unlocked: [1, 2, 3],
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existingSession.id);
-          console.log(`Subscription lapsed for user ${userId} — modules downgraded to [1,2,3]`);
-        }
+          .update({
+            modules_unlocked: [1, 2, 3],
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+        if (downgradeErr) console.error("Module downgrade failed (non-fatal):", downgradeErr);
+        else console.log(`Subscription lapsed for user ${userId} — modules downgraded to [1,2,3]`);
       } catch (downgradeErr) {
         console.error("Module downgrade failed (non-fatal):", downgradeErr);
       }
@@ -271,24 +257,17 @@ Deno.serve(async (req: Request) => {
   }
 
   if (event.type === "customer.subscription.deleted") {
+    // V-023 (vibe code review 2026-05-14): same direct-update pattern as the lapse branch above.
     try {
-      const { data: existingSession } = await supabase
+      const { error: cancelErr } = await supabase
         .from("subscription_sessions")
-        .select("id")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-      if (existingSession) {
-        await supabase
-          .from("subscription_sessions")
-          .update({
-            modules_unlocked: [1, 2, 3],
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingSession.id);
-        console.log(`Subscription cancelled for user ${userId} — modules downgraded to [1,2,3]`);
-      }
+        .update({
+          modules_unlocked: [1, 2, 3],
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId);
+      if (cancelErr) console.error("Cancellation module downgrade failed (non-fatal):", cancelErr);
+      else console.log(`Subscription cancelled for user ${userId} — modules downgraded to [1,2,3]`);
     } catch (cancelErr) {
       console.error("Cancellation module downgrade failed (non-fatal):", cancelErr);
     }
