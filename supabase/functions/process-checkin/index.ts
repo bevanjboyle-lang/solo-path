@@ -1,3 +1,16 @@
+// process-checkin v37 — vibe code review fixes — 2026-05-14
+//
+// V-041: added FUNCTION_VERSION constant (previously missing — the only authed function
+//        in the codebase without one). Replaced the hardcoded "v29" log line with
+//        ${FUNCTION_VERSION} so triage logs reflect actual deployed version.
+// V-043: replaced the JSON-parse-failure default-msg fallback with a 502 return so
+//        we don't fabricate fake "successful" check-ins. Previously a malformed model
+//        output silently produced a default check-in_history row.
+// V-046: added finish_reason === "length" check after each OpenAI call. On truncation
+//        return 502 rather than persisting a partial response.
+// V-047: strand_signals dedup. Previously the same (strand_id, signal) tuple could be
+//        appended twice across exchanges, double-incrementing traction_score.
+//
 // process-checkin v36 — 2026-05-07: F79 — added worked example for the on_track +
 //   tasks completed scenario. Without it, the AI was conservative about emitting
 //   plan_updates with new_status="completed" even when the user explicitly confirmed
@@ -46,6 +59,9 @@
 //   - v26: user-confirmed replan (v17 narrative).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import OpenAI from "https://esm.sh/openai@4.28.0";
+
+// V-041 (vibe code review 2026-05-14): added FUNCTION_VERSION constant.
+const FUNCTION_VERSION = "v37-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -794,7 +810,7 @@ Deno.serve(async (req: Request) => {
     const portfolioReviews = (trackerSession.portfolio_reviews as unknown[]) || [];
     const portfolioReviewsCompleted = getPortfolioReviewsCompleted(portfolioReviews);
 
-    console.log(`process-checkin v29: userId=${userId}, isPortfolio=${isPortfolio}, isCatchUp=${isCatchUp}, portfolioReviewsCompleted=${portfolioReviewsCompleted}`);
+    console.log(`${FUNCTION_VERSION}: userId=${userId}, isPortfolio=${isPortfolio}, isCatchUp=${isCatchUp}, portfolioReviewsCompleted=${portfolioReviewsCompleted}`);
 
     // Audit P1 #9: pull selected_strands from reports so P5 can interpret traction per move_type.
     let reportData: Record<string, unknown> | null = null;
@@ -949,29 +965,34 @@ Deno.serve(async (req: Request) => {
       });
 
       const rawOutput = completion.choices[0].message.content || "{}";
+      const finishReason = completion.choices[0].finish_reason;
+
+      // V-046 (vibe code review 2026-05-14): truncation fail-fast.
+      // If max_completion_tokens (800) is hit, the JSON is partial and parsing produces
+      // bogus state. Return 502 so the frontend can retry, instead of persisting a
+      // ghost check-in row.
+      if (finishReason === "length") {
+        console.error(`${FUNCTION_VERSION} V-046 abort: P5 opening truncated by token cap for session ${sessionId}`);
+        return jsonResponse({
+          error: "model_truncated",
+          response_text: "Couldn't process the check-in right now. Try again in a moment.",
+        }, 502);
+      }
+
       let p5Output: Record<string, unknown>;
       try {
         p5Output = JSON.parse(rawOutput);
       } catch {
-        console.error("Failed to parse Prompt 5 opening output:", rawOutput);
-        const defaultMsg = isCatchUp
-          ? "You've been away for a few days. Before we look at the plan, where are you with all of this right now?"
-          : isPortfolioReviewDay
-            ? `Day ${currentDay} — time for your portfolio review. Which strand has felt the most natural to pursue so far?`
-            : `Day ${currentDay} check-in — what did you get done today?`;
-        p5Output = {
-          state: isCatchUp ? "drifting" : daysSinceLastCheckin >= 4 ? "significantly_behind" : daysSinceLastCheckin >= 2 ? "drifting" : "on_track",
-          response_text: defaultMsg,
-          plan_updates: [],
-          narrative_addition: `Day ${currentDay} check-in opened${isCatchUp ? " (catch-up mode)" : ""}.`,
-          replan_required: false,
-          replan_context: null,
-          check_in_complete: false,
-          exchange_count: 1,
-          strand_signals: [],
-          strand_status_updates: [],
-          portfolio_review_record: null,
-        };
+        // V-043 (vibe code review 2026-05-14): parse failure fail-fast.
+        // Previously this branch fabricated a default-msg "successful" check-in
+        // with state derived from days-since-last-checkin, creating ghost
+        // checkin_history rows the next check-in then inherited from. Now we
+        // return 502 and don't persist anything — frontend offers a retry.
+        console.error(`${FUNCTION_VERSION} V-043 abort: P5 opening JSON parse failed; head=${rawOutput.slice(0, 200)}`);
+        return jsonResponse({
+          error: "model_parse_failed",
+          response_text: "Couldn't process the check-in right now. Try again in a moment.",
+        }, 502);
       }
 
       const responseText = (p5Output.response_text as string) || `Day ${currentDay} — how's it going?`;
@@ -1101,24 +1122,27 @@ Deno.serve(async (req: Request) => {
     });
 
     const rawOutput = completion.choices[0].message.content || "{}";
+    const followUpFinishReason = completion.choices[0].finish_reason;
+
+    // V-046 (vibe code review 2026-05-14): truncation fail-fast.
+    if (followUpFinishReason === "length") {
+      console.error(`${FUNCTION_VERSION} V-046 abort: P5 follow-up truncated by token cap for session ${sessionId}`);
+      return jsonResponse({
+        error: "model_truncated",
+        response_text: "Couldn't process the check-in right now. Try again in a moment.",
+      }, 502);
+    }
+
     let p5Output: Record<string, unknown>;
     try {
       p5Output = JSON.parse(rawOutput);
     } catch {
-      console.error("Failed to parse Prompt 5 follow-up output:", rawOutput);
-      p5Output = {
-        state: checkinRecord.state || "on_track",
-        response_text: "Got it. I'll update the plan accordingly.",
-        plan_updates: [],
-        narrative_addition: "",
-        replan_required: false,
-        replan_context: null,
-        check_in_complete: true,
-        exchange_count: currentExchangeCount,
-        strand_signals: [],
-        strand_status_updates: [],
-        portfolio_review_record: null,
-      };
+      // V-043 (vibe code review 2026-05-14): parse failure fail-fast.
+      console.error(`${FUNCTION_VERSION} V-043 abort: P5 follow-up JSON parse failed; head=${rawOutput.slice(0, 200)}`);
+      return jsonResponse({
+        error: "model_parse_failed",
+        response_text: "Couldn't process the check-in right now. Try again in a moment.",
+      }, 502);
     }
 
     const responseText = (p5Output.response_text as string) || "Noted. We'll pick this up tomorrow.";
@@ -1141,7 +1165,14 @@ Deno.serve(async (req: Request) => {
     ];
 
     const existingStrandSignals = (checkinRecord.strand_signals as Record<string, unknown>[]) || [];
-    const allStrandSignals = [...existingStrandSignals, ...strandSignals];
+    // V-047 (vibe code review 2026-05-14): dedup by (strand_id, signal) tuple so the
+    // same observation across two exchanges in one check-in doesn't double-increment
+    // traction_score. Existing-row signals take precedence; new ones only added if not
+    // already present.
+    const signalKey = (s: Record<string, unknown>) => `${String(s.strand_id ?? "")}::${String(s.signal ?? "")}`;
+    const existingKeys = new Set(existingStrandSignals.map(signalKey));
+    const newSignals = strandSignals.filter((s) => !existingKeys.has(signalKey(s)));
+    const allStrandSignals = [...existingStrandSignals, ...newSignals];
 
     const checkinUpdate: Record<string, unknown> = {
       exchanges: finalExchanges,

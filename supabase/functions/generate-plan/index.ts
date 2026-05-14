@@ -1,3 +1,17 @@
+// generate-plan v35 — vibe code review fixes — 2026-05-14
+//
+// V-012: header / FUNCTION_VERSION drift fixed (was v33-ironclad-canonical).
+// V-013: truncated OpenAI activation-plan response (finish_reason === "length")
+//        now fails fast — marks reports.status='failed' instead of silently writing
+//        an empty plan and marking complete.
+// V-014: missing activation_plan or first_move in the parsed output also fails fast.
+// V-015: dropped the recalibration overwrite of recommendation.rationale.
+//        Previously replaced the 80-word P1-generated rationale with a one-line
+//        "User selected a portfolio of N strands" string, eroding report quality.
+//        recalibration now updates reality_check only (its actual intent).
+// V-020: apollo coverage compute now emits -1 sentinel on error so logs distinguish
+//        "no cold tasks generated" from "compute threw silently".
+//
 // generate-plan v34 — F68 cleanup (drop FIRST_STEPS substitution + first_steps recalibration) — 2026-05-05
 //
 // v34 (F68 cleanup): coreReport no longer carries first_steps (deleted in P1 v45.2).
@@ -53,7 +67,7 @@ import {
 import { P3_SYSTEM_PROMPT_TEMPLATE, P3_USER_MESSAGE_TEMPLATE } from "./p3-system-prompt.ts";
 import { P4_SYSTEM_PROMPT_TEMPLATE, P4_USER_MESSAGE_TEMPLATE } from "./p4-system-prompt.ts";
 
-const FUNCTION_VERSION = "v33-ironclad-canonical";
+const FUNCTION_VERSION = "v35-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -717,8 +731,21 @@ async function generatePlanInBackground(args: {
     const activationFinishReason = activationResult.choices[0].finish_reason;
     console.log(`Activation plan raw content length: ${rawActivationContent.length}, finish_reason: ${activationFinishReason}`);
 
+    // V-013 (vibe code review 2026-05-14): truncation fail-fast.
+    // Previously this branch only logged a warning and proceeded — parseJ of
+    // truncated JSON returned {} and the function silently wrote an empty
+    // activation_plan with status='complete'. Users paid £19.99 and got an
+    // empty plan. Now we mark the row failed and abort.
     if (activationFinishReason === "length") {
-      console.error("WARNING: Activation plan response was truncated (finish_reason=length). Consider further compression.");
+      console.error(`${FUNCTION_VERSION} V-013 abort: P3 truncated by 24k token cap on report ${report_id}`);
+      await supabase
+        .from("reports")
+        .update({
+          status: "failed",
+          error: "Plan generation truncated by model token cap (24000 tokens). Likely cause: portfolio too large for current cap.",
+        })
+        .eq("id", report_id);
+      return;
     }
 
     const parsedPlan = parseJ(rawActivationContent) as ActivationPlanOutput;
@@ -749,11 +776,25 @@ async function generatePlanInBackground(args: {
       }
       console.log(`${FUNCTION_VERSION} apollo coverage — cold_tasks: ${coldTaskCount}, apollo_query_populated: ${apolloQueryPopulated}`);
     } catch (e) {
-      console.error("Failed to compute apollo coverage:", e);
+      // V-020 (vibe code review 2026-05-14): emit -1 sentinel so logs distinguish
+      // "compute threw" from "no cold tasks generated" (the latter logs as 0/0).
+      console.error(`${FUNCTION_VERSION} apollo coverage compute failed:`, (e as Error)?.message ?? String(e));
+      console.log(`${FUNCTION_VERSION} apollo coverage — cold_tasks: -1, apollo_query_populated: -1 (V-020 sentinel — compute threw)`);
     }
 
+    // V-014 (vibe code review 2026-05-14): missing required fields fail-fast.
+    // Same shape of issue as V-013 — previously this only logged then proceeded
+    // to write a broken plan. Now we mark failed and abort.
     if (!activationPlan.activation_plan || !activationPlan.first_move) {
-      console.error("WARNING: Activation plan missing expected fields. Parse may have failed or response was truncated.");
+      console.error(`${FUNCTION_VERSION} V-014 abort: P3 output missing activation_plan or first_move on report ${report_id}`);
+      await supabase
+        .from("reports")
+        .update({
+          status: "failed",
+          error: "Plan generation produced output missing required fields (activation_plan or first_move). Possible parse failure or unexpected model output shape.",
+        })
+        .eq("id", report_id);
+      return;
     }
 
     // ── Build per-strand market snapshot envelopes ──
@@ -804,15 +845,21 @@ async function generatePlanInBackground(args: {
 
       const recalibrated = parseJ(recalibrationRes.choices[0].message.content || "{}");
       if (recalibrated.reality_check) {
+        // V-015 (vibe code review 2026-05-14): only update reality_check (the
+        // recalibration block's actual intent). Previously this also overwrote
+        // recommendation.rationale with a one-line factual restatement
+        // ("User selected a portfolio of N strands"), replacing the 80+ word
+        // P1-generated rationale. Downstream consumers (export-pdf, plan UI,
+        // ask-solo context) read recommendation.rationale and were getting the
+        // thin restatement instead of the richer P1 narrative. recommended_rank
+        // is still bumped to reflect the user's actual selection.
         updatedCoreReport = {
           ...coreReport,
           reality_check: recalibrated.reality_check,
           recommendation: {
             ...coreReport.recommendation,
             recommended_rank: selectedStrands[0].rank,
-            rationale: isPortfolio
-              ? `User selected a portfolio of ${selectedStrands.length} strands: ${selectedStrands.map(s => s.model_name).join(", ")}.`
-              : `User selected rank ${selectedStrands[0].rank}.`,
+            // rationale preserved from P1 (was overwritten before V-015 fix)
           },
         };
       }

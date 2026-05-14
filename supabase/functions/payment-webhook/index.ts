@@ -1,17 +1,18 @@
-// payment-webhook v27 — V-022 event-id idempotency (2026-05-14).
+// payment-webhook v28 — vibe code review fixes — 2026-05-14
 //
-// V-022 (admin/vibe-review-findings.md): Stripe retries any webhook that doesn't
-// return 2xx, plus manual replays via the dashboard. Without an event_id-keyed
-// idempotency guard, every retry re-sent the welcome email + magic link, re-ran
-// the subscription_sessions UPSERT block, and re-stamped subscription_started_at.
-//
-// v27 adds an idempotency check immediately after signature verification: try to
-// insert the event_id into stripe_webhook_events (PK on event_id). On unique
-// conflict (ignoreDuplicates), return 200 immediately with `idempotent: true`.
-// On insert success, proceed with the side-effect branch.
-//
-// Closes V-022 for this webhook. Same fix shape applied to stripe-subscription-
-// webhook v21 closes V-056.
+// V-022: event-id idempotency guard at handler entry. Inserts into
+//        stripe_webhook_events on first delivery; returns 200 with idempotent:true
+//        on duplicate, stopping Stripe retries from re-running side effects.
+// V-024: module unlock failure is now fatal — returns 500 to Stripe so the webhook
+//        retries (idempotency-safe under V-022). Customers no longer pay £19.99 and
+//        end up with locked tranche-1 modules.
+// V-025: welcome email failure is now fatal — same pattern. Customers no longer pay
+//        £19.99 and never receive the magic-link sign-in email.
+// V-026: findUserIdByEmail now queries auth.users directly via service-role rather than
+//        paginating admin.listUsers (which capped at 1000 users — would silently break
+//        at user 1001).
+// V-027: magic-link redirectTo now reads from APP_BASE_URL env var with fallback to
+//        https://solo-plan.com/plan. Previously hardcoded.
 //
 // payment-webhook v26 — canonical-aligned (ADR-019). 2026-05-05.
 //
@@ -63,7 +64,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v27-v022-idempotency";
+const FUNCTION_VERSION = "v28-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -125,29 +126,29 @@ async function sendWelcomeEmail(
 
 // ── ADR-013: user resolution helpers ────────────────────────────────────────
 
-// Look up an existing auth user by email. supabase-js 2.49.1 does not expose
-// getUserByEmail; use admin.listUsers and filter in memory. Pre-launch scale
-// is tiny; the perPage:1000 ceiling comfortably covers early production. Swap
-// to paginated lookup / REST admin filter if user count grows beyond that.
+// V-026 (vibe code review 2026-05-14): direct auth.users query via service-role.
+// Previous implementation paginated admin.listUsers at perPage:1000 — would
+// silently fail to find a legitimate buyer at user 1001+, then create a
+// duplicate auth.users row that failed the unique-email constraint, returning
+// 500 to Stripe. Constant-time lookup now, no scale ceiling.
 async function findUserIdByEmail(
   supabase: ReturnType<typeof createClient>,
   email: string,
 ): Promise<string | null> {
   const needle = email.trim().toLowerCase();
   if (!needle) return null;
-  const { data, error } = await supabase.auth.admin.listUsers({
-    page: 1,
-    perPage: 1000,
-  });
+  // deno-lint-ignore no-explicit-any
+  const { data, error } = await (supabase as any)
+    .schema("auth")
+    .from("users")
+    .select("id")
+    .eq("email", needle)
+    .maybeSingle();
   if (error) {
-    console.error("admin.listUsers failed:", error.message);
+    console.error("auth.users lookup failed:", error.message);
     return null;
   }
-  const users = data?.users ?? [];
-  const match = users.find(
-    (u) => (u.email ?? "").trim().toLowerCase() === needle,
-  );
-  return match?.id ?? null;
+  return (data as { id: string } | null)?.id ?? null;
 }
 
 // Create-or-match a user for a completed checkout session.
@@ -283,12 +284,8 @@ Deno.serve(async (req: Request) => {
       .select("event_id");
 
     if (idempotencyError) {
-      // Hard error inserting the idempotency row — log and proceed defensively
-      // rather than fail the webhook (proceeding is at-least-once; failing is no-times).
       console.error(`${FUNCTION_VERSION} idempotency insert error (proceeding):`, idempotencyError.message);
     } else if (!idempotencyRow || idempotencyRow.length === 0) {
-      // Conflict — this event was already processed. Return 200 to acknowledge
-      // and stop Stripe retrying.
       console.log(`${FUNCTION_VERSION} idempotent — event ${event.id} (${event.type}) already processed`);
       return new Response(
         JSON.stringify({ received: true, idempotent: true, response_text: "Event already processed." }),
@@ -428,7 +425,18 @@ Deno.serve(async (req: Request) => {
           );
       }
     } catch (moduleErr) {
-      console.error("Module unlock failed (non-fatal):", moduleErr);
+      // V-024 (vibe code review 2026-05-14): fatal. Was "non-fatal" — customer paid
+      // £19.99 and ended up with locked modules. Return 500 so Stripe retries; V-022
+      // idempotency makes the retry safe (the email won't double-send).
+      console.error(`${FUNCTION_VERSION} V-024 fatal: module unlock failed:`, moduleErr);
+      return new Response(
+        JSON.stringify({
+          error: "module_unlock_failed",
+          response_text: "Module unlock failed, will retry",
+          details: String((moduleErr as Error)?.message ?? moduleErr),
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     console.log(`Payment completed for user ${userId}, session ${session.id}`);
@@ -489,41 +497,53 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Welcome email with magic link (unchanged).
+    // V-025 + V-027 (vibe code review 2026-05-14):
+    //   V-025: welcome email failure now fatal (was "non-fatal"). Returns 500 so
+    //          Stripe retries with V-022 idempotency guard preventing double-process.
+    //   V-027: redirectTo URL now reads from APP_BASE_URL env var (was hardcoded).
     if (resendApiKey && customerEmail) {
+      const appBaseUrl = Deno.env.get("APP_BASE_URL") ?? "https://solo-plan.com";
       try {
         const { data: linkData, error: linkError } =
           await supabase.auth.admin.generateLink({
             type: "magiclink",
             email: customerEmail,
-            options: { redirectTo: "https://solo-plan.com/plan" },
+            options: { redirectTo: `${appBaseUrl}/plan` },
           });
 
         if (linkError || !linkData?.properties?.action_link) {
-          console.error(
-            "Magic link generation failed (non-fatal):",
-            linkError?.message,
+          console.error(`${FUNCTION_VERSION} V-025 fatal: magic link generation failed:`, linkError?.message);
+          return new Response(
+            JSON.stringify({
+              error: "magic_link_failed",
+              response_text: "Magic link generation failed, will retry",
+              details: linkError?.message ?? "no action_link returned",
+            }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
           );
-        } else {
-          await sendWelcomeEmail(
-            resendApiKey,
-            customerEmail,
-            linkData.properties.action_link,
-          );
-          console.log(`Welcome email with magic link sent to ${customerEmail}`);
         }
+
+        await sendWelcomeEmail(
+          resendApiKey,
+          customerEmail,
+          linkData.properties.action_link,
+        );
+        console.log(`${FUNCTION_VERSION} welcome email sent to ${customerEmail}`);
       } catch (emailErr) {
-        console.error(
-          "Welcome email send failed (non-fatal):",
-          (emailErr as Error).message,
+        console.error(`${FUNCTION_VERSION} V-025 fatal: welcome email send failed:`, (emailErr as Error).message);
+        return new Response(
+          JSON.stringify({
+            error: "welcome_email_failed",
+            response_text: "Welcome email send failed, will retry",
+            details: (emailErr as Error)?.message ?? String(emailErr),
+          }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
     } else if (!resendApiKey) {
-      console.warn("RESEND_API_KEY not set — welcome email skipped");
+      console.warn(`${FUNCTION_VERSION} RESEND_API_KEY not set — welcome email skipped`);
     } else if (!customerEmail) {
-      console.warn(
-        `No customer email available for user ${userId} — welcome email skipped`,
-      );
+      console.warn(`${FUNCTION_VERSION} no customer email for user ${userId} — welcome email skipped`);
     }
 
     return new Response(

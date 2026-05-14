@@ -1,10 +1,13 @@
-// create-payment v22 — V-030 fix (2026-05-14): drop client-supplied body.userId
-// fallback. V-030 (admin/vibe-review-findings.md) showed the fallback chained
-// with payment-webhook's metadata.userId trust to enable paid identity spoofing
-// — any caller could pay £19.99 and have the resulting payment, customer_id,
-// tranche-1 unlock, welcome email, and report attributed to a victim's account.
-// userId now comes only from a verified JWT; anon path uses client_session_id
-// only.
+// create-payment v23 — vibe code review fixes — 2026-05-14
+//
+// V-030: drop client-supplied body.userId fallback (P0 paid identity spoofing).
+//        userId now comes only from a verified JWT; anon path uses client_session_id.
+// V-032: reportId ownership check. Caller can no longer attribute a payment to a
+//        report they don't own (low blast radius, but tightens the trust boundary).
+// V-033: payments row insert error is now fatal. Previously the .then() handler
+//        logged errors but the function proceeded to send the user to Stripe with
+//        no DB record. Customer paid, payments table had no row, payment-webhook
+//        had nothing to update. Bookkeeping now consistent.
 //
 // create-payment v21 — ADR-013 (2026-04-19): anonymous-first checkout.
 //                       Accept checkouts keyed by client_session_id (UUID from
@@ -21,7 +24,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
-const FUNCTION_VERSION = "v22-v030-no-body-userid";
+const FUNCTION_VERSION = "v23-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -111,6 +114,34 @@ Deno.serve(async (req: Request) => {
     const stripe = new Stripe(stripeSecretKey, { apiVersion: "2025-01-27.acacia" });
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // V-032 (vibe code review 2026-05-14): report ownership check. If a reportId is
+    // supplied, confirm the caller owns it (via user_id OR client_session_id). Prevents
+    // a caller from attributing their payment to a report owned by someone else.
+    if (reportId && (userId || clientSessionId)) {
+      const { data: reportRow } = await supabase
+        .from("reports")
+        .select("user_id, client_session_id")
+        .eq("id", reportId)
+        .maybeSingle();
+      if (reportRow) {
+        const ownsByUser = userId && reportRow.user_id === userId;
+        const ownsByCsid =
+          clientSessionId &&
+          reportRow.user_id === null &&
+          reportRow.client_session_id === clientSessionId;
+        if (!ownsByUser && !ownsByCsid) {
+          console.warn(`${FUNCTION_VERSION} V-032: caller does not own report ${reportId}`);
+          return new Response(
+            JSON.stringify({
+              error: "report_ownership_denied",
+              response_text: "This report doesn't belong to you.",
+            }),
+            { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+      }
+    }
+
     // Audit fix #7: STRIPE_PRICE_ONETIME env var support.
     const onetimePriceId = Deno.env.get("STRIPE_PRICE_ONETIME");
     const lineItems = onetimePriceId
@@ -152,9 +183,10 @@ Deno.serve(async (req: Request) => {
       metadata,
     });
 
-    // ADR-013: payments row carries whichever identity is present. CHECK constraint
-    // enforces that at least one of (user_id, client_session_id) is non-null.
-    await supabase.from("payments").insert({
+    // V-033 (vibe code review 2026-05-14): payments insert is now fatal on error.
+    // Previously the .then() handler only logged — user proceeded to Stripe even
+    // with no DB record, leaving payment-webhook unable to match the session.id back.
+    const { error: paymentInsertErr } = await supabase.from("payments").insert({
       user_id: userId,
       client_session_id: clientSessionId,
       stripe_session_id: session.id,
@@ -162,9 +194,18 @@ Deno.serve(async (req: Request) => {
       currency: "gbp",
       status: "pending",
       created_at: new Date().toISOString(),
-    }).then(({ error }) => {
-      if (error) console.error("DB error storing payment:", error);
     });
+    if (paymentInsertErr) {
+      console.error(`${FUNCTION_VERSION} V-033 fatal: payments insert failed:`, paymentInsertErr.message);
+      return new Response(
+        JSON.stringify({
+          error: "payment_record_failed",
+          response_text: "Could not record payment. Please try again.",
+          details: paymentInsertErr.message,
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     return new Response(
       JSON.stringify({

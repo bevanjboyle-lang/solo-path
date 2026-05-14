@@ -1,12 +1,18 @@
+// send-abandonment-email v2 — vibe code review fix V-058 — 2026-05-14
+// V-058: APP_URL and FROM_ADDRESS now read from env vars (APP_BASE_URL and
+// ABANDONMENT_FROM_ADDRESS) with safe defaults. Previously hardcoded.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+const FUNCTION_VERSION = "v2-vibe-review-fixes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const APP_URL = "https://solo-plan.com";
-const FROM_ADDRESS = "Solo <hello@solo-plan.com>";
+// V-058 (2026-05-14): env-driven with fallback to canonical production values.
+const APP_URL = Deno.env.get("APP_BASE_URL") ?? "https://solo-plan.com";
+const FROM_ADDRESS = Deno.env.get("ABANDONMENT_FROM_ADDRESS") ?? "Solo <hello@solo-plan.com>";
 
 // Abandonment email cadence (route-map §12.13)
 // T+1h:  "Your report is ready"

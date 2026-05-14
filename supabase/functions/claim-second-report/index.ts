@@ -1,3 +1,13 @@
+// claim-second-report v17 — vibe code review fixes — 2026-05-14
+//
+// V-039: second_report_paid flag consumption is now atomic via conditional UPDATE
+//        with row-count check. Previously a double-click could let two concurrent
+//        invocations both see the flag as true, both write false, both return
+//        eligible — letting the user take two reports for one payment.
+// V-040: dropped the hardcoded test-mode price ID fallback. If STRIPE_PRICE_SECOND_REPORT
+//        env var is missing, function now fails fast with 500 instead of using a
+//        test-mode price ID that would fail in live mode.
+//
 // claim-second-report v16 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // claim-second-report v13 — Audit P0 #7: STRIPE_PRICE_SECOND_REPORT env var support
 import Stripe from "https://esm.sh/stripe@18.5.0";
@@ -8,9 +18,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
-// £9.99 GBP one-time price for a second Plan B Report (non-subscribers)
-// Audit fix #7: sourced from env var; fall back to test ID (warn). Bevan must set STRIPE_PRICE_SECOND_REPORT at prod cutover.
-const SECOND_REPORT_PRICE_FALLBACK = "price_1TNGaj0PR8c2G6sm8EVtTm8V";
+// V-040 (vibe code review 2026-05-14): hardcoded test-mode price ID fallback removed.
+// STRIPE_PRICE_SECOND_REPORT must be set in Supabase secrets — function fails fast
+// otherwise (see check inside handler).
+const FUNCTION_VERSION = "v17-vibe-review-fixes";
 const DEFAULT_SITE_URL = "https://solo-plan.com";
 
 function getUserIdFromJwt(authHeader: string | null): string | null {
@@ -103,23 +114,38 @@ Deno.serve(async (req: Request) => {
     }
 
     if (profile?.second_report_paid) {
-      await supabase
+      // V-039 (vibe code review 2026-05-14): atomic consumption. Conditional update
+      // with row-count check ensures only one concurrent invocation can "win" the
+      // flag. Previously a double-click could let two requests both see the flag as
+      // true, both set it false, both return eligible — letting the user generate
+      // two reports for one payment.
+      const { count, error: consumeErr } = await supabase
         .from("user_profiles")
         .update({
           second_report_paid: false,
           updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
+        }, { count: "exact" })
+        .eq("user_id", userId)
+        .eq("second_report_paid", true);
 
-      return new Response(
-        JSON.stringify({
-          eligible: true,
-          requires_payment: false,
-          message: "You've already paid for your second report. You can start now.",
-          response_text: "Eligible — second report payment already on file.",
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      if (consumeErr) {
+        console.error(`${FUNCTION_VERSION} V-039 consume error:`, consumeErr.message);
+      }
+
+      if (count === 1) {
+        return new Response(
+          JSON.stringify({
+            eligible: true,
+            requires_payment: false,
+            message: "You've already paid for your second report. You can start now.",
+            response_text: "Eligible — second report payment already on file.",
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      // Lost the race — flag was already consumed by a concurrent request. Fall
+      // through to the standard payment-required path below.
+      console.log(`${FUNCTION_VERSION} V-039: lost race on second_report_paid for user ${userId}`);
     }
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
@@ -138,10 +164,18 @@ Deno.serve(async (req: Request) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-01-27.acacia" });
     const siteUrl = Deno.env.get("SITE_URL") || DEFAULT_SITE_URL;
 
-    // Audit fix #7: env var for second-report price
-    const secondReportPriceId = Deno.env.get("STRIPE_PRICE_SECOND_REPORT") || SECOND_REPORT_PRICE_FALLBACK;
-    if (!Deno.env.get("STRIPE_PRICE_SECOND_REPORT")) {
-      console.warn("STRIPE_PRICE_SECOND_REPORT not set — using test fallback. Set env var before production cutover.");
+    // V-040 (vibe code review 2026-05-14): no test-mode fallback. STRIPE_PRICE_SECOND_REPORT
+    // must be set; otherwise fail-fast 500 instead of silently using a dead test ID.
+    const secondReportPriceId = Deno.env.get("STRIPE_PRICE_SECOND_REPORT");
+    if (!secondReportPriceId) {
+      console.error(`${FUNCTION_VERSION} V-040 fatal: STRIPE_PRICE_SECOND_REPORT env var not set`);
+      return new Response(
+        JSON.stringify({
+          error: "server_misconfigured",
+          response_text: "Server configuration error — second report price not configured.",
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     const checkoutSession = await stripe.checkout.sessions.create({
