@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Environment variables — set these in Vercel dashboard, NOT in repo
+# Lovable bot has a history of committing wrong values here (see .env.example
+# for the correct shape and the dnnxmjazillhktwttkux project ID).
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
