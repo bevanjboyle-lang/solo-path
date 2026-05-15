@@ -13,6 +13,15 @@ export default function AuthCallback() {
   const [params] = useSearchParams();
   const [expired, setExpired] = useState(false);
 
+  // V-066: one-time migration of legacy dot-key localStorage entry
+  const dotKey = localStorage.getItem("solo.client_session_id");
+  if (dotKey) {
+    if (!localStorage.getItem("solo_client_session_id")) {
+      localStorage.setItem("solo_client_session_id", dotKey);
+    }
+    localStorage.removeItem("solo.client_session_id");
+  }
+
   useEffect(() => {
     let cancelled = false;
     const reportIdParam = params.get("reportId") || params.get("report_id");
