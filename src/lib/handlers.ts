@@ -2,6 +2,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 import { getClientSessionId as _getClientSessionId } from "./clientSession";
 
+export const SUBSCRIPTION_PRICE_IDS = ["price_sub_monthly", "price_sub_annual"] as const;
+export type SubscriptionPriceId = (typeof SUBSCRIPTION_PRICE_IDS)[number];
+
 /**
  * Creates a client_session_id if missing, then navigates to /cv-upload.
  * This is THE ONLY handler for every "Take the test" CTA across the entire site.
