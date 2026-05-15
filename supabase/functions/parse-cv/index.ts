@@ -1,25 +1,69 @@
-// parse-cv v28 — 2026-05-06: F51 — bump server file-size cap 5MB → 10MB to match client (CVUploadZone) cap
-// parse-cv v27 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
-// parse-cv v15 — P0 #22 (2026-04-18): max_tokens → max_completion_tokens for GPT-5.4 compatibility
-// v14 baseline: P3 #18 (2026-04-17): switched from `serve()` import to `Deno.serve()` per CLAUDE.md §4
-// Earlier history:
-//   v13 — ADR-012 (2026-04-17): upgraded to MODEL_TIER2 (gpt-5.4-mini). Uses fetch pattern (not OpenAI SDK) — model string in JSON body.
+// parse-cv v29 — canonical P0 prompt extracted to sibling — 2026-05-15
+//
+// Replaces v28's slim inline P0_SYSTEM (one paragraph) and slim inline schema
+// in the user message with the canonical Prompt 0 content extracted into
+// p0-system-prompt.ts. Same pattern as generate-report v45.6 (p1-system-prompt.ts),
+// generate-guidance v26 (p8-system-prompt.ts), and process-checkin v38
+// (p5-checkin-prompt.ts).
+//
+// Canonical sources:
+//   - prompts/prompt-0-cv-parser.md → p0-system-prompt.ts (sibling extract)
+//
+// Changes from v28:
+//   - Inline P0_SYSTEM (one paragraph) → canonical P0_SYSTEM_PROMPT (full Rules section)
+//   - Inline schema in user message → canonical P0_USER_MESSAGE_TEMPLATE (richer
+//     field descriptions for sector_primary, employer_org_type, type_of_work,
+//     seniority_level, career_highlights, qualifications, sectors_worked_in,
+//     skills_mentioned, independent_experience, confidence_score, parse_notes)
+//   - Confidence threshold for storing cv_extract: 30 → 50 per canonical. Per
+//     prompts/prompt-0-cv-parser.md: "If confidence_score >= 50: store in
+//     user_profiles.cv_extract, set cv_uploaded = true, return to frontend to
+//     pre-populate confirmation cards. If confidence_score < 50: store partial
+//     extract (for debugging), set cv_uploaded = false, proceed with full
+//     questionnaire and show note: 'We had trouble reading your CV clearly,
+//     please answer all questions below.'"
+//   - Added FUNCTION_VERSION constant (v28 had none)
+//
+// Preserved unchanged from v28:
+//   - verify_jwt: false (parse-cv runs pre-questionnaire, anon-tolerant per ADR-013)
+//   - File size cap 10MB (matches CVUploadZone client cap, F51 fix)
+//   - PDF / DOCX text extraction via pdf-parse + mammoth
+//   - 8000-char text truncation
+//   - MODEL_TIER2 (gpt-5.4-mini), temperature 0.1, max_completion_tokens 800
+//   - Fetch pattern (not OpenAI SDK), per v13 ADR-012 baseline
+//   - CORS allow-headers including x-client-session-id (F65 fix)
+//   - Upsert to user_profiles with cv_uploaded + cv_extract + cv_confidence_score + cv_raw_text
+//
+// Behaviour change to verify:
+//   The threshold raise (30 -> 50) means CVs that previously scored 30-49 will
+//   now flag as cv_uploaded:false and the user will go through the full
+//   questionnaire instead of seeing pre-populated confirmation cards. This is
+//   the canonical-intended behaviour: pre-population should only fire when the
+//   parse is reliable enough to trust. Watch the cv_confidence_score
+//   distribution in user_profiles after deploy to confirm the rate of
+//   pre-population is acceptable.
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
+import { P0_SYSTEM_PROMPT, buildP0UserMessage } from "./p0-system-prompt.ts";
+
+const FUNCTION_VERSION = "v29-canonical-p0";
+const MODEL_TIER2 = "gpt-5.4-mini";
+const TEMPERATURE = 0.1;
+const MAX_COMPLETION_TOKENS = 800;
+const FILE_SIZE_CAP_BYTES = 10 * 1024 * 1024;
+const TEXT_TRUNCATION_CHARS = 8000;
+const MIN_RAW_TEXT_LENGTH = 100;
+const CV_STORE_CONFIDENCE_THRESHOLD = 50;  // canonical, raised from v28's 30
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
-// Model tier constants — ADR-012 (2026-04-17)
-const MODEL_TIER1 = "gpt-5.4";        // High-stakes synthesis and user-facing copy
-const MODEL_TIER2 = "gpt-5.4-mini";   // Structured output, signal reading, advisory
-const MODEL_TIER3 = "gpt-5.4-nano";   // Classification, extraction, low-temp structured tasks
-
 const openAIApiKey = Deno.env.get("OPENAI_API_KEY");
-
-const P0_SYSTEM = `You are a structured data extraction engine. Your only job is to read a CV and extract specific fields into a JSON object. You do not evaluate the CV. You do not give career advice. You do not comment on the person's experience. You extract what is there and flag what is not. Extract ONLY from what is explicitly written in the CV. Do not infer or embellish. If a field cannot be reliably extracted, set it to null and add a note in parse_notes. Your output must be a single valid JSON object matching this schema exactly. No preamble, no explanation, no markdown — only the JSON object.`;
 
 async function extractTextFromDocx(buffer: ArrayBuffer): Promise<string> {
   const { default: mammoth } = await import("npm:mammoth@1.6.0");
@@ -49,23 +93,17 @@ Deno.serve(async (req: Request) => {
     const userId = formData.get("user_id") as string;
 
     if (!file) {
-      return new Response(JSON.stringify({ error: "no_file", message: "No file provided" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "no_file", message: "No file provided" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    // Aligned with client cap in CVUploadZone.tsx (10 MB). Previously the
-    // server rejected at 5 MB, leaving a 5–10 MB window where the upload
-    // succeeded against Supabase Storage but parse-cv returned 400 — the
-    // user would see their CV as "uploaded" but the report would generate
-    // without CV context. Most CVs are well under 1 MB; CVs with embedded
-    // photos / scanned signatures occasionally hit 6–8 MB.
-    if (file.size > 10 * 1024 * 1024) {
-      return new Response(JSON.stringify({ error: "file_too_large", message: "File exceeds 10MB limit" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (file.size > FILE_SIZE_CAP_BYTES) {
+      return new Response(
+        JSON.stringify({ error: "file_too_large", message: "File exceeds 10MB limit" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const buffer = await file.arrayBuffer();
@@ -81,47 +119,29 @@ Deno.serve(async (req: Request) => {
     ) {
       rawText = await extractTextFromDocx(buffer);
     } else {
-      return new Response(JSON.stringify({ error: "unsupported_format", message: "Only PDF and DOCX files are supported" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "unsupported_format",
+          message: "Only PDF and DOCX files are supported",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    if (!rawText || rawText.trim().length < 100) {
-      return new Response(JSON.stringify({ error: "parse_failed", message: "Could not extract readable text from this file. It may be image-based or scanned." }), {
-        status: 422,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!rawText || rawText.trim().length < MIN_RAW_TEXT_LENGTH) {
+      return new Response(
+        JSON.stringify({
+          error: "parse_failed",
+          message:
+            "Could not extract readable text from this file. It may be image-based or scanned.",
+        }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    const truncatedText = rawText.slice(0, 8000);
+    const truncatedText = rawText.slice(0, TEXT_TRUNCATION_CHARS);
+    const userMessage = buildP0UserMessage(truncatedText);
 
-    const userMessage = `Extract structured data from the following CV text. Return a JSON object matching the schema below.
-
-CV TEXT:
----
-${truncatedText}
----
-
-SCHEMA:
-{
-  "extracted_name": "First name only (string). Extract from the name at the top of the CV.",
-  "current_job_title": "Most recent or current job title (string).",
-  "years_experience": "Total professional experience as an integer (years). Infer from the career timeline if not stated explicitly. Round to nearest whole year.",
-  "sector_primary": "Primary sector. Map to one of these values where possible: Financial Services / Consulting & Professional Services / Technology / Public Sector & NHS / Industry & Manufacturing / Retail & Consumer / Other. Use 'Other' if none fit.",
-  "employer_org_type": "Specific description of the current or most recent employer type. Be specific — not just 'Financial Services' but 'Big 4 risk advisory practice' or 'FTSE100 retail bank' or 'NHS acute trust' or 'boutique M&A advisory firm'.",
-  "type_of_work": "Primary type of work. Examples: analysis and reporting / project delivery / governance and compliance / operations and process / consulting and advisory.",
-  "seniority_level": "Seniority inferred from titles. Examples: manager / senior manager / director / head of / partner / VP.",
-  "career_highlights": ["Array of 3-5 notable projects or achievements mentioned in the CV. Each item is a single sentence."],
-  "qualifications": ["Array of professional qualifications, certifications, and degrees. Include ACA, ACCA, CIMA, MBA, degree subject and institution if mentioned."],
-  "sectors_worked_in": ["Array of all sectors the person has worked in across their career."],
-  "skills_mentioned": ["Array of explicit skills, tools, or competencies mentioned in the CV."],
-  "independent_experience": "Any mention of freelance, advisory, non-executive, or independent work. Single string summary, or null if none found.",
-  "confidence_score": "Integer 0-100. How confidently was this CV parsed? 90-100 = clear CV. 60-89 = mostly clear. 30-59 = partial. 0-29 = not reliably parseable.",
-  "parse_notes": "Caveats about what could not be reliably extracted, or null."
-}`;
-
-    // ── Call MODEL_TIER2 (gpt-5.4-mini) via fetch — P0 CV extraction ──
     const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -130,10 +150,10 @@ SCHEMA:
       },
       body: JSON.stringify({
         model: MODEL_TIER2,
-        temperature: 0.1,
-        max_completion_tokens: 800,
+        temperature: TEMPERATURE,
+        max_completion_tokens: MAX_COMPLETION_TOKENS,
         messages: [
-          { role: "system", content: P0_SYSTEM },
+          { role: "system", content: P0_SYSTEM_PROMPT },
           { role: "user", content: userMessage },
         ],
       }),
@@ -147,36 +167,52 @@ SCHEMA:
       const jsonMatch = rawOutput.match(/\{[\s\S]*\}/);
       cvExtract = JSON.parse(jsonMatch ? jsonMatch[0] : rawOutput);
     } catch {
-      return new Response(JSON.stringify({ error: "json_malformed", message: "Failed to parse CV extraction output", raw: rawOutput.slice(0, 200) }), {
-        status: 422,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      console.warn(`${FUNCTION_VERSION} JSON parse failed:`, rawOutput.slice(0, 200));
+      return new Response(
+        JSON.stringify({
+          error: "json_malformed",
+          message: "Failed to parse CV extraction output",
+          raw: rawOutput.slice(0, 200),
+        }),
+        { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     const confidenceScore = cvExtract.confidence_score || 0;
+    const meetsThreshold = confidenceScore >= CV_STORE_CONFIDENCE_THRESHOLD;
 
-    if (userId && confidenceScore >= 30) {
+    if (userId && meetsThreshold) {
       const supabase = createClient(
         Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
-      await supabase.from("user_profiles").upsert({
-        user_id: userId,
-        cv_uploaded: true,
-        cv_extract: cvExtract,
-        cv_confidence_score: confidenceScore,
-        cv_raw_text: truncatedText,
-      }, { onConflict: "user_id" });
+      await supabase.from("user_profiles").upsert(
+        {
+          user_id: userId,
+          cv_uploaded: true,
+          cv_extract: cvExtract,
+          cv_confidence_score: confidenceScore,
+          cv_raw_text: truncatedText,
+        },
+        { onConflict: "user_id" },
+      );
     }
 
     return new Response(
-      JSON.stringify({ success: true, cv_extract: cvExtract, cv_uploaded: confidenceScore >= 30 }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        success: true,
+        cv_extract: cvExtract,
+        cv_uploaded: meetsThreshold,
+        confidence_score: confidenceScore,
+        function_version: FUNCTION_VERSION,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
+    console.error(`${FUNCTION_VERSION} internal error:`, error);
     return new Response(
-      JSON.stringify({ error: "internal_error", message: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: "internal_error", message: (error as Error).message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
