@@ -24,6 +24,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Restore session from storage FIRST, then set up listener
     const restoreSession = async () => {
       try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error || !user) {
+          await supabase.auth.signOut({ scope: "local" }).catch(() => {});
+          setSession(null);
+          setLoading(false);
+          return;
+        }
         const { data: { session: restoredSession } } = await supabase.auth.getSession();
         setSession(restoredSession);
       } catch (error) {

@@ -8,7 +8,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getClientSessionId } from "./clientSession";
 
-const SUPABASE_HOST = "dnnxmjazillhktwttkux.supabase.co";
+const SUPABASE_HOST = new URL(import.meta.env.VITE_SUPABASE_URL!).host;
 
 let installed = false;
 

@@ -48,7 +48,7 @@ export default function AuthConfirm() {
           // Supabase's TS types only accept a fixed enum here; cast the string
           // we received in the URL. "magiclink" is the canonical value used by
           // admin.generateLink({ type: "magiclink" }).
-          type: typeParam as Parameters<typeof supabase.auth.verifyOtp>[0]["type"],
+          type: typeParam as "signup" | "invite" | "magiclink" | "recovery" | "email_change" | "email",
         });
         if (cancelled) return;
 
