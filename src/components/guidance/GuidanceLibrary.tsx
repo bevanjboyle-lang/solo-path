@@ -17,7 +17,12 @@ export default function GuidanceLibrary() {
   const [completedIds, setCompletedIds] = useState<number[]>([]);
   const [completionOutputs, setCompletionOutputs] = useState<Record<number, any>>({});
   const [activeModule, setActiveModule] = useState<GuidanceModule | null>(null);
-  const [viewingOutput, setViewingOutput] = useState<{ module: GuidanceModule; output: any } | null>(null);
+  const [viewingOutput, setViewingOutput] = useState<{
+    module: GuidanceModule;
+    output: any;
+    validationPassed?: boolean;
+    moduleAnswers?: Record<string, string>;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedTracks, setExpandedTracks] = useState<Set<string>>(new Set(["A"]));
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -45,12 +50,20 @@ export default function GuidanceLibrary() {
     return "available";
   };
 
-  const handleComplete = (moduleId: number, output: any) => {
+  const handleComplete = (moduleId: number, response: any, answers: Record<string, string>) => {
     setActiveModule(null);
+    const output = response?.output ?? response;
     setCompletedIds((prev) => [...prev, moduleId]);
     setCompletionOutputs((prev) => ({ ...prev, [moduleId]: output }));
     const mod = MODULES.find((m) => m.id === moduleId);
-    if (mod) setViewingOutput({ module: mod, output });
+    if (mod) {
+      setViewingOutput({
+        module: mod,
+        output,
+        validationPassed: response?.validation_passed,
+        moduleAnswers: answers,
+      });
+    }
   };
 
   const toggleTrack = (trackId: string) => {
@@ -67,6 +80,17 @@ export default function GuidanceLibrary() {
       <GuidanceModuleOutput
         module={viewingOutput.module}
         output={viewingOutput.output}
+        validationPassed={viewingOutput.validationPassed}
+        moduleAnswers={viewingOutput.moduleAnswers}
+        onRegenerated={(response) => {
+          const newOutput = response?.output ?? response;
+          setCompletionOutputs((prev) => ({ ...prev, [viewingOutput.module.id]: newOutput }));
+          setViewingOutput({
+            ...viewingOutput,
+            output: newOutput,
+            validationPassed: response?.validation_passed,
+          });
+        }}
         onBack={() => setViewingOutput(null)}
       />
     );

@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface Props {
   module: GuidanceModule;
   onClose: () => void;
-  onComplete: (moduleId: number, output: any) => void;
+  onComplete: (moduleId: number, response: any, answers: Record<string, string>) => void;
 }
 
 export default function GuidanceModuleFlow({ module, onClose, onComplete }: Props) {
@@ -36,7 +36,7 @@ export default function GuidanceModuleFlow({ module, onClose, onComplete }: Prop
       });
       if (fnErr) throw fnErr;
       if (data?.error) throw new Error(data.error);
-      onComplete(module.id, data.output);
+      onComplete(module.id, data, answers);
     } catch (e: any) {
       setError(e.message || "Something went wrong");
       setGenerating(false);
