@@ -133,9 +133,17 @@ export async function confirmDeleteCv(): Promise<{ error?: string }> {
  * Request a data export — returns blob for download.
  */
 export async function requestDataExport(): Promise<{ blob?: Blob; error?: string }> {
-	const session = (await supabase.auth.getSession()).data.session;
+	const { data: { user }, error: userError } = await supabase.auth.getUser();
+	if (userError || !user) {
+		toast.error("Please sign in again to request your data export.");
+		return { error: "Not authenticated" };
+	}
 
-	if (!session) return { error: "Not authenticated" };
+	const { data: { session } } = await supabase.auth.getSession();
+	if (!session?.access_token) {
+		toast.error("Unable to authenticate. Please sign in again.");
+		return { error: "No session token" };
+	}
 
 	const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-user-data`;
 
@@ -271,8 +279,7 @@ export async function triggerStripeCheckout(
 	priceId: string,
 	metadata: Record<string, unknown>
 ): Promise<void> {
-	const isSubscription =
-		priceId === "price_sub_monthly" || priceId === "price_sub_annual";
+	const isSubscription = SUBSCRIPTION_PRICE_IDS.includes(priceId as SubscriptionPriceId);
 
 	if (isSubscription) {
 		const planType =

@@ -239,7 +239,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     const wp = session.working_plan as Record<string, unknown> | null;
     const wpInner = wp?.activation_plan as Record<string, unknown> | undefined;
     if (wp && Array.isArray(wpInner?.phases) && wpInner.phases.length > 0) {
-      setActivationPlan(wp as ActivationPlanOutput);
+      setActivationPlan(wp as unknown as ActivationPlanOutput);
     }
 
     const today = new Date().toISOString().slice(0, 10);
