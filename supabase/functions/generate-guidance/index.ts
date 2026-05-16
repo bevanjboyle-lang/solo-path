@@ -1,3 +1,20 @@
+// generate-guidance v27 — V-055 fix: replace getClaims with inline JWT decode — 2026-05-16
+//
+// Bug: V-055 — authClient.auth.getClaims(token) was silently failing on valid
+// gateway-verified JWTs in production, causing the function's internal auth
+// check to return null → 401 on every legitimate call from /library when the
+// user clicked a module to get advice. Edge function logs (2026-05-16, 07:39
+// and 08:35 UTC) showed two POST 401s from Bevan's session on solo-plan.com.
+//
+// Fix: since verify_jwt:true at the Supabase gateway has already validated
+// the JWT signature before the function runs, the function only needs to
+// extract the `sub` claim. v27 replaces the getClaims-dependent helper with
+// the inline base64 JWT-payload decoder used by create-payment v23+. No
+// signature verification needed (gateway did it); no authClient dependency.
+//
+// Same fix is owed to the three other functions still using getClaims
+// (V-055 consolidation). Out of scope for v27; tracked separately.
+//
 // generate-guidance v26 — canonical reconciliation per Phase 1 spec — 2026-05-15
 //
 // Replaces v25's thin 5-line inline system prompt + generic key_insights/next_steps/
@@ -58,7 +75,7 @@ import {
   type ValidationResult,
 } from "./guidance-output-validator.ts";
 
-const FUNCTION_VERSION = "v26-canonical-reconciliation";
+const FUNCTION_VERSION = "v27-v055-getclaims-fix";
 const MODEL_TIER1 = "gpt-5.4";
 const MAX_VALIDATOR_RETRIES = 2;  // 3 total attempts, matching ADR-019 amended budget
 const TEMPERATURE = 0.3;
@@ -70,26 +87,27 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
-// ─── Auth: JWT via getClaims (per memory `feedback_supabase_session_validation`) ─
+// ─── Auth: JWT via inline base64 payload decode (V-055 fix) ─────────────────────
+//
+// The Supabase gateway has verify_jwt:true on this function, so by the time
+// the function runs the JWT signature has already been validated. We only
+// need to extract the `sub` claim from the payload. authClient.auth.getClaims
+// was unreliable in live (V-055) — the inline decoder is what create-payment
+// v23+ uses and is the reliable pattern across the codebase.
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY =
-  Deno.env.get("SUPABASE_ANON_KEY") ??
-  Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ??
-  "";
 
-const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
-
-async function getUserIdFromJwt(authHeader: string | null): Promise<string | null> {
+function getUserIdFromJwt(authHeader: string | null): string | null {
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   try {
     const token = authHeader.slice(7).trim();
     if (!token) return null;
-    const { data, error } = await authClient.auth.getClaims(token);
-    if (error) return null;
-    const sub = data?.claims?.sub;
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    const sub = payload?.sub;
     return typeof sub === "string" && sub ? sub : null;
   } catch {
     return null;
