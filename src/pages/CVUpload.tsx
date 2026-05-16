@@ -1,30 +1,112 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Shield, Sparkles, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { continueFunnel } from "@/lib/handlers";
 import { getClientSessionId } from "@/lib/clientSession";
 import TopBar from "@/components/TopBar";
 import ProgressHeader from "@/components/ProgressHeader";
 import CVUploadZone from "@/components/CVUploadZone";
-import { Button } from "@/components/ui/button";
+import SoloLogo from "@/components/SoloLogo";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 
+/*
+ * CVUpload — Pass 1 /cv-upload v1 (2026-05-16)
+ *
+ * Translates Claude Design's Pass 1 proposal into the live page. Inherits
+ * the editorial composition vocabulary established on the home page in
+ * Pass 1: single contained ivory panel on the office photo, eyebrow rules
+ * + small-caps section labels, asymmetric 8/4 split for the drop zone and
+ * "Why we ask" card, stacked action row with hard hierarchical gap
+ * between Continue and Skip, footer compressed inside the panel.
+ *
+ * Locked decisions from admin/pass-1-cv-upload-decisions.md:
+ *   F1 — Why we ask alongside the drop zone (not beneath)
+ *   F2 — Skip is single-action; Continue stays "Continue", disabled until
+ *        upload completes. Reading B (simpler) locked.
+ *   F3 — Time chip "≈ 1 min" on the ProgressHeader (funnel-wide pattern)
+ *   F6 — Encrypted trust line sharpened to specifics:
+ *        "Encrypted · EU storage · deletable from /account"
+ *   F7 — Success Toast dropped; in-surface chip is the success signal
+ *
+ * Dark-card cadence: zero dark cards on this screen. Operational/
+ * transitional surfaces run all-ivory under design-direction.md v1.4 §8.
+ *
+ * No framer-motion fade — the editorial register should land instantly.
+ */
+
 const WHY_BULLETS = [
   {
-    icon: Sparkles,
-    text: "It makes your report sharper. We ground the analysis in your actual role and history.",
+    lead: "Sharper report.",
+    body: "Grounds the analysis in your actual role and history, not a generic archetype match.",
   },
   {
-    icon: Shield,
-    text: "We don't share your CV. It's used once, then stored encrypted against your account.",
+    lead: "Not shared.",
+    body: "Used once for your report, then stored encrypted against your account.",
   },
   {
-    icon: Trash2,
-    text: "You can delete it any time from your account page.",
+    lead: "Deletable.",
+    body: "Remove it any time from /account.",
   },
-];
+] as const;
+
+function SectionLabel({ num, children }: { num: string; children: React.ReactNode }) {
+  return (
+    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <span className="text-primary mr-3 tabular-nums">{num}</span>
+      {children}
+    </div>
+  );
+}
+
+function WhyWeAskCard() {
+  return (
+    <aside className="border border-[#D8D4CC] bg-[#F3F0EA] rounded-xl">
+      <div className="border-b border-[#E5E2DC] px-6 py-4">
+        <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+          <span className="text-foreground">Why we ask</span>
+        </div>
+      </div>
+      <ul className="px-6 py-6 space-y-5">
+        {WHY_BULLETS.map((item, i) => (
+          <li key={i} className="flex gap-4">
+            <span className="text-primary text-[10px] font-semibold tabular-nums tracking-[0.1em] pt-1 shrink-0">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span className="text-[13.5px] text-foreground leading-relaxed">
+              <strong className="font-semibold">{item.lead}</strong>{" "}
+              <span className="text-muted-foreground">{item.body}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
+function WhyWeAskMobile() {
+  return (
+    <div className="space-y-5 px-6 pb-8 pt-4">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">
+        Why we ask
+      </div>
+      <ul className="space-y-5">
+        {WHY_BULLETS.map((item, i) => (
+          <li key={i} className="flex gap-4">
+            <span className="text-primary text-[10px] font-semibold tabular-nums tracking-[0.1em] pt-1 shrink-0">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span className="text-[13.5px] text-foreground leading-relaxed">
+              <strong className="font-semibold">{item.lead}</strong>{" "}
+              <span className="text-muted-foreground">{item.body}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default function CVUpload() {
   const navigate = useNavigate();
@@ -37,7 +119,9 @@ export default function CVUpload() {
   const clearStoredExtract = () => {
     try {
       localStorage.removeItem(cvExtractKey);
-    } catch {}
+    } catch {
+      /* no-op */
+    }
   };
 
   const handleExtractComplete = (
@@ -66,90 +150,160 @@ export default function CVUpload() {
     continueFunnel(navigate, "/questionnaire");
   };
 
-  const WhyWeAskContent = () => (
-    <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-[hsl(var(--text-heading))] tracking-tight">
-        Why we ask
-      </h3>
-      <ul className="space-y-3">
-        {WHY_BULLETS.map((item, i) => (
-          <li key={i} className="flex gap-3 text-sm text-[hsl(var(--text-body))] leading-relaxed">
-            <item.icon className="w-4 h-4 mt-0.5 shrink-0 text-[hsl(var(--text-muted))]" />
-            <span>{item.text}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <TopBar />
-      <ProgressHeader currentStep={1} totalSteps={3} labels={["CV", "Questions", "Report"]} />
+    <div className="relative min-h-screen text-foreground">
+      {/* Funnel mode: TopBar minimal = no centre nav, no "Take the test" CTA.
+          The Back affordance is inline at the top of the panel below. */}
+      <TopBar minimal />
 
-      <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-12 md:py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="space-y-8"
-        >
-          {/* Heading */}
-          <div className="space-y-2">
-            <h1 className="text-2xl md:text-3xl font-semibold text-[hsl(var(--text-heading))] tracking-tight leading-tight">
-              Upload your CV
-            </h1>
-            <p className="text-[hsl(var(--text-body))] text-base leading-relaxed">
-              Optional. Skipping is fine — we'll ask about your experience in the next step either way.
-            </p>
-          </div>
-
-          {/* Upload zone */}
-          <CVUploadZone
-            clientSessionId={clientSessionId}
-            onUploadComplete={(path) => setCvPath(path)}
-            onUploadClear={() => {
-              setCvPath(null);
-              clearStoredExtract();
-            }}
-            onExtractComplete={handleExtractComplete}
-          />
-
-          {/* Why we ask — desktop: inline, mobile: drawer */}
-          {isMobile ? (
-            <Drawer>
-              <DrawerTrigger asChild>
-                <button className="text-sm text-[hsl(var(--text-muted))] underline underline-offset-2 hover:text-[hsl(var(--text-body))] transition-colors">
-                  Why do we ask for this?
+      <main className="pt-[68px]">
+        <section className="py-10 lg:py-14">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory">
+              {/* ─── Panel top row: Back link + section label + small Solo logo ─── */}
+              <div className="px-8 sm:px-12 lg:px-16 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+                <button
+                  onClick={() => navigate("/")}
+                  className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Back</span>
                 </button>
-              </DrawerTrigger>
-              <DrawerContent className="px-6 pb-8 pt-4">
-                <WhyWeAskContent />
-              </DrawerContent>
-            </Drawer>
-          ) : (
-            <div className="border border-border rounded-lg p-5 bg-[hsl(var(--surface-panel))]">
-              <WhyWeAskContent />
-            </div>
-          )}
+                <SoloLogo width={96} height={28} />
+              </div>
 
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-            <Button
-              onClick={handleContinue}
-              disabled={!cvPath}
-              className="w-full sm:w-auto bg-[hsl(var(--mint))] hover:bg-[hsl(var(--mint-hover))] text-white font-medium px-8"
-            >
-              Continue
-            </Button>
-            <button
-              onClick={handleSkip}
-              className="text-sm text-[hsl(var(--text-muted))] underline underline-offset-2 hover:text-[hsl(var(--text-body))] transition-colors"
-            >
-              Skip this step
-            </button>
+              {/* ─── Page content ─── */}
+              <div className="px-8 sm:px-12 lg:px-16 pt-6">
+                <SectionLabel num="01">Activation</SectionLabel>
+              </div>
+
+              <div className="px-8 sm:px-12 lg:px-16 pt-4">
+                <ProgressHeader
+                  currentStep={1}
+                  totalSteps={3}
+                  labels={["CV", "Questionnaire", "Report"]}
+                  timeEstimate="≈ 1 min"
+                />
+              </div>
+
+              {/* ─── H1 + standfirst (asymmetric on desktop, stacked on mobile) ─── */}
+              <div className="px-8 sm:px-12 lg:px-16 pb-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12">
+                <div className="lg:col-span-7">
+                  <h1 className="text-[34px] sm:text-[40px] lg:text-[48px] font-semibold tracking-tight leading-[1.1] text-foreground">
+                    Upload your CV{" "}
+                    <span className="text-muted-foreground">— we'll tailor the report to your background.</span>
+                  </h1>
+                </div>
+                <div className="lg:col-span-5 lg:pt-2">
+                  <p className="text-[15px] text-muted-foreground leading-relaxed lg:text-right">
+                    Optional. Skipping is fine. We'll ask about your experience in the next step
+                    either way.
+                  </p>
+                </div>
+              </div>
+
+              {/* ─── Drop zone + Why we ask (asymmetric 8/4 on desktop) ─── */}
+              <div className="px-8 sm:px-12 lg:px-16 pb-10">
+                {isMobile ? (
+                  <div className="space-y-6">
+                    <CVUploadZone
+                      clientSessionId={clientSessionId}
+                      onUploadComplete={(path) => setCvPath(path)}
+                      onUploadClear={() => {
+                        setCvPath(null);
+                        clearStoredExtract();
+                      }}
+                      onExtractComplete={handleExtractComplete}
+                    />
+                    <Drawer>
+                      <DrawerTrigger asChild>
+                        <button className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors">
+                          Why we ask
+                        </button>
+                      </DrawerTrigger>
+                      <DrawerContent>
+                        <WhyWeAskMobile />
+                      </DrawerContent>
+                    </Drawer>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-12 gap-8">
+                    <div className="col-span-8">
+                      <CVUploadZone
+                        clientSessionId={clientSessionId}
+                        onUploadComplete={(path) => setCvPath(path)}
+                        onUploadClear={() => {
+                          setCvPath(null);
+                          clearStoredExtract();
+                        }}
+                        onExtractComplete={handleExtractComplete}
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <WhyWeAskCard />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ─── Action row ─── */}
+              <div className="px-8 sm:px-12 lg:px-16 pb-12 border-t border-[#E5E2DC] pt-8">
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
+                  <div className="flex flex-col items-start gap-3">
+                    <button
+                      onClick={handleContinue}
+                      disabled={!cvPath}
+                      className={`rounded-md px-7 py-3 text-[14px] font-semibold transition-colors w-full sm:w-auto ${
+                        cvPath
+                          ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90"
+                          : "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
+                      }`}
+                    >
+                      Continue
+                    </button>
+                    <button
+                      onClick={handleSkip}
+                      className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors self-start"
+                    >
+                      Skip this step →
+                    </button>
+                  </div>
+                  <div className="text-[12px] text-muted-foreground/80 leading-relaxed max-w-sm sm:text-right">
+                    Continue enables once a file has uploaded successfully. Skip is always available.
+                  </div>
+                </div>
+              </div>
+
+              {/* ─── Footer (compressed inside panel) ─── */}
+              <div className="border-t border-[#E5E2DC] px-8 sm:px-12 lg:px-16 py-5">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[12px] text-muted-foreground">
+                  <div className="flex items-center gap-3">
+                    <SoloLogo width={64} height={18} />
+                    <span className="text-muted-foreground/40">·</span>
+                    <span>£19.99 one-time</span>
+                    <span className="text-muted-foreground/40">·</span>
+                    <span>No subscription required</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <a
+                      href="/privacy"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      Privacy
+                    </a>
+                    <span className="text-muted-foreground/40">·</span>
+                    <a
+                      href="/terms"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      Terms
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </motion.div>
+        </section>
       </main>
     </div>
   );

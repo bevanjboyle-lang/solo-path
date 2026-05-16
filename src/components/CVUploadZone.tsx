@@ -1,8 +1,22 @@
 import { useState, useRef, useCallback } from "react";
-import { Upload, FileText, X, RefreshCw, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+
+/*
+ * CVUploadZone — Pass 1 /cv-upload v1 (2026-05-16)
+ *
+ * Editorial drop zone for /cv-upload. Replaces the previous dashed-border
+ * dropzone-icon SaaS surface with a deliberate stone-inset surface where
+ * the affordance is carried by typography, not iconography. State changes
+ * render as composition shifts inside the same surface (eyebrow label
+ * reframes the purpose; border colour marks the active state).
+ *
+ * The Toast on upload success is dropped per Pass 1 /cv-upload F7
+ * resolution 2026-05-16 — the in-surface chip + Encrypted trust line is
+ * the success signal. ARIA-live on the surface covers the screen-reader
+ * announcement.
+ *
+ * Composition reference: admin/pass-1-cv-upload-decisions.md.
+ */
 
 const ACCEPTED_TYPES = [
   "application/pdf",
@@ -12,7 +26,14 @@ const ACCEPTED_TYPES = [
 const ACCEPTED_EXT = [".pdf", ".doc", ".docx"];
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
-type UploadState = "empty" | "hovering" | "uploading" | "uploaded" | "error";
+type UploadState =
+  | "empty"
+  | "hovering"
+  | "uploading"
+  | "uploaded"
+  | "error-size"
+  | "error-type"
+  | "error-failed";
 
 interface CVUploadZoneProps {
   clientSessionId: string;
@@ -31,28 +52,21 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function validateFile(file: File): string | null {
+function validateFile(file: File): UploadState | null {
   const ext = "." + file.name.split(".").pop()?.toLowerCase();
   if (!ACCEPTED_TYPES.includes(file.type) && !ACCEPTED_EXT.includes(ext)) {
-    return "PDF or Word document only.";
+    return "error-type";
   }
   if (file.size > MAX_SIZE) {
-    return "Please upload a file under 10MB.";
+    return "error-size";
   }
   return null;
 }
 
 /**
  * Build a Supabase-Storage-safe object name from the user's filename.
- *
- * Supabase Storage object names reject spaces and most special characters
- * with a 400. The user's display name is preserved separately (we still
- * show `file.name` in the uploaded-state UI); this helper only governs
- * the path the file is *stored* under.
- *
- * Strategy: keep the extension intact, replace any character that isn't
- * a word character / hyphen / dot with an underscore, collapse runs, and
- * lowercase. Falls back to "cv" if sanitisation strips everything.
+ * Storage rejects spaces and most special characters with a 400. We
+ * preserve `file.name` for display and sanitise the storage path only.
  */
 function sanitiseStorageName(originalName: string): string {
   const lastDot = originalName.lastIndexOf(".");
@@ -66,6 +80,91 @@ function sanitiseStorageName(originalName: string): string {
   return (cleanedStem || "cv") + ext;
 }
 
+/* ─── Small bits ─── */
+
+function Eyebrow({
+  tone = "neutral",
+  label,
+  spec,
+}: {
+  tone?: "neutral" | "active" | "error" | "success";
+  label: string;
+  spec?: React.ReactNode;
+}) {
+  const dotColour =
+    tone === "error"
+      ? "bg-red-600"
+      : tone === "success" || tone === "active"
+      ? "bg-primary"
+      : "bg-primary";
+  const labelColour = tone === "error" ? "text-red-700" : "text-foreground";
+  return (
+    <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
+      <span className={`inline-block w-1.5 h-1.5 rounded-full ${dotColour}`} />
+      <span className={labelColour}>{label}</span>
+      {spec && (
+        <>
+          <span className="text-muted-foreground/40">/</span>
+          <span className={tone === "success" ? "text-primary normal-case tracking-normal text-[12px] font-normal" : "text-muted-foreground normal-case tracking-normal text-[12px] font-normal"}>
+            {spec}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function Surface({
+  state,
+  children,
+  onDrop,
+  onDragOver,
+  onDragLeave,
+  onClick,
+  onKeyDown,
+  ariaLabel,
+}: {
+  state: UploadState;
+  children: React.ReactNode;
+  onDrop?: (e: React.DragEvent) => void;
+  onDragOver?: (e: React.DragEvent) => void;
+  onDragLeave?: () => void;
+  onClick?: () => void;
+  onKeyDown?: (e: React.KeyboardEvent) => void;
+  ariaLabel?: string;
+}) {
+  const isInteractive = state === "empty" || state === "hovering";
+  const borderColour =
+    state === "hovering" || state === "uploading"
+      ? "border-primary"
+      : state === "error-size" || state === "error-type" || state === "error-failed"
+      ? "border-red-600/70"
+      : state === "uploaded"
+      ? "border-primary/60"
+      : "border-[#D8D4CC]";
+
+  return (
+    <div
+      role={isInteractive ? "button" : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      onDrop={onDrop}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onClick={isInteractive ? onClick : undefined}
+      onKeyDown={isInteractive ? onKeyDown : undefined}
+      aria-label={isInteractive ? ariaLabel : undefined}
+      aria-live="polite"
+      className={`w-full bg-[#F3F0EA] border ${borderColour} rounded-xl transition-colors ${
+        isInteractive ? "cursor-pointer hover:border-primary/60" : ""
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ─── Component ─── */
+
 export default function CVUploadZone({
   clientSessionId,
   onUploadComplete,
@@ -73,48 +172,55 @@ export default function CVUploadZone({
   onExtractComplete,
 }: CVUploadZoneProps) {
   const [state, setState] = useState<UploadState>("empty");
-  const [error, setError] = useState<string | null>(null);
   const [uploadedFile, setUploadedFile] = useState<{ name: string; size: number } | null>(null);
-  const [uploadedPath, setUploadedPath] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [errorFile, setErrorFile] = useState<{ name: string; size: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
+
+  const triggerBrowse = useCallback(() => inputRef.current?.click(), []);
 
   const upload = useCallback(
     async (file: File) => {
-      const validationError = validateFile(file);
-      if (validationError) {
-        setError(validationError);
-        setState("error");
+      const validationFail = validateFile(file);
+      if (validationFail) {
+        setErrorFile({ name: file.name, size: file.size });
+        setState(validationFail);
         return;
       }
 
-      setError(null);
       setState("uploading");
+      setUploadedFile({ name: file.name, size: file.size });
+      setUploadProgress(0);
 
-      // Supabase Storage rejects spaces and most special characters in object
-      // names with a 400. Sanitise before upload but keep `file.name` for the
-      // user-facing display.
+      // The Supabase JS client doesn't expose upload progress events on the
+      // storage upload helper, so we run a synthetic progress estimate during
+      // the request. Real progress would require switching to a signed-URL
+      // direct PUT and using XHR — out of scope for this Pass 1 visual lift.
+      const fakeProgressTimer = setInterval(() => {
+        setUploadProgress((p) => (p >= 90 ? 90 : p + 7));
+      }, 120);
+
       const safeName = sanitiseStorageName(file.name);
       const storagePath = `${clientSessionId}/${safeName}`;
       const { error: uploadError } = await supabase.storage
         .from("cv-uploads")
         .upload(storagePath, file, { upsert: true });
 
+      clearInterval(fakeProgressTimer);
+
       if (uploadError) {
         console.warn("CV upload failed:", uploadError);
-        setError("Upload failed, please try again.");
-        setState("error");
+        setErrorFile({ name: file.name, size: file.size });
+        setState("error-failed");
         return;
       }
 
-      setUploadedFile({ name: file.name, size: file.size });
-      setUploadedPath(storagePath);
+      setUploadProgress(100);
       setState("uploaded");
       onUploadComplete(storagePath);
-      toast({ title: "CV uploaded" });
 
-      // Fire parse-cv in the background. Failures are non-fatal — the user
-      // can still proceed; the report will simply be generated without CV context.
+      // Fire parse-cv in the background. Non-fatal — the report can be
+      // generated without CV context if parsing fails.
       try {
         const fd = new FormData();
         fd.append("file", file);
@@ -137,13 +243,12 @@ export default function CVUploadZone({
         console.warn("parse-cv threw (non-fatal):", err);
       }
     },
-    [clientSessionId, onUploadComplete, onExtractComplete, toast]
+    [clientSessionId, onUploadComplete, onExtractComplete]
   );
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      setState("empty");
       const file = e.dataTransfer.files[0];
       if (file) upload(file);
     },
@@ -152,7 +257,7 @@ export default function CVUploadZone({
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    setState((s) => (s === "uploaded" ? s : "hovering"));
+    setState((s) => (s === "empty" ? "hovering" : s));
   }, []);
 
   const handleDragLeave = useCallback(() => {
@@ -170,17 +275,28 @@ export default function CVUploadZone({
 
   const handleReplace = useCallback(() => {
     setUploadedFile(null);
-    setUploadedPath(null);
+    setUploadProgress(0);
     setState("empty");
     onUploadClear();
     inputRef.current?.click();
   }, [onUploadClear]);
 
   const handleRetry = useCallback(() => {
-    setError(null);
     setState("empty");
+    setErrorFile(null);
     inputRef.current?.click();
   }, []);
+
+  const handleClearError = useCallback(() => {
+    setState("empty");
+    setErrorFile(null);
+  }, []);
+
+  /* ─── Render by state ─── */
+
+  const eyebrowSpecLine = (
+    <>PDF · DOC · DOCX <span className="mx-1.5 text-muted-foreground/40">·</span> ≤ 10 MB</>
+  );
 
   return (
     <div className="w-full">
@@ -193,84 +309,194 @@ export default function CVUploadZone({
         aria-label="Upload CV file"
       />
 
-      {/* Uploaded state */}
-      {state === "uploaded" && uploadedFile && (
-        <div className="border border-[hsl(var(--mint))]/30 bg-[hsl(var(--surface-mint-tint))] rounded-lg p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-lg bg-[hsl(var(--mint))]/10 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-[hsl(var(--mint-text))]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[hsl(var(--text-heading))] truncate">
-                {uploadedFile.name}
-              </p>
-              <p className="text-xs text-[hsl(var(--text-muted))]">
-                {formatBytes(uploadedFile.size)} — uploaded
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReplace}
-              className="text-[hsl(var(--text-muted))] hover:text-[hsl(var(--text-heading))]"
-            >
-              Replace
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Uploading state */}
-      {state === "uploading" && (
-        <div className="border border-dashed border-[hsl(var(--mint))]/40 rounded-lg p-12 flex flex-col items-center justify-center gap-3 bg-[hsl(var(--surface-panel))]">
-          <RefreshCw className="w-6 h-6 text-[hsl(var(--mint))] animate-spin" />
-          <p className="text-sm text-[hsl(var(--text-muted))]">Uploading…</p>
-        </div>
-      )}
-
-      {/* Drop zone (empty / hovering) */}
+      {/* ─── Empty / Hovering ─── */}
       {(state === "empty" || state === "hovering") && (
-        <div
-          role="button"
-          tabIndex={0}
+        <Surface
+          state={state}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
-          onClick={() => inputRef.current?.click()}
+          onClick={triggerBrowse}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              inputRef.current?.click();
+              triggerBrowse();
             }
           }}
-          className={`border-2 border-dashed rounded-lg p-12 flex flex-col items-center justify-center gap-3 cursor-pointer transition-colors ${
-            state === "hovering"
-              ? "border-[hsl(var(--mint))] bg-[hsl(var(--surface-mint-tint))]"
-              : "border-border bg-[hsl(var(--surface-panel))] hover:border-[hsl(var(--mint))]/40"
-          }`}
-          aria-label="Drop your CV here, or click to browse"
+          ariaLabel="Drop your CV here, or click to browse"
         >
-          <Upload
-            className={`w-8 h-8 ${
-              state === "hovering" ? "text-[hsl(var(--mint))]" : "text-[hsl(var(--text-muted))]"
-            }`}
-          />
-          <p className="text-sm text-[hsl(var(--text-heading))] font-medium">
-            {state === "hovering" ? "Drop to upload" : "Drop your CV here, or click to browse"}
-          </p>
-          <p className="text-xs text-[hsl(var(--text-muted))]">PDF or Word. Up to 10MB.</p>
-        </div>
+          <div className="border-b border-[#E5E2DC] px-8 py-4">
+            <Eyebrow
+              tone={state === "hovering" ? "active" : "neutral"}
+              label={state === "hovering" ? "Release to upload" : "Upload / Drop zone"}
+              spec={eyebrowSpecLine}
+            />
+          </div>
+          <div className="px-8 sm:px-12 py-14 sm:py-16">
+            <p className="text-[20px] sm:text-[22px] font-semibold tracking-tight text-foreground leading-snug">
+              Drop your CV here, or{" "}
+              <em className="not-italic text-primary border-b-[1.5px] border-primary pb-0.5">
+                click to browse
+              </em>
+              .
+            </p>
+            <p className="mt-3 text-[13px] text-muted-foreground leading-relaxed max-w-xl">
+              Your file goes straight to encrypted storage. We use it once to ground the report in
+              your actual role and history.
+            </p>
+          </div>
+        </Surface>
       )}
 
-      {/* Error state */}
-      {state === "error" && error && (
-        <div className="border border-dashed border-[hsl(var(--error))]/40 rounded-lg p-12 flex flex-col items-center justify-center gap-3 bg-[hsl(var(--error-bg))]">
-          <AlertCircle className="w-6 h-6 text-[hsl(var(--error))]" />
-          <p className="text-sm text-[hsl(var(--error))] font-medium">{error}</p>
-          <Button variant="outline" size="sm" onClick={handleRetry}>
-            Try again
-          </Button>
-        </div>
+      {/* ─── Uploading ─── */}
+      {state === "uploading" && uploadedFile && (
+        <Surface state={state}>
+          <div className="border-b border-[#E5E2DC] px-8 py-4">
+            <Eyebrow tone="active" label="Uploading" spec={`${uploadedFile.name} · ${formatBytes(uploadedFile.size)}`} />
+          </div>
+          <div className="px-8 sm:px-12 py-12">
+            <div className="flex items-baseline justify-between mb-3">
+              <div className="text-[15px] font-semibold text-foreground truncate pr-4">
+                {uploadedFile.name}
+              </div>
+              <div className="text-[13px] font-semibold text-primary tabular-nums shrink-0">
+                {uploadProgress}%
+              </div>
+            </div>
+            <div className="h-0.5 bg-[#E5E2DC] overflow-hidden">
+              <div
+                className="h-full bg-primary transition-all duration-150"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <div className="mt-3 text-[12px] text-muted-foreground">
+              Uploading to encrypted storage.
+            </div>
+          </div>
+        </Surface>
+      )}
+
+      {/* ─── Uploaded ─── */}
+      {state === "uploaded" && uploadedFile && (
+        <Surface state={state}>
+          <div className="border-b border-[#E5E2DC] px-8 py-4">
+            <Eyebrow tone="success" label="Uploaded" spec="Ready to continue" />
+          </div>
+          <div className="px-8 sm:px-12 py-8 flex items-center gap-5">
+            {/* CSS document chip — no icon import */}
+            <div className="shrink-0 w-12 h-14 bg-white border border-[#D8D4CC] relative">
+              <div className="absolute top-0 right-0 w-3 h-3 bg-[#E5E2DC]" style={{ clipPath: "polygon(0 0, 100% 100%, 100% 0)" }} />
+              <div className="absolute inset-x-2 top-3 space-y-1">
+                <div className="h-0.5 bg-[#D8D4CC] w-full" />
+                <div className="h-0.5 bg-[#D8D4CC] w-3/4" />
+                <div className="h-0.5 bg-[#D8D4CC] w-full" />
+                <div className="h-0.5 bg-[#D8D4CC] w-2/3" />
+              </div>
+              <div className="absolute bottom-1 left-0 right-0 text-center text-[8px] font-semibold tracking-[0.1em] text-muted-foreground uppercase">
+                {uploadedFile.name.split(".").pop()?.toLowerCase() ?? "doc"}
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[16px] font-semibold text-foreground truncate">
+                {uploadedFile.name}
+              </div>
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] text-muted-foreground">
+                <span>{formatBytes(uploadedFile.size)}</span>
+                <span className="text-muted-foreground/40">·</span>
+                <span>Uploaded just now</span>
+                <span className="text-muted-foreground/40">·</span>
+                <span className="text-primary">
+                  Encrypted <span className="text-muted-foreground/60">·</span> EU storage{" "}
+                  <span className="text-muted-foreground/60">·</span> deletable from /account
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={handleReplace}
+              className="shrink-0 text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
+            >
+              Replace
+            </button>
+          </div>
+        </Surface>
+      )}
+
+      {/* ─── Errors (size / type / upload-failed) ─── */}
+      {(state === "error-size" || state === "error-type" || state === "error-failed") && (
+        <Surface state={state}>
+          <div className="border-b border-[#E5E2DC] px-8 py-4">
+            <Eyebrow
+              tone="error"
+              label="Rejected"
+              spec={
+                errorFile ? (
+                  <>
+                    {errorFile.name} <span className="mx-1.5 text-muted-foreground/40">·</span>{" "}
+                    {formatBytes(errorFile.size)}
+                  </>
+                ) : undefined
+              }
+            />
+          </div>
+          <div className="px-8 sm:px-12 py-10">
+            <div className="border-l-2 border-red-600 pl-4 bg-red-50/40 py-3 -ml-4 pr-4">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-red-700 mb-1">
+                Error
+              </div>
+              <div className="text-[14px] text-foreground leading-relaxed">
+                {state === "error-size" && (
+                  <>
+                    <strong className="font-semibold">File too large.</strong> Please upload a file
+                    under 10 MB.
+                  </>
+                )}
+                {state === "error-type" && (
+                  <>
+                    <strong className="font-semibold">Wrong file type.</strong> Please upload a PDF
+                    or Word document.
+                  </>
+                )}
+                {state === "error-failed" && (
+                  <>
+                    <strong className="font-semibold">Upload failed.</strong> Please try again — your
+                    file wasn't sent.
+                  </>
+                )}
+              </div>
+            </div>
+            <p className="mt-6 text-[15px] font-medium text-foreground">
+              {state === "error-failed" ? (
+                <>
+                  <button
+                    onClick={handleRetry}
+                    className="text-primary border-b-[1.5px] border-primary pb-0.5 hover:opacity-80 transition-opacity"
+                  >
+                    Retry upload
+                  </button>
+                  , or{" "}
+                  <button
+                    onClick={handleClearError}
+                    className="text-muted-foreground border-b border-[#D8D4CC] pb-0.5 hover:text-foreground transition-colors"
+                  >
+                    choose a different file
+                  </button>
+                  .
+                </>
+              ) : (
+                <>
+                  Drop a different file, or{" "}
+                  <button
+                    onClick={triggerBrowse}
+                    className="text-primary border-b-[1.5px] border-primary pb-0.5 hover:opacity-80 transition-opacity"
+                  >
+                    click to browse
+                  </button>
+                  .
+                </>
+              )}
+            </p>
+          </div>
+        </Surface>
       )}
     </div>
   );
