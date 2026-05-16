@@ -27,18 +27,6 @@ import AIImpactSection from "@/components/sample-report/AIImpactSection";
 import type { SoloCoreReport, ReportRow } from "@/types/canonical";
 import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
 
-const SECTION_DEFS: { id: string; label: string; key: keyof SoloCoreReport | "edge" | "paths" }[] = [
-  { id: "edge", label: "Your edge", key: "hook_insight" as keyof SoloCoreReport },
-  { id: "archetype", label: "Your archetype", key: "archetype" },
-  { id: "sell", label: "What you can sell", key: "transferable_value" },
-  { id: "skills", label: "Your transferable skills", key: "transferable_skills" },
-  { id: "paths", label: "Your 10 paths", key: "options" },
-  { id: "recommendation", label: "Our recommendation", key: "recommendation" },
-  { id: "reality", label: "Reality check", key: "reality_check" },
-  { id: "income", label: "Income outlook", key: "income_outlook" },
-  { id: "ai", label: "AI & your future", key: "ai_impact" },
-];
-
 export default function Report() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -239,11 +227,6 @@ export default function Report() {
   return (
     <div className="flex min-h-screen flex-col">
       <TopBar />
-
-      {sidebarItems.length > 0 && (
-        <AreaSidebar items={sidebarItems} />
-      )}
-
       <div className="mx-auto w-full max-w-screen-xl px-6">
         <div className="flex gap-10">
           {sidebarItems.length > 0 && <AreaSidebar items={sidebarItems} />}
