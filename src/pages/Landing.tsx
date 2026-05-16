@@ -1,31 +1,36 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import {
-  Compass,
-  CalendarCheck,
-  Users,
-  MessagesSquare,
-  BookOpen,
-  Send,
-  ClipboardList,
-  FileText,
-  Rocket,
-} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
 import ScrollReveal from "@/components/ui/ScrollReveal";
-import SoloLogo from "@/components/SoloLogo";
 import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
+
+/*
+ * Landing — Pass 1 facelift (2026-05-16)
+ *
+ * Implements the Claude Design Pass 1 proposal under the editorial DNA locked in
+ * design-direction.md v1.2 (FT/Economist register, surface-only warmth, no 960px
+ * lock, twice-per-page bare-on-photo licence). Decisions captured in
+ * admin/pass-1-home-decisions.md. Spec acceptance criteria in screen-specs/01-home.md.
+ *
+ * Bevan overrides applied: no mint stat strip on the home page; pricing summary
+ * tiles render at equal width.
+ *
+ * 12 sections in order per the spec: Hero / How it works / Why Solo /
+ * Who it's for / Sample report (the moment) / Repeat CTA / Social proof
+ * (reserved) / Pricing summary / About / FAQ teaser / Final CTA / Footer.
+ *
+ * Every "Take the test" CTA routes through startTest(). No inline auth logic.
+ * Authed visitor sees "Open my plan" in hero; rest of page renders unchanged.
+ */
 
 /* ─── Handler wiring (named handlers only) ─── */
 function useHomeHandlers() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // If a magic-link error landed on `/`, forward it to /auth so the banner renders there.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const hash = window.location.hash;
@@ -41,86 +46,204 @@ function useHomeHandlers() {
   };
 }
 
-/* ─── Section 3: What you get ─── */
-const featureCards = [
-  {
-    eyebrow: "Decision engine",
-    title: "A stress-tested set of feasible options, not a brainstorm",
-    body: "Solo classifies your profile against 95 professional archetypes and scores it across 480 business models. By the time you see your options, the weak ones are already gone. What's left is specific to your background, your network, and your financial reality.",
-    icon: Compass,
-  },
-  {
-    eyebrow: "Adaptive plan",
-    title: "A plan that responds to real life",
-    body: "The 30-day plan isn't a template. It's built from your profile and updated daily based on what actually happens. Fall behind in week two — the plan adjusts. Things accelerate — it moves with you. It tracks where you are, not where you were supposed to be.",
-    icon: CalendarCheck,
-  },
-  {
-    eyebrow: "Named outreach contacts",
-    title: "Real names. Not \"try LinkedIn.\"",
-    body: "For paths that involve direct contact, Solo finds actual people — by name, role, and company. When you're ready to send a message, Solo drafts it for you, in your voice, for that specific person. The first client is the hardest part. Solo gets you to the message.",
-    icon: Users,
-  },
-  {
-    eyebrow: "Contextual coaching",
-    title: "The more you use it, the sharper it gets",
-    body: "Ask Solo anything about your progress, your options, or your next move. Every answer draws on everything it has built about you — your archetype, your active paths, your check-in history, your blockers. Not generic advice. A specific answer to your specific situation, from a system that has been paying attention.",
-    icon: MessagesSquare,
-  },
-  {
-    eyebrow: "Guidance library",
-    title: "Guidance for the hard parts",
-    body: "Going independent involves challenges that are genuinely difficult — pricing your work, positioning yourself, handling rejection, building a pipeline from scratch. Solo includes a structured guidance library covering nine of these areas in depth. Available when you need them, not pushed at you when you don't.",
-    icon: BookOpen,
-  },
-  {
-    eyebrow: "Four types of move",
-    title: "Every move drafted. You decide whether to make it.",
-    body: "Whether your path calls for a direct approach to a named contact, registering on a marketplace, writing a LinkedIn post, or joining the right community — Solo generates the move. You don't have to figure out what to do next. The next move is always ready.",
-    icon: Send,
-  },
-];
+/* ─── Section data ─── */
 
-/* ─── Section 5: Testimonials ─── */
-const testimonials = [
-  {
-    quote: "I'd spent two weeks going back and forth with ChatGPT trying to figure out my options. I kept getting the same advice — build a personal brand, network in my sector. Solo gave me a shortlist, told me which two paths fit my background best, and produced a list of named people to contact in week one. I sent the first message within two days. I'd never have moved that quickly on my own.",
-    name: "Sarah M.",
-    descriptor: "Finance Director, 14 years in financial services",
-  },
-  {
-    quote: "The contact suggestions were what surprised me most. Not 'search LinkedIn for people in your sector' — actual named people, with enough context that I knew immediately who to approach first. I made three approaches in the first fortnight. One of them is now a real conversation. I've been trying to get to this point for a year.",
-    name: "Marcus D.",
-    descriptor: "Strategy Manager, 9 years in-house, now independent",
-  },
-  {
-    quote: "What got me was how accurate the archetype description was. It described how I work, what I'm actually good at, and what buyers would want from me more precisely than anything I'd written about myself. The paths it flagged weren't the obvious ones — they were the ones I'd been too uncertain to take seriously. The plan made them feel achievable.",
-    name: "James K.",
-    descriptor: "Senior Programme Director, public sector background",
-  },
-];
+const HERO_SPEC = [
+  { num: "95", label: "Professional archetypes" },
+  { num: "14", label: "Domains" },
+  { num: "480", label: "Business models" },
+  { num: "2,694", label: "Scored combinations" },
+] as const;
 
-/* ─── Section 6: How it works ─── */
-const steps = [
+const HERO_TRUST = [
+  { k: "Built for", v: "Mid-career professionals" },
+  { k: "Plan", v: "30-day activation" },
+  { k: "Price", v: "£19.99 one-time" },
+  { k: "Commitment", v: "No subscription required" },
+] as const;
+
+const STEPS = [
   {
     num: "01",
-    title: "Tell Solo about your career",
-    desc: "13 targeted questions covering your role, experience, network, working style, and financial situation. Upload your CV first and it cuts to around 4 questions. Takes 8 minutes.",
-    icon: ClipboardList,
+    title: "Answer the questionnaire",
+    body:
+      "About forty minutes. We classify you against 95 professional archetypes across 14 domains. Specific, not motivational — we ask what you've actually done, not what you're passionate about.",
+    meta: "≈ 40 min · 18 questions",
   },
   {
     num: "02",
     title: "Get your report",
-    desc: "Solo classifies you against 95 professional archetypes and scores your profile across 480 business models. You receive a ranked shortlist of your top paths — each with a difficulty rating, a speed-to-revenue estimate, and an explanation of why it fits your profile.",
-    icon: FileText,
+    body:
+      "Five active strands, scored. One warmest. Each named, each costed, each with a credibility gap and a time-to-first-revenue.",
+    meta: "Delivered in < 8 min",
   },
   {
     num: "03",
-    title: "Start making moves",
-    desc: "A 30-day activation plan starts immediately. Daily check-ins track your progress. Named contacts are ready when you are. Ask Solo anything at any point — it knows your situation.",
-    icon: Rocket,
+    title: "Work your 30-day plan",
+    body:
+      "Daily moves. Platform, visibility, community, and direct. Tracked in the check-in loop, regenerated when you tell us a move didn't land.",
+    meta: "30 days · ~15 min / day",
   },
-];
+] as const;
+
+const PROPS = [
+  {
+    num: "01",
+    title: "Built for people who want a Plan B, not a motivational poster.",
+    body:
+      "Solo informs. It does not motivate. If you've been in a structured profession for five to twelve years, the question is rarely \"what would I love to do\" — it's \"what would actually pay, given what I already know, if the call came tomorrow.\" Solo answers the second question and refuses the first.",
+    titleClass: "text-[26px] sm:text-[30px] lg:text-[34px] leading-[1.15]",
+    span: "lg:col-span-7",
+  },
+  {
+    num: "02",
+    title: "Eliminates the weak paths before you see them.",
+    body:
+      "Most of the 480 business models we score are wrong for you. The report only shows you the ones that aren't.",
+    titleClass: "text-[19px] sm:text-[20px] lg:text-[22px] leading-[1.25]",
+    span: "lg:col-span-5",
+  },
+  {
+    num: "03",
+    title: "Commercial realism, costed.",
+    body:
+      "Each strand carries a credibility gap, an estimated time to first revenue, and a daily-rate range grounded in the market for your domain. Not a vision board.",
+    titleClass: "text-[22px] sm:text-[24px] lg:text-[26px] leading-[1.2]",
+    span: "lg:col-span-6",
+  },
+  {
+    num: "04",
+    title: "Built around the move, not the dream.",
+    body:
+      "Your 30-day plan is a sequence of specific moves — platform registrations, one post, one community, one message to one person. The product tracks each one and adapts when something doesn't land.",
+    titleClass: "text-[22px] sm:text-[24px] lg:text-[26px] leading-[1.2]",
+    span: "lg:col-span-6",
+    offsetLeftRule: true,
+  },
+] as const;
+
+const PERSONAS = [
+  {
+    tag: "01 The Director, 11 years in",
+    quote:
+      "Finance director, two restructures behind me, third one on the horizon. I'm not looking for inspiration. I'm looking for the three things I could actually go and sell next Monday.",
+    attribution: "Composite, FP&A / Big Four / FTSE 250",
+    align: "left" as const,
+  },
+  {
+    tag: "02 The Operator, 9 years in",
+    quote:
+      "Programme director in a regulated business. The exit isn't tomorrow but it isn't five years either. I want the plan in the drawer.",
+    attribution: "Composite, Risk / Operations / Regulated industries",
+    align: "right" as const,
+  },
+] as const;
+
+const SAMPLE_STRAND_DATA = [
+  { dt: "Day rate", dd: "£800 – £1,200" },
+  { dt: "Time to 1st revenue", dd: "6 – 10 weeks" },
+  { dt: "Clients for utilisation", dd: "3 – 5" },
+  { dt: "Credibility gap", dd: "Low" },
+] as const;
+
+const PRICING = [
+  {
+    type: "One-time",
+    pill: "Most start here",
+    pillMuted: false,
+    amount: "£19.99",
+    qualifier: "once",
+    features: [
+      "Full report — five scored strands",
+      "30-day activation plan",
+      "Lifetime access to your report",
+    ],
+    primary: true,
+  },
+  {
+    type: "Monthly",
+    pill: "Optional",
+    pillMuted: true,
+    amount: "£19",
+    qualifier: "/month, cancel any time",
+    features: [
+      "Everything in one-time",
+      "Daily check-in loop",
+      "Move regeneration when something doesn't land",
+    ],
+    primary: false,
+  },
+] as const;
+
+const FAQ_ITEMS = [
+  {
+    q: "Is this AI?",
+    a:
+      "AI runs the classifier and drafts the moves. The scoring model, the archetype taxonomy, and the move templates are built by humans. We don't lead with \"AI\" because the user is buying the conclusions, not the technology.",
+    defaultOpen: true,
+  },
+  {
+    q: "What if my profile doesn't fit a clean archetype?",
+    a: "Most don't fit cleanly. The classifier returns the closest match plus the two nearest alternatives. The report reflects the blend.",
+    defaultOpen: false,
+  },
+  {
+    q: "Will my employer find out I've used this?",
+    a: "No. Solo never publishes, never emails employers, never indexes your data. Your CV is processed and discarded.",
+    defaultOpen: false,
+  },
+] as const;
+
+/* ─── Small composable bits ─── */
+
+function SectionLabel({ num, children }: { num: string; children: React.ReactNode }) {
+  return (
+    <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <span className="text-primary mr-3 tabular-nums">{num}</span>
+      {children}
+    </div>
+  );
+}
+
+function PrimaryButton({
+  onClick,
+  children,
+  className = "",
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 transition-colors hover:bg-primary/90 ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SecondaryButton({
+  onClick,
+  children,
+  className = "",
+}: {
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-md border border-foreground/20 bg-transparent px-7 py-3 text-[14px] font-semibold text-foreground transition-colors hover:bg-foreground/5 ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* ─── Page ─── */
 
 export default function Landing() {
   const [searchParams] = useSearchParams();
@@ -147,370 +270,581 @@ export default function Landing() {
       )}
 
       <main className="pt-[68px]">
-        {/* ═══ SECTION 1 — HERO ═══ */}
-        <section className="relative overflow-hidden">
-          {/* Solid black band over the photo background */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{ background: "#1A1915" }}
-          />
-          {/* Dark overlay for text readability */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0"
-            style={{ background: "rgba(0,0,0,0.35)" }}
-          />
-
-          <div className="relative mx-auto max-w-5xl px-6 pb-10 pt-6 sm:pb-12 sm:pt-8 text-center">
-            <motion.div
-              className="mb-6 sm:mb-8 flex justify-center"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              style={{ color: "#FAF9F7" }}
-            >
-              <SoloLogo width={180} height={52} />
-            </motion.div>
-            <motion.h1
-              className="font-display text-[2.5rem] font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.5rem]"
-              style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-            >
-              If you needed to earn an independent income fast, what would you do?
-            </motion.h1>
-
-            <motion.p
-              className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed sm:text-xl"
-              style={{ color: "rgba(250,249,247,0.9)" }}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              Most professionals don't have a credible answer to that. Solo builds one — from your actual career, not a template.
-            </motion.p>
-
-            <motion.div
-              className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-4"
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              {isAuthed ? (
-                <button
-                  onClick={handleOpenPlan}
-                  className="rounded-lg bg-[#2ECDB0] px-8 py-3.5 text-base font-semibold text-white shadow-md ring-1 ring-black/10 transition-colors hover:bg-[#26B89D]"
-                >
-                  Open my plan
-                </button>
-              ) : (
-                <button
-                  onClick={handleStartTest}
-                  className="rounded-lg bg-[#2ECDB0] px-8 py-3.5 text-base font-semibold text-white shadow-md ring-1 ring-black/10 transition-colors hover:bg-[#26B89D]"
-                >
-                  Assess your options
-                </button>
-              )}
-              <a
-                href="/sample-report"
-                className="rounded-lg border border-white/80 bg-transparent px-8 py-3.5 text-base font-semibold text-white transition-colors hover:bg-white hover:text-[#1A8A72]"
-              >
-                See a sample report
-              </a>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ═══ SECTION 2 — What Solo is ═══ */}
-        <section className="py-10 lg:py-14">
+        {/* ═══ §2 — HERO · "The Standfirst" (Option A) ═══ */}
+        <section className="pb-10 pt-8 lg:pb-14 lg:pt-12">
           <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory relative overflow-hidden p-8 sm:p-12 lg:p-16">
-              {/* asymmetric mint accent in top-left corner */}
-              <span
-                aria-hidden
-                className="pointer-events-none absolute left-0 top-0 h-16 w-1 bg-primary"
-              />
-              <span
-                aria-hidden
-                className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/5 blur-2xl"
-              />
-              <ScrollReveal>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                  What Solo is
-                </p>
-                <h2
-                  className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl lg:text-[2.25rem] lg:leading-[1.2]"
-                  style={{ letterSpacing: "-0.02em" }}
-                >
-                  Solo is a transition engine for professionals who want to build an independent-income option before they are forced to. It turns career uncertainty into a practical plan, then drives the behaviour change needed to turn that plan into real income.
-                </h2>
-              </ScrollReveal>
-
-              <div className="mt-8 grid gap-6 lg:grid-cols-2 lg:gap-12">
-                <ScrollReveal delay={0.05}>
-                  <p className="text-base leading-[1.75] text-muted-foreground">
-                    Solo takes your career history, your skills, your working style, your risk appetite, and your financial reality — and produces a specific, ranked shortlist of income paths you can actually pursue. Not brainstorming. Not frameworks. Paths scored against 95 professional archetypes and 480 business models, with the weak ones already removed.
-                  </p>
-                </ScrollReveal>
-                <ScrollReveal delay={0.12}>
-                  <p className="text-base leading-[1.75] text-muted-foreground">
-                    Then it builds a 30-day activation plan, finds you the right people to contact, drafts your first moves, and coaches you through the whole thing. The more you use it, the more specific it gets.
-                  </p>
-                </ScrollReveal>
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+              {/* Eyebrow */}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                <span className="font-semibold text-foreground">Solo</span>
+                <span aria-hidden className="text-muted-foreground/60">/</span>
+                <span>A Plan B engine for mid-career professionals</span>
+                <span aria-hidden className="text-muted-foreground/60">/</span>
+                <span className="text-muted-foreground/80">Edition 04 · 2026</span>
               </div>
 
-              <ScrollReveal delay={0.18}>
-                <div className="mt-10 border-t border-border/60 pt-8">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                    What Solo is not
+              {/* Asymmetric 8/4 split */}
+              <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12">
+                {/* Left — headline + subhead + CTAs */}
+                <div className="lg:col-span-8">
+                  <h1
+                    className="font-display text-[2.25rem] font-semibold leading-[1.08] tracking-tight sm:text-[3rem] lg:text-[3.5rem]"
+                    style={{ letterSpacing: "-0.025em" }}
+                  >
+                    Design the career you'd build if you had to start today.
+                  </h1>
+                  <p className="mt-6 max-w-xl text-[17px] leading-[1.55] text-muted-foreground">
+                    A 30-day plan to open a professional Plan B. £19.99.
                   </p>
-                  <ul className="mt-5 grid gap-3 text-base leading-[1.7] text-muted-foreground sm:gap-4 lg:grid-cols-2 lg:gap-x-12">
-                    <li className="flex gap-3">
-                      <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
-                      <span className="font-semibold text-foreground">Not a generic business plan generator or startup-advice chatbot.</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
-                      <span className="font-semibold text-foreground">Not a side-hustle tool, course funnel, or passive-income pitch.</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
-                      <span>It's a structured process for taking the niche skills you've already built into the market — to real, paying customers in your sector.</span>
-                    </li>
-                    <li className="flex gap-3">
-                      <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
-                      <span>Built for mid-career professionals with a decade of expertise — not first-time founders chasing a generic startup playbook.</span>
-                    </li>
-                  </ul>
+                  <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
+                    {isAuthed ? (
+                      <PrimaryButton onClick={handleOpenPlan}>
+                        Open my plan
+                      </PrimaryButton>
+                    ) : (
+                      <PrimaryButton onClick={handleStartTest}>
+                        Take the test
+                      </PrimaryButton>
+                    )}
+                    <SecondaryButton onClick={handleStartTest}>
+                      See your free preview
+                    </SecondaryButton>
+                  </div>
                 </div>
-              </ScrollReveal>
+
+                {/* Right — quiet tabular spec sheet (NOT mint stat strip — Bevan override) */}
+                <aside className="lg:col-span-4">
+                  <div className="border-l border-border/70 pl-6 lg:border-l lg:pl-8">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                      What Solo scores you against
+                    </div>
+                    <dl className="mt-5 space-y-3">
+                      {HERO_SPEC.map((row) => (
+                        <div
+                          key={row.label}
+                          className="flex items-baseline justify-between gap-4 border-b border-border/40 pb-3 last:border-b-0 last:pb-0"
+                        >
+                          <dt className="font-display text-[22px] font-semibold tabular-nums">
+                            {row.num}
+                          </dt>
+                          <dd className="text-right text-[12px] uppercase tracking-[0.08em] text-muted-foreground">
+                            {row.label}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                </aside>
+              </div>
+
+              {/* Trust strip — colophon */}
+              <div className="mt-12 border-t border-border pt-5">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[11px] uppercase tracking-[0.12em]">
+                  {HERO_TRUST.map((t, i) => (
+                    <div key={t.k} className="flex items-center gap-2">
+                      <span className="text-muted-foreground">{t.k}</span>
+                      <span className="font-semibold text-foreground">{t.v}</span>
+                      {i < HERO_TRUST.length - 1 && (
+                        <span aria-hidden className="ml-4 text-muted-foreground/40">
+                          ·
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ═══ SECTION 3 — What you get ═══ */}
-        <section className="py-10 lg:py-14">
+        {/* ═══ §3 — HOW IT WORKS · asymmetric numbered strip (no card chrome) ═══ */}
+        <section id="how-it-works" className="py-8 lg:py-12">
           <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12 lg:p-16">
               <ScrollReveal>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                  What you get
-                </p>
-                <h2
-                  className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl"
-                  style={{ letterSpacing: "-0.02em" }}
-                >
-                  What Solo actually does for you
-                </h2>
+                <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">
+                  <div className="lg:col-span-3">
+                    <SectionLabel num="03">How it works</SectionLabel>
+                  </div>
+                  <div className="lg:col-span-9">
+                    <h2
+                      className="font-display text-[26px] font-semibold leading-[1.2] tracking-tight sm:text-[30px] lg:text-[34px]"
+                      style={{ letterSpacing: "-0.02em" }}
+                    >
+                      Three steps. About an hour of your time. A plan you can work the next morning.
+                    </h2>
+                  </div>
+                </div>
               </ScrollReveal>
 
-              <div className="mt-10 grid gap-5 md:grid-cols-2 md:gap-6">
-                {featureCards.map((c, i) => (
-                  <ScrollReveal key={c.eyebrow} delay={i * 0.06}>
-                    <div className={`card-stone relative h-full p-6 sm:p-7 ${i % 3 === 1 ? "md:translate-y-3" : ""}`}>
-                      <div className="flex items-start gap-4">
-                        <span
-                          aria-hidden
-                          className="flex h-10 w-10 flex-none items-center justify-center rounded-md bg-primary/10 text-primary ring-1 ring-primary/20"
+              {/* Asymmetric 5/3/4 grid — NO card chrome. Hairline rules between. */}
+              <div className="mt-12 grid gap-8 lg:grid-cols-12 lg:gap-0">
+                {STEPS.map((step, i) => {
+                  const span =
+                    i === 0 ? "lg:col-span-5" : i === 1 ? "lg:col-span-3" : "lg:col-span-4";
+                  const padding =
+                    i === 0
+                      ? "lg:pr-10"
+                      : i === 1
+                      ? "lg:px-8 lg:border-l lg:border-border/60"
+                      : "lg:pl-10 lg:border-l lg:border-border/60";
+                  return (
+                    <ScrollReveal key={step.num} delay={i * 0.06}>
+                      <div className={`${span} ${padding}`}>
+                        <div className="font-display text-[3rem] font-semibold leading-none text-primary/80 tabular-nums">
+                          {step.num}
+                        </div>
+                        <h3
+                          className="mt-5 font-display text-[19px] font-semibold leading-[1.25] sm:text-[20px]"
+                          style={{ letterSpacing: "-0.01em" }}
                         >
-                          <c.icon className="h-5 w-5" strokeWidth={1.75} />
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                            {c.eyebrow}
-                          </p>
-                          <h3 className="mt-2 font-display text-lg font-semibold leading-snug">
-                            {c.title}
-                          </h3>
+                          {step.title}
+                        </h3>
+                        <p className="mt-3 text-[14px] leading-[1.65] text-muted-foreground">
+                          {step.body}
+                        </p>
+                        <div className="mt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+                          {step.meta}
                         </div>
                       </div>
-                      <p className="mt-4 text-sm leading-[1.7] text-muted-foreground">
-                        {c.body}
-                      </p>
-                    </div>
-                  </ScrollReveal>
-                ))}
+                    </ScrollReveal>
+                  );
+                })}
               </div>
             </div>
           </div>
         </section>
 
-        {/* ═══ SECTION 4 — Differentiator callout (DARK) ═══ */}
-        <section
-          className="relative py-20 lg:py-24"
-          style={{ background: "#1A1915", borderTop: "4px solid #2ECDB0" }}
-        >
-          <div className="mx-auto max-w-5xl px-6 text-center">
-            <ScrollReveal>
-              <h2
-                className="font-display text-3xl font-bold leading-[1.15] tracking-tight sm:text-4xl lg:text-5xl"
-                style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
-              >
-                ChatGPT can help you think about independence.
-                <br />
-                Solo will help you actually get there.
-              </h2>
-            </ScrollReveal>
-
-            <div className="mt-10 grid gap-6 text-left md:grid-cols-2 md:gap-10">
-              <ScrollReveal delay={0.08}>
-                <p className="text-base leading-[1.8]" style={{ color: "rgba(250,249,247,0.85)" }}>
-                  General-purpose AI will give you a framework. A list of options. Advice to "build a personal brand" and "network with people in your target sector." It does not know who you are. Every session starts from scratch.
-                </p>
-              </ScrollReveal>
-              <ScrollReveal delay={0.16}>
-                <p className="text-base leading-[1.8]" style={{ color: "rgba(250,249,247,0.85)" }}>
-                  Solo runs your profile against a decision engine built from 95 archetypes, 480 business models, and 2,694 scored match combinations. It builds a personalised activation system around the paths that fit you. The context it builds over time — your history, your progress, your blockers, your check-ins — is something no general-purpose AI can replicate, because it was never designed to track a specific person through a specific goal.
-                </p>
-              </ScrollReveal>
-            </div>
-
-            <ScrollReveal delay={0.24}>
-              <p
-                className="mt-10 text-base font-medium"
-                style={{ color: "#FAF9F7" }}
-              >
-                You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually reach out to. Or take the Solo test — and walk away with a real plan and a real list of people to contact.
-              </p>
-              <div className="mt-8">
-                <button
-                  onClick={handleStartTest}
-                  className="rounded-lg bg-[#2ECDB0] px-8 py-3.5 text-base font-semibold text-white shadow-md transition-colors hover:bg-[#26B89D]"
-                >
-                  Assess your options
-                </button>
-              </div>
-            </ScrollReveal>
-          </div>
-        </section>
-
-        {/* ═══ SECTION 5 — Testimonials ═══ */}
-        <section className="py-10 lg:py-14">
+        {/* ═══ §4 — WHY SOLO · editorial spread (no boxes, no icons, varied scales) ═══ */}
+        <section id="why-solo" className="py-8 lg:py-12">
           <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12 lg:p-16">
               <ScrollReveal>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                  Testimonials
-                </p>
-                <h2
-                  className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl"
-                  style={{ letterSpacing: "-0.02em" }}
-                >
-                  What people say after they see their report
-                </h2>
-              </ScrollReveal>
-
-              <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
-                {testimonials.map((t, i) => (
-                  <ScrollReveal key={t.name} delay={i * 0.08}>
-                    <div className={`card-stone relative flex h-full flex-col p-6 sm:p-7 ${i === 1 ? "md:-translate-y-3" : ""}`}>
-                      <span
-                        aria-hidden
-                        className="font-display absolute -top-3 left-5 text-5xl leading-none text-primary/40 select-none"
-                      >
-                        &ldquo;
-                      </span>
-                      <p className="font-display text-[15px] italic leading-[1.7] text-foreground/90">
-                        "{t.quote}"
-                      </p>
-                      <div className="mt-6 border-t border-border pt-4">
-                        <p className="text-sm font-semibold" style={{ color: "#3D4048" }}>
-                          {t.name}
-                        </p>
-                        <p className="mt-1 text-xs" style={{ color: "#6B6860" }}>
-                          {t.descriptor}
-                        </p>
-                      </div>
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ SECTION 6 — How it works ═══ */}
-        <section className="py-10 lg:py-14">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
-              <ScrollReveal>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                  How it works
-                </p>
-                <h2
-                  className="mt-3 font-display text-2xl font-semibold tracking-tight sm:text-3xl"
-                  style={{ letterSpacing: "-0.02em" }}
-                >
-                  From experience to income path in 8 minutes
-                </h2>
-              </ScrollReveal>
-
-              <div className="mt-10 grid gap-5 md:grid-cols-3 md:gap-6">
-                {steps.map((s, i) => (
-                  <ScrollReveal key={s.num} delay={i * 0.08}>
-                    <div className="card-stone relative flex h-full flex-col p-6 sm:p-7">
-                      <span
-                        aria-hidden
-                        className="absolute right-5 top-5 text-primary/70"
-                      >
-                        <s.icon className="h-5 w-5" strokeWidth={1.75} />
-                      </span>
-                      <div className="flex items-baseline gap-3">
-                        <span className="font-display text-3xl font-bold text-primary">
-                          {s.num}
-                        </span>
-                        <span aria-hidden className="h-px flex-1 bg-primary/30" />
-                      </div>
-                      <h3 className="mt-4 font-display text-lg font-semibold leading-snug">
-                        {s.title}
-                      </h3>
-                      <p className="mt-3 text-sm leading-[1.7] text-muted-foreground">
-                        {s.desc}
-                      </p>
-                    </div>
-                  </ScrollReveal>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ SECTION 7 — Final CTA ═══ */}
-        <section className="py-10 lg:py-14">
-          <div className="mx-auto max-w-5xl px-6">
-            <div
-              className="panel-ivory p-10 sm:p-14 lg:p-20 text-center"
-              style={{ borderTop: "4px solid #2ECDB0" }}
-            >
-              <ScrollReveal>
-                <h2
-                  className="font-display text-3xl font-bold tracking-tight sm:text-4xl lg:text-[2.75rem]"
-                  style={{ letterSpacing: "-0.025em" }}
-                >
-                  Your Plan B should already exist.
-                </h2>
-                <p className="mx-auto mt-5 max-w-2xl text-base leading-[1.75] text-muted-foreground">
-                  The test takes 8 minutes. You'll see your archetype, your top income paths, and your first recommended move before you pay anything.
-                </p>
-                <div className="mt-9">
-                  <button
-                    onClick={handleStartTest}
-                    className="rounded-lg bg-[#2ECDB0] px-9 py-4 text-base font-semibold text-white shadow-md transition-colors hover:bg-[#26B89D]"
-                  >
-                    Assess your options — free preview
-                  </button>
+                <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">
+                  <div className="lg:col-span-3">
+                    <SectionLabel num="04">Why Solo</SectionLabel>
+                  </div>
+                  <div className="lg:col-span-9">
+                    <h2
+                      className="font-display text-[26px] font-semibold leading-[1.2] tracking-tight sm:text-[30px] lg:text-[34px]"
+                      style={{ letterSpacing: "-0.02em" }}
+                    >
+                      Independence as optionality, not as escape.
+                    </h2>
+                  </div>
                 </div>
-                <div className="mt-5">
-                  <a
-                    href="/sample-report"
-                    className="text-sm font-medium text-primary hover:underline"
+              </ScrollReveal>
+
+              {/* 7/5 + 6/6 asymmetric grid. NO boxes. NO icons. Headings scale per prop. */}
+              <div className="mt-14 grid gap-x-10 gap-y-12 lg:grid-cols-12">
+                {PROPS.map((p, i) => (
+                  <ScrollReveal key={p.num} delay={i * 0.05}>
+                    <div
+                      className={`${p.span} ${
+                        p.offsetLeftRule ? "lg:border-l lg:border-border/60 lg:pl-10" : ""
+                      }`}
+                    >
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        <span className="text-primary mr-2 tabular-nums">{p.num}</span>
+                      </div>
+                      <h3
+                        className={`mt-3 font-display font-semibold ${p.titleClass}`}
+                        style={{ letterSpacing: "-0.01em" }}
+                      >
+                        {p.title}
+                      </h3>
+                      <p className="mt-4 text-[14.5px] leading-[1.7] text-muted-foreground">
+                        {p.body}
+                      </p>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ §5 — WHO IT'S FOR · paired editorial pull-quotes (composite) ═══ */}
+        <section id="who-its-for" className="py-8 lg:py-12">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+              <ScrollReveal>
+                <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">
+                  <div className="lg:col-span-3">
+                    <SectionLabel num="05">Who it's for</SectionLabel>
+                  </div>
+                  <div className="lg:col-span-9">
+                    <h2
+                      className="font-display text-[26px] font-semibold leading-[1.2] tracking-tight sm:text-[30px] lg:text-[34px]"
+                      style={{ letterSpacing: "-0.02em" }}
+                    >
+                      Two professionals who recognise the question.
+                    </h2>
+                  </div>
+                </div>
+              </ScrollReveal>
+
+              <div className="mt-12 space-y-12 lg:space-y-14">
+                {PERSONAS.map((p, i) => (
+                  <ScrollReveal key={p.tag} delay={i * 0.08}>
+                    <div
+                      className={`grid gap-6 lg:grid-cols-12 lg:gap-10 ${
+                        p.align === "right" ? "lg:[&>*:first-child]:order-2" : ""
+                      } ${i > 0 ? "border-t border-border/50 pt-12 lg:pt-14" : ""}`}
+                    >
+                      <div className="lg:col-span-3">
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                          <span className="text-primary mr-2 tabular-nums">
+                            {p.tag.split(" ")[0]}
+                          </span>
+                          {p.tag.split(" ").slice(1).join(" ")}
+                        </div>
+                      </div>
+                      <div className="lg:col-span-9">
+                        <blockquote
+                          className="font-display text-[22px] font-medium leading-[1.4] tracking-tight text-foreground sm:text-[26px] lg:text-[28px]"
+                          style={{ letterSpacing: "-0.015em" }}
+                        >
+                          &ldquo;{p.quote}&rdquo;
+                        </blockquote>
+                        <div className="mt-4 text-[12px] italic text-muted-foreground">
+                          — {p.attribution}
+                        </div>
+                      </div>
+                    </div>
+                  </ScrollReveal>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ §6 — SAMPLE REPORT · the moment (the page exhales) ═══ */}
+        <section id="sample-report" className="py-10 lg:py-16">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory px-8 py-14 sm:px-12 sm:py-20 lg:px-20 lg:py-24">
+              <ScrollReveal>
+                <div className="mx-auto max-w-2xl text-center">
+                  <SectionLabel num="06">Sample report</SectionLabel>
+                  <h2
+                    className="mt-5 font-display text-[28px] font-semibold leading-[1.15] tracking-tight sm:text-[34px] lg:text-[38px]"
+                    style={{ letterSpacing: "-0.02em" }}
                   >
-                    See a sample report first
+                    What the report actually looks like.
+                  </h2>
+                  <p className="mt-4 text-[14.5px] leading-[1.65] text-muted-foreground">
+                    One strand from a finance director's report. Not a mockup of features — a section of the artefact.
+                  </p>
+                </div>
+              </ScrollReveal>
+
+              <ScrollReveal delay={0.1}>
+                <div className="mx-auto mt-12 max-w-4xl">
+                  <div className="card-stone p-7 sm:p-9 lg:p-11">
+                    {/* Report eyebrow row */}
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-4 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                      <div>
+                        Report ·{" "}
+                        <span className="text-primary font-semibold">Sample</span> ·
+                        FP&amp;A Director, 12 yrs
+                      </div>
+                      <div>Strand 1 of 5</div>
+                    </div>
+
+                    {/* Title */}
+                    <div className="mt-6">
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        Warmest strand
+                      </div>
+                      <h3
+                        className="mt-2 font-display text-[24px] font-semibold leading-tight tracking-tight sm:text-[28px]"
+                        style={{ letterSpacing: "-0.015em" }}
+                      >
+                        Fractional FP&amp;A Director
+                      </h3>
+                    </div>
+
+                    {/* Strand card — 7/5 split (the literal card exception per §3) */}
+                    <div className="mt-7 grid gap-8 lg:grid-cols-12 lg:gap-10">
+                      <div className="lg:col-span-7">
+                        <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-primary">
+                          Rank 01 · High confidence
+                        </div>
+                        <h4
+                          className="mt-3 font-display text-[18px] font-semibold leading-[1.3] sm:text-[19px]"
+                          style={{ letterSpacing: "-0.01em" }}
+                        >
+                          Month-end close and board-pack services to three to five SMEs.
+                        </h4>
+                        <p className="mt-3 text-[14px] leading-[1.7] text-muted-foreground">
+                          Highest credibility-to-effort ratio for your profile. Buyers are CFOs and CEOs of £5–25m revenue businesses who can't justify a full-time hire. The credibility gap is small — the work is recognisably what you already do.
+                        </p>
+                      </div>
+                      <div className="lg:col-span-5 lg:border-l lg:border-border/50 lg:pl-8">
+                        <dl className="space-y-3">
+                          {SAMPLE_STRAND_DATA.map((row) => (
+                            <div
+                              key={row.dt}
+                              className="flex items-baseline justify-between gap-3 border-b border-border/40 pb-2.5 last:border-b-0 last:pb-0"
+                            >
+                              <dt className="text-[11px] uppercase tracking-[0.1em] text-muted-foreground">
+                                {row.dt}
+                              </dt>
+                              <dd className="text-[13.5px] font-semibold tabular-nums text-foreground">
+                                {row.dd}
+                              </dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </div>
+                    </div>
+
+                    {/* Locked / blurred strands 2–5 */}
+                    <div className="relative mt-9 overflow-hidden rounded-md border border-border/40 bg-surface-panel/60 px-6 py-8">
+                      <div className="select-none" style={{ filter: "blur(5px)" }} aria-hidden>
+                        <div className="text-[15px] font-semibold">Strand 2 — Finance Transformation</div>
+                        <div className="mt-3 h-2 w-4/5 rounded bg-foreground/15" />
+                        <div className="mt-2 h-2 w-3/5 rounded bg-foreground/15" />
+                        <div className="mt-2 h-2 w-2/3 rounded bg-foreground/15" />
+                        <div className="mt-2 h-2 w-3/5 rounded bg-foreground/15" />
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-panel px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-foreground shadow-sm">
+                          <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                          Free preview shows 1 of 5 strands
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="mt-6 text-center text-[11px] italic text-muted-foreground">
+                      Sample only. Your report is built from your own questionnaire and CV.
+                    </p>
+                  </div>
+                </div>
+              </ScrollReveal>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ §7 — REPEAT CTA · quiet one-line band (same button as hero) ═══ */}
+        <section className="py-6 lg:py-10">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory px-8 py-7 sm:px-12 sm:py-8">
+              <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+                <p className="max-w-2xl text-[15px] leading-[1.55] text-foreground">
+                  The questionnaire takes about forty minutes.{" "}
+                  <span className="text-muted-foreground">
+                    You'll see your warmest strand inside ten.
+                  </span>
+                </p>
+                <PrimaryButton onClick={handleStartTest}>
+                  Start your test
+                </PrimaryButton>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/*
+         * ═══ §8 — SOCIAL PROOF · reserved (hidden until real testimonials exist) ═══
+         * Per spec + tone-of-voice. When real testimonials land, treatment mirrors §5
+         * (paired editorial pull-quotes, attributed, no logo strips on this surface).
+         */}
+
+        {/* ═══ §9 — PRICING SUMMARY · 4/8 split, EQUAL-WIDTH tiles (Bevan override) ═══ */}
+        <section className="py-8 lg:py-12">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+              <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+                {/* Left intro */}
+                <div className="lg:col-span-5">
+                  <SectionLabel num="09">Pricing</SectionLabel>
+                  <h2
+                    className="mt-5 font-display text-[26px] font-semibold leading-[1.2] tracking-tight sm:text-[30px] lg:text-[32px]"
+                    style={{ letterSpacing: "-0.02em" }}
+                  >
+                    One-time. Or monthly, if you want the check-in loop.
+                  </h2>
+                  <p className="mt-4 text-[14.5px] leading-[1.65] text-muted-foreground">
+                    Most users buy the one-time. The subscription exists because some users want the daily tracker running for the full thirty days.
+                  </p>
+                  <a
+                    href="/pricing"
+                    className="mt-5 inline-block text-[13px] font-semibold text-primary hover:underline"
+                  >
+                    See full pricing →
                   </a>
                 </div>
-              </ScrollReveal>
+
+                {/* Right — two summaries at EQUAL width (per Bevan override on F1) */}
+                <div className="lg:col-span-7">
+                  <div className="grid gap-5 sm:grid-cols-2 sm:gap-6">
+                    {PRICING.map((p) => (
+                      <div
+                        key={p.type}
+                        className={`card-stone flex flex-col p-6 sm:p-7 ${
+                          p.primary ? "ring-1 ring-primary/30" : ""
+                        }`}
+                      >
+                        <div className="flex items-baseline justify-between gap-3">
+                          <h4 className="font-display text-[18px] font-semibold tracking-tight">
+                            {p.type}
+                          </h4>
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                              p.pillMuted
+                                ? "bg-foreground/5 text-muted-foreground"
+                                : "bg-primary/10 text-primary"
+                            }`}
+                          >
+                            {p.pill}
+                          </span>
+                        </div>
+                        <div className="mt-5 flex items-baseline gap-2">
+                          <span className="font-display text-[32px] font-semibold tabular-nums leading-none">
+                            {p.amount}
+                          </span>
+                          <span className="text-[12px] text-muted-foreground">
+                            {p.qualifier}
+                          </span>
+                        </div>
+                        <ul className="mt-5 space-y-2 text-[13px] leading-[1.55] text-muted-foreground">
+                          {p.features.map((f) => (
+                            <li key={f} className="flex gap-2.5">
+                              <span aria-hidden className="mt-[0.65em] h-1 w-1 flex-none rounded-full bg-primary" />
+                              <span>{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <a
+                          href="/pricing"
+                          className="mt-6 inline-block text-[12px] font-semibold text-primary hover:underline"
+                        >
+                          {p.primary ? "See what's included →" : "Compare on /pricing →"}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ §10 — ABOUT · narrow editorial column with drop cap (F5: kept for v1) ═══ */}
+        <section id="about" className="py-8 lg:py-12">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+              <div className="mx-auto max-w-2xl">
+                <SectionLabel num="10">About Solo</SectionLabel>
+                <h2
+                  className="mt-5 font-display text-[26px] font-semibold leading-[1.2] tracking-tight sm:text-[30px] lg:text-[32px]"
+                  style={{ letterSpacing: "-0.02em" }}
+                >
+                  Solo exists because Plan B conversations are usually held too late, and usually with the wrong person.
+                </h2>
+                <p className="mt-7 text-[16px] leading-[1.75] text-foreground/90">
+                  <span
+                    aria-hidden
+                    className="font-display float-left mr-2 mt-1 text-[64px] font-semibold leading-[0.85] text-primary"
+                    style={{ letterSpacing: "-0.04em" }}
+                  >
+                    S
+                  </span>
+                  olo was built by someone who has worked through three of these conversations themselves and has run them with several hundred mid-career professionals. The product is the artefact of those conversations — the spreadsheets, the scoring system, the move templates, the questions you ask when someone walks into the room not yet ready to say "I might leave."
+                </p>
+                <p className="mt-4 text-[14.5px] leading-[1.7] text-muted-foreground">
+                  Placeholder paragraph for composition. The founder paragraph will run to about 140 words. The founder is deliberately not named in this slot until the marketing copy is reviewed.
+                </p>
+                <a
+                  href="#"
+                  className="mt-6 inline-block text-[13px] font-semibold text-primary hover:underline"
+                >
+                  Read the full background →
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ §11 — FAQ TEASER · typographic accordion (no row chrome) ═══ */}
+        <section className="py-8 lg:py-12">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+              <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">
+                <div className="lg:col-span-4">
+                  <SectionLabel num="11">Questions</SectionLabel>
+                  <h2
+                    className="mt-5 font-display text-[26px] font-semibold leading-[1.2] tracking-tight sm:text-[30px] lg:text-[32px]"
+                    style={{ letterSpacing: "-0.02em" }}
+                  >
+                    Three things we get asked first.
+                  </h2>
+                  <a
+                    href="/faq"
+                    className="mt-5 inline-block text-[13px] font-semibold text-primary hover:underline"
+                  >
+                    See all on /faq →
+                  </a>
+                </div>
+                <div className="lg:col-span-8">
+                  <div className="divide-y divide-border/60 border-y border-border/60">
+                    {FAQ_ITEMS.map((item) => (
+                      <details
+                        key={item.q}
+                        open={item.defaultOpen}
+                        className="group py-5"
+                      >
+                        <summary className="flex cursor-pointer items-start justify-between gap-6 list-none [&::-webkit-details-marker]:hidden">
+                          <span className="font-display text-[17px] font-semibold leading-snug tracking-tight">
+                            {item.q}
+                          </span>
+                          <span
+                            aria-hidden
+                            className="text-[20px] leading-none text-muted-foreground transition-transform group-open:rotate-45"
+                          >
+                            +
+                          </span>
+                        </summary>
+                        <div className="mt-4 text-[14px] leading-[1.7] text-muted-foreground">
+                          {item.a}
+                        </div>
+                      </details>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ §12 — FINAL CTA · centered editorial closer ═══ */}
+        <section className="pb-12 pt-8 lg:pb-20 lg:pt-12">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="panel-ivory px-8 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24">
+              <div className="mx-auto max-w-2xl text-center">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  — End of preview —
+                </div>
+                <h2
+                  className="mt-6 font-display text-[30px] font-semibold leading-[1.15] tracking-tight sm:text-[36px] lg:text-[42px]"
+                  style={{ letterSpacing: "-0.025em" }}
+                >
+                  Forty minutes. Five strands. One plan.
+                </h2>
+                <p className="mt-5 text-[15px] leading-[1.65] text-muted-foreground">
+                  Take the test now or save the page and come back to it. The questionnaire saves your progress.
+                </p>
+                <div className="mt-9">
+                  <PrimaryButton onClick={handleStartTest}>
+                    Take the test
+                  </PrimaryButton>
+                </div>
+                <div className="mt-5 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  £19.99 one-time · No subscription required
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -528,9 +862,9 @@ function MobileStickyBar({ onStartTest }: { onStartTest: () => void }) {
     <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-surface-panel p-3 sm:hidden">
       <button
         onClick={onStartTest}
-        className="w-full rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+        className="w-full rounded-md bg-primary py-3 text-[14px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
       >
-        Assess your options
+        Take the test
       </button>
     </div>
   );
