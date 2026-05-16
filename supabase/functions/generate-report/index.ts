@@ -1,3 +1,34 @@
+// generate-report v45.13 - quality fixes (archetype name + income_outlook word counts) - 2026-05-16
+//
+// Two quality issues found in v45.12's first real-world run:
+//   1. archetype.primary returned "ARCH_RISK" (raw KB ID) instead of human name.
+//      The model was copying the bracketed [ARCH_RISK] prefix from the KB
+//      injection text rather than the name after it.
+//   2. validator overall_score 93/100 with 6 hard failures, all in income_outlook
+//      (revenue_sources / assumptions across all 3 years), model hitting word-count
+//      floors exactly or slightly under despite the buffer rule.
+//
+// Fixes:
+//   1. KB injection format restructured - ARCHETYPE NAME is now the primary label,
+//      Internal ID demoted to a secondary field with explicit "never use in output"
+//      note. Plus new "Output field naming rules" section in the prompt explicitly
+//      forbids using ARCH_* IDs in archetype.primary/secondary.
+//   2. Bump prompt floors for income_outlook.year_N.revenue_sources (25 -> 30) and
+//      .assumptions (20 -> 25). Validator floors unchanged - the headroom absorbs
+//      the model's chronic under-shoot on these fields.
+//   3. FUNCTION_VERSION updated for observability.
+//
+// All other content identical to v45.12. Pipeline / auth / RLS / schema unchanged.
+//
+// generate-report v45.12 - canonical full pipeline + auth fixes - 2026-05-15
+//
+// Restores the FULL v45.8 canonical pipeline ON TOP OF v45.10/v45.11 auth fixes:
+//   FIX 1 (deploy-time): verify_jwt:false so gateway doesn't forward inbound
+//   anon JWT to PostgREST. FIX 2 (code): makeServiceClient() helper sets
+//   explicit Authorization override on supabase client. FIX 3 (frontend, separate
+//   commit): .env in solo-path repo updated to point at correct Supabase project
+//   (was pointing at Lovable demo - root cause discovered via network panel hover).
+//
 // generate-report v45.8 - P0B sync hotfix - 2026-05-15 (CONSOLIDATED SINGLE-FILE)
 //
 // HOTFIX: v45.7 (deployed minutes ago) was shipped with a placeholder
@@ -490,8 +521,8 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 - reality_check.what_they_will_find_hard: 30 words, tied to this user's archetype weakness
 - reality_check.honest_income_outlook: 40 words, MUST contain a GBP figure or range
 - income_outlook.year_N.revenue_build: 40 words, shows month-by-month shape, not a flat average
-- income_outlook.year_N.revenue_sources: 25 words
-- income_outlook.year_N.assumptions: 20 words, specific commercial mechanics (client count, rate, cadence)
+- income_outlook.year_N.revenue_sources: 30 words minimum (validator-enforced floor is 25 - target 35+ to clear with the buffer rule below)
+- income_outlook.year_N.assumptions: 25 words minimum, specific commercial mechanics (client count, rate, cadence) (validator-enforced floor is 20 - target 30+ to clear with the buffer rule)
 - income_outlook.sensitivity_factors: 40 words, identifies 2-3 specific variables with impact
 - income_outlook.income_floor_analysis: 30 words, honest worst case
 - income_outlook.income_notes: 40 words, references at least one Q-field
@@ -502,6 +533,12 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 - ai_impact.part_1.risk_horizon: e.g. 3-5 years - never omitted
 - ai_impact.part_2.content: 120 words
 - ai_impact.part_3.steps: exactly 4 steps, each action >=10 words
+
+**Output field naming rules (HARD):**
+
+- archetype.primary and archetype.secondary MUST be the archetype's full human-readable NAME from the library (e.g., "Risk / Audit / Compliance", "Financial Intelligence Operator", "Fractional CFO"). NEVER the internal ID like "ARCH_RISK", "ARCH_FIN", "ARCH_CFO" - those IDs are for internal cross-reference only. If you copy [ARCH_RISK] into archetype.primary instead of "Risk / Audit / Compliance", the report renders as broken for the user.
+- options[].business_model_id IS the internal ID (e.g., "BM_RISK_CONSULTING", "BM_FRACTIONAL_CFO") - pass through exactly as stored in the KB.
+- options[].model_name is the human-readable model name, NOT the ID.
 
 **Cross-card consistency (HARD):**
 
@@ -879,7 +916,7 @@ function buildP0bUserMessage(qd: P0bQuestionnaireInput): string {
 // MAIN INDEX
 // =============================================================================
 
-const FUNCTION_VERSION = "v45.8-canonical-consolidated";
+const FUNCTION_VERSION = "v45.13-quality-fixes";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
 const MAX_P1_VALIDATOR_RETRIES = 2;
@@ -911,7 +948,16 @@ const DOMAIN_TO_CATEGORIES: Record<string, string[]> = {
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
+
+function makeServiceClient() {
+  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { headers: { Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` } },
+  });
+}
+
 const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
 
 async function getUserIdFromJwt(authHeader: string | null): Promise<string | null> {
@@ -1007,7 +1053,7 @@ function buildP1UserMessage(qd: Qd, cvExtract: Record<string, unknown> | undefin
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const t0 = Date.now();
-  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const supabase = makeServiceClient();
   try {
     const body = await req.json();
     const userId: string | null = await getUserIdFromJwt(req.headers.get("authorization"));
@@ -1043,7 +1089,7 @@ interface BgArgs { reportId: string; userId: string | null; clientSessionId: str
 
 async function generateReportInBackground(args: BgArgs) {
   const { reportId, userId, clientSessionId, cvExtract, questionnaireData, t0 } = args;
-  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+  const supabase = makeServiceClient();
   const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY")! });
   try {
     const flags = deriveFlags(questionnaireData);
@@ -1067,7 +1113,7 @@ async function generateReportInBackground(args: BgArgs) {
     const { data: modelRows } = await supabase.from("kb_models").select("id, name, commercial_model, pricing_range, time_to_revenue, difficulty, target_buyer, recurrence, primary_move_type, structural_warmth").in("id", modelIds);
     const { data: aiImpactRows } = await supabase.from("kb_ai_impact").select("model_id, model_name, displacement_risk, opportunity, resilient_positioning, adaptation_skills").in("model_id", modelIds);
     const curatedAiImpact = (aiImpactRows || []).filter((r) => typeof r.opportunity === "string" && r.opportunity.trim().length > 0);
-    const archetypesText = (archetypeRows || []).map((a) => `[${a.id}] ${a.name} (${a.category})\n${String(a.core_identity || "").slice(0, 300)}\nRates: ${a.day_rate} | ${a.retainer_monthly} | Speed: ${a.time_to_revenue_bias}`).join("\n\n");
+    const archetypesText = (archetypeRows || []).map((a) => `ARCHETYPE NAME: "${a.name}"  <-- use this EXACT string for archetype.primary; do NOT use the internal ID\n  Internal ID: ${a.id}  (used only for cross-reference, never in output fields)\n  Category: ${a.category}\n  Core identity: ${String(a.core_identity || "").slice(0, 300)}\n  Rates: ${a.day_rate} | ${a.retainer_monthly} | Speed: ${a.time_to_revenue_bias}`).join("\n\n");
     const modelsText = (modelRows || []).map((m) => {
       let pricing = "";
       try { const p = typeof m.pricing_range === "string" ? JSON.parse(m.pricing_range) : m.pricing_range; pricing = `£${(p.low || 0).toLocaleString()}-£${(p.high || 0).toLocaleString()}/${p.per || "project"}`; } catch { pricing = String(m.pricing_range || ""); }
