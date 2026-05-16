@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -172,6 +172,7 @@ export default function Report() {
 
   const goToPlan = useCallback(() => navigateAuthed(navigate, "/plan"), [navigate]);
   const goHome = useCallback(() => navigateAuthed(navigate, "/"), [navigate]);
+  const goToQuestionnaire = useCallback(() => navigateAuthed(navigate, "/questionnaire"), [navigate]);
 
   // Sidebar items — section navigation
   const sidebarItems: SidebarItem[] = visibleSections.map((s) => ({
@@ -210,14 +211,34 @@ export default function Report() {
     return (
       <div className="flex min-h-screen flex-col">
         <TopBar />
-        <main className="mx-auto w-full max-w-2xl px-6 pt-20 pb-24 text-center">
-          <h1 className="font-display text-2xl font-semibold tracking-tight">No report yet</h1>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Complete the test to generate your Plan B report.
-          </p>
-          <div className="mt-6 flex justify-center gap-3">
-            <Button variant="outline" size="sm" onClick={goToPlan}>Back to Plan</Button>
-            <Button size="sm" onClick={goHome}>Take the test</Button>
+        <main className="flex flex-1 items-center justify-center px-6 py-20">
+          <div className="mx-auto w-full max-w-md text-center">
+            <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-card border border-border">
+              <FileText className="h-7 w-7 text-muted-foreground" />
+            </div>
+            <h1 className="font-display text-[22px] font-semibold tracking-tight text-foreground">
+              Your report is not ready yet
+            </h1>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
+              Complete the questionnaire and we will build your personalised Plan B report. It takes about five minutes.
+            </p>
+            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+              <Button
+                size="lg"
+                onClick={goToQuestionnaire}
+                className="min-w-[210px] text-sm font-medium"
+              >
+                Take the questionnaire
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={goToPlan}
+                className="min-w-[210px] text-sm font-medium"
+              >
+                Back to Plan
+              </Button>
+            </div>
           </div>
         </main>
       </div>
