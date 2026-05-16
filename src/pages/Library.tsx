@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
 import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
-import PanelLayout from "@/components/PanelLayout";
 import Banner from "@/components/Banner";
 import LibraryCard from "@/components/plan/LibraryCard";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
