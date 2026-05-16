@@ -172,6 +172,7 @@ export default function Report() {
 
   const goToPlan = useCallback(() => navigateAuthed(navigate, "/plan"), [navigate]);
   const goHome = useCallback(() => navigateAuthed(navigate, "/"), [navigate]);
+  const goToQuestionnaire = useCallback(() => navigateAuthed(navigate, "/questionnaire"), [navigate]);
 
   // Sidebar items — section navigation
   const sidebarItems: SidebarItem[] = visibleSections.map((s) => ({
