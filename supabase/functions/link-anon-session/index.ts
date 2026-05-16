@@ -1,4 +1,14 @@
-// link-anon-session v1 — F50 fix
+// link-anon-session v2 — V-055 consolidation: inline JWT decode — 2026-05-16
+//
+// V-055 fix: replace authClient.auth.getClaims(token) with the inline base64
+// JWT-payload decoder pattern proven in generate-guidance v27 + create-payment v23+.
+// Gateway verify_jwt is flipped from false → true so the gateway validates the
+// JWT signature (gateway supports ES256 — confirmed empirically by every other
+// verify_jwt:true function running successfully in production). The function
+// only needs to extract the `sub` claim from the already-validated payload, so
+// the authClient + JWKS-cache dependency is removed.
+//
+// link-anon-session v1 (F50 fix):
 //
 // Called from the frontend after a magic-link sign-in completes. Takes the
 // authenticated user's JWT plus the client_session_id from localStorage, and
@@ -9,9 +19,6 @@
 // anon-first payment paths produce the same end state. Idempotent — re-running
 // against already-linked rows is a no-op (.is("user_id", null) filter).
 //
-// Auth: in-function JWT validation via supabase.auth.getClaims (matches
-// generate-report v44.1 / ADR-013 pattern). verify_jwt: false at the gateway.
-//
 // Body: { client_session_id: "uuid" }
 // Returns: 200 { linked: { reports, questionnaire_responses, payments } }
 //          401 if no/invalid JWT
@@ -19,7 +26,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v1";
+const FUNCTION_VERSION = "v2-v055-getclaims-fix";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,20 +35,18 @@ const corsHeaders = {
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY =
-  Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
-const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
 
-async function getUserIdFromJwt(authHeader: string | null): Promise<string | null> {
+function getUserIdFromJwt(authHeader: string | null): string | null {
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   try {
     const token = authHeader.slice(7).trim();
     if (!token) return null;
-    const { data, error } = await authClient.auth.getClaims(token);
-    if (error) return null;
-    const sub = data?.claims?.sub;
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    const sub = payload?.sub;
     return typeof sub === "string" && sub ? sub : null;
   } catch {
     return null;

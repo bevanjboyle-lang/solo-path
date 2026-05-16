@@ -916,7 +916,7 @@ function buildP0bUserMessage(qd: P0bQuestionnaireInput): string {
 // MAIN INDEX
 // =============================================================================
 
-const FUNCTION_VERSION = "v45.13-quality-fixes";
+const FUNCTION_VERSION = "v45.14-v055-getclaims-fix";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
 const MAX_P1_VALIDATOR_RETRIES = 2;
@@ -949,7 +949,6 @@ const DOMAIN_TO_CATEGORIES: Record<string, string[]> = {
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
 
 function makeServiceClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -958,18 +957,26 @@ function makeServiceClient() {
   });
 }
 
-const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { autoRefreshToken: false, persistSession: false } });
-
-async function getUserIdFromJwt(authHeader: string | null): Promise<string | null> {
+// V-055 fix (2026-05-16): inline base64 JWT decode replaces authClient.auth.getClaims.
+// Pattern proven in generate-guidance v27 + create-payment v23+. Gateway verify_jwt
+// flipped from false → true so the gateway validates the signature (gateway supports
+// ES256 — empirically confirmed by every other verify_jwt:true function running fine).
+// Function only extracts the sub claim from the already-validated payload.
+function getUserIdFromJwt(authHeader: string | null): string | null {
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   try {
     const token = authHeader.slice(7).trim();
     if (!token) return null;
-    const { data, error } = await authClient.auth.getClaims(token);
-    if (error) return null;
-    const sub = data?.claims?.sub;
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    const sub = payload?.sub;
     return typeof sub === "string" && sub ? sub : null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

@@ -1,53 +1,51 @@
-// get-account-readiness v16 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
-/**
- * get-account-readiness v2 — F43 (2026-04-19)
- *
- * F43 fix: project rotated to asymmetric JWT signing (ES256). The edge runtime's
- * built-in verify_jwt: true gateway is HS256-only and rejects ES256 tokens with
- * 401 UNAUTHORIZED_UNSUPPORTED_TOKEN_ALGORITHM before the function runs. This
- * version deploys with verify_jwt: false and verifies in-app via
- * supabase.auth.getClaims(token), which fetches the JWKS discovery endpoint
- * (/auth/v1/.well-known/jwks.json, cached 10min) and handles ES256 natively.
- *
- * v1 baseline: called by PaymentSuccess.tsx on a polling loop after
- * exchange-payment-token has established an auth session. Returns { ready: true }
- * once the user's tracker_sessions row is active (meaning generate-plan has
- * completed). PaymentSuccess.tsx polls at 2s intervals for up to 60s, then shows
- * a "stuck" state with a support link.
- */
+// get-account-readiness v17 — V-055 consolidation: inline JWT decode — 2026-05-16
+//
+// V-055 fix: replace authClient.auth.getClaims(token) with the inline base64
+// JWT-payload decoder pattern proven in generate-guidance v27 + create-payment v23+.
+// Gateway verify_jwt is flipped from false → true so the gateway validates the
+// JWT signature. The F43 comment below (about ES256-only support) is stale —
+// the Supabase gateway has handled ES256 in verify_jwt:true mode for some time,
+// as evidenced by every other verify_jwt:true function (generate-plan,
+// process-checkin, refine-report, claim-second-report, get-library-content,
+// send-abandonment-email, ask-solo, generate-guidance v27, process-replan)
+// running successfully in production. The function only needs to extract the
+// `sub` claim, so the authClient + JWKS-cache dependency is removed.
+//
+// v16 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
+//
+// v2 — F43 (2026-04-19): project rotated to asymmetric JWT signing (ES256).
+// At the time, the edge runtime's verify_jwt:true gateway was HS256-only and
+// rejected ES256 tokens. This version deployed with verify_jwt:false and
+// verified in-app via supabase.auth.getClaims. (V-055 fix supersedes.)
+//
+// v1 baseline: called by PaymentSuccess.tsx on a polling loop after
+// exchange-payment-token has established an auth session. Returns { ready: true }
+// once the user's tracker_sessions row is active (meaning generate-plan has
+// completed). PaymentSuccess.tsx polls at 2s intervals for up to 60s, then shows
+// a "stuck" state with a support link.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+const FUNCTION_VERSION = "v17-v055-getclaims-fix";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
 
-// F43: JWT verification via supabase.auth.getClaims(token) — works for both
-// ES256 (asymmetric) and HS256 (legacy) tokens. Singleton auth client below.
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY =
-  Deno.env.get("SUPABASE_ANON_KEY") ??
-  Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ??
-  "";
-const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
-
-async function getUserIdFromJwt(authHeader: string | null): Promise<string | null> {
+function getUserIdFromJwt(authHeader: string | null): string | null {
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   try {
     const token = authHeader.slice(7).trim();
     if (!token) return null;
-    const { data, error } = await authClient.auth.getClaims(token);
-    if (error) {
-      console.warn("getClaims rejected JWT:", error.message);
-      return null;
-    }
-    const sub = data?.claims?.sub;
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(
+      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
+    const sub = payload?.sub;
     return typeof sub === "string" && sub ? sub : null;
-  } catch (e) {
-    console.warn("getClaims threw:", (e as Error)?.message ?? String(e));
+  } catch {
     return null;
   }
 }
