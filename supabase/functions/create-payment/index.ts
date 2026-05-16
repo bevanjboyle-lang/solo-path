@@ -1,3 +1,16 @@
+// create-payment v24 — F44 fix: force Stripe email capture — 2026-05-16
+//
+// F44 (today): a live anon checkout completed but the webhook 400'd with
+//   resolveUserForCheckout returning null. Root cause: Stripe checkout.sessions
+//   defaulted to customer_creation:'if_required', which for one-time card payments
+//   does NOT create a Customer object and does NOT reliably populate
+//   customer_details.email on the resulting session. With no email, the anon
+//   webhook path cannot find-or-create a user, links no rows, sends no welcome
+//   email, and the report stays stuck at teaser_ready. v24 sets
+//   customer_creation:'always' so a Customer is always created and the email
+//   collected on Checkout is persisted to customer_details.email. This is the
+//   minimum change; no other call-site or contract changes.
+//
 // create-payment v23 — vibe code review fixes — 2026-05-14
 //
 // V-030: drop client-supplied body.userId fallback (P0 paid identity spoofing).
@@ -24,7 +37,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
-const FUNCTION_VERSION = "v23-vibe-review-fixes";
+const FUNCTION_VERSION = "v24-customer-creation-always";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -178,6 +191,12 @@ Deno.serve(async (req: Request) => {
       payment_method_types: ["card"],
       // deno-lint-ignore no-explicit-any
       line_items: lineItems as any,
+      // v24: force Customer object creation so the email entered at Checkout is
+      // reliably surfaced on session.customer_details.email + payment_intent.customer.
+      // Without this, mode:'payment' defaults to customer_creation:'if_required',
+      // which can complete a payment with no email on the resulting session and
+      // breaks the anon→user resolution path in payment-webhook.
+      customer_creation: "always",
       success_url: `${appUrl}/payment-success?token={CHECKOUT_SESSION_ID}&report_id=${reportId || ''}`,
       cancel_url: `${appUrl}/teaser?report_id=${reportId || ''}`,
       metadata,
