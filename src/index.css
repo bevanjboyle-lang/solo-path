@@ -115,6 +115,23 @@
     border-radius: 16px;
     box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18), 0 1px 6px rgba(0, 0, 0, 0.10);
   }
+  /*
+   * panel-dark — companion to panel-ivory.
+   * Used at ~25% cadence across each surface for visual rhythm variety,
+   * per design-direction.md v1.3 §"Dark-card cadence." Body content
+   * inside a panel-dark must use light text overrides: color: #FAF9F7
+   * for headings, rgba(250,249,247,0.85) for body, mint #2ECDB0 for
+   * accents (stays mint, still readable on dark). Heavier shadow than
+   * panel-ivory to compensate for the dark fill. Optional mint top
+   * stripe (4px solid #2ECDB0) is reserved for the polemic-interrupt
+   * variant (currently only the ChatGPT differentiator section).
+   */
+  .panel-dark {
+    background: #1A1915;
+    border: 1px solid #2A2924;
+    border-radius: 16px;
+    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.22), 0 1px 6px rgba(0, 0, 0, 0.12);
+  }
   .card-stone {
     background: #F3F1ED;
     border: 1px solid #E5E2DC;

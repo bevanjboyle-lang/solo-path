@@ -408,37 +408,39 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ═══ §2.5 — WHAT SOLO IS · restored production framing ═══ */}
+        {/* ═══ §2.5 — WHAT SOLO IS · DARK card variant (per 25% cadence) ═══ */}
         <section className="py-8 lg:py-12">
           <div className="mx-auto max-w-6xl px-6">
             <ScrollReveal>
-              <div className="panel-ivory p-8 sm:p-12 lg:p-16">
-                <SectionLabel num="02">What Solo is</SectionLabel>
+              <div className="panel-dark p-8 sm:p-12 lg:p-16">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(250,249,247,0.65)" }}>
+                  <span className="text-primary mr-3 tabular-nums">02</span>What Solo is
+                </div>
                 <h2
                   className="mt-4 font-display text-[24px] font-semibold leading-[1.25] tracking-tight sm:text-[28px] lg:text-[32px]"
-                  style={{ letterSpacing: "-0.02em" }}
+                  style={{ letterSpacing: "-0.02em", color: "#FAF9F7" }}
                 >
                   Solo is a transition engine for professionals who want to build an independent-income option before they are forced to. It turns career uncertainty into a practical plan, then drives the behaviour change needed to turn that plan into real income.
                 </h2>
 
                 <div className="mt-9 grid gap-8 lg:grid-cols-2 lg:gap-12">
-                  <p className="text-[15px] leading-[1.75] text-muted-foreground">
+                  <p className="text-[15px] leading-[1.75]" style={{ color: "rgba(250,249,247,0.80)" }}>
                     Solo takes your career history, your skills, your working style, your risk appetite, and your financial reality — and produces a specific, ranked shortlist of income paths you can actually pursue. Not brainstorming. Not frameworks. Paths scored against 95 professional archetypes and 480 business models, with the weak ones already removed.
                   </p>
-                  <p className="text-[15px] leading-[1.75] text-muted-foreground">
+                  <p className="text-[15px] leading-[1.75]" style={{ color: "rgba(250,249,247,0.80)" }}>
                     Then it builds a 30-day activation plan, finds you the right people to contact, drafts your first moves, and coaches you through the whole thing. The more you use it, the more specific it gets.
                   </p>
                 </div>
 
-                <div className="mt-10 border-t border-border/60 pt-8">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <div className="mt-10 pt-8" style={{ borderTop: "1px solid rgba(250,249,247,0.15)" }}>
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(250,249,247,0.65)" }}>
                     <span className="text-primary mr-3 tabular-nums">02</span>What Solo is not
                   </div>
-                  <ul className="mt-5 grid gap-3 text-[14.5px] leading-[1.7] text-muted-foreground sm:gap-4 lg:grid-cols-2 lg:gap-x-12">
+                  <ul className="mt-5 grid gap-3 text-[14.5px] leading-[1.7] sm:gap-4 lg:grid-cols-2 lg:gap-x-12" style={{ color: "rgba(250,249,247,0.80)" }}>
                     {WHAT_SOLO_IS_NOT.map((item, i) => (
                       <li key={i} className="flex gap-3">
                         <span aria-hidden className="mt-[0.6em] h-1.5 w-1.5 flex-none rounded-full bg-primary" />
-                        <span className={item.strong ? "font-semibold text-foreground" : ""}>
+                        <span style={item.strong ? { fontWeight: 600, color: "#FAF9F7" } : undefined}>
                           {item.text}
                         </span>
                       </li>
@@ -553,20 +555,13 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ═══ §4.5 — CHATGPT DIFFERENTIATOR · dark panel (mint top stripe) ═══ */}
+        {/* ═══ §4.5 — CHATGPT DIFFERENTIATOR · DARK (polemic variant: mint top stripe) ═══ */}
         <section className="py-8 lg:py-12">
           <div className="mx-auto max-w-6xl px-6">
             <ScrollReveal>
               <div
-                className="px-8 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24 text-center"
-                style={{
-                  background: "#1A1915",
-                  border: "1px solid #2A2924",
-                  borderRadius: "16px",
-                  borderTop: "4px solid #2ECDB0",
-                  boxShadow:
-                    "0 4px 32px rgba(0, 0, 0, 0.22), 0 1px 6px rgba(0, 0, 0, 0.12)",
-                }}
+                className="panel-dark px-8 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24 text-center"
+                style={{ borderTop: "4px solid #2ECDB0" }}
               >
                 <h2
                   className="font-display text-[26px] font-semibold leading-[1.18] tracking-tight sm:text-[32px] lg:text-[38px]"
@@ -952,22 +947,22 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ═══ §12 — FINAL CTA · centered editorial closer ═══ */}
+        {/* ═══ §12 — FINAL CTA · DARK card variant (per 25% cadence) ═══ */}
         <section className="pb-12 pt-8 lg:pb-20 lg:pt-12">
           <div className="mx-auto max-w-6xl px-6">
             <ScrollReveal>
-              <div className="panel-ivory px-8 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24">
+              <div className="panel-dark px-8 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24">
                 <div className="mx-auto max-w-2xl text-center">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(250,249,247,0.65)" }}>
                     — End of preview —
                   </div>
                   <h2
                     className="mt-6 font-display text-[30px] font-semibold leading-[1.15] tracking-tight sm:text-[36px] lg:text-[44px]"
-                    style={{ letterSpacing: "-0.025em" }}
+                    style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
                   >
                     Your Plan B should already exist.
                   </h2>
-                  <p className="mt-5 text-[15px] leading-[1.65] text-muted-foreground">
+                  <p className="mt-5 text-[15px] leading-[1.65]" style={{ color: "rgba(250,249,247,0.80)" }}>
                     The test takes 8 minutes. You'll see your archetype, your top income paths, and your first recommended move before you pay anything.
                   </p>
                   <div className="mt-9">
@@ -975,7 +970,7 @@ export default function Landing() {
                       Take the test
                     </PrimaryButton>
                   </div>
-                  <div className="mt-5 text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  <div className="mt-5 text-[11px] uppercase tracking-[0.12em]" style={{ color: "rgba(250,249,247,0.65)" }}>
                     £19.99 one-time · No subscription required
                   </div>
                 </div>
