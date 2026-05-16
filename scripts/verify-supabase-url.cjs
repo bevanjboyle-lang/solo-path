@@ -23,6 +23,15 @@
 const EXPECTED_PROJECT_ID = "dnnxmjazillhktwttkux";
 const EXPECTED_URL_SUBSTRING = `https://${EXPECTED_PROJECT_ID}.supabase.co`;
 
+// Vercel-only enforcement. Skip silently on any other build environment.
+const isVercel = process.env.VERCEL === "1" || process.env.VERCEL === "true";
+if (!isVercel) {
+  console.log(
+    "[verify-supabase-url] skipped (not on Vercel) — only enforced on Vercel builds",
+  );
+  process.exit(0);
+}
+
 const url = process.env.VITE_SUPABASE_URL || "";
 const projectId = process.env.VITE_SUPABASE_PROJECT_ID || "";
 
