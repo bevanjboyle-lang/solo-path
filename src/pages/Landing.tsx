@@ -553,38 +553,50 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* ═══ §4.5 — CHATGPT DIFFERENTIATOR · dark contrast section ═══ */}
-        <section
-          className="relative py-20 lg:py-24"
-          style={{ background: "#1A1915", borderTop: "4px solid #2ECDB0" }}
-        >
-          <div className="mx-auto max-w-5xl px-6 text-center">
+        {/* ═══ §4.5 — CHATGPT DIFFERENTIATOR · dark panel (mint top stripe) ═══ */}
+        <section className="py-8 lg:py-12">
+          <div className="mx-auto max-w-6xl px-6">
             <ScrollReveal>
-              <h2
-                className="font-display text-[28px] font-bold leading-[1.15] tracking-tight sm:text-[36px] lg:text-[44px]"
-                style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
+              <div
+                className="px-8 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24 text-center"
+                style={{
+                  background: "#1A1915",
+                  border: "1px solid #2A2924",
+                  borderRadius: "16px",
+                  borderTop: "4px solid #2ECDB0",
+                  boxShadow:
+                    "0 4px 32px rgba(0, 0, 0, 0.22), 0 1px 6px rgba(0, 0, 0, 0.12)",
+                }}
               >
-                ChatGPT can help you think about independence.
-                <br />
-                Solo will help you actually get there.
-              </h2>
+                <h2
+                  className="font-display text-[26px] font-semibold leading-[1.18] tracking-tight sm:text-[32px] lg:text-[38px]"
+                  style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
+                >
+                  ChatGPT can help you think about independence.
+                  <br />
+                  Solo will help you actually get there.
+                </h2>
 
-              <div className="mt-10 grid gap-6 text-left md:grid-cols-2 md:gap-10">
-                <p className="text-[15px] leading-[1.8]" style={{ color: "rgba(250,249,247,0.85)" }}>
-                  General-purpose AI will give you a framework. A list of options. Advice to "build a personal brand" and "network with people in your target sector." It does not know who you are. Every session starts from scratch.
-                </p>
-                <p className="text-[15px] leading-[1.8]" style={{ color: "rgba(250,249,247,0.85)" }}>
-                  Solo runs your profile against a decision engine built from 95 archetypes, 480 business models, and 2,694 scored match combinations. It builds a personalised activation system around the paths that fit you. The context it builds over time — your history, your progress, your blockers, your check-ins — is something no general-purpose AI can replicate, because it was never designed to track a specific person through a specific goal.
-                </p>
-              </div>
+                <div className="mx-auto mt-10 grid max-w-4xl gap-6 text-left md:grid-cols-2 md:gap-10">
+                  <p className="text-[14.5px] leading-[1.75]" style={{ color: "rgba(250,249,247,0.85)" }}>
+                    General-purpose AI will give you a framework. A list of options. Advice to "build a personal brand" and "network with people in your target sector." It does not know who you are. Every session starts from scratch.
+                  </p>
+                  <p className="text-[14.5px] leading-[1.75]" style={{ color: "rgba(250,249,247,0.85)" }}>
+                    Solo runs your profile against a decision engine built from 95 archetypes, 480 business models, and 2,694 scored match combinations. It builds a personalised activation system around the paths that fit you. The context it builds over time — your history, your progress, your blockers, your check-ins — is something no general-purpose AI can replicate, because it was never designed to track a specific person through a specific goal.
+                  </p>
+                </div>
 
-              <p className="mt-10 text-[15px] font-medium" style={{ color: "#FAF9F7" }}>
-                You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually reach out to. Or take the Solo test — and walk away with a real plan and a real list of people to contact.
-              </p>
-              <div className="mt-8">
-                <PrimaryButton onClick={handleStartTest}>
-                  Take the test
-                </PrimaryButton>
+                <p
+                  className="mx-auto mt-10 max-w-3xl text-[14.5px] font-medium leading-[1.6]"
+                  style={{ color: "#FAF9F7" }}
+                >
+                  You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually reach out to. Or take the Solo test — and walk away with a real plan and a real list of people to contact.
+                </p>
+                <div className="mt-9">
+                  <PrimaryButton onClick={handleStartTest}>
+                    Take the test
+                  </PrimaryButton>
+                </div>
               </div>
             </ScrollReveal>
           </div>
