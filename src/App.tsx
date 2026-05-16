@@ -28,6 +28,8 @@ import Processing from "./pages/Processing";
 import Teaser from "./pages/Teaser";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Plan from "./pages/Plan";
+import Report from "./pages/Report";
+import CheckinHistory from "./pages/CheckinHistory";
 import Pricing from "./pages/Pricing";
 import Library from "./pages/Library";
 import FAQ from "./pages/FAQ";
@@ -50,7 +52,7 @@ function CheckinDeepLink() {
 
 const queryClient = new QueryClient();
 
-const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success", "/auth", "/privacy", "/terms", "/plan", "/library", "/ask-solo", "/account", "/subscribe", "/checkin"];
+const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success", "/auth", "/privacy", "/terms", "/plan", "/library", "/ask-solo", "/account", "/subscribe", "/checkin", "/report"];
 
 function AnimatedRoutes() {
 	const location = useLocation();
@@ -90,6 +92,9 @@ function AnimatedRoutes() {
 
 						{/* Gated routes */}
 						<Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
+						<Route path="/report" element={<ProtectedRoute><Report /></ProtectedRoute>} />
+						{/* /checkin/history must precede /checkin/:sessionId so it matches first. */}
+						<Route path="/checkin/history" element={<ProtectedRoute><CheckinHistory /></ProtectedRoute>} />
 						<Route path="/checkin/:sessionId" element={<ProtectedRoute><CheckinDeepLink /></ProtectedRoute>} />
 						<Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
 						<Route path="/library/modules/:id" element={<ProtectedRoute><Library /></ProtectedRoute>} />

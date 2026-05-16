@@ -6,9 +6,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
 import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
-import PanelLayout from "@/components/PanelLayout";
 import Banner from "@/components/Banner";
 import LibraryCard from "@/components/plan/LibraryCard";
+import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Progress } from "@/components/ui/progress";
@@ -225,6 +225,12 @@ export default function Library() {
     { id: "modules", label: "Modules" },
   ];
 
+  const sidebarItems: SidebarItem[] = [
+    { id: "today", label: "Today's pick", onClick: () => setTab("today"), isActive: activeTab === "today" },
+    { id: "browse", label: "Browse", onClick: () => setTab("browse"), isActive: activeTab === "browse" },
+    { id: "modules", label: "Modules", onClick: () => setTab("modules"), isActive: activeTab === "modules" },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col text-foreground">
       <TopBar />
@@ -237,8 +243,10 @@ export default function Library() {
         </div>
       )}
 
-      <PanelLayout className="px-6 py-10 sm:px-10">
-        <div className="mx-auto max-w-3xl">
+      <div className="mx-auto w-full max-w-screen-xl px-6">
+        <div className="flex gap-10">
+          <AreaSidebar items={sidebarItems} />
+          <div className="flex-1 min-w-0 mx-auto w-full max-w-3xl py-10">
           <h1
             className="font-display text-3xl font-bold tracking-tight"
             style={{ letterSpacing: "-0.02em" }}
@@ -314,8 +322,9 @@ export default function Library() {
               />
             )}
           </div>
+          </div>
         </div>
-      </PanelLayout>
+      </div>
 
       {/* Reading drawer */}
       <Sheet open={drawerOpen} onOpenChange={(open) => { if (!open) backToModules(); }}>

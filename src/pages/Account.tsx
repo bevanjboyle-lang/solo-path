@@ -15,8 +15,8 @@ import {
 } from "@/lib/handlers";
 import TakeAnotherTestCard from "@/components/account/TakeAnotherTestCard";
 import TopBar from "@/components/TopBar";
-import PanelLayout from "@/components/PanelLayout";
 import Banner from "@/components/Banner";
+import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,8 @@ export default function Account() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isActive: isSubscriber } = useSubscriptionStatus();
+  type AccountSection = "profile" | "subscription" | "billing" | "privacy";
+  const [activeSection, setActiveSection] = useState<AccountSection>("profile");
   // CV state
   const [cvRemoved, setCvRemoved] = useState(false);
 
@@ -138,12 +140,21 @@ export default function Account() {
     toast.success("Your data export is downloading.");
   };
 
+  const sidebarItems: SidebarItem[] = [
+    { id: "profile", label: "Profile", onClick: () => setActiveSection("profile"), isActive: activeSection === "profile" },
+    { id: "subscription", label: "Subscription", onClick: () => setActiveSection("subscription"), isActive: activeSection === "subscription" },
+    { id: "billing", label: "Billing", onClick: () => setActiveSection("billing"), isActive: activeSection === "billing" },
+    { id: "privacy", label: "Privacy & data", onClick: () => setActiveSection("privacy"), isActive: activeSection === "privacy" },
+    { id: "signout", label: "Sign out", onClick: handleSignOut },
+  ];
+
   return (
     <div className="min-h-screen flex flex-col text-foreground">
       <TopBar />
-
-      <PanelLayout className="px-6 py-10 sm:px-10">
-        <div className="mx-auto max-w-xl space-y-8">
+      <div className="mx-auto w-full max-w-screen-xl px-6">
+        <div className="flex gap-10">
+          <AreaSidebar items={sidebarItems} />
+          <div className="flex-1 min-w-0 mx-auto w-full max-w-xl space-y-8 py-10">
           <h1
             className="font-display text-3xl font-bold tracking-tight"
             style={{ letterSpacing: "-0.02em" }}
@@ -151,7 +162,7 @@ export default function Account() {
             Account
           </h1>
 
-          {/* 1. PROFILE */}
+          {activeSection === "profile" && (
           <Card className="border-border bg-[hsl(var(--surface-panel))]">
             <CardContent className="p-6">
               <h2 className="font-display text-base font-semibold text-foreground mb-5">Profile</h2>
@@ -197,8 +208,10 @@ export default function Account() {
               </div>
             </CardContent>
           </Card>
+          )}
 
-          {/* 2. YOUR PLAN */}
+          {activeSection === "subscription" && (
+          <>
           <Card className="border-border bg-[hsl(var(--surface-panel))]">
             <CardContent className="p-6">
               <h2 className="font-display text-base font-semibold text-foreground mb-5">Your plan</h2>
@@ -221,9 +234,6 @@ export default function Account() {
                     Subscription — £{(subscriptionPlan as string) === "annual" ? "149 / year" : "19 / month"} · Renews {renewDate}
                   </p>
                   <div className="flex gap-3">
-                    <Button size="sm" variant="outline" onClick={handleBillingPortal}>
-                      Manage billing
-                    </Button>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -251,11 +261,25 @@ export default function Account() {
               )}
             </CardContent>
           </Card>
-
-          {/* 3. TAKE ANOTHER TEST */}
           <TakeAnotherTestCard />
+          </>
+          )}
 
-          {/* 4. DATA & PRIVACY */}
+          {activeSection === "billing" && (
+          <Card className="border-border bg-[hsl(var(--surface-panel))]">
+            <CardContent className="p-6">
+              <h2 className="font-display text-base font-semibold text-foreground mb-5">Billing</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Manage payment method, view invoices, and update billing details.
+              </p>
+              <Button size="sm" variant="outline" onClick={handleBillingPortal}>
+                Open billing portal
+              </Button>
+            </CardContent>
+          </Card>
+          )}
+
+          {activeSection === "privacy" && (
           <Card className="border-border bg-[hsl(var(--surface-panel))]">
             <CardContent className="p-6">
               <h2 className="font-display text-base font-semibold text-foreground mb-5">Data & privacy</h2>
@@ -305,13 +329,10 @@ export default function Account() {
               </div>
             </CardContent>
           </Card>
-
-          {/* 5. SIGN OUT */}
-          <Button className="w-full" onClick={handleSignOut}>
-            Sign out
-          </Button>
+          )}
+          </div>
         </div>
-      </PanelLayout>
+      </div>
 
       {/* ── Modals ── */}
 

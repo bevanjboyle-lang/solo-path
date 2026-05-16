@@ -53,7 +53,19 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
                   onClick={() => navigateAuthed(navigate, "/plan")}
                   className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  My plan
+                  Plan
+                </button>
+                <button
+                  onClick={() => navigateAuthed(navigate, "/library")}
+                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Library
+                </button>
+                <button
+                  onClick={() => navigateAuthed(navigate, "/account")}
+                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Account
                 </button>
                 <button
                   onClick={handleSignOut}
@@ -114,7 +126,19 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
                   onClick={() => { navigateAuthed(navigate, "/plan"); setOpen(false); }}
                   className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  My plan
+                  Plan
+                </button>
+                <button
+                  onClick={() => { navigateAuthed(navigate, "/library"); setOpen(false); }}
+                  className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Library
+                </button>
+                <button
+                  onClick={() => { navigateAuthed(navigate, "/account"); setOpen(false); }}
+                  className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Account
                 </button>
                 <button
                   onClick={handleSignOut}
