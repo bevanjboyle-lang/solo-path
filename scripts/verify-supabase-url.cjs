@@ -10,6 +10,12 @@
  * any Vercel build picks up the misconfiguration BEFORE shipping a broken
  * bundle to production.
  *
+ * The original threat model is Lovable's bot committing wrong .env values
+ * that Vercel bakes into a prod bundle. That threat only materialises on
+ * Vercel. Lovable builds don't ship to prod. Local npm run dev would fail
+ * obviously if the URL was wrong, so no prebuild gate is needed there.
+ * Therefore this check is Vercel-only.
+ *
  * To override (e.g. if the project ID legitimately changes), edit the
  * EXPECTED_PROJECT_ID constant below.
  */
