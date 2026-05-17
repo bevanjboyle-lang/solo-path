@@ -1040,9 +1040,18 @@ function DayRow({
   // Status pill — matches /checkin-history's four-pill vocabulary.
   const pill = (() => {
     if (isCompleted) {
+      // Pass 2 (2026-05-18, F2): white tick glyph inside the Done pill. Tick is
+      // the system's existing completion mark (matches /auth sent state and
+      // /account modal confirmations). Earns the most semantically loaded state.
       return (
         <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-white" style={{ background: "#2ECDB0" }}>
-          <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.9)" }} />
+          <span
+            className="inline-flex items-center justify-center w-2 h-2 rounded-full text-[7px] font-bold leading-none"
+            style={{ background: "rgba(255,255,255,0.92)", color: "#1A8A72" }}
+            aria-hidden="true"
+          >
+            ✓
+          </span>
           Done
         </span>
       );
@@ -1083,18 +1092,27 @@ function DayRow({
         aria-expanded={isExpanded}
         className="w-full grid grid-cols-[auto_1fr_auto_auto] gap-x-4 items-center px-2 py-4 text-left hover:bg-[#F3F1ED]/40 transition-colors"
       >
+        {/* Pass 2 (2026-05-18, F1): split into two spans so the "Day" prefix
+          * carries mint and the numeral carries the row-state ink. Active rows
+          * (today/completed) get a mint prefix; missed/future fade the prefix
+          * with the rest of the row. Reads as editorial wayfinding rather than
+          * a uniform text block. */}
         <span
           className={`shrink-0 font-display font-bold text-[15px] tabular-nums tracking-[0.04em] ${
-            isFuture || isMissed ? "text-muted-foreground/70" : "text-foreground"
+            isToday ? "text-primary"
+              : isCompleted ? "text-foreground"
+              : isMissed ? "text-muted-foreground"
+              : "text-muted-foreground/70"
           }`}
         >
           <span
             className={`mr-1 ${
-              isToday || isCompleted ? "text-primary" : "text-muted-foreground/50"
+              isToday || isCompleted ? "text-primary" : "text-muted-foreground/60"
             }`}
           >
-            Day {String(day).padStart(2, "0")}
+            Day
           </span>
+          {String(day).padStart(2, "0")}
         </span>
         <span
           className={`min-w-0 truncate font-display text-[14.5px] sm:text-[15.5px] ${
@@ -1113,7 +1131,7 @@ function DayRow({
       {isExpanded && (
         <div className="px-2 sm:px-6 pb-6 pt-2">
           {dayDetail ? (
-            <DayBody dayDetail={dayDetail} />
+            <DayBody dayDetail={dayDetail} status={status} />
           ) : (
             <p className="text-[13.5px] italic text-muted-foreground/70 leading-relaxed">
               No specific tasks logged for this day. Your activation plan's day-by-day detail may be lighter for certain days — your overall plan structure still applies.
@@ -1124,7 +1142,10 @@ function DayRow({
             // stone-with-mint-rule treatment to distinguish from today's mint
             // primary and completed's quieter stone. View-check-in for
             // completed days opens the read-only transcript.
-            <div className="mt-5 pt-5 border-t border-[#E5E2DC]">
+            // Pass 2 (2026-05-18, F4 + lift-in): right-side hint on the missed
+            // CTA names the spec's hard rule ("backfilling won't change today")
+            // at the moment of decision, before the user clicks.
+            <div className="mt-5 pt-5 border-t border-[#E5E2DC] flex items-baseline gap-3 flex-wrap">
               <button
                 onClick={onOpenCheckin}
                 className="inline-flex items-center justify-center rounded-md px-4 py-2 text-[13px] font-semibold transition-colors"
@@ -1142,6 +1163,11 @@ function DayRow({
                     ? "Backfill this day →"
                     : "View this check-in →"}
               </button>
+              {isMissed && (
+                <span className="text-[11px] text-muted-foreground/70 leading-snug">
+                  A retroactive note won't change today's tracker — just fills the gap.
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -1151,8 +1177,22 @@ function DayRow({
 }
 
 /* DayBody — renders the substantive content for an expanded day:
- * time allocation, tasks (with descriptions, move tags, outreach drafts). */
-function DayBody({ dayDetail }: { dayDetail: DayDetail }) {
+ * time allocation, tasks (with descriptions, move tags, outreach drafts).
+ *
+ * Pass 2 (2026-05-18):
+ *   - F5 resolution: no leading eyebrow above the H3 — the row label is
+ *     promoted to a substantive H3 heading. Just heading + content.
+ *   - F6 resolution: missed rows use past-tense labels throughout
+ *     ("Was planned" / "Planned allocation" / "Tasks that were planned").
+ *   - Tasks count meta moves to the right of the "Tasks" eyebrow.
+ *   - Missed rows render the H3 + meta/alloc/tasks in muted ink so the user
+ *     can read what was planned without it competing with today.
+ *   - Missed rows do NOT show outreach_draft callouts (drafts were prep for
+ *     tasks that didn't happen; surfacing them retroactively would confuse).
+ */
+function DayBody({ dayDetail, status }: { dayDetail: DayDetail; status: DayRowStatus }) {
+  const isMissedRow = status === "missed";
+
   // time_allocation can be array (TimeAllocationEntry[]) or object form
   // (Record<string, string>) per the deployed adapter. Components must
   // handle both per the type comment.
@@ -1167,13 +1207,34 @@ function DayBody({ dayDetail }: { dayDetail: DayDetail }) {
     return [];
   })();
 
+  // Pass 2 (F6): present-tense for today/future, past-tense for missed.
+  const labels = isMissedRow
+    ? { timeReq: "Was planned", alloc: "Planned allocation", tasks: "Tasks that were planned" }
+    : { timeReq: "Time required", alloc: "Time allocation", tasks: "Tasks" };
+
   return (
-    <div>
+    <div className="sm:pl-12">
+      {/* Pass 2 (F5): substantive H3 heading promotes the day label to body
+        * weight. No eyebrow above — the row's collapsed header carries the
+        * unit/date context; the H3 makes the expanded body's purpose. */}
+      {dayDetail.label && (
+        <h3
+          className={`font-display font-bold text-[18px] sm:text-[19px] leading-snug mb-5 ${
+            isMissedRow ? "text-muted-foreground" : "text-foreground"
+          }`}
+          style={{ letterSpacing: "-0.018em" }}
+        >
+          {dayDetail.label}
+        </h3>
+      )}
+
       {/* Meta row — time required */}
       {dayDetail.time_required && (
         <div className="flex items-baseline gap-3 mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          <span className="text-primary">Time required</span>
-          <span className="normal-case tracking-normal text-[13px] font-medium text-foreground">
+          <span className="text-primary">{labels.timeReq}</span>
+          <span className={`normal-case tracking-normal text-[13px] font-medium ${
+            isMissedRow ? "text-muted-foreground" : "text-foreground"
+          }`}>
             {dayDetail.time_required}
           </span>
         </div>
@@ -1182,13 +1243,14 @@ function DayBody({ dayDetail }: { dayDetail: DayDetail }) {
       {/* Time allocation */}
       {timeAllocationEntries.length > 0 && (
         <div className="mb-5 rounded-md px-4 py-3" style={{ background: "#F3F1ED" }}>
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-            How to spend the time
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
+            {labels.alloc}
           </div>
           <div className="space-y-1.5">
             {timeAllocationEntries.map(([activity, time]) => (
               <div key={activity} className="flex items-baseline justify-between gap-3 text-[13px]">
-                <span className="text-foreground/85">{activity}</span>
+                <span className={isMissedRow ? "text-muted-foreground" : "text-foreground/85"}>{activity}</span>
                 <span className="text-muted-foreground tabular-nums shrink-0">{time}</span>
               </div>
             ))}
@@ -1199,9 +1261,10 @@ function DayBody({ dayDetail }: { dayDetail: DayDetail }) {
       {/* Tasks */}
       {dayDetail.tasks?.length > 0 && (
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-3">
-            <span className="text-primary mr-2">Tasks</span>
-            <span>{dayDetail.tasks.length}</span>
+          <div className="flex items-baseline gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-3">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary translate-y-[-1px]" aria-hidden="true" />
+            <span className="text-primary">{labels.tasks}</span>
+            <span className="ml-auto tabular-nums text-muted-foreground/70">{dayDetail.tasks.length}</span>
           </div>
           <ul className="space-y-4">
             {dayDetail.tasks.map((task, i) => (
@@ -1217,7 +1280,11 @@ function DayBody({ dayDetail }: { dayDetail: DayDetail }) {
                   )}
                 </div>
 
-                {task.outreach_draft && (
+                {/* Pass 2 (2026-05-18): missed rows suppress outreach_draft callouts.
+                  * The drafts were prep for tasks that didn't happen; surfacing
+                  * them retroactively would confuse. Copy affordance gets the
+                  * "⧉ Copy" text+glyph treatment per F3. */}
+                {task.outreach_draft && !isMissedRow && (
                   <div
                     className="mt-3 rounded-md px-4 py-3.5"
                     style={{ background: "#F3F1ED", borderLeft: "3px solid #2ECDB0" }}
@@ -1233,8 +1300,9 @@ function DayBody({ dayDetail }: { dayDetail: DayDetail }) {
                             navigator.clipboard.writeText(task.outreach_draft || "");
                           }
                         }}
-                        className="text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC]"
+                        className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC]"
                       >
+                        <span aria-hidden="true">⧉</span>
                         Copy
                       </button>
                     </div>
