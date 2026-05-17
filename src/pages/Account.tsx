@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import {
   navigateAuthed,
@@ -15,12 +15,9 @@ import {
 } from "@/lib/handlers";
 import TakeAnotherTestCard from "@/components/account/TakeAnotherTestCard";
 import TopBar from "@/components/TopBar";
-import Banner from "@/components/Banner";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -34,6 +31,49 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
+
+/*
+ * Account — Pass 1 /account v1 (2026-05-18) — third Phase 2 surface
+ *
+ * Editorial reskin of the account / billing / privacy surface. Two-
+ * column app shell inheriting /plan + /report + /library. AreaSidebar
+ * with five items (Profile · Subscription · Billing · Privacy &
+ * data · Sign out), numerals 01–04 on content sections, Sign out as
+ * utility item beneath a hairline. Each section content in its own
+ * panel-ivory with editorial section-head.
+ *
+ * Locked decisions from admin/pass-1-account-decisions.md:
+ *   Cadence: zero dark. /account is a calm self-serve utility; the
+ *     system carries dark cadence load from /plan's Day-31 wall,
+ *     /library's Day-31 banner + gate row, /report's #ai-impact.
+ *     Restraint here protects those moments' meaning elsewhere.
+ *   F1 — Page-header right-side stat: "Member since [date]" only.
+ *     Topbar avatar already substantiates identity; full name in
+ *     display weight on the page header would be redundant and edge
+ *     toward badge-y.
+ *   F2 — Subscribe CTA on buyer Subscription: inline at standard
+ *     weight inside upgrade-block. Mint small-caps framing label +
+ *     price-pair beside button (equal weight, not stacked). No
+ *     banner, no urgency.
+ *   F3 — Cancel subscription: ghost link beside Manage billing
+ *     button. Honest — available, not promoted.
+ *   F4 — Billing as its own section: kept separate.
+ *   F5 — Mobile Danger-zone preview indicator: dropped (CD's own
+ *     risk flag landed; hamburger sheet already exposes Privacy).
+ *   F6 — Account-delete modal "what gets deleted" 5-item inset.
+ *     Honesty over abstraction.
+ *   F7 — Cancel-pending + payment-failed banners: inside Subscription
+ *     section panel, above section-head. Contextual placement.
+ *
+ * Mobile: AreaSidebar's existing hamburger-sheet pattern (inherited
+ * from /plan + /report + /library). No tab strip.
+ *
+ * Pass 1 scope: shell + chrome + sidebar config + page-header panel +
+ * per-section panels with editorial heads + Danger zone treatment +
+ * state-variant banners + enhanced account-delete modal. Preserves:
+ * all handlers, useSubscriptionStatus hook, TakeAnotherTestCard
+ * composite, modal state machinery.
+ */
 
 export default function Account() {
   const navigate = useNavigate();
@@ -140,199 +180,176 @@ export default function Account() {
     toast.success("Your data export is downloading.");
   };
 
+  /* Section-meta strings driving the section-head right-column. */
+  const sectionMeta: Record<AccountSection, { eyebrow: string; numeral: string; meta: string; h2: string; lede: string }> = {
+    profile: {
+      eyebrow: "Profile",
+      numeral: "01",
+      meta: editingName ? "editing first name" : "two fields · contact us to change your email",
+      h2: "Profile.",
+      lede: "Name and sign-in email. Email lives in support because magic-link sign-in depends on it.",
+    },
+    subscription: {
+      eyebrow: "Subscription",
+      numeral: "02",
+      meta: isCancelPending ? `ending ${accessEndDate} · still active until then`
+        : paymentFailed ? "payment retry pending"
+        : isSubscriber ? `active · ${subscriptionPlan}`
+        : "your current plan",
+      h2: isSubscriber ? (subscriptionPlan === "annual" ? "Annual subscription." : "Monthly subscription.") : "30-day report.",
+      lede: isSubscriber
+        ? (isCancelPending
+            ? `You've scheduled a cancellation. Nothing else changes until ${accessEndDate} — your library stays unlocked, weekly check-ins continue.`
+            : "Renews automatically. Cancel any time — access continues until the end of the paid month.")
+        : "One-time purchase. Access to your report and 30-day plan stays until the date below.",
+    },
+    billing: {
+      eyebrow: "Billing",
+      numeral: "03",
+      meta: "receipts in Stripe",
+      h2: "Billing.",
+      lede: "Recent charges and the path to formal invoices. Stripe is the source of truth.",
+    },
+    privacy: {
+      eyebrow: "Privacy & data",
+      numeral: "04",
+      meta: "your data is yours",
+      h2: "Privacy & data.",
+      lede: "Remove individual pieces of your data or export everything we hold. Account deletion is also here, behind a typed confirmation.",
+    },
+  };
+
+  /* Sidebar: numerals 01–04 on content sections + hairline + Sign out as utility. */
   const sidebarItems: SidebarItem[] = [
-    { id: "profile", label: "Profile", onClick: () => setActiveSection("profile"), isActive: activeSection === "profile" },
-    { id: "subscription", label: "Subscription", onClick: () => setActiveSection("subscription"), isActive: activeSection === "subscription" },
-    { id: "billing", label: "Billing", onClick: () => setActiveSection("billing"), isActive: activeSection === "billing" },
-    { id: "privacy", label: "Privacy & data", onClick: () => setActiveSection("privacy"), isActive: activeSection === "privacy" },
-    { id: "signout", label: "Sign out", onClick: handleSignOut },
+    { id: "profile",      label: "Profile",        numeral: "01", onClick: () => setActiveSection("profile"),      isActive: activeSection === "profile" },
+    { id: "subscription", label: "Subscription",   numeral: "02", onClick: () => setActiveSection("subscription"), isActive: activeSection === "subscription" },
+    { id: "billing",      label: "Billing",        numeral: "03", onClick: () => setActiveSection("billing"),      isActive: activeSection === "billing" },
+    { id: "privacy",      label: "Privacy & data", numeral: "04", onClick: () => setActiveSection("privacy"),      isActive: activeSection === "privacy" },
+    { id: "sep",          label: "",               isDivider: true },
+    { id: "signout",      label: "Sign out",       isUtility: true, onClick: handleSignOut },
   ];
 
-  return (
-    <div className="min-h-screen flex flex-col text-foreground">
-      <TopBar />
-      <div className="mx-auto w-full max-w-screen-xl px-6">
-        <div className="flex gap-10">
-          <AreaSidebar items={sidebarItems} />
-          <div className="flex-1 min-w-0 mx-auto w-full max-w-xl space-y-8 py-10">
-          <h1
-            className="font-display text-3xl font-bold tracking-tight"
-            style={{ letterSpacing: "-0.02em" }}
-          >
-            Account
-          </h1>
+  const sidebarHead: ReactNode = (
+    <>
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+      <span>Your account</span>
+    </>
+  );
 
-          {activeSection === "profile" && (
-          <Card className="border-border bg-[hsl(var(--surface-panel))]">
-            <CardContent className="p-6">
-              <h2 className="font-display text-base font-semibold text-foreground mb-5">Profile</h2>
+  /* Member-since date — derived from auth.users.created_at when present. */
+  const memberSince = user?.created_at
+    ? new Date(user.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+    : null;
 
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-xs text-muted-foreground">First name</Label>
-                  {editingName ? (
-                    <div className="mt-1.5 flex gap-2">
-                      <Input
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        className="h-9 text-sm"
-                        autoFocus
-                      />
-                      <Button size="sm" onClick={handleSaveName} disabled={savingName}>
-                        {savingName ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingName(false)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="mt-1.5 flex items-center gap-3">
-                      <span className="text-sm text-foreground">{firstName || "Not set"}</span>
-                      <button
-                        onClick={() => setEditingName(true)}
-                        className="text-xs font-medium text-primary hover:underline"
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <Label className="text-xs text-muted-foreground">Sign-in email</Label>
-                  <p className="mt-1.5 text-sm text-foreground">{user?.email}</p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
-                    This is where we'll send your magic link. Contact us to change it.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          )}
-
-          {activeSection === "subscription" && (
-          <>
-          <Card className="border-border bg-[hsl(var(--surface-panel))]">
-            <CardContent className="p-6">
-              <h2 className="font-display text-base font-semibold text-foreground mb-5">Your plan</h2>
-
-              {paymentFailed && (
-                <Banner variant="error">
-                  We couldn't process your last payment. Update your card to keep your subscription active.
-                </Banner>
-              )}
-
-              {isCancelPending && (
-                <Banner variant="info">
-                  Your subscription ends on {accessEndDate}. You'll keep full access until then.
-                </Banner>
-              )}
-
-              {isSubscriber ? (
-                <div className="space-y-4">
-                  <p className="text-sm text-foreground">
-                    Subscription — £{(subscriptionPlan as string) === "annual" ? "149 / year" : "19 / month"} · Renews {renewDate}
-                  </p>
-                  <div className="flex gap-3">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-muted-foreground"
-                      onClick={() => setShowCancelSub(true)}
-                    >
-                      Cancel subscription
-                    </Button>
-                  </div>
-                  {isCancelPending && (
-                    <Button size="sm" onClick={handleResumeSub}>
-                      Resume subscription
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-foreground">
-                    30-day report — access until {accessEndDate}
-                  </p>
-                  <Button size="sm" onClick={handleSubscribe}>
-                    Subscribe
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          <TakeAnotherTestCard />
-          </>
-          )}
-
-          {activeSection === "billing" && (
-          <Card className="border-border bg-[hsl(var(--surface-panel))]">
-            <CardContent className="p-6">
-              <h2 className="font-display text-base font-semibold text-foreground mb-5">Billing</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Manage payment method, view invoices, and update billing details.
-              </p>
-              <Button size="sm" variant="outline" onClick={handleBillingPortal}>
-                Open billing portal
-              </Button>
-            </CardContent>
-          </Card>
-          )}
-
-          {activeSection === "privacy" && (
-          <Card className="border-border bg-[hsl(var(--surface-panel))]">
-            <CardContent className="p-6">
-              <h2 className="font-display text-base font-semibold text-foreground mb-5">Data & privacy</h2>
-
-              <div className="space-y-5">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Remove my CV</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    We'll delete the file and any extracted text. Your report stays.
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-3"
-                    onClick={() => setShowDeleteCv(true)}
-                    disabled={cvRemoved}
-                  >
-                    {cvRemoved ? "Removed" : "Remove"}
-                  </Button>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-foreground">Request my data</p>
-                  <Button size="sm" variant="outline" className="mt-3" onClick={handleDataExport}>
-                    Request export
-                  </Button>
-                </div>
-
-                {/* Danger zone */}
-                <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/5 p-5">
-                  <h3 className="flex items-center gap-2 text-sm font-semibold text-destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    Danger zone
-                  </h3>
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    This permanently deletes your account, report, plan, check-in history, and conversations.
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    className="mt-4"
-                    onClick={() => setShowDeleteAccount(true)}
-                  >
-                    Delete my account
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          )}
-          </div>
-        </div>
+  const sidebarFooter: ReactNode = (
+    <>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+        Plan
       </div>
+      <div className="mt-1 text-[12px] text-foreground">
+        {isSubscriber
+          ? subscriptionPlan === "annual" ? `Annual · Renews ${renewDate}` : `Monthly · Renews ${renewDate}`
+          : "One-time · Day 12 of 30"}
+      </div>
+    </>
+  );
+
+  const current = sectionMeta[activeSection];
+
+  return (
+    <div className="relative min-h-screen text-foreground">
+      <TopBar />
+
+      <main className="pt-[68px]">
+        <section className="py-8 lg:py-12">
+          <div className="mx-auto max-w-screen-xl px-6">
+            <div className="flex gap-8 lg:gap-10">
+              <AreaSidebar
+                items={sidebarItems}
+                head={sidebarHead}
+                footer={sidebarFooter}
+              />
+
+              <div className="flex-1 min-w-0">
+                <h1 className="sr-only">Account</h1>
+
+                {/* Page-header panel: H1 + subhead + right-side Member-since date only (F1). */}
+                <AccountPageHeader memberSince={memberSince} />
+
+                {/* Section panel: own ivory surface, editorial section-head. */}
+                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+
+                  {/* Cancel-pending / payment-failed banners: contextual inside Subscription section, above section-head (F7). */}
+                  {activeSection === "subscription" && isCancelPending && (
+                    <CancelPendingBanner accessEndDate={accessEndDate} onResume={handleResumeSub} />
+                  )}
+                  {activeSection === "subscription" && paymentFailed && (
+                    <PaymentFailedBanner onUpdate={handleBillingPortal} />
+                  )}
+
+                  <SectionHead numeral={current.numeral} eyebrow={current.eyebrow} meta={current.meta} />
+                  <h2 className="font-display text-[24px] sm:text-[26px] font-bold tracking-tight leading-[1.15] text-foreground mb-2">
+                    {current.h2}
+                  </h2>
+                  <p className="font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[54ch] mb-6">
+                    {current.lede}
+                  </p>
+
+                  {/* Profile */}
+                  {activeSection === "profile" && (
+                    <ProfileSection
+                      firstName={firstName}
+                      onFirstNameChange={setFirstName}
+                      email={user?.email ?? ""}
+                      editing={editingName}
+                      onEdit={() => setEditingName(true)}
+                      onCancelEdit={() => setEditingName(false)}
+                      onSave={handleSaveName}
+                      saving={savingName}
+                    />
+                  )}
+
+                  {/* Subscription */}
+                  {activeSection === "subscription" && (
+                    <>
+                      <SubscriptionSection
+                        isSubscriber={isSubscriber}
+                        isCancelPending={isCancelPending}
+                        paymentFailed={paymentFailed}
+                        subscriptionPlan={subscriptionPlan}
+                        renewDate={renewDate}
+                        accessEndDate={accessEndDate}
+                        onSubscribe={handleSubscribe}
+                        onManageBilling={handleBillingPortal}
+                        onCancel={() => setShowCancelSub(true)}
+                        onResume={handleResumeSub}
+                      />
+                      <div className="mt-6 pt-6 border-t border-[#E5E2DC]">
+                        <TakeAnotherTestCard />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Billing */}
+                  {activeSection === "billing" && (
+                    <BillingSection onOpenPortal={handleBillingPortal} />
+                  )}
+
+                  {/* Privacy & data */}
+                  {activeSection === "privacy" && (
+                    <PrivacySection
+                      onRemoveCv={() => setShowDeleteCv(true)}
+                      cvRemoved={cvRemoved}
+                      onRequestExport={handleDataExport}
+                      onDeleteAccount={() => setShowDeleteAccount(true)}
+                    />
+                  )}
+                </section>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
       {/* ── Modals ── */}
 
@@ -368,33 +385,467 @@ export default function Account() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Account delete — typed confirmation */}
+      {/* Account delete — typed confirmation with "what gets deleted" inset (F6).
+       *
+       * Pass 1: enhanced from spec four-item sentence to a five-item itemised
+       * list inside a stone-tinted inset. Honesty over abstraction.
+       * Typed-confirm field is monospaced (it's a literal string match, not
+       * prose). Armed-only-when-typed disabled treatment.
+       */}
       <AlertDialog open={showDeleteAccount} onOpenChange={(open) => { setShowDeleteAccount(open); if (!open) setDeleteConfirmText(""); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete your account?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This deletes your report, plan, check-in history, and conversations. It can't be undone. Type <strong>delete</strong> to confirm.
+            <div className="flex items-center gap-3 mb-3 text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: "#8E2424" }}>
+              <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#D94F4F" }} />
+              <span>Delete account · confirm</span>
+            </div>
+            <AlertDialogTitle className="font-display text-[22px] font-extrabold tracking-tight leading-tight text-foreground">
+              Delete your Solo account.
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-muted-foreground leading-relaxed">
+              This permanently deletes everything we hold about you. It can't be undone, and we can't recover anything from a deleted account.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <Input
-            value={deleteConfirmText}
-            onChange={(e) => setDeleteConfirmText(e.target.value)}
-            placeholder='Type "delete" to confirm'
-            className="mt-2"
-          />
+
+          <div className="mt-3 rounded-md bg-[#F3F1ED] border border-[#E5E2DC] px-4 py-3">
+            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">
+              What gets deleted
+            </div>
+            <ul className="space-y-1 text-[13px] text-foreground/85 leading-snug">
+              <li className="flex gap-2"><span className="text-muted-foreground">—</span>Your Plan B report and 30-day plan.</li>
+              <li className="flex gap-2"><span className="text-muted-foreground">—</span>All questionnaire answers and your CV.</li>
+              <li className="flex gap-2"><span className="text-muted-foreground">—</span>Check-in history and conversations with Ask Solo.</li>
+              <li className="flex gap-2"><span className="text-muted-foreground">—</span>Subscription record (we'll cancel it as part of deletion).</li>
+              <li className="flex gap-2"><span className="text-muted-foreground">—</span>Email address and profile.</li>
+            </ul>
+          </div>
+
+          <div className="mt-4">
+            <p className="text-[13px] text-foreground">
+              Type{" "}
+              <span
+                className="font-mono text-[12px] px-1.5 py-0.5 rounded"
+                style={{ background: "#F3F1ED", color: "#1D2025" }}
+              >
+                delete
+              </span>
+              {" "}below to confirm.
+            </p>
+            <Input
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              placeholder="Type here to confirm"
+              className="mt-2 font-mono text-sm"
+            />
+          </div>
+
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAccount}
               disabled={deleteConfirmText !== "delete" || deletingAccount}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:bg-transparent disabled:text-destructive disabled:border disabled:border-destructive disabled:opacity-55"
             >
-              {deletingAccount ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete account"}
+              {deletingAccount ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete my account"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Helper components ─────────────────────────── */
+
+/* ── AccountPageHeader — H1 + subhead + right-side Member-since (F1) ── */
+function AccountPageHeader({ memberSince }: { memberSince: string | null }) {
+  return (
+    <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+        <span className="text-foreground">Account</span>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
+        <div className="lg:col-span-9">
+          <div
+            aria-hidden
+            className="text-[36px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
+          >
+            Account.
+          </div>
+          <p className="mt-3 font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[52ch]">
+            Profile, subscription, billing, and privacy. Self-serve.
+          </p>
+        </div>
+        {memberSince && (
+          <div className="lg:col-span-3 lg:text-right">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1">
+              Member since
+            </div>
+            <div className="text-[13px] font-medium text-foreground/80 tabular-nums">
+              {memberSince}
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ── SectionHead — mint numeral + small-caps eyebrow + right-side state meta ── */
+function SectionHead({ numeral, eyebrow, meta }: { numeral: string; eyebrow: string; meta: string }) {
+  return (
+    <div className="flex items-baseline justify-between pb-4 mb-5 border-b border-[#E5E2DC]">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground inline-flex items-baseline gap-3">
+        <span className="text-primary tabular-nums">{numeral}</span>
+        <span>{eyebrow}</span>
+      </span>
+      <span className="text-[11px] text-muted-foreground/70 tracking-[0.04em]">
+        {meta}
+      </span>
+    </div>
+  );
+}
+
+/* ── ProfileSection — two field rows, inline first-name edit (F1) ── */
+function ProfileSection({
+  firstName, onFirstNameChange, email, editing, onEdit, onCancelEdit, onSave, saving,
+}: {
+  firstName: string;
+  onFirstNameChange: (v: string) => void;
+  email: string;
+  editing: boolean;
+  onEdit: () => void;
+  onCancelEdit: () => void;
+  onSave: () => void;
+  saving: boolean;
+}) {
+  return (
+    <div>
+      {/* First name */}
+      <div className="grid grid-cols-[140px_1fr_auto] sm:grid-cols-[180px_1fr_auto] gap-x-6 sm:gap-x-8 items-center py-4 first:pt-0">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          First name
+        </span>
+        {editing ? (
+          <>
+            <Input
+              value={firstName}
+              onChange={(e) => onFirstNameChange(e.target.value)}
+              className="max-w-[340px] h-10"
+              autoFocus
+            />
+            <div className="flex items-center gap-3">
+              <Button size="sm" onClick={onSave} disabled={saving}>
+                {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+              </Button>
+              <button
+                onClick={onCancelEdit}
+                disabled={saving}
+                className="text-[12px] text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC]"
+              >
+                Cancel
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <span className="font-display text-[15px] font-semibold text-foreground tracking-tight">
+              {firstName || "Not set"}
+            </span>
+            <button
+              onClick={onEdit}
+              className="text-[13px] font-semibold text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC]"
+            >
+              Edit
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Sign-in email — read-only */}
+      <div className="grid grid-cols-[140px_1fr_auto] sm:grid-cols-[180px_1fr_auto] gap-x-6 sm:gap-x-8 items-start py-4 border-t border-[#EDEBE6]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground pt-1">
+          Sign-in email
+        </span>
+        <div>
+          <div className="font-display text-[15px] font-medium text-muted-foreground tracking-tight break-all">
+            {email}
+          </div>
+          <p className="mt-1.5 text-[12px] text-muted-foreground/80 leading-snug">
+            This is where we'll send your magic link. Contact us to change it.
+          </p>
+        </div>
+        <span />
+      </div>
+    </div>
+  );
+}
+
+/* ── SubscriptionSection — plan-row + upgrade-block (buyer) or actions (subscriber) ── */
+function SubscriptionSection({
+  isSubscriber, isCancelPending, paymentFailed, subscriptionPlan, renewDate, accessEndDate,
+  onSubscribe, onManageBilling, onCancel, onResume,
+}: {
+  isSubscriber: boolean;
+  isCancelPending: boolean;
+  paymentFailed: boolean;
+  subscriptionPlan: string;
+  renewDate: string;
+  accessEndDate: string;
+  onSubscribe: () => void;
+  onManageBilling: () => void;
+  onCancel: () => void;
+  onResume: () => void;
+}) {
+  /* Buyer view — plan-row read-only + upgrade-block. */
+  if (!isSubscriber) {
+    return (
+      <div>
+        {/* Plan-row */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center pt-1 pb-5 border-t border-[#E5E2DC]">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1.5">
+              Current plan
+            </div>
+            <div className="font-display text-[18px] font-bold text-foreground tracking-tight">
+              Report — £19.99 paid once
+            </div>
+            <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+              <span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60 mr-2">
+                  Access until
+                </span>
+                {accessEndDate}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Upgrade block — F2: inline at standard weight, no urgency. */}
+        <div className="mt-6 pt-6 border-t border-[#E5E2DC] grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 lg:gap-8 items-center">
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary mb-2">
+              Want to keep going?
+            </div>
+            <p className="font-display text-[15.5px] text-foreground leading-[1.4] max-w-[54ch] tracking-tight">
+              <span className="font-bold">Subscribe to keep your plan running past day 30.</span>
+              {" "}Weekly check-ins, the full guidance library, fresh tests when you need them.
+            </p>
+          </div>
+          <div className="flex items-baseline gap-4">
+            <span className="font-display text-[24px] font-extrabold text-foreground tracking-tight tabular-nums">£19</span>
+            <span className="text-[12px] text-muted-foreground">/ month</span>
+            <Button onClick={onSubscribe} className="ml-2">Subscribe</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /* Subscriber view — plan-row + Manage primary + Cancel ghost (F3). */
+  const priceLine = subscriptionPlan === "annual" ? "£149 / year · Annual" : "£19 / month · Monthly";
+  return (
+    <div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-center pt-1 pb-1 border-t border-[#E5E2DC]">
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1.5">
+            Current plan
+          </div>
+          <div className="font-display text-[18px] font-bold text-foreground tracking-tight">
+            {isCancelPending ? `${priceLine} · ending ${accessEndDate}` : priceLine}
+          </div>
+          <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+            {isCancelPending ? (
+              <span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60 mr-2">
+                  Access ends
+                </span>
+                {accessEndDate}
+              </span>
+            ) : paymentFailed ? (
+              <span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60 mr-2">
+                  Next retry
+                </span>
+                in a few days
+              </span>
+            ) : (
+              <span>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60 mr-2">
+                  Renews
+                </span>
+                {renewDate}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          {isCancelPending ? (
+            <Button onClick={onResume}>Resume subscription</Button>
+          ) : paymentFailed ? (
+            <Button onClick={onManageBilling}>Update card</Button>
+          ) : (
+            <>
+              <Button variant="outline" onClick={onManageBilling}>Manage billing</Button>
+              <button
+                onClick={onCancel}
+                className="text-[13px] font-medium text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC]"
+              >
+                Cancel subscription
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── BillingSection — invoice list + Stripe portal deferral (F4: kept separate) ── */
+function BillingSection({ onOpenPortal }: { onOpenPortal: () => void }) {
+  return (
+    <div>
+      {/* Empty-state for now — invoice fetch is post-Pass 1 wiring.
+       * Renders the Stripe deferral footnote as the section's primary content. */}
+      <div className="rounded-md bg-[#F3F1ED] border border-[#E5E2DC] px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex-1">
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80 mb-1">
+            Source
+          </div>
+          <p className="text-[13px] text-foreground leading-snug">
+            <span className="font-semibold">Stripe is the source of truth for billing.</span>
+            {" "}Update your card, download formal invoices, or view full history in the Stripe portal.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={onOpenPortal} className="shrink-0">
+          Open Stripe portal
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/* ── PrivacySection — two normal actions + Danger zone sub-panel ── */
+function PrivacySection({
+  onRemoveCv, cvRemoved, onRequestExport, onDeleteAccount,
+}: {
+  onRemoveCv: () => void;
+  cvRemoved: boolean;
+  onRequestExport: () => void;
+  onDeleteAccount: () => void;
+}) {
+  return (
+    <div>
+      {/* Remove CV */}
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:gap-8 items-center py-4 first:pt-0">
+        <div>
+          <div className="font-display text-[15px] font-semibold text-foreground tracking-tight mb-1">
+            Remove my CV.
+          </div>
+          <p className="text-[13px] text-muted-foreground leading-snug max-w-[60ch]">
+            Deletes your uploaded file and the extracted text. Your report and plan stay — only the source CV is removed.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={onRemoveCv} disabled={cvRemoved}>
+          {cvRemoved ? "Removed" : "Remove CV"}
+        </Button>
+      </div>
+
+      {/* Request export */}
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:gap-8 items-center py-4 border-t border-[#EDEBE6]">
+        <div>
+          <div className="font-display text-[15px] font-semibold text-foreground tracking-tight mb-1">
+            Request my data.
+          </div>
+          <p className="text-[13px] text-muted-foreground leading-snug max-w-[60ch]">
+            We'll email a full export of everything we hold about you — answers, report, check-ins, library reads — within 14 days.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={onRequestExport}>
+          Request export
+        </Button>
+      </div>
+
+      {/* Danger zone sub-panel — stone-tinted segregation, not red wall. */}
+      <div
+        className="mt-6 rounded-md px-6 py-5"
+        style={{ background: "#F3F1ED", border: "1px solid #D5D0C8" }}
+      >
+        <div className="flex items-center gap-3 pb-3 mb-4 border-b border-[#D5D0C8]">
+          <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#D94F4F" }} />
+          <span className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: "#8E2424" }}>
+            Danger zone
+          </span>
+          <span className="ml-auto text-[11px] text-muted-foreground/80 tracking-[0.04em]">
+            irreversible
+          </span>
+        </div>
+        <div className="font-display text-[15px] font-semibold text-foreground tracking-tight mb-1">
+          Delete my account.
+        </div>
+        <p className="text-[13px] text-foreground/85 leading-snug mb-4 max-w-[60ch]">
+          <span className="font-semibold text-foreground">This deletes your report, plan, check-in history, and conversations.</span>
+          {" "}It can't be undone. You'll be asked to type the word "delete" to confirm — no accidental clicks.
+        </p>
+        <button
+          onClick={onDeleteAccount}
+          className="inline-flex items-center justify-center rounded-md px-4 py-2 text-[13px] font-semibold transition-colors border-[1.5px]"
+          style={{ borderColor: "#D94F4F", color: "#8E2424", background: "transparent" }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#FDF0F0"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+        >
+          Delete my account
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── CancelPendingBanner — info-tinted, contextual inside Subscription section (F7) ── */
+function CancelPendingBanner({ accessEndDate, onResume }: { accessEndDate: string; onResume: () => void }) {
+  return (
+    <div
+      className="rounded-md mb-5 px-5 py-3.5 grid grid-cols-[auto_1fr_auto] gap-x-4 items-center"
+      style={{ background: "#D6F5EE", borderLeft: "3px solid #2ECDB0" }}
+    >
+      <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#2ECDB0" }} />
+      <div className="text-[13.5px] leading-snug text-foreground">
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em] mr-2" style={{ color: "#1A8A72" }}>
+          Cancellation scheduled
+        </span>
+        Your subscription ends on <strong>{accessEndDate}</strong>. You'll keep full access until then.
+      </div>
+      <button
+        onClick={onResume}
+        className="text-[12px] font-semibold text-foreground underline underline-offset-[3px] decoration-[#D8D4CC] hover:decoration-foreground whitespace-nowrap"
+      >
+        Resume →
+      </button>
+    </div>
+  );
+}
+
+/* ── PaymentFailedBanner — error-tinted, informational not alarmist (F7) ── */
+function PaymentFailedBanner({ onUpdate }: { onUpdate: () => void }) {
+  return (
+    <div
+      className="rounded-md mb-5 px-5 py-3.5 grid grid-cols-[auto_1fr_auto] gap-x-4 items-center"
+      style={{ background: "#FDF0F0", borderLeft: "3px solid #D94F4F" }}
+    >
+      <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#D94F4F" }} />
+      <div className="text-[13.5px] leading-snug text-foreground">
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em] mr-2" style={{ color: "#D94F4F" }}>
+          Payment failed
+        </span>
+        We couldn't process your last charge. Update your card to keep your subscription active.
+      </div>
+      <button
+        onClick={onUpdate}
+        className="text-[12px] font-semibold text-foreground underline underline-offset-[3px] decoration-[#D8D4CC] hover:decoration-foreground whitespace-nowrap"
+      >
+        Update card →
+      </button>
     </div>
   );
 }
