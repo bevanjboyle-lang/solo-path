@@ -231,22 +231,30 @@
 }
 
 /*
- * .prose-serif — long-form editorial prose face, used ONLY on
- * /report body paragraphs and (future) /library long-form modules.
+ * .prose-serif — long-form editorial prose face. The system's
+ * "if-the-user-is-reading-content-not-scanning-UI" font.
  *
- * Per Pass 1 /report F5 resolution 2026-05-18 and the
- * project_typography_serif_exception_report memory. Scoped to <p>
- * inside the .prose-serif container so strong/em/code inherit but
+ * Used on six surfaces as of 2026-05-18:
+ *   1. /report body sections (Pass 1 /report F5)
+ *   2. /library reading drawer + module lessons
+ *   3. /checkin-history excerpts + drawer body
+ *   4. /ask-solo assistant responses
+ *   5. /privacy body prose (Pass 1 legal+FAQ — locked 2026-05-18)
+ *   6. /terms body prose (Pass 1 legal+FAQ — locked 2026-05-18)
+ *
+ * Real exception to the two-typeface rule. Justified for long-form
+ * reading because Inter at the same scale reads as institutional UI;
+ * Source Serif 4 reads as a document — the right register for prose
+ * the user is reading for content (their own report, a guidance
+ * lesson, an Ask Solo response, a privacy clause).
+ *
+ * Scoped to common content elements inside the .prose-serif container.
  * UI chrome (h2s, eyebrows, buttons, sidebar items) outside the
  * container stays in the locked Plus Jakarta Sans + Inter system.
  *
- * Real exception to the two-typeface rule. Justified for long-form
- * reading because Inter at 17px / 1.65 reads as institutional UI;
- * Source Serif 4 reads as an article — the right register for the
- * user's own 3,000-word analysis.
- *
- * design-direction.md v1.4 needs bumping to v1.5 with the exception
- * clause; pending propagation work.
+ * design-direction.md v1.4 needs bumping (probably to v1.6 to roll up
+ * both /report and legal additions) with the exception clause +
+ * "if-content-not-UI" rule; pending propagation work.
  */
 @layer components {
   .prose-serif {
@@ -265,6 +273,49 @@
   .prose-serif strong {
     font-weight: 600;
     color: hsl(var(--text-heading));
+  }
+  /*
+   * List support — legal pages use <ul> for clause enumeration. Serif
+   * keeps the inline reading register; mint-rule prefix replaces the
+   * default disc bullet to match the editorial vocabulary used on
+   * /report's bullet lists.
+   */
+  .prose-serif ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 1.1em;
+  }
+  .prose-serif ul li {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.65;
+    color: hsl(var(--text-body));
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 0.5em;
+  }
+  .prose-serif ul li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.7em;
+    width: 8px;
+    height: 1.5px;
+    background: #2ECDB0;
+  }
+  /*
+   * Inline links — heading colour + mint underline. Same vocabulary
+   * as the link treatment used elsewhere in the editorial system.
+   */
+  .prose-serif a {
+    color: hsl(var(--text-heading));
+    text-decoration: underline;
+    text-decoration-color: #2ECDB0;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1.5px;
+  }
+  .prose-serif a:hover {
+    text-decoration-thickness: 2px;
   }
   /*
    * .has-dropcap — applied alongside .prose-serif on the FIRST
