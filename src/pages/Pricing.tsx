@@ -1,383 +1,444 @@
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-import PanelLayout from "@/components/PanelLayout";
-import GlassCard from "@/components/ui/GlassCard";
-import ScrollReveal from "@/components/ui/ScrollReveal";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { useState } from "react";
+import Footer from "@/components/Footer";
 
-/* ── Card data ── */
+/*
+ * Pricing — Pass 1 /pricing v1 (2026-05-18) — fourth Phase 2 cycle (paired)
+ *
+ * Editorial reskin of the anonymous objection-handling pricing surface.
+ * Inherits anonymous chrome (TopBar.anonymous + Footer), dense FT register,
+ * editorial section vocabulary from /plan + /report + /library + /account.
+ *
+ * Locked decisions from admin/pass-1-subscribe-pricing-decisions.md:
+ *   F1 — Same PricingCard composite carries peer/peer here, peer/preferred
+ *     on /subscribe. Here both render unelevated.
+ *   F2 — Comparison row uses editorial sentences (3 cells per row), NOT
+ *     checkmark/X-mark grid. The brief explicitly forbids the SaaS grid.
+ *   F3 — "Take the test" CTA appears 4 times on this page (top bar + two
+ *     cards + closing band). Same handler. Per spec §10 + home precedent.
+ *   F4 — Subscription card secondary microcopy: "Subscribe after the test —
+ *     only if you decide to" (calmer than CD's original "or never").
+ *   25/3/22 module canonical applied throughout (subhead, cards, comparison).
+ *
+ * Cadence: single dark moment — the commercial honesty strip between the
+ * comparison row and FAQ teaser. Frames the terms ("no auto-renewal · cancel
+ * anytime") as the page's pivot from explanation to decision. Per v1.4 §8.
+ *
+ * Pass 1 scope: shell + chrome + sections + dark honesty strip + per-state
+ * variant logic (authed buyer, subscriber). PricingCard rebuilt as local
+ * editorial component with optional elevation + topTag props (shared
+ * vocabulary with /subscribe even though instantiated separately).
+ *
+ * Drops framer-motion + ScrollReveal + GlassCard + lucide Check + the
+ * old ComparisonTable. Replaces the per-card highlighted styling.
+ */
+
+/* ── PricingCard data shape ── */
 interface PricingCardData {
-  badge: string;
+  pre: string;
   title: string;
+  oneLiner: string;
   price: string;
-  priceNote: string;
-  features: string[];
-  highlighted?: boolean;
+  priceQual: string;
+  annualLine?: string;
+  bullets: ReactNode[];
+  ctaLabel: string;
+  secondaryMicrocopy?: string;
 }
 
 const reportCard: PricingCardData = {
-  badge: "ONE-TIME",
+  pre: "One-time",
   title: "Your report + 30-day plan",
+  oneLiner: "A diagnostic report and a structured 30-day activation plan. Yours forever.",
   price: "£19.99",
-  priceNote: "once",
-  features: [
-    "Professional archetype and profile interpretation",
-    "Up to 10 business paths scored and ranked",
-    "Portfolio approach — pursue multiple paths at once",
-    "Reality check — what's likely to go wrong",
-    "Income outlook calibrated to your seniority",
-    "30-day Activation Plan with outreach drafts",
-    "Network Activation Toolkit — 4 outreach templates",
-    "Local Market Feasibility Snapshot",
-    "AI Impact and Adaptation Section",
-    "30-day Adaptive Tracker with daily check-ins",
-    "3 Guidance Modules included",
+  priceQual: "paid once",
+  bullets: [
+    <>Your full report — <strong>5 scored business paths</strong>, archetype, income outlook, AI defensibility.</>,
+    <>A <strong>30-day activation plan</strong> built around your warmest strand.</>,
+    <>Daily tracker for the 30 days.</>,
+    <>3 of the 25 guidance modules.</>,
+    <>Permanent access to your report.</>,
   ],
-  highlighted: true,
+  ctaLabel: "Take the test",
+  secondaryMicrocopy: "8 minutes · pay after you see the preview",
 };
 
 const subscriptionCard: PricingCardData = {
-  badge: "ONGOING",
+  pre: "Subscription",
   title: "Ongoing plan",
-  price: "£19/month",
-  priceNote: "or £149/year",
-  features: [
-    "Everything in the report",
-    "Ongoing Adaptive Tracker beyond Day 30",
-    "Full Guidance Library — 25 modules across 5 tracks",
-    "Ask Solo — on-demand career strategy conversations",
-    "Replan engine if you go off track",
-    "Progress tracking across all 4 phases",
-    "Cancel any time",
+  oneLiner: "Everything above, plus weekly check-ins past day 30 and the rest of the library.",
+  price: "£19",
+  priceQual: "/ month",
+  annualLine: "or £149 / year · two months free",
+  bullets: [
+    <>Everything in the one-time, <strong>continued past day 30</strong>.</>,
+    <><strong>All 25 guidance modules</strong> — 22 more than the report includes.</>,
+    <>Weekly check-ins after your first 30 days.</>,
+    <>Unlimited Ask Solo — context-aware to your plan.</>,
+    <>New guidance every week. Cancel any time.</>,
   ],
+  ctaLabel: "Take the test",
+  secondaryMicrocopy: "Subscribe after the test — only if you decide to",
 };
 
-/* ── Comparison data ── */
-const comparisonRows = [
-  { label: "Professional archetype + profile", report: true, sub: true },
-  { label: "Up to 10 business paths scored", report: true, sub: true },
-  { label: "30-day Activation Plan", report: true, sub: true },
-  { label: "Network Activation Toolkit", report: true, sub: true },
-  { label: "AI Impact Section", report: true, sub: true },
-  { label: "Adaptive Tracker (30 days)", report: true, sub: true },
-  { label: "3 Guidance Modules", report: true, sub: true },
-  { label: "Ongoing Tracker beyond Day 30", report: false, sub: true },
-  { label: "Full Guidance Library (25 modules)", report: false, sub: true },
-  { label: "Ask Solo conversations", report: false, sub: true },
-  { label: "Replan engine", report: false, sub: true },
+/* ── Comparison rows — editorial sentences per cell, not binary ── */
+const comparisonRows: { feat: string; oneTime: ReactNode; sub: ReactNode; faint?: boolean }[] = [
+  {
+    feat: "Report",
+    oneTime: <>Yours forever</>,
+    sub: <>Yours forever — plus a fresh test when you need one</>,
+  },
+  {
+    feat: "30-day plan",
+    oneTime: <>Daily tracker, 30 days</>,
+    sub: <>Weekly check-ins past day 30, ongoing</>,
+  },
+  {
+    feat: "Guidance modules",
+    oneTime: <><strong>3 of 25</strong></>,
+    sub: <><strong>All 25</strong> — 22 more than the report</>,
+  },
+  {
+    feat: "Ask Solo",
+    oneTime: <>Capped to your 30-day window</>,
+    sub: <>Unlimited</>,
+  },
+  {
+    feat: "New guidance",
+    oneTime: <>Not included</>,
+    sub: <>Every week</>,
+    faint: true,
+  },
+  {
+    feat: "Commitment",
+    oneTime: <><strong>None</strong> — pay once, never again</>,
+    sub: <>Monthly or annual · cancel any time</>,
+  },
 ];
 
-const faqs = [
+/* ── FAQ items — three pricing-specific questions per F3 / spec §4 ── */
+const faqs: { q: string; a: ReactNode }[] = [
   {
-    q: "Why isn't the full report free?",
-    a: "[Placeholder] Building a high-quality, personalised report requires serious computation and curated logic. The £19.99 covers that.",
+    q: "Will the £19/month renew automatically?",
+    a: (
+      <>
+        Yes — that's what a subscription is. You can cancel any time from your account, and you keep
+        access until the end of the paid month. The £19.99 one-time payment does <strong>not</strong>{" "}
+        renew; you pay once and that's the end of it.
+      </>
+    ),
   },
   {
-    q: "Is the subscription required?",
-    a: "[Placeholder] No. The report and 30-day plan are a one-time purchase. The subscription is optional, available after your initial 30 days.",
+    q: "What's the difference between the report and the subscription?",
+    a: (
+      <>
+        The report is a one-shot diagnostic — your archetype, your five paths, your 30-day plan. You
+        can use it forever. The subscription keeps the loop running past day 30: weekly check-ins,
+        the rest of the modules, unlimited Ask Solo, fresh tests when your situation changes.
+      </>
+    ),
   },
   {
-    q: "Can I cancel the subscription?",
-    a: "[Placeholder] Yes. Cancel any time. Access continues to the end of your billing period.",
+    q: 'Why "Take the test" and not "Buy now"?',
+    a: (
+      <>
+        Because buying without your report is buying generic content. The test takes 8 minutes and
+        gives you a preview before you pay — so you know what you're paying for.
+      </>
+    ),
   },
 ];
 
-/* ── Component ── */
 export default function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [comparisonOpen, setComparisonOpen] = useState(false);
+  const [openFaqIdx, setOpenFaqIdx] = useState<number>(0);
+
+  // TODO: derive isSubscriber from useSubscriptionStatus once wired here; for
+  // Pass 1 the buyer-state variant is shown when user is authed.
+  const isAuthedBuyer = !!user;
 
   const handleStartTest = () => startTest(navigate);
   const handleOpenPlan = () => navigateAuthed(navigate, "/plan");
   const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
 
   return (
-    <div className="min-h-screen flex flex-col text-foreground">
+    <div className="relative min-h-screen text-foreground">
       <TopBar />
 
-      {/* HERO */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <section className="mx-auto max-w-2xl text-center">
-          <motion.h1
-            className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-4xl"
-            style={{ letterSpacing: "-0.02em" }}
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            One test. Two ways to keep going.
-          </motion.h1>
-          <motion.p
-            className="mt-4 text-base text-muted-foreground sm:text-lg"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling.
-          </motion.p>
-        </section>
-      </PanelLayout>
+      <main className="pt-[68px]">
+        <div className="mx-auto max-w-screen-lg px-6 py-10 lg:py-14">
 
-      {/* PRICING CARDS */}
-      <PanelLayout wide className="px-6 py-16 sm:px-10">
-        <div className="mx-auto grid max-w-4xl gap-6 lg:grid-cols-2 items-start">
-          {[reportCard, subscriptionCard].map((card, i) => (
-            <ScrollReveal key={card.title} delay={i * 0.12}>
-              <PricingCard
-                card={card}
-                isAuthed={!!user}
-                isSubscription={i === 1}
-                onStartTest={handleStartTest}
-                onOpenPlan={handleOpenPlan}
-                onSubscribe={handleSubscribe}
-              />
-            </ScrollReveal>
-          ))}
-        </div>
-      </PanelLayout>
-
-      {/* COMPARISON */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-3xl">
-          <ScrollReveal>
-            <h2
-              className="font-display text-center text-2xl font-semibold tracking-tight sm:text-3xl"
-              style={{ letterSpacing: "-0.02em" }}
-            >
-              What each includes
-            </h2>
-          </ScrollReveal>
-
-          {/* Desktop table */}
-          <ScrollReveal delay={0.1}>
-            <div className="mt-8 hidden sm:block">
-              <ComparisonTable />
+          {/* ── Page header ── */}
+          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-10 sm:py-12 mb-6">
+            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+              <span className="text-foreground">Pricing</span>
             </div>
-          </ScrollReveal>
-
-          {/* Mobile collapsible */}
-          <div className="mt-8 sm:hidden">
-            <GlassCard className="p-4">
-              <button
-                onClick={() => setComparisonOpen(!comparisonOpen)}
-                className="flex w-full items-center justify-between text-sm font-medium text-foreground"
-              >
-                <span>View comparison</span>
-                <span className="text-muted-foreground">{comparisonOpen ? "−" : "+"}</span>
-              </button>
-              {comparisonOpen && (
-                <div className="mt-4">
-                  <ComparisonTable />
-                </div>
-              )}
-            </GlassCard>
-          </div>
-
-          <p className="mt-6 text-center text-xs text-muted-foreground">
-            One-time payment. No auto-renewal on the report. Cancel subscription anytime.
-          </p>
-        </div>
-      </PanelLayout>
-
-      {/* FAQ */}
-      <PanelLayout className="px-6 py-16 sm:px-10">
-        <div className="mx-auto max-w-2xl">
-          <ScrollReveal>
-            <h2
-              className="font-display mb-8 text-center text-2xl font-semibold tracking-tight"
-              style={{ letterSpacing: "-0.02em" }}
+            <h1
+              aria-label="One test. Two ways to keep going."
+              className="text-[44px] sm:text-[52px] lg:text-[56px] font-extrabold tracking-tight leading-[1.02] text-foreground"
+              style={{ letterSpacing: "-0.035em", textWrap: "balance" } as React.CSSProperties}
             >
-              Pricing questions
-            </h2>
-          </ScrollReveal>
-          <ScrollReveal delay={0.1}>
-            <Accordion type="single" collapsible className="w-full">
-              {faqs.map((faq, i) => (
-                <AccordionItem key={i} value={`faq-${i}`} className="border-border">
-                  <AccordionTrigger className="text-sm font-medium text-foreground hover:no-underline">
-                    {faq.q}
-                  </AccordionTrigger>
-                  <AccordionContent className="text-sm leading-relaxed text-muted-foreground">
-                    {faq.a}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </ScrollReveal>
-        </div>
-      </PanelLayout>
-
-      {/* CLOSING CTA */}
-      <PanelLayout className="overflow-hidden">
-        <ScrollReveal>
-          <section className="bg-primary py-20 rounded-2xl">
-            <div className="mx-auto max-w-2xl px-6 text-center">
-              <h2
-                className="font-display text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl"
-                style={{ letterSpacing: "-0.02em" }}
-              >
-                {user ? "Pick up where you left off." : "See what your Plan B looks like."}
-              </h2>
-              <div className="mt-8">
-                <button
-                  onClick={user ? handleOpenPlan : handleStartTest}
-                  className="rounded-md bg-primary-foreground px-8 py-3 text-sm font-medium text-primary transition-all hover:bg-primary-foreground/90"
-                >
-                  {user ? "Open my plan" : "Take the test"}
-                </button>
-              </div>
-            </div>
+              One test. Two ways to keep going.
+            </h1>
+            <p className="mt-4 font-display text-[17px] sm:text-[19px] text-muted-foreground leading-[1.4] max-w-[52ch]">
+              £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling — with the 22
+              modules and the library that doesn't expire.
+            </p>
           </section>
-        </ScrollReveal>
-      </PanelLayout>
 
-      {/* Mobile sticky CTA — visible after scroll */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-[hsl(var(--surface-panel))] p-3 sm:hidden">
-        <button
-          onClick={user ? handleOpenPlan : handleStartTest}
-          className="w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground"
-        >
-          {user ? "Open my plan" : "Take the test"}
-        </button>
-      </div>
+          {/* ── Two PricingCards (peer/peer) ── */}
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+            <PricingCard
+              data={reportCard}
+              isAuthedBuyer={isAuthedBuyer}
+              onPrimary={isAuthedBuyer ? handleOpenPlan : handleStartTest}
+              authedBuyerCtaLabel="Open my plan"
+              authedBuyerVariant={isAuthedBuyer ? "owned" : undefined}
+            />
+            <PricingCard
+              data={subscriptionCard}
+              isAuthedBuyer={isAuthedBuyer}
+              onPrimary={isAuthedBuyer ? handleSubscribe : handleStartTest}
+              authedBuyerCtaLabel="Upgrade now"
+              authedBuyerVariant={isAuthedBuyer ? "upgrade" : undefined}
+            />
+          </section>
+
+          {/* ── Editorial comparison row (F2) ── */}
+          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-5">
+              <span className="text-primary tabular-nums">03</span>
+              <span>What you actually get</span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-x-4 sm:gap-x-6 pb-3 border-b border-[#D5D0C8]">
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Feature</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80">One-time · £19.99</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80">Subscription · £19/mo</div>
+            </div>
+
+            {comparisonRows.map((row, i) => (
+              <div
+                key={row.feat}
+                className={`grid grid-cols-3 gap-x-4 sm:gap-x-6 py-3 text-[13px] leading-[1.5] ${
+                  i > 0 ? "border-t border-[#EDEBE6]" : ""
+                }`}
+              >
+                <div className="font-display font-semibold text-foreground tracking-tight">{row.feat}</div>
+                <div className={row.faint ? "italic text-muted-foreground/70" : "text-foreground/85"}>
+                  {row.oneTime}
+                </div>
+                <div className="text-foreground/85">{row.sub}</div>
+              </div>
+            ))}
+          </section>
+
+          {/* ── Dark commercial-honesty strip (the cadence moment) ── */}
+          <section className="panel-dark px-6 sm:px-10 lg:px-12 py-7 mb-6 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4 sm:gap-8 items-center">
+            <div
+              className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em]"
+              style={{ color: "rgba(250,249,247,0.65)" }}
+            >
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+              <span style={{ color: "#FAF9F7" }}>The terms</span>
+            </div>
+            <p
+              className="font-display text-[17px] sm:text-[18px] leading-[1.45]"
+              style={{ color: "#FAF9F7", letterSpacing: "-0.012em" }}
+            >
+              <strong>One-time payment.</strong> No auto-renewal on the report.{" "}
+              <strong>Cancel subscription anytime.</strong> Your report stays yours either way.
+            </p>
+          </section>
+
+          {/* ── FAQ teaser ── */}
+          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+            <div className="flex items-baseline justify-between pb-4 mb-2 border-b border-[#E5E2DC]">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="text-primary tabular-nums mr-3">04</span>
+                <span>Three things people ask before paying</span>
+              </div>
+              <button
+                onClick={() => navigate("/faq")}
+                className="text-[12px] text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC]"
+              >
+                See all on /faq →
+              </button>
+            </div>
+
+            {faqs.map((faq, i) => {
+              const open = openFaqIdx === i;
+              return (
+                <div key={faq.q} className={`py-5 ${i > 0 ? "border-t border-[#EDEBE6]" : ""}`}>
+                  <button
+                    onClick={() => setOpenFaqIdx(open ? -1 : i)}
+                    aria-expanded={open}
+                    className="w-full grid grid-cols-[1fr_auto] gap-6 items-start text-left"
+                  >
+                    <span className="font-display text-[16px] sm:text-[17px] font-semibold text-foreground leading-[1.35]" style={{ letterSpacing: "-0.018em" }}>
+                      {faq.q}
+                    </span>
+                    <span className="text-[22px] text-muted-foreground font-light leading-none pt-0.5">
+                      {open ? "–" : "+"}
+                    </span>
+                  </button>
+                  {open && (
+                    <p className="mt-2 text-[13.5px] text-foreground/80 leading-[1.6] max-w-[72ch]">
+                      {faq.a}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </section>
+
+          {/* ── Closing CTA band ── */}
+          <section className="text-center py-14 sm:py-16 border-t border-[#E5E2DC]">
+            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
+              — {isAuthedBuyer ? "Pick up where you left off" : "Decide when you're ready"} —
+            </div>
+            <h3
+              className="font-display text-[28px] sm:text-[34px] lg:text-[36px] font-extrabold tracking-tight leading-[1.1] text-foreground max-w-[22ch] mx-auto mb-4"
+              style={{ letterSpacing: "-0.03em", textWrap: "balance" } as React.CSSProperties}
+            >
+              {isAuthedBuyer ? "Your plan is waiting." : "Eight minutes to a preview. Pay only if it's right."}
+            </h3>
+            {!isAuthedBuyer && (
+              <p className="font-display text-[16px] sm:text-[17px] text-muted-foreground max-w-[56ch] mx-auto mb-7">
+                You'll see your warmest strand for free before you decide between the one-time report
+                and the subscription.
+              </p>
+            )}
+            <button
+              onClick={isAuthedBuyer ? handleOpenPlan : handleStartTest}
+              className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: "#2ECDB0" }}
+            >
+              {isAuthedBuyer ? "Open my plan" : "Take the test"}
+            </button>
+            {!isAuthedBuyer && (
+              <div className="mt-4 text-[11px] text-muted-foreground/70 tracking-[0.04em]">
+                £19.99 one-time · or £19/mo with cancel any time
+              </div>
+            )}
+          </section>
+
+        </div>
+      </main>
+
+      <Footer sticky={false} />
+
+      {/* Mobile sticky bottom CTA — anon visitors only, hidden when authed (they have plan access via top bar). */}
+      {!isAuthedBuyer && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#D8D4CC] sm:hidden" style={{ background: "rgba(250,249,247,0.97)", backdropFilter: "blur(8px)" }}>
+          <div className="px-4 py-3">
+            <button
+              onClick={handleStartTest}
+              className="w-full rounded-md px-6 py-3 text-[14px] font-semibold text-white"
+              style={{ background: "#2ECDB0" }}
+            >
+              Take the test
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ── PricingCard sub-component ── */
+/* ─────────────────────────── PricingCard sub-component ─────────────────────────── */
+
+/* ── PricingCard ──
+ *
+ * Local editorial composite per F1. Optional `elevated` prop (border-strong
+ * outline) + `topTag` prop (hairline-bordered mint pill half-overlapping
+ * the top border). Pass 1 /pricing renders both cards unelevated (peer/peer).
+ *
+ * For authed-buyer state: `authedBuyerVariant` flips the card content:
+ *   - "owned" — one-time card reframes to "Already yours", CTA flips to
+ *     "Open my plan" as a stone secondary button.
+ *   - "upgrade" — subscription card primary CTA changes to "Upgrade now"
+ *     routing to /subscribe.
+ */
 function PricingCard({
-  card,
-  isAuthed,
-  isSubscription,
-  onStartTest,
-  onOpenPlan,
-  onSubscribe,
+  data, isAuthedBuyer, onPrimary, authedBuyerCtaLabel, authedBuyerVariant,
 }: {
-  card: PricingCardData;
-  isAuthed: boolean;
-  isSubscription: boolean;
-  onStartTest: () => void;
-  onOpenPlan: () => void;
-  onSubscribe: () => void;
+  data: PricingCardData;
+  isAuthedBuyer: boolean;
+  onPrimary: () => void;
+  authedBuyerCtaLabel?: string;
+  authedBuyerVariant?: "owned" | "upgrade";
 }) {
-  // Determine CTA
-  let ctaLabel = "Take the test";
-  let ctaAction = onStartTest;
-  let secondaryAction: { label: string; action: () => void } | null = null;
-
-  if (isAuthed && !isSubscription) {
-    ctaLabel = "Take the test";
-    ctaAction = onStartTest;
-  }
-  if (isAuthed && isSubscription) {
-    secondaryAction = { label: "Upgrade", action: onSubscribe };
-  }
-
   return (
-    <GlassCard
-      className={`relative flex flex-col p-6 ${card.highlighted ? "lg:scale-[1.02]" : ""}`}
-      style={
-        card.highlighted
-          ? { background: "#e8faf6", border: "1px solid #c5f0e8" }
-          : undefined
-      }
-    >
-      {card.highlighted && (
-        <div
-          className="absolute top-0 left-0 right-0 h-[2px] rounded-t-xl"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent 0%, rgba(46,205,176,0.4) 50%, transparent 100%)",
-          }}
-        />
-      )}
-
-      <span className="mb-3 inline-block w-fit rounded-md bg-[hsl(var(--surface-inset))] px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-        {card.badge}
-      </span>
-
-      <h3 className="font-display text-lg font-semibold text-foreground">{card.title}</h3>
-
-      <div className="mt-3 flex items-baseline gap-1.5">
-        <span className="font-display text-3xl font-extrabold text-foreground">{card.price}</span>
-        <span className="text-sm text-muted-foreground">{card.priceNote}</span>
+    <div className="relative panel-ivory p-8 sm:p-9 flex flex-col">
+      {/* Card head */}
+      <div className="pb-5 mb-5 border-b border-[#E5E2DC]">
+        <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+          <span>{data.pre}</span>
+        </div>
+        <h3 className="font-display text-[20px] sm:text-[22px] font-bold tracking-tight text-foreground leading-[1.2] mb-2" style={{ letterSpacing: "-0.02em" }}>
+          {data.title}
+        </h3>
+        <p className="text-[14px] text-muted-foreground leading-[1.5] max-w-[42ch]">
+          {data.oneLiner}
+        </p>
+        <div className="mt-3 flex items-baseline gap-2.5">
+          <span className="font-display text-[44px] sm:text-[48px] font-extrabold text-foreground tabular-nums leading-none" style={{ letterSpacing: "-0.035em" }}>
+            {data.price}
+          </span>
+          <span className="text-[14px] text-muted-foreground">{data.priceQual}</span>
+        </div>
+        {data.annualLine && (
+          <div className="mt-1.5 text-[13px] font-medium" style={{ color: "#1A8A72" }}>
+            {data.annualLine}
+          </div>
+        )}
       </div>
 
-      <ul className="mt-6 flex flex-1 flex-col gap-2">
-        {card.features.map((f) => (
-          <li key={f} className="flex items-start gap-2 text-sm">
-            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#2ECDB0]" strokeWidth={2.5} />
-            <span className="text-foreground/70">{f}</span>
+      {/* Bullet list */}
+      <ul className="flex-1">
+        {data.bullets.map((bullet, i) => (
+          <li
+            key={i}
+            className={`relative pl-4 py-2 text-[14px] text-foreground/85 leading-[1.5] ${
+              i > 0 ? "border-t border-[#EDEBE6]" : ""
+            }`}
+          >
+            <span className="absolute left-0 top-[18px] w-2 h-[1.5px] bg-primary" />
+            {bullet}
           </li>
         ))}
       </ul>
 
-      <button
-        onClick={ctaAction}
-        className={`mt-6 w-full rounded-md px-6 py-2.5 text-sm font-medium transition-all hover:-translate-y-px ${
-          card.highlighted
-            ? "bg-primary text-primary-foreground hover:bg-primary/90"
-            : "border border-border bg-transparent text-foreground hover:border-primary"
-        }`}
-      >
-        {ctaLabel}
-      </button>
-
-      {secondaryAction && (
+      {/* Actions */}
+      <div className="mt-6 pt-1">
         <button
-          onClick={secondaryAction.action}
-          className="mt-2 w-full text-center text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          onClick={onPrimary}
+          className={`w-full inline-flex items-center justify-center rounded-md px-5 py-3.5 text-[14px] font-semibold transition-opacity hover:opacity-90 ${
+            isAuthedBuyer && authedBuyerVariant === "owned"
+              ? ""
+              : ""
+          }`}
+          style={
+            isAuthedBuyer && authedBuyerVariant === "owned"
+              ? { background: "#F3F1ED", color: "#1D2025", border: "1px solid #D5D0C8" }
+              : { background: "#2ECDB0", color: "#FFFFFF" }
+          }
         >
-          {secondaryAction.label}
+          {isAuthedBuyer && authedBuyerCtaLabel ? authedBuyerCtaLabel : data.ctaLabel}
         </button>
-      )}
-    </GlassCard>
-  );
-}
-
-/* ── Comparison Table ── */
-function ComparisonTable() {
-  return (
-    <table className="w-full text-sm">
-      <thead>
-        <tr className="border-b border-border">
-          <th className="pb-3 text-left font-medium text-muted-foreground">Feature</th>
-          <th className="pb-3 text-center font-medium text-muted-foreground">Report</th>
-          <th className="pb-3 text-center font-medium text-muted-foreground">Subscription</th>
-        </tr>
-      </thead>
-      <tbody>
-        {comparisonRows.map((row) => (
-          <tr key={row.label} className="border-b border-border/50">
-            <td className="py-2.5 text-foreground/70">{row.label}</td>
-            <td className="py-2.5 text-center">
-              {row.report ? (
-                <Check className="mx-auto h-4 w-4 text-[#2ECDB0]" strokeWidth={2.5} />
-              ) : (
-                <span className="text-muted-foreground/40">—</span>
-              )}
-            </td>
-            <td className="py-2.5 text-center">
-              {row.sub ? (
-                <Check className="mx-auto h-4 w-4 text-[#2ECDB0]" strokeWidth={2.5} />
-              ) : (
-                <span className="text-muted-foreground/40">—</span>
-              )}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+        {data.secondaryMicrocopy && !isAuthedBuyer && (
+          <div className="mt-2.5 text-center text-[12px] text-muted-foreground underline underline-offset-[3px] decoration-[#D8D4CC]">
+            {data.secondaryMicrocopy}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
