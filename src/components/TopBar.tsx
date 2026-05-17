@@ -44,63 +44,75 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
           </div>
         )}
 
-        {/* Desktop right */}
-        {!minimal ? (
-          <div className="hidden items-center gap-5 md:flex">
-            {user ? (
-              <>
-                <button
-                  onClick={() => navigateAuthed(navigate, "/plan")}
-                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Plan
-                </button>
-                <button
-                  onClick={() => navigateAuthed(navigate, "/report")}
-                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Report
-                </button>
-                <button
-                  onClick={() => navigateAuthed(navigate, "/library")}
-                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Library
-                </button>
-                <button
-                  onClick={() => navigateAuthed(navigate, "/account")}
-                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Account
-                </button>
-                <button
-                  onClick={handleSignOut}
-                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/auth"
+        {/*
+         * Desktop right —
+         * Authed nav block (Plan / Report / Library / Account / Sign out)
+         * always renders when user is signed in, even in `minimal` mode.
+         * This ensures returning authed users on funnel surfaces (e.g.
+         * /teaser when unpaid) can still reach Account + Sign out. Route
+         * guards handle gating Plan/Report/Library to paid users.
+         *
+         * Anon chrome (Sign in link + Take the test button) only renders
+         * when `!minimal` — keeps funnel surfaces quiet for anon visitors.
+         */}
+        <div className="hidden items-center gap-5 md:flex">
+          {user ? (
+            <>
+              <button
+                onClick={() => navigateAuthed(navigate, "/plan")}
                 className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
-                Sign in
-              </Link>
-            )}
+                Plan
+              </button>
+              <button
+                onClick={() => navigateAuthed(navigate, "/report")}
+                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Report
+              </button>
+              <button
+                onClick={() => navigateAuthed(navigate, "/library")}
+                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Library
+              </button>
+              <button
+                onClick={() => navigateAuthed(navigate, "/account")}
+                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Account
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Sign out
+              </button>
+            </>
+          ) : !minimal ? (
+            <Link
+              to="/auth"
+              className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Sign in
+            </Link>
+          ) : null}
+          {!minimal && (
             <button
               onClick={handleStartTest}
               className="rounded-lg bg-primary px-5 py-2 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Take the test
             </button>
-          </div>
-        ) : (
-          <div />
-        )}
+          )}
+        </div>
 
-        {/* Mobile hamburger */}
-        {!minimal && (
+        {/*
+         * Mobile hamburger — same logic. Renders when not minimal, OR
+         * when minimal but the user is signed in (so authed users on
+         * funnel surfaces always have a menu to reach Account + Sign out).
+         */}
+        {(!minimal || user) && (
           <button
             className="md:hidden"
             onClick={() => setOpen(!open)}
@@ -111,11 +123,15 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
         )}
       </nav>
 
-      {/* Mobile menu */}
-      {!minimal && open && (
+      {/*
+       * Mobile menu — opens whenever the hamburger is available. In
+       * minimal mode, only the authed nav block renders (no Pricing/FAQ,
+       * no Sign in, no Take the test). In full mode, everything renders.
+       */}
+      {open && (
         <div className="border-t border-border bg-[hsl(var(--surface-panel))] px-6 py-4 md:hidden">
           <div className="flex flex-col gap-3">
-            {anonLinks.map((l) => (
+            {!minimal && anonLinks.map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
@@ -125,7 +141,7 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
                 {l.label}
               </Link>
             ))}
-            <hr className="border-border" />
+            {!minimal && <hr className="border-border" />}
             {user ? (
               <>
                 <button
@@ -159,7 +175,7 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
                   Sign out
                 </button>
               </>
-            ) : (
+            ) : !minimal ? (
               <Link
                 to="/auth"
                 onClick={() => setOpen(false)}
@@ -167,13 +183,15 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
               >
                 Sign in
               </Link>
+            ) : null}
+            {!minimal && (
+              <button
+                onClick={() => { handleStartTest(); setOpen(false); }}
+                className="w-full rounded-lg bg-primary px-5 py-2.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                Take the test
+              </button>
             )}
-            <button
-              onClick={() => { handleStartTest(); setOpen(false); }}
-              className="w-full rounded-lg bg-primary px-5 py-2.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Take the test
-            </button>
           </div>
         </div>
       )}
