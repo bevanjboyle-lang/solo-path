@@ -97,25 +97,58 @@ export default function AuthConfirm() {
     };
   }, [navigate, params]);
 
+  /*
+   * Render — Pass 1 v1 (2026-05-18). Utility shell pattern: panel-ivory
+   * card on a minimal TopBar surface. Two states: signing-in (default,
+   * mint loader) and error (named state + path forward).
+   * verifyOtp logic above is unchanged.
+   */
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="relative min-h-screen flex flex-col text-foreground">
       <TopBar minimal />
-      <div className="flex flex-1 items-center justify-center px-6">
-        {errorMessage ? (
-          <p className="max-w-md text-center text-sm text-muted-foreground">
-            {errorMessage}{" "}
-            <a href="/" className="text-primary underline underline-offset-2">
-              Go home
-            </a>
-            .
-          </p>
-        ) : (
-          <div className="flex flex-col items-center gap-4 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <p className="text-sm">Signing you in…</p>
+      <main className="flex-1 pt-[68px] flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-[560px]">
+          <div className="panel-ivory px-8 sm:px-12 py-12 sm:py-14 text-center">
+            {errorMessage ? (
+              <>
+                <div className="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span className="text-foreground">Couldn't sign you in</span>
+                </div>
+                <h1
+                  className="font-display text-[28px] sm:text-[32px] font-extrabold tracking-tight leading-[1.1] text-foreground"
+                  style={{ letterSpacing: "-0.028em" }}
+                >
+                  Sign-in didn't work.
+                </h1>
+                <p className="mt-4 font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[44ch] mx-auto">
+                  {errorMessage}
+                </p>
+                <div className="mt-8 pt-6 border-t border-[#E5E2DC]">
+                  <a
+                    href="/"
+                    className="inline-flex items-center justify-center rounded-md px-6 py-3 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
+                    style={{ background: "#2ECDB0" }}
+                  >
+                    Back to home
+                  </a>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-6">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span className="text-foreground">Signing you in</span>
+                </div>
+                <div className="flex flex-col items-center gap-4 text-muted-foreground">
+                  <Loader2 className="h-7 w-7 animate-spin text-primary" />
+                  <p className="text-[14px]">One moment…</p>
+                </div>
+              </>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
