@@ -56,7 +56,10 @@ const reportCard: PricingCardData = {
   price: "£19.99",
   priceQual: "paid once",
   bullets: [
-    <>Your full report — <strong>5 scored business paths</strong>, archetype, income outlook, AI defensibility.</>,
+    {/* Drift 5 fix (2026-05-18, journey-trace): canonical is 10 paths scored
+      * + user picks 2-5 for the plan. Was '5 scored business paths' which
+      * under-described what the buyer actually gets. */}
+    <>Your full report — <strong>10 scored business paths</strong> with our top 2–5 recommended, archetype, income outlook, AI defensibility.</>,
     <>A <strong>30-day activation plan</strong> built around your warmest strand.</>,
     <>Daily tracker for the 30 days.</>,
     <>3 of the 25 guidance modules.</>,
@@ -135,7 +138,8 @@ const faqs: { q: string; a: ReactNode }[] = [
     q: "What's the difference between the report and the subscription?",
     a: (
       <>
-        The report is a one-shot diagnostic — your archetype, your five paths, your 30-day plan. You
+        The report is a one-shot diagnostic — your archetype, your ten scored paths (we recommend
+        two to five), your 30-day plan. You
         can use it forever. The subscription keeps the loop running past day 30: weekly check-ins,
         the rest of the modules, unlimited Ask Solo, fresh tests when your situation changes.
       </>

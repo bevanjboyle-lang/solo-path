@@ -1,9 +1,28 @@
+// stripe-subscription-webhook v24 — Drift 6 fix — 2026-05-18
+//
+// Drift 6 (journey-trace audit 2026-05-18): mirror subscription state from
+//   user_profiles.subscription_active (boolean) onto tracker_sessions
+//   .subscription_status (text). The frontend (Plan.tsx + Library.tsx) reads
+//   tracker_sessions.subscription_status === "active" — never user_profiles.
+//   Without this mirror, subscribers could pay £19/mo and the app would treat
+//   them as non-subscribers forever. Mapping: active → "active";
+//   deleted/cancelled → "cancelled". activate-plan sets initial "trial" which
+//   gets overwritten the moment a real subscription event arrives.
+//
+// Deploy note (Drift 6 fix, 2026-05-18): the Track-E mapping helper was
+// previously imported from ../_shared/track-e-mapping.ts (V-057, 2026-05-14)
+// but the Supabase deploy bundler cannot reach sibling-directory imports.
+// Helper is now inlined below. The shared module still exists in
+// _shared/track-e-mapping.ts and is the source-of-truth for the pattern set —
+// if patterns ever change, update both this inlined copy AND the shared file,
+// AND check that get-library-content was deployed with the same patterns
+// (it imports the shared module too).
+//
 // stripe-subscription-webhook v23 — vibe code review V-057 — 2026-05-14
 //
-// V-057: getApplicableTrackEModules now imported from _shared/track-e-mapping.ts.
-//        Previously duplicated as inline regex (and drifted) with the copy in
-//        get-library-content. Single source of truth now lives in the shared
-//        module.
+// V-057: getApplicableTrackEModules originally extracted to
+//        _shared/track-e-mapping.ts. See deploy note above for why it's
+//        now inlined again.
 //
 // stripe-subscription-webhook v22 — vibe code review fixes — 2026-05-14
 //
@@ -19,10 +38,23 @@
 // stripe-subscription-webhook v20 — Audit P0 #7: price IDs via env vars with fallback
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-// V-057 (vibe code review 2026-05-14): shared Track-E classifier
-import { getApplicableTrackEModules } from "../_shared/track-e-mapping.ts";
 
-const FUNCTION_VERSION = "v23-vibe-review-fixes";
+// Inlined from _shared/track-e-mapping.ts (V-057). See deploy note in file
+// header for why. Keep in sync with the shared module if patterns change.
+const TRACK_E_PATTERNS: Array<{ moduleId: number; pattern: RegExp }> = [
+  { moduleId: 20, pattern: /financial services|banking|insurance|asset management|wealth|fintech|risk.*compli|compliance.*risk|audit|treasury/ },
+  { moduleId: 21, pattern: /public sector|government|local authority|nhs|central government|defence|education|regulatory bod/ },
+  { moduleId: 22, pattern: /technology|digital|software|data.*analytic|analytic.*data|\bai\b|machine learning|cloud|cybersecurity|product manager|product director|\btech\b/ },
+  { moduleId: 23, pattern: /healthcare|\bnhs\b|life sciences|pharma|medical device|biotech|clinical|health tech/ },
+  { moduleId: 24, pattern: /legal|management consult|strategy consult|\bhr\b|people.*consult|executive coach|talent|organisational development|\bod\b|professional services/ },
+  { moduleId: 25, pattern: /marketing|creative|advertising|\bbrand\b|content|\bdesign\b|communications|\bpr\b|public relations|digital marketing|growth market/ },
+];
+function getApplicableTrackEModules(q3a: string, q11: string, archetype: string = ""): number[] {
+  const haystack = `${q3a} ${q11} ${archetype}`.toLowerCase();
+  return TRACK_E_PATTERNS.filter(({ pattern }) => pattern.test(haystack)).map(({ moduleId }) => moduleId);
+}
+
+const FUNCTION_VERSION = "v24-drift-6-tracker-mirror";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -185,6 +217,40 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ error: error.message, response_text: "Failed to update subscription" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+  }
+
+  // Drift 6 fix (2026-05-18, journey-trace audit): mirror the subscription
+  // state onto tracker_sessions so the frontend can see it. Plan.tsx and
+  // Library.tsx read tracker_sessions.subscription_status === "active" — they
+  // never look at user_profiles.subscription_active. Without this mirror, a
+  // user could pay £19/month and the app would treat them as a non-subscriber
+  // forever (Library locked to 3 modules, tracker stays on 30-day variant,
+  // Day-31 wall still fires).
+  //
+  // Map Stripe-event semantics → tracker_sessions text column:
+  //   created/updated + active → "active"
+  //   updated + inactive       → "cancelled" (cancel-at-period-end window)
+  //   deleted                  → "cancelled"
+  // Activate-plan sets it to "trial" on initial activation; that gets
+  // overwritten the moment a real subscription event arrives.
+  const trackerStatus = subscriptionActive
+    ? "active"
+    : event.type === "customer.subscription.deleted"
+      ? "cancelled"
+      : "cancelled";
+  const { error: trackerErr } = await supabase
+    .from("tracker_sessions")
+    .update({
+      subscription_status: trackerStatus,
+      stripe_subscription_id: subscriptionId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+  if (trackerErr) {
+    // Non-fatal — user_profiles is the authoritative subscription record.
+    // Without this mirror the frontend won't see the subscription, but the
+    // billing relationship still holds.
+    console.error("Drift 6 mirror: failed to update tracker_sessions:", trackerErr);
   }
 
   if (event.type === "customer.subscription.created" || event.type === "customer.subscription.updated") {

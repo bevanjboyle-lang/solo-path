@@ -147,9 +147,9 @@ export default function SampleReport() {
                     See what Sarah's £19.99 actually got her.
                   </h1>
                   <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[58ch]">
-                    A real example report — fractional FD path, 11 years in corporate finance, five
-                    scored business paths, archetype analysis, AI defensibility. Yours would look like
-                    this; the details would be yours.
+                    A real example report — fractional FD path, 11 years in corporate finance, ten
+                    scored business paths with our top recommendations, archetype analysis,
+                    AI defensibility. Yours would look like this; the details would be yours.
                   </p>
                 </div>
                 <div className="lg:text-right flex lg:flex-col gap-6 lg:gap-3">
