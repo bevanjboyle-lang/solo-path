@@ -56,9 +56,9 @@ const reportCard: PricingCardData = {
   price: "£19.99",
   priceQual: "paid once",
   bullets: [
-    {/* Drift 5 fix (2026-05-18, journey-trace): canonical is 10 paths scored
-      * + user picks 2-5 for the plan. Was '5 scored business paths' which
-      * under-described what the buyer actually gets. */}
+    // Drift 5 fix (2026-05-18, journey-trace): canonical is 10 paths scored
+    // + user picks 2-5 for the plan. Was '5 scored business paths' which
+    // under-described what the buyer actually gets.
     <>Your full report — <strong>10 scored business paths</strong> with our top 2–5 recommended, archetype, income outlook, AI defensibility.</>,
     <>A <strong>30-day activation plan</strong> built around your warmest strand.</>,
     <>Daily tracker for the 30 days.</>,
