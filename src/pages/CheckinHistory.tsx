@@ -1,15 +1,43 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import TopBar from "@/components/TopBar";
-import Banner from "@/components/Banner";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import CheckinHistoryList, {
   type CheckinTimelineEntry,
 } from "@/components/plan/CheckinHistoryList";
 import CheckInPanel from "@/components/plan/CheckInPanel";
+
+/*
+ * CheckinHistory — Pass 1 /checkin-history v1 (2026-05-18) — fifth Phase 2 surface
+ *
+ * Editorial reskin of the read-only 30-day check-in log. Two-column shell
+ * inheriting /plan + /report + /library + /account. AreaSidebar with the
+ * five /plan items (Check-in history active), numerals 01-04 + ↻ on Refine
+ * utility. Page-header in panel-ivory with mint-dot eyebrow + H1 + subhead
+ * + right-side stats block (Completed / Missed / Ahead).
+ *
+ * Locked decisions from admin/pass-1-checkin-history-decisions.md:
+ *   F1 — Week separators inline in the timeline composite (rebuilt in v1).
+ *   F2 — Right-side stats block: 3 columns (or 2 when no missed days yet).
+ *     Honest tabular counts, not gamification.
+ *   F3 — Move-tag column DROPPED for Pass 1 (data flow not yet wired).
+ *   F4 — Drawer prev/next deferred (CheckInPanel doesn't expose hooks;
+ *     lands alongside the read-only data-loading fix in a follow-up).
+ *
+ * Cadence: zero dark. /checkin-history is the quietest surface in the
+ * system — a calm read-only log of the user's own daily reflections.
+ * System carries cadence load from /plan, /library, /report, /pricing.
+ *
+ * Pass 1 scope: shell + sidebar + page-header with stats + rebuilt
+ * timeline composite + read-only drawer wrapper. CheckInPanel composite
+ * preserved (its read-only mode is a pre-existing stub outside Pass 1).
+ *
+ * Preserves: data fetch (tracker_sessions + checkin_history), timeline
+ * derivation logic, drawer state machinery, all handlers.
+ */
 
 interface CheckinRow {
   id: string;
@@ -97,6 +125,7 @@ export default function CheckinHistory() {
     };
   }, [user, authLoading, navigate]);
 
+  /* ── Timeline derivation (unchanged) ── */
   const timeline: CheckinTimelineEntry[] = useMemo(() => {
     if (!startDate) return [];
     const byDay = new Map<number, CheckinRow>();
@@ -131,76 +160,192 @@ export default function CheckinHistory() {
     return entries;
   }, [startDate, checkins, currentDay]);
 
-  const completedCount = checkins.length;
+  /* ── Stats for page header right-column ── */
+  const completedCount = timeline.filter((t) => t.status === "completed").length;
+  const missedCount = timeline.filter((t) => t.status === "missed").length;
+  const aheadCount = timeline.filter((t) => t.status === "future" || t.status === "today").length;
 
+  /* ── Sidebar config — mirror /plan ── */
   const sidebarItems: SidebarItem[] = [
-    { id: "today", label: "Today", to: "/plan" },
-    { id: "strands", label: "Strands", to: "/plan?view=strands" },
-    { id: "history", label: "Check-in history", to: "/checkin/history", isActive: true },
-    { id: "report", label: "Report", to: "/report" },
-    { id: "refine", label: "Refine your report", to: "/plan" },
+    { id: "today", label: "Today", numeral: "01", to: "/plan" },
+    { id: "strands", label: "Strands", numeral: "02", to: "/plan?view=strands" },
+    { id: "history", label: "Check-in history", numeral: "03", to: "/checkin/history", isActive: true },
+    { id: "report", label: "Report", numeral: "04", to: "/report" },
+    { id: "sep", label: "", isDivider: true },
+    { id: "refine", label: "Refine your report", isUtility: true, to: "/plan" },
   ];
+
+  const sidebarHead: ReactNode = (
+    <>
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+      <span>Your plan</span>
+    </>
+  );
+
+  const sidebarFooter: ReactNode = (
+    <>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+        Plan
+      </div>
+      <div className="mt-1 text-[12px] text-foreground">
+        One-time · Day {currentDay || 1} of 30
+      </div>
+    </>
+  );
 
   const handleOpenEntry = useCallback((entry: CheckinTimelineEntry) => {
     setSelectedEntry(entry);
     setDrawerOpen(true);
   }, []);
 
+  const handleOpenToday = useCallback(() => {
+    navigate("/plan");
+  }, [navigate]);
+
+  /* ── Error state ── */
   if (loadError) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <Banner variant="error">
-          We couldn't load your check-in history. Try refreshing.
-        </Banner>
+        <main className="pt-[68px]">
+          <section className="py-16 px-6">
+            <div className="mx-auto max-w-[600px] panel-ivory px-8 sm:px-12 py-10 text-center">
+              <h1 className="font-display text-[28px] font-bold text-foreground" style={{ letterSpacing: "-0.025em" }}>
+                Couldn't load your history.
+              </h1>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Try refreshing the page. If the problem persists, contact support.
+              </p>
+            </div>
+          </section>
+        </main>
       </div>
     );
   }
 
+  /* ── Loading state ── */
   if (authLoading || loading) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <div className="flex flex-1 items-center justify-center px-6">
-          <div className="flex flex-col items-center gap-4 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <p className="text-sm">Loading your check-ins…</p>
+        <main className="pt-[68px]">
+          <div className="flex items-center justify-center min-h-[60vh] px-6">
+            <div className="flex flex-col items-center gap-4 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-sm">Loading your check-ins…</p>
+            </div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }
 
-  return (
-    <div className="flex min-h-screen flex-col">
-      <TopBar />
-      <div className="mx-auto w-full max-w-screen-xl px-6">
-        <div className="flex gap-10">
-          <AreaSidebar items={sidebarItems} />
-          <main className="flex-1 min-w-0 mx-auto w-full max-w-3xl pt-8 pb-24">
-            <header className="mb-6">
-              <h1
-                className="font-display text-3xl font-bold tracking-tight"
-                style={{ letterSpacing: "-0.02em" }}
-              >
-                Check-in history
-              </h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {completedCount} check-in{completedCount === 1 ? "" : "s"} · Days 1–30
-              </p>
-            </header>
-
-            {timeline.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Your plan isn't active yet. Once you activate, your daily check-ins will appear here.
-              </p>
-            ) : (
-              <CheckinHistoryList entries={timeline} onOpenEntry={handleOpenEntry} />
-            )}
-          </main>
-        </div>
+  /* ── No tracker session — paid user whose tracker hasn't initialised ── */
+  if (timeline.length === 0) {
+    return (
+      <div className="relative min-h-screen text-foreground">
+        <TopBar />
+        <main className="pt-[68px]">
+          <section className="py-8 lg:py-12">
+            <div className="mx-auto max-w-screen-xl px-6">
+              <div className="flex gap-8 lg:gap-10">
+                <AreaSidebar items={sidebarItems} head={sidebarHead} footer={sidebarFooter} />
+                <div className="flex-1 min-w-0">
+                  <div className="panel-ivory px-8 sm:px-12 py-10">
+                    <h1 className="font-display text-[28px] font-bold text-foreground" style={{ letterSpacing: "-0.025em" }}>
+                      Your tracker hasn't started yet.
+                    </h1>
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      Visit Today to begin your 30-day plan. Once you start, every day appears here.
+                    </p>
+                    <button
+                      onClick={() => navigate("/plan")}
+                      className="mt-6 inline-flex items-center justify-center rounded-md px-5 py-2.5 text-[13px] font-semibold text-white"
+                      style={{ background: "#2ECDB0" }}
+                    >
+                      Open Today
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
+    );
+  }
 
+  /* ── Default render ── */
+  return (
+    <div className="relative min-h-screen text-foreground">
+      <TopBar />
+
+      <main className="pt-[68px]">
+        <section className="py-8 lg:py-12">
+          <div className="mx-auto max-w-screen-xl px-6">
+            <div className="flex gap-8 lg:gap-10">
+              <AreaSidebar
+                items={sidebarItems}
+                head={sidebarHead}
+                footer={sidebarFooter}
+              />
+
+              <div className="flex-1 min-w-0">
+                <h1 className="sr-only">Check-in history</h1>
+
+                {/* ── Page-header panel ── */}
+                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+                  <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span className="text-foreground">Your plan</span>
+                    <span className="text-muted-foreground/40">·</span>
+                    <span className="text-muted-foreground/70">Check-in history</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
+                    <div className="lg:col-span-8">
+                      <div
+                        aria-hidden
+                        className="text-[36px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
+                        style={{ letterSpacing: "-0.028em" }}
+                      >
+                        Check-in history.
+                      </div>
+                      <p className="mt-3 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.4] max-w-[54ch]">
+                        {completedCount === 0
+                          ? "No check-ins yet — your first one is today. The rest of your 30 days will fill in here as you go."
+                          : "Every day of your 30-day plan. Read past check-ins, see today's, watch the days ahead."}
+                      </p>
+                    </div>
+
+                    <div className="lg:col-span-4 lg:text-right">
+                      <div className="flex gap-6 lg:justify-end">
+                        <Stat value={completedCount} label="Completed" />
+                        {(missedCount > 0 || completedCount > 0) && (
+                          <Stat value={missedCount} label="Missed" />
+                        )}
+                        <Stat value={aheadCount} label="Ahead" />
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                {/* ── Timeline ── */}
+                <CheckinHistoryList
+                  entries={timeline}
+                  onOpenEntry={handleOpenEntry}
+                  onOpenToday={handleOpenToday}
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* ── Read-only drawer (CheckInPanel composite preserved) ──
+       * Note: CheckInPanel's readOnly mode currently renders a stub
+       * placeholder. Proper read-only data loading + the prev/next nav
+       * (F4) deferred to a follow-up. */}
       <CheckInPanel
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
@@ -208,6 +353,23 @@ export default function CheckinHistory() {
         dayNumber={selectedEntry?.day}
         readOnly
       />
+    </div>
+  );
+}
+
+/* ── Stat — tabular count + small-caps label, no gamification ── */
+function Stat({ value, label }: { value: number; label: string }) {
+  return (
+    <div>
+      <div
+        className="font-display font-bold text-[22px] sm:text-[24px] tabular-nums text-foreground leading-none"
+        style={{ letterSpacing: "-0.02em" }}
+      >
+        {String(value).padStart(2, "0")}
+      </div>
+      <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
+        {label}
+      </div>
     </div>
   );
 }
