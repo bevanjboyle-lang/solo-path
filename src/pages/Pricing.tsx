@@ -3,7 +3,7 @@ import { useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-import Footer from "@/components/Footer";
+// Footer import dropped 2026-05-18 — App.tsx renders the Footer for this route.
 
 /*
  * Pricing — Pass 1 /pricing v1 (2026-05-18) — fourth Phase 2 cycle (paired)
@@ -301,8 +301,11 @@ export default function Pricing() {
             })}
           </section>
 
-          {/* ── Closing CTA band ── */}
-          <section className="text-center py-14 sm:py-16 border-t border-[#E5E2DC]">
+          {/* ── Closing CTA band ──
+            * Fix 2026-05-18: wrapped in panel-ivory to match the page's
+            * other sections. Previously sat directly on the office photo
+            * background, making the body copy and microcopy unreadable. */}
+          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-14 sm:py-16 text-center">
             <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
               — {isAuthedBuyer ? "Pick up where you left off" : "Decide when you're ready"} —
             </div>
@@ -335,7 +338,9 @@ export default function Pricing() {
         </div>
       </main>
 
-      <Footer sticky={false} />
+      {/* Footer removed from page render 2026-05-18: App.tsx already
+        * renders <Footer /> for /pricing (it's not in FOOTERLESS_ROUTES).
+        * The page-level render was producing a duplicate dark bar. */}
 
       {/* Mobile sticky bottom CTA — anon visitors only, hidden when authed (they have plan access via top bar). */}
       {!isAuthedBuyer && (

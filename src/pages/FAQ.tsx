@@ -4,7 +4,7 @@ import { List } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-import Footer from "@/components/Footer";
+// Footer import dropped 2026-05-18 — App.tsx renders the Footer for this route.
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 /*
@@ -12,7 +12,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
  *
  * Editorial reskin of the FAQ surface. Two-column layout: 200px
  * category-nav sidebar left, separated category panels right. TopBar
- * with "FAQ" current + Footer.
+ * with "FAQ" current; Footer rendered by App.tsx (not in
+ * FOOTERLESS_ROUTES) so this page does not render its own.
  *
  * Locked decisions from admin/pass-1-legal-faq-decisions.md:
  *   Serif decision — FAQ answers stay in Inter sans (the system UI
@@ -334,8 +335,11 @@ export default function FAQ() {
                   </a>
                 </section>
 
-                {/* Light closing CTA (F5 keep) */}
-                <section className="text-center py-12 sm:py-14 border-t border-[#E5E2DC] mt-2">
+                {/* Light closing CTA (F5 keep) ──
+                  * Fix 2026-05-18: wrapped in panel-ivory to match the page's
+                  * other sections. Previously sat directly on the office photo
+                  * background, making the body copy unreadable. */}
+                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-12 sm:py-14 text-center mt-2">
                   <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
                     — {user ? "Pick up where you left off" : "Ready when you are"} —
                   </div>
@@ -365,7 +369,9 @@ export default function FAQ() {
         </section>
       </main>
 
-      <Footer sticky={false} />
+      {/* Footer removed from page render 2026-05-18: App.tsx already
+        * renders <Footer /> for /faq (it's not in FOOTERLESS_ROUTES).
+        * The page-level render was producing a duplicate dark bar. */}
     </div>
   );
 }
