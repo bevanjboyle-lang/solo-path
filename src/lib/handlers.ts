@@ -383,7 +383,31 @@ export async function generateReport(payload: {
 
 	const { data, error } = await supabase.functions.invoke("generate-report", { body });
 
-	if (error) return { error: error.message || "Report generation failed" };
+	if (error) {
+		// FunctionsHttpError wraps non-2xx responses. Its `message` is the generic
+		// "Edge Function returned a non-2xx status code" — useless to the user. The
+		// real message lives in the response body, which the function returns as
+		// { error, response_text } on every error path (see generate-report
+		// Deno.serve return shapes). Prefer response_text (user-facing), then
+		// error (machine-y), then the generic supabase-js wrapper as last resort.
+		//
+		// Pattern lifted out 2026-05-17 after a 429 rate-limit response surfaced
+		// as the generic message to the user, masking "3 reports in 24h limit.
+		// Try tomorrow." that the server had actually returned.
+		let serverMsg: string | undefined;
+		try {
+			const ctx = (error as unknown as { context?: Response }).context;
+			if (ctx && typeof ctx.clone === "function") {
+				const parsed = await ctx.clone().json();
+				const respText = typeof parsed?.response_text === "string" ? parsed.response_text : undefined;
+				const errText = typeof parsed?.error === "string" ? parsed.error : undefined;
+				serverMsg = respText || errText;
+			}
+		} catch {
+			/* fall through to generic */
+		}
+		return { error: serverMsg || error.message || "Report generation failed" };
+	}
 
 	return { report_id: data?.report_id };
 }
