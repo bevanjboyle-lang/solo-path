@@ -178,6 +178,7 @@ export default function Auth() {
                   submitting={submitting}
                   onEmailChange={setEmail}
                   onSubmit={handleSend}
+                  onStartTest={() => startTest(navigate)}
                 />
               ) : (
                 <SentBody
@@ -186,22 +187,10 @@ export default function Auth() {
                   onResend={handleResend}
                   onReset={handleReset}
                   successH1Ref={successH1Ref}
+                  onStartTest={() => startTest(navigate)}
                 />
               )}
             </div>
-
-            {/* Safety-net link — outside the card, on the photo background */}
-            <p className="mt-6 text-center text-[13px] text-muted-foreground/80">
-              <span>Haven't taken the test yet?</span>
-              <span className="mx-2 text-muted-foreground/40">·</span>
-              <button
-                type="button"
-                onClick={() => startTest(navigate)}
-                className="text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
-              >
-                Start here →
-              </button>
-            </p>
           </div>
         </section>
       </main>
@@ -217,12 +206,14 @@ function FormBody({
   submitting,
   onEmailChange,
   onSubmit,
+  onStartTest,
 }: {
   email: string;
   isValidEmail: boolean;
   submitting: boolean;
   onEmailChange: (v: string) => void;
   onSubmit: () => void;
+  onStartTest: () => void;
 }) {
   return (
     <div className="px-8 sm:px-10 pt-8 sm:pt-10 pb-8">
@@ -296,6 +287,26 @@ function FormBody({
           </span>
         </p>
       </div>
+
+      {/*
+       * Safety-net link — inside the card per the 2026-05-18 contrast fix.
+       * Originally rendered outside the panel on the photo background per
+       * Pass 1 /auth F3, but grey-on-grey-photo contrast was unreadable on
+       * live. Moved inside the card with subordinate centred styling — the
+       * visual hierarchy (small, muted, beneath the trust line) preserves
+       * the "this is a backstop, not the encouraged path" intent without
+       * relying on photo-background contrast.
+       */}
+      <p className="mt-5 text-center text-[12.5px] text-muted-foreground">
+        Haven't taken the test yet?{" "}
+        <button
+          type="button"
+          onClick={onStartTest}
+          className="text-foreground border-b border-[#D8D4CC] hover:border-foreground transition-colors"
+        >
+          Start here →
+        </button>
+      </p>
     </div>
   );
 }
@@ -308,12 +319,14 @@ function SentBody({
   onResend,
   onReset,
   successH1Ref,
+  onStartTest,
 }: {
   submittedEmail: string;
   submitting: boolean;
   onResend: () => void;
   onReset: () => void;
   successH1Ref: React.RefObject<HTMLHeadingElement>;
+  onStartTest: () => void;
 }) {
   return (
     <div className="px-8 sm:px-10 pt-8 sm:pt-10 pb-8">
@@ -382,6 +395,23 @@ function SentBody({
           Use a different email
         </button>
       </div>
+
+      {/*
+       * Safety-net link — inside the card per the 2026-05-18 contrast fix.
+       * See FormBody for the rationale. Same subordinate centred styling on
+       * both states so the backstop is consistently reachable whether the
+       * user is on the form or the sent confirmation.
+       */}
+      <p className="mt-5 text-center text-[12.5px] text-muted-foreground">
+        Haven't taken the test yet?{" "}
+        <button
+          type="button"
+          onClick={onStartTest}
+          className="text-foreground border-b border-[#D8D4CC] hover:border-foreground transition-colors"
+        >
+          Start here →
+        </button>
+      </p>
     </div>
   );
 }
