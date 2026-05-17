@@ -56,6 +56,12 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
                   Plan
                 </button>
                 <button
+                  onClick={() => navigateAuthed(navigate, "/report")}
+                  className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Report
+                </button>
+                <button
                   onClick={() => navigateAuthed(navigate, "/library")}
                   className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
@@ -127,6 +133,12 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
                   className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Plan
+                </button>
+                <button
+                  onClick={() => { navigateAuthed(navigate, "/report"); setOpen(false); }}
+                  className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Report
                 </button>
                 <button
                   onClick={() => { navigateAuthed(navigate, "/library"); setOpen(false); }}

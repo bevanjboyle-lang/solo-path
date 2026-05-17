@@ -26,6 +26,13 @@ export interface SidebarItem {
   isDivider?: boolean;
   /** Marks an item as utility (subordinate styling — muted, no weight bump on hover). */
   isUtility?: boolean;
+  /**
+   * Optional small-caps numeral prefix (Pass 1 /report v1: '01'…'09' on
+   * scroll-spy sidebar items). Mint coloured, tabular numerals, used to
+   * cross-reference with section-head numerals inside the main content.
+   * Not used on /plan's route sidebar (the 5 items there don't need numerals).
+   */
+  numeral?: string;
 }
 
 export interface AreaSidebarProps {
@@ -101,7 +108,7 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
                 onClick={() => handleActivate(item, closeSheet)}
                 aria-current={item.isActive ? "page" : undefined}
                 className={cn(
-                  "group flex w-full items-center border-l-2 pl-4 pr-3 py-2 text-left text-[13.5px] transition-colors",
+                  "group flex w-full items-baseline gap-3 border-l-2 pl-4 pr-3 py-2 text-left text-[13.5px] transition-colors",
                   item.isActive
                     ? "border-primary bg-[#FAF9F7] font-semibold text-foreground"
                     : isUtility
@@ -109,6 +116,16 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
                     : "border-transparent text-muted-foreground hover:bg-[#FAF9F7] hover:text-foreground",
                 )}
               >
+                {item.numeral && (
+                  <span
+                    className={cn(
+                      "shrink-0 text-[10px] font-semibold tabular-nums tracking-[0.1em] transition-colors",
+                      item.isActive ? "text-primary" : "text-muted-foreground/60",
+                    )}
+                  >
+                    {item.numeral}
+                  </span>
+                )}
                 <span className="truncate">{item.label}</span>
               </button>
             </li>

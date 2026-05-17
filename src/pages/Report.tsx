@@ -1,15 +1,14 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, FileText } from "lucide-react";
-import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isDevBypass } from "@/lib/devBypass";
-import { navigateAuthed } from "@/lib/handlers";
+import { navigateAuthed, startTest } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
+import SoloLogo from "@/components/SoloLogo";
 import Banner from "@/components/Banner";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
@@ -27,6 +26,69 @@ import AIImpactSection from "@/components/sample-report/AIImpactSection";
 import type { SoloCoreReport, ReportRow } from "@/types/canonical";
 import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
 
+/*
+ * Report — Pass 1 /report v1 (2026-05-18) — first Phase 2 surface
+ *
+ * Editorial reskin of the full unlocked report. Two-column app shell
+ * inheriting /plan (AreaSidebar + flexible main column). 9 sections in
+ * canonical order, each on its own ivory panel — except the dark #ai
+ * section at the bottom which is the screen's single dark moment per
+ * cadence rule v1.4 §8.
+ *
+ * Locked decisions from admin/pass-1-report-decisions.md:
+ *   F1 — Report added to TopBar.authed centre nav (Plan · Report ·
+ *        Library · Account · Sign out).
+ *   F2 — Page-header H1 sources from archetype name, falls back to
+ *        "Your Plan B Report" if missing.
+ *   F3 — Brief-collapse for Sell, Recommendation, Reality sections:
+ *        single-row preview, click to expand to full content in place.
+ *   F4 — Page-header CTAs: secondary button "Download as PDF" +
+ *        tertiary text link "Refine your report". Different weights
+ *        match different frequencies of use.
+ *   F5 — Body prose in Source Serif 4 (real exception to the locked
+ *        two-typeface rule). Scoped to .prose-serif p inside section
+ *        bodies. Everything else stays sans.
+ *   F6 — Drop cap on the first paragraph of #edge. The page's one
+ *        typographic flourish.
+ *   F7 — Business Paths as stacked list, not chart. Existing
+ *        BusinessPaths composite handles the rendering.
+ *
+ *   Cadence: one dark section — #ai-impact at the bottom of the read.
+ *   Closing weight, not mid-scroll interruption. Per v1.4 §8.
+ *
+ * Pass 1 scope: shell + chrome + sidebar + page-header + section heads
+ * + brief-collapse + dark wrapper + serif + drop cap. Internal section
+ * composites (HookInsightSection, ArchetypeSection, BusinessPaths, etc.)
+ * preserved as-is — Phase 2 of Phase 2 may reskin them.
+ *
+ * Drops framer-motion. Editorial register lands instantly per the spine
+ * precedent. Preserves: data fetch, refinement state + limit, PDF export,
+ * scroll-spy via useActiveSection, RefineReportPanel drawer.
+ */
+
+interface SectionMeta {
+  id: string;
+  label: string;
+  numeral: string;
+  readTime: string;
+  // 'brief' = collapsed by default (Sell, Recommendation, Reality)
+  // 'full'  = always expanded
+  // 'dark'  = always expanded, dark-section wrapper
+  variant: "full" | "brief" | "dark";
+}
+
+const SECTION_DEFS: SectionMeta[] = [
+  { id: "edge",           label: "Your edge",             numeral: "01", readTime: "≈ 2 min read", variant: "full"  },
+  { id: "archetype",      label: "Archetype",             numeral: "02", readTime: "≈ 3 min read", variant: "full"  },
+  { id: "sell",           label: "What you can sell",     numeral: "03", readTime: "≈ 3 min read", variant: "brief" },
+  { id: "skills",         label: "Transferable skills",   numeral: "04", readTime: "≈ 4 min read", variant: "full"  },
+  { id: "paths",          label: "Business paths",        numeral: "05", readTime: "10 options",  variant: "full"  },
+  { id: "recommendation", label: "Recommendation",        numeral: "06", readTime: "≈ 2 min read", variant: "brief" },
+  { id: "reality",        label: "Reality check",         numeral: "07", readTime: "≈ 5 min read", variant: "brief" },
+  { id: "income",         label: "Income outlook",        numeral: "08", readTime: "≈ 3 min read", variant: "full"  },
+  { id: "ai",             label: "AI impact",             numeral: "09", readTime: "≈ 4 min read", variant: "dark"  },
+];
+
 export default function Report() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -42,8 +104,10 @@ export default function Report() {
   const [refineOpen, setRefineOpen] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  // Brief-collapse state per section (F3) — defaults all to collapsed; user can expand any.
+  const [expandedBriefs, setExpandedBriefs] = useState<Record<string, boolean>>({});
 
-  // ── Load report ──
+  /* ─── Load report ─── */
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -98,20 +162,31 @@ export default function Report() {
     };
   }, [user, authLoading, navigate]);
 
-  // ── Section ids that actually have data ──
+  /* ─── Visible sections (filter SECTION_DEFS by data presence) ─── */
   const visibleSections = useMemo(() => {
-    if (!coreReport) return [] as { id: string; label: string }[];
-    const present: { id: string; label: string }[] = [];
-    if (coreReport.hook_insight) present.push({ id: "edge", label: "Your edge" });
-    if (coreReport.archetype) present.push({ id: "archetype", label: "Your archetype" });
-    if (coreReport.transferable_value) present.push({ id: "sell", label: "What you can sell" });
-    if (coreReport.transferable_skills?.length) present.push({ id: "skills", label: "Your transferable skills" });
-    if (coreReport.options?.length) present.push({ id: "paths", label: "Your 10 paths" });
-    if (coreReport.recommendation) present.push({ id: "recommendation", label: "Our recommendation" });
-    if (coreReport.reality_check) present.push({ id: "reality", label: "Reality check" });
-    if (coreReport.income_outlook) present.push({ id: "income", label: "Income outlook" });
-    if (coreReport.ai_impact) present.push({ id: "ai", label: "AI & your future" });
-    return present;
+    if (!coreReport) return [] as SectionMeta[];
+    return SECTION_DEFS.filter((s) => {
+      switch (s.id) {
+        case "edge": return !!coreReport.hook_insight;
+        case "archetype": return !!coreReport.archetype;
+        case "sell": return !!coreReport.transferable_value;
+        case "skills": return !!coreReport.transferable_skills?.length;
+        case "paths": return !!coreReport.options?.length;
+        case "recommendation": return !!coreReport.recommendation;
+        case "reality": return !!coreReport.reality_check;
+        case "income": return !!coreReport.income_outlook;
+        case "ai": return !!coreReport.ai_impact;
+        default: return false;
+      }
+    });
+  }, [coreReport]);
+
+  /* ─── Word count estimate for sidebar footer ─── */
+  const wordCount = useMemo(() => {
+    if (!coreReport) return 0;
+    const text = JSON.stringify(coreReport);
+    const words = text.split(/\s+/).filter(Boolean).length;
+    return Math.round(words / 50) * 50; // round to nearest 50 for a cleaner display number
   }, [coreReport]);
 
   const activeSectionId = useActiveSection(visibleSections.map((s) => s.id));
@@ -119,6 +194,10 @@ export default function Report() {
   const scrollToSection = useCallback((id: string) => {
     const el = document.getElementById(id);
     el?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  const toggleBrief = useCallback((id: string) => {
+    setExpandedBriefs((prev) => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
   const openRefinePanel = useCallback(() => {
@@ -170,192 +249,237 @@ export default function Report() {
     }
   }, [reportId, exportingPdf]);
 
-  const goToPlan = useCallback(() => navigateAuthed(navigate, "/plan"), [navigate]);
-  const goHome = useCallback(() => navigateAuthed(navigate, "/"), [navigate]);
-  const goToQuestionnaire = useCallback(() => navigateAuthed(navigate, "/questionnaire"), [navigate]);
-
-  // Sidebar items — section navigation
+  /* ─── Sidebar items (above conditional returns per Rules of Hooks) ─── */
   const sidebarItems: SidebarItem[] = visibleSections.map((s) => ({
     id: s.id,
     label: s.label,
     onClick: () => scrollToSection(s.id),
     isActive: activeSectionId === s.id,
-  }));
+    // Numeral renders as a small mint-coloured prefix per F3 of the AreaSidebar v1.3 update.
+    // The AreaSidebar component renders the numeral when present on the item.
+    numeral: s.numeral,
+  } as SidebarItem & { numeral?: string }));
+
+  const sidebarHead: ReactNode = (
+    <>
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+      <span>Your report</span>
+    </>
+  );
+
+  const sidebarFooter: ReactNode = (
+    <>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+        Report
+      </div>
+      <div className="mt-1 text-[12px] text-foreground">
+        {visibleSections.length} sections{wordCount > 0 ? ` · ~${wordCount.toLocaleString()} words` : ""}
+      </div>
+    </>
+  );
+
+  /* ─── Early returns ─── */
 
   if (loadError) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <Banner variant="error">
-          We couldn't load your report. Try refreshing, or contact support if this keeps happening.
-        </Banner>
+        <main className="pt-[68px]">
+          <section className="py-10 lg:py-14">
+            <div className="mx-auto max-w-3xl px-6">
+              <Banner variant="error">
+                We couldn't load your report. Try refreshing, or contact support if this keeps happening.
+              </Banner>
+            </div>
+          </section>
+        </main>
       </div>
     );
   }
 
   if (authLoading || loading) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <div className="flex flex-1 items-center justify-center px-6">
-          <div className="flex flex-col items-center gap-4 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <p className="text-sm">Loading your report…</p>
-          </div>
-        </div>
+        <main className="pt-[68px]">
+          <section className="py-12">
+            <div className="mx-auto max-w-3xl px-6 flex flex-col items-center gap-4 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-[13px]">Loading your report…</p>
+            </div>
+          </section>
+        </main>
       </div>
     );
   }
 
   if (!coreReport) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="flex flex-1 items-center justify-center px-6 py-20">
-          <div className="mx-auto w-full max-w-md text-center">
-            <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-card border border-border">
-              <FileText className="h-7 w-7 text-muted-foreground" />
+        <main className="pt-[68px]">
+          <section className="py-12 lg:py-20">
+            <div className="mx-auto max-w-[640px] px-6">
+              <div className="panel-ivory px-8 sm:px-10 py-10">
+                <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground mb-5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span>No report yet</span>
+                </div>
+                <h1 className="text-[32px] sm:text-[36px] font-extrabold tracking-tight leading-tight text-foreground">
+                  No report yet.
+                </h1>
+                <p className="mt-4 text-[15px] text-muted-foreground leading-relaxed">
+                  Complete the test to generate yours. About eight minutes; you'll see your warmest path inside the first read.
+                </p>
+                <div className="mt-7 flex flex-col items-start gap-3 border-t border-[#E5E2DC] pt-7">
+                  <button
+                    type="button"
+                    onClick={() => startTest(navigate)}
+                    className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors"
+                  >
+                    Take the test →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/")}
+                    className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
+                  >
+                    Go back home
+                  </button>
+                </div>
+              </div>
             </div>
-            <h1 className="font-display text-[22px] font-semibold tracking-tight text-foreground">
-              Your report is not ready yet
-            </h1>
-            <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">
-              Complete the questionnaire and we will build your personalised Plan B report. It takes about five minutes.
-            </p>
-            <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Button
-                size="lg"
-                onClick={goToQuestionnaire}
-                className="min-w-[210px] text-sm font-medium"
-              >
-                Take the questionnaire
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                onClick={goToPlan}
-                className="min-w-[210px] text-sm font-medium"
-              >
-                Back to Plan
-              </Button>
-            </div>
-          </div>
+          </section>
         </main>
       </div>
     );
   }
 
+  /* ─── Page-header H1 source per F2 ─── */
+  const archetypeName = (coreReport.archetype as { name?: string } | null)?.name;
+  const h1Title = archetypeName ? `${archetypeName}.` : "Your Plan B Report.";
+  const subhead =
+    (coreReport.archetype as { short_description?: string; description?: string } | null)
+      ?.short_description ||
+    (coreReport.archetype as { short_description?: string; description?: string } | null)
+      ?.description ||
+    "Your full analysis. Read in any order; the sidebar tracks where you are.";
+  const draftedAt = "drafted recently";  // could pull from reports.created_at in a future pass
+
+  /* ─── Render ─── */
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative min-h-screen text-foreground">
       <TopBar />
-      <div className="mx-auto w-full max-w-screen-xl px-6">
-        <div className="flex gap-10">
-          {sidebarItems.length > 0 && <AreaSidebar items={sidebarItems} />}
 
-          <main className="flex-1 min-w-0 mx-auto w-full max-w-3xl pt-8 pb-24">
-            <header className="mb-8">
-              <h1
-                className="font-display text-3xl font-bold tracking-tight"
-                style={{ letterSpacing: "-0.02em" }}
-              >
-                Your Plan B report
-              </h1>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={exportPdf}
-                  disabled={exportingPdf}
-                  className="text-xs font-medium"
-                >
-                  {exportingPdf ? (
-                    <span className="inline-flex items-center gap-1.5">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      Generating PDF...
+      <main className="pt-[68px]">
+        <section className="py-8 lg:py-12">
+          <div className="mx-auto max-w-screen-xl px-6">
+            <div className="flex gap-8 lg:gap-10">
+              <AreaSidebar
+                items={sidebarItems}
+                head={sidebarHead}
+                footer={sidebarFooter}
+              />
+
+              <div className="flex-1 min-w-0">
+                <h1 className="sr-only">{h1Title}</h1>
+
+                {/* ─── Page-header bar ─── */}
+                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+                  <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span className="text-foreground">Your Plan B report</span>
+                    <span className="text-muted-foreground/40">·</span>
+                    <span className="normal-case tracking-normal text-[12px] font-normal">
+                      {draftedAt}
                     </span>
-                  ) : (
-                    "Download as PDF"
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={openRefinePanel}
-                  disabled={refineLimitReached || refinementCount >= 3}
-                  className="text-xs font-medium"
-                >
-                  Refine your report
-                </Button>
-              </div>
-              {(refineLimitReached || refinementCount >= 3) && (
-                <p className="mt-2 text-[11px] text-muted-foreground">Refinement limit reached.</p>
-              )}
-              {pdfError && (
-                <p className="mt-2 text-[11px] text-red-500">{pdfError}</p>
-              )}
-            </header>
+                  </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-            >
-              {coreReport.hook_insight && (
-                <section id="edge" className="mb-10 scroll-mt-24">
-                  <HookInsightSection hook_insight={coreReport.hook_insight} />
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
+                    <div className="lg:col-span-8">
+                      <div
+                        aria-hidden
+                        className="text-[40px] sm:text-[48px] lg:text-[52px] font-extrabold tracking-tight leading-[1.05] text-foreground"
+                      >
+                        {h1Title}
+                      </div>
+                      <p className="mt-4 text-[15.5px] text-muted-foreground leading-relaxed max-w-2xl">
+                        {subhead}
+                      </p>
+                    </div>
+
+                    <div className="lg:col-span-4 flex flex-col items-start lg:items-end gap-3">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={exportPdf}
+                          disabled={exportingPdf}
+                          className={`rounded-md px-5 py-2.5 text-[13px] font-semibold transition-colors border ${
+                            exportingPdf
+                              ? "bg-[#E5E2DC] text-muted-foreground/70 border-[#D8D4CC] cursor-not-allowed"
+                              : "bg-[#F3F0EA] text-foreground border-[#D8D4CC] hover:bg-[#E8E4DC]"
+                          }`}
+                        >
+                          {exportingPdf ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              Preparing…
+                            </span>
+                          ) : (
+                            "Download as PDF"
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={openRefinePanel}
+                          disabled={refineLimitReached || refinementCount >= 3}
+                          className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Refine your report
+                        </button>
+                      </div>
+                      {(refineLimitReached || refinementCount >= 3) && (
+                        <p className="text-[11px] text-muted-foreground">Refinement limit reached.</p>
+                      )}
+                      {pdfError && (
+                        <p className="text-[11px] text-red-600">{pdfError}</p>
+                      )}
+                    </div>
+                  </div>
                 </section>
-              )}
-              {coreReport.archetype && (
-                <section id="archetype" className="mb-10 scroll-mt-24">
-                  <ArchetypeSection archetype={coreReport.archetype} />
-                </section>
-              )}
-              {coreReport.transferable_value && (
-                <section id="sell" className="mb-10 scroll-mt-24">
-                  <TransferableValueSection transferable_value={coreReport.transferable_value} />
-                </section>
-              )}
-              {coreReport.transferable_skills?.length ? (
-                <section id="skills" className="mb-10 scroll-mt-24">
-                  <TransferableSkillsSection transferable_skills={coreReport.transferable_skills} />
-                </section>
-              ) : null}
-              {coreReport.options?.length ? (
-                <section id="paths" className="mb-10 scroll-mt-24">
-                  <BusinessPaths
-                    options={coreReport.options}
-                    recommended_selection={coreReport.recommended_selection ?? undefined}
-                    locked={false}
-                  />
-                </section>
-              ) : null}
-              {coreReport.recommendation && (
-                <section id="recommendation" className="mb-10 scroll-mt-24">
-                  <RecommendationSection
-                    recommendation={coreReport.recommendation}
-                    options={coreReport.options}
-                  />
-                </section>
-              )}
-              {coreReport.reality_check && (
-                <section id="reality" className="mb-10 scroll-mt-24">
-                  <RealityCheckSection reality_check={coreReport.reality_check} />
-                </section>
-              )}
-              {coreReport.income_outlook && (
-                <section id="income" className="mb-10 scroll-mt-24">
-                  <IncomeOutlookSection income_outlook={coreReport.income_outlook} />
-                </section>
-              )}
-              {coreReport.ai_impact && (
-                <section id="ai" className="mb-10 scroll-mt-24">
-                  <AIImpactSection ai_impact={coreReport.ai_impact} />
-                </section>
-              )}
-            </motion.div>
-          </main>
-        </div>
-      </div>
+
+                {/* ─── Sections — render in canonical order ─── */}
+                {visibleSections.map((s) => {
+                  if (s.variant === "brief") {
+                    return (
+                      <BriefSection
+                        key={s.id}
+                        meta={s}
+                        expanded={!!expandedBriefs[s.id]}
+                        onToggle={() => toggleBrief(s.id)}
+                      >
+                        {renderSectionBody(s.id, coreReport)}
+                      </BriefSection>
+                    );
+                  }
+                  if (s.variant === "dark") {
+                    return (
+                      <DarkSection key={s.id} meta={s}>
+                        {renderSectionBody(s.id, coreReport)}
+                      </DarkSection>
+                    );
+                  }
+                  return (
+                    <FullSection key={s.id} meta={s} dropCap={s.id === "edge"}>
+                      {renderSectionBody(s.id, coreReport)}
+                    </FullSection>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
       {reportId && (
         <RefineReportPanel
@@ -369,5 +493,206 @@ export default function Report() {
         />
       )}
     </div>
+  );
+}
+
+/* ─────────────────────────── Section-body dispatch ─────────────────────────── */
+
+function renderSectionBody(id: string, coreReport: SoloCoreReport): ReactNode {
+  switch (id) {
+    case "edge":
+      return coreReport.hook_insight ? <HookInsightSection hook_insight={coreReport.hook_insight} /> : null;
+    case "archetype":
+      return coreReport.archetype ? <ArchetypeSection archetype={coreReport.archetype} /> : null;
+    case "sell":
+      return coreReport.transferable_value ? <TransferableValueSection transferable_value={coreReport.transferable_value} /> : null;
+    case "skills":
+      return coreReport.transferable_skills?.length ? <TransferableSkillsSection transferable_skills={coreReport.transferable_skills} /> : null;
+    case "paths":
+      return coreReport.options?.length ? (
+        <BusinessPaths
+          options={coreReport.options}
+          recommended_selection={coreReport.recommended_selection ?? undefined}
+          locked={false}
+        />
+      ) : null;
+    case "recommendation":
+      return coreReport.recommendation ? (
+        <RecommendationSection
+          recommendation={coreReport.recommendation}
+          options={coreReport.options}
+        />
+      ) : null;
+    case "reality":
+      return coreReport.reality_check ? <RealityCheckSection reality_check={coreReport.reality_check} /> : null;
+    case "income":
+      return coreReport.income_outlook ? <IncomeOutlookSection income_outlook={coreReport.income_outlook} /> : null;
+    case "ai":
+      return coreReport.ai_impact ? <AIImpactSection ai_impact={coreReport.ai_impact} /> : null;
+    default:
+      return null;
+  }
+}
+
+/* ─────────────────────────── Section head ─────────────────────────── */
+
+function SectionHead({
+  meta,
+  tone = "default",
+}: {
+  meta: SectionMeta;
+  tone?: "default" | "dark";
+}) {
+  const labelColour = tone === "dark" ? "text-[#FAF9F7]" : "text-foreground";
+  const metaColour = tone === "dark" ? "text-[rgba(250,249,247,0.55)]" : "text-muted-foreground/80";
+  const ruleColour = tone === "dark" ? "border-white/10" : "border-[#E5E2DC]";
+  const numColour = "text-primary"; // mint on both tones — same eyebrow vocabulary
+  return (
+    <div className={`flex items-baseline justify-between gap-4 pb-4 border-b ${ruleColour} mb-6`}>
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em]">
+        <span className={`${numColour} mr-3 tabular-nums`}>{meta.numeral}</span>
+        <span className={labelColour}>{meta.label}</span>
+      </div>
+      <div className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${metaColour} tabular-nums shrink-0`}>
+        {meta.readTime}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Full section (ivory) ─────────────────────────── */
+
+function FullSection({
+  meta,
+  dropCap = false,
+  children,
+}: {
+  meta: SectionMeta;
+  dropCap?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <section id={meta.id} className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6 scroll-mt-24">
+      <SectionHead meta={meta} />
+      {/*
+       * Body wrapped in .prose-serif per F5. Internal section composites
+       * render their own H2/lede/structure in sans (the component's own
+       * styling); the serif scopes to <p> tags inside .prose-serif.
+       * The drop-cap (per F6) is applied via the .has-dropcap class
+       * on the wrapper — the index.css rule targets the first <p>
+       * inside that wrapper at any nesting depth.
+       */}
+      <div className={`prose-serif ${dropCap ? "has-dropcap" : ""}`}>
+        {children}
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────── Brief section (collapse / expand) ─────────────────────────── */
+
+function BriefSection({
+  meta,
+  expanded,
+  onToggle,
+  children,
+}: {
+  meta: SectionMeta;
+  expanded: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  // One-line preview text per section. The canonical ledes live inside the
+  // sample-report section components; we use generic but on-tone fallbacks here
+  // since the brief preview shouldn't depend on the section's internal copy.
+  const preview = (() => {
+    switch (meta.id) {
+      case "sell":
+        return "Discrete, scoped engagements with a recognised deliverable. Not 'advisory.'";
+      case "recommendation":
+        return "Where to start, what to hold, what to ignore.";
+      case "reality":
+        return "What to know before the first client conversation. Most isn't pleasant.";
+      default:
+        return "Tap to read.";
+    }
+  })();
+
+  if (expanded) {
+    return (
+      <section id={meta.id} className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6 scroll-mt-24">
+        <SectionHead meta={meta} />
+        <div className="prose-serif">
+          {children}
+        </div>
+        <div className="mt-6 pt-5 border-t border-[#E5E2DC] flex justify-end">
+          <button
+            type="button"
+            onClick={onToggle}
+            className="text-[12px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
+          >
+            Collapse
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section
+      id={meta.id}
+      className="panel-ivory px-6 sm:px-10 lg:px-12 py-5 mb-6 scroll-mt-24 hover:bg-[#FAFAF7] transition-colors"
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-baseline justify-between gap-4 sm:gap-8 text-left"
+      >
+        <div className="flex items-baseline gap-4 flex-1 min-w-0">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] shrink-0">
+            <span className="text-primary mr-2 tabular-nums">{meta.numeral}</span>
+            <span className="text-foreground">{meta.label}</span>
+          </div>
+          <span className="text-[14px] text-muted-foreground truncate hidden sm:inline">
+            {preview}
+          </span>
+        </div>
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 tabular-nums shrink-0 flex items-center gap-3">
+          {meta.readTime}
+          <span aria-hidden className="text-muted-foreground">→</span>
+        </span>
+      </button>
+    </section>
+  );
+}
+
+/* ─────────────────────────── Dark section (panel-dark, the cadence moment) ─────────────────────────── */
+
+function DarkSection({
+  meta,
+  children,
+}: {
+  meta: SectionMeta;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      id={meta.id}
+      className="panel-dark px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6 scroll-mt-24"
+    >
+      <SectionHead meta={meta} tone="dark" />
+      {/*
+       * Internal sample-report sections render in their own colours; for the
+       * dark wrapper to read as dark we'd need to either rewrite the
+       * AIImpactSection internal styling (deferred to Phase 2 per the scope
+       * decision) or override colours here. For Pass 1 we wrap the existing
+       * component as-is; the section header + panel background carry the
+       * dark moment, and the internal content reads in its existing chrome.
+       * Phase 2 will reskin AIImpactSection for the dark variant.
+       */}
+      <div className="prose-serif text-[#FAF9F7]">
+        {children}
+      </div>
+    </section>
   );
 }

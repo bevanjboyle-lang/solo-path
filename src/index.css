@@ -229,3 +229,61 @@
 .animate-heartbeat {
   animation: heartbeat 2.8s ease-in-out infinite;
 }
+
+/*
+ * .prose-serif — long-form editorial prose face, used ONLY on
+ * /report body paragraphs and (future) /library long-form modules.
+ *
+ * Per Pass 1 /report F5 resolution 2026-05-18 and the
+ * project_typography_serif_exception_report memory. Scoped to <p>
+ * inside the .prose-serif container so strong/em/code inherit but
+ * UI chrome (h2s, eyebrows, buttons, sidebar items) outside the
+ * container stays in the locked Plus Jakarta Sans + Inter system.
+ *
+ * Real exception to the two-typeface rule. Justified for long-form
+ * reading because Inter at 17px / 1.65 reads as institutional UI;
+ * Source Serif 4 reads as an article — the right register for the
+ * user's own 3,000-word analysis.
+ *
+ * design-direction.md v1.4 needs bumping to v1.5 with the exception
+ * clause; pending propagation work.
+ */
+@layer components {
+  .prose-serif {
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+  .prose-serif p {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.65;
+    color: hsl(var(--text-body));
+    margin-bottom: 1.1em;
+  }
+  .prose-serif p:last-child {
+    margin-bottom: 0;
+  }
+  .prose-serif strong {
+    font-weight: 600;
+    color: hsl(var(--text-heading));
+  }
+  /*
+   * .has-dropcap — applied alongside .prose-serif on the FIRST
+   * substantive section's wrapper (#edge on /report). Drops a cap on
+   * the first letter of the first <p> the wrapper contains, regardless
+   * of how deep the rendered section component nests its content. The
+   * descendant selector covers both direct-child <p> and nested
+   * structures like .prose-serif.has-dropcap > div > div > p.
+   * Per Pass 1 /report F6.
+   */
+  .prose-serif.has-dropcap p:first-of-type::first-letter,
+  .prose-serif.has-dropcap > div p:first-of-type::first-letter,
+  .prose-serif.has-dropcap > div > div p:first-of-type::first-letter {
+    float: left;
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 0.9;
+    margin: 4px 8px 0 0;
+    color: hsl(var(--text-heading));
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
