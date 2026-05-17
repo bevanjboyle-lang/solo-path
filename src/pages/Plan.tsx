@@ -85,6 +85,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [weekNumber] = useState(1);
   const [sessionId, setSessionId] = useState(initialSessionId || "");
   const [checkinOpen, setCheckinOpen] = useState(false);
+  // v39 (Gap 2, 2026-05-17): tracks which mode CheckInPanel opens in so it can
+  // render the right title/subhead and disable input for read-only views.
+  type CheckInPanelMode = "today" | "backfill" | "readOnly";
+  const [checkinPanelMode, setCheckinPanelMode] = useState<CheckInPanelMode>("today");
   const [activationOpen, setActivationOpen] = useState(false);
   const [trackerDays, setTrackerDays] = useState<
     { day: number; completed: boolean; isToday: boolean }[]
@@ -355,23 +359,60 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   const handleCheckinSubmit = useCallback(
     async (response: string): Promise<string | null> => {
+      // v39 (Gap 2, 2026-05-17): pass target_day so the backend knows which day
+      // this check-in is for. Defaults to currentDay on the server when omitted,
+      // but we send it explicitly so backfills (dayNumber < currentDay) work and
+      // re-submitted today-check-ins are rejected with the lock 409.
       const { data, error } = await supabase.functions.invoke("process-checkin", {
-        body: { session_id: sessionId, response },
+        body: {
+          session_id: sessionId,
+          response,
+          target_day: dayNumber,
+        },
       });
-      if (error) throw error;
+
+      // v39: a 409 (checkin_locked) is surfaced as the panel's inline reply.
+      // FunctionsHttpError carries the response body on .context — parse it
+      // to get the friendly response_text the server returned.
+      if (error) {
+        type FunctionsHttpErrorLike = {
+          context?: { json?: () => Promise<{ response_text?: string; error?: string }> };
+        };
+        const ctx = (error as FunctionsHttpErrorLike).context;
+        if (ctx?.json) {
+          try {
+            const body = await ctx.json();
+            if (body?.response_text) return body.response_text;
+          } catch {
+            /* fall through to throw below */
+          }
+        }
+        throw error;
+      }
 
       const replanPendingFromCheckin = !!(data as { replan_pending?: boolean } | null)?.replan_pending;
       checkinReplanPendingRef.current = replanPendingFromCheckin;
 
-      setPlanState((prev) => {
-        if (prev === "active") return "done_today";
-        if (prev === "sub_active") return "sub_done";
-        return prev;
-      });
+      const isComplete = !!(data as { check_in_complete?: boolean } | null)?.check_in_complete;
+      const isBackfill = !!(data as { is_backfill?: boolean } | null)?.is_backfill;
 
-      setTrackerDays((prev) =>
-        prev.map((d) => (d.isToday ? { ...d, completed: true } : d)),
-      );
+      // v39: only flip the "done today" tracker state when the completed check-in
+      // is for the current day. Backfill completions update only the specific
+      // historic day cell.
+      if (isComplete && !isBackfill) {
+        setPlanState((prev) => {
+          if (prev === "active") return "done_today";
+          if (prev === "sub_active") return "sub_done";
+          return prev;
+        });
+        setTrackerDays((prev) =>
+          prev.map((d) => (d.isToday ? { ...d, completed: true } : d)),
+        );
+      } else if (isComplete && isBackfill) {
+        setTrackerDays((prev) =>
+          prev.map((d) => (d.day === dayNumber ? { ...d, completed: true } : d)),
+        );
+      }
 
       if (initialSessionId) {
         window.history.replaceState(null, "", "/plan");
@@ -385,7 +426,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
       return aiText;
     },
-    [sessionId, initialSessionId],
+    [sessionId, dayNumber, initialSessionId],
   );
 
   /* ── Day-by-day list state (plan visibility gap fix, 2026-05-18) ──
@@ -717,7 +758,15 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                                 isExpanded={expandedDayInList === d.day}
                                 onToggle={() => handleDayInListToggle(d.day)}
                                 onOpenCheckin={() => {
+                                  // v39 (Gap 2): the panel mode is derived from
+                                  // the day's status — today=submit, missed=backfill,
+                                  // completed=read-only viewer (Chunk C below).
                                   setDayNumber(d.day);
+                                  setCheckinPanelMode(
+                                    status === "completed" ? "readOnly"
+                                      : status === "missed" ? "backfill"
+                                      : "today",
+                                  );
                                   setCheckinOpen(true);
                                 }}
                               />
@@ -777,6 +826,9 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       </main>
 
       {/* ─── Drawers + dialogs (preserved) ─── */}
+      {/* v39 (Gap 2, 2026-05-17): mode + isBackfill drive the panel's title,
+        * subhead, and input-vs-readonly rendering. Mode is set when the row
+        * CTA fires (today / backfill / readOnly). */}
       <CheckInPanel
         open={checkinOpen}
         onOpenChange={(open) => {
@@ -793,6 +845,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         }}
         sessionId={sessionId}
         dayNumber={dayNumber}
+        readOnly={checkinPanelMode === "readOnly"}
+        isBackfill={checkinPanelMode === "backfill"}
         onSubmit={handleCheckinSubmit}
       />
 
@@ -1065,7 +1119,11 @@ function DayRow({
               No specific tasks logged for this day. Your activation plan's day-by-day detail may be lighter for certain days — your overall plan structure still applies.
             </p>
           )}
-          {(isToday || isCompleted) && (
+          {(isToday || isCompleted || isMissed) && (
+            // v39 (Gap 2): missed days are backfillable. Backfill CTA uses the
+            // stone-with-mint-rule treatment to distinguish from today's mint
+            // primary and completed's quieter stone. View-check-in for
+            // completed days opens the read-only transcript.
             <div className="mt-5 pt-5 border-t border-[#E5E2DC]">
               <button
                 onClick={onOpenCheckin}
@@ -1073,10 +1131,16 @@ function DayRow({
                 style={
                   isToday
                     ? { background: "#2ECDB0", color: "#FFFFFF" }
-                    : { background: "#F3F1ED", color: "#1D2025", border: "1px solid #D5D0C8" }
+                    : isMissed
+                      ? { background: "#FAFAF7", color: "#1D2025", border: "1px solid #2ECDB0" }
+                      : { background: "#F3F1ED", color: "#1D2025", border: "1px solid #D5D0C8" }
                 }
               >
-                {isToday ? "Submit your check-in →" : "View this check-in →"}
+                {isToday
+                  ? "Submit your check-in →"
+                  : isMissed
+                    ? "Backfill this day →"
+                    : "View this check-in →"}
               </button>
             </div>
           )}

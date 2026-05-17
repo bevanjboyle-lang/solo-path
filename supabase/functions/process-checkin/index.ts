@@ -1,4 +1,24 @@
-// process-checkin v38 — vibe code review fixes — 2026-05-14
+// process-checkin v39 — Gap 2: re-do lock + backfill — 2026-05-17
+//
+// Locked product rule (Option C): one check-in per (session, day_number),
+// no edits after submission, missed days backfillable. Implementation:
+//   1) Accept optional body.target_day. Defaults to tracker_sessions.current_day.
+//      Validates range [1, currentDay]; > currentDay returns 400.
+//   2) Existing-row lookup switched from (session, checkin_date=today) to
+//      (session, day_number=target_day). Pairs with the new
+//      UNIQUE (tracker_session_id, day_number) DB constraint applied in the
+//      checkin_history_lock_and_backfill migration.
+//   3) If the existing row has check_in_complete=true, return 409 with a
+//      friendly response_text. Replaces the silent "append more exchanges"
+//      behaviour that produced the Day-1 re-do artefact.
+//   4) check_in_complete is now persisted on both insert and update. The
+//      column was added in the same migration; historical rows with >= 1 user
+//      exchange were backfilled to true (conservative).
+//   5) Backfill semantics: when target_day < currentDay, we set is_catch_up
+//      and pass current_day=target_day into the P5 prompt input so the AI
+//      frames its opening for that day. tracker_sessions.last_checkin_date
+//      is NOT updated for a backfill (preserves the re-entry email signal
+//      for today's check-in).
 //
 // V-042: PROMPT_5_SYSTEM + CATCH_UP_ADDENDUM + PORTFOLIO_ADDENDUM extracted to
 //        sibling file p5-checkin-prompt.ts. Same ADR-019 pattern as P1/P3.
@@ -74,7 +94,7 @@ import OpenAI from "https://esm.sh/openai@4.28.0";
 import { PROMPT_5_SYSTEM, CATCH_UP_ADDENDUM, PORTFOLIO_ADDENDUM } from "./p5-checkin-prompt.ts";
 
 // V-041 (vibe code review 2026-05-14): added FUNCTION_VERSION constant.
-const FUNCTION_VERSION = "v38-vibe-review-fixes";
+const FUNCTION_VERSION = "v39-redo-lock-and-backfill";
 
 // V-045 (vibe code review 2026-05-14): strict json_schema for the P5 response.
 // Replaces response_format: { type: "json_object" } which only ensured *some*
@@ -923,6 +943,14 @@ Deno.serve(async (req: Request) => {
     const userMessage =
       body.message || body.userMessage || body.user_message || body.text || body.response || "";
 
+    // v39 (Gap 2, 2026-05-17): target_day is the day_number the check-in is for.
+    // Defaults to tracker_sessions.current_day when omitted (today's check-in).
+    // Validated against currentDay below — must be in [1, currentDay].
+    const rawTargetDay = body.target_day ?? body.targetDay ?? body.day_number ?? null;
+    const requestedTargetDay = typeof rawTargetDay === "number" && Number.isInteger(rawTargetDay)
+      ? rawTargetDay
+      : null;
+
     let trackerSession: Record<string, unknown> | null = null;
 
     if (resolvedSessionId) {
@@ -986,11 +1014,30 @@ Deno.serve(async (req: Request) => {
     const lastCheckinDate = trackerSession.last_checkin_date as string | null;
 
     const today = new Date().toISOString().split("T")[0];
-    const daysSinceLastCheckin = lastCheckinDate
-      ? daysBetween(lastCheckinDate, today)
-      : currentDay;
 
-    const isPortfolioReviewDay = isPortfolio && (currentDay === 19 || currentDay === 26);
+    // v39 (Gap 2): resolve and validate target_day. Default is today (currentDay).
+    // Reject anything > currentDay (can't check in for a future day) or < 1.
+    const targetDay = requestedTargetDay ?? currentDay;
+    if (!Number.isInteger(targetDay) || targetDay < 1 || targetDay > currentDay) {
+      return jsonResponse({
+        error: "invalid_target_day",
+        response_text: `Day ${targetDay} isn't available to check in for. The current day is ${currentDay}.`,
+      }, 400);
+    }
+    const isBackfill = targetDay !== currentDay;
+
+    // v39: for backfill, daysSinceLastCheckin reflects how late this specific day's
+    // check-in is, not the global last_checkin_date gap. Triggers the catch-up
+    // softening branch in P5 with a meaningful "you're N days late" framing.
+    const daysSinceLastCheckin = isBackfill
+      ? Math.max(1, currentDay - targetDay)
+      : lastCheckinDate
+        ? daysBetween(lastCheckinDate, today)
+        : currentDay;
+
+    // Portfolio-review days (19 and 26) are pinned to those specific day_numbers.
+    // For a backfill of Day 19 on Day 21, this still resolves to true.
+    const isPortfolioReviewDay = isPortfolio && (targetDay === 19 || targetDay === 26);
 
     const coreReport = ((reportData?.core_report as Record<string, unknown>) || {});
     const archetype = (coreReport.archetype as Record<string, unknown>) || {};
@@ -1038,17 +1085,37 @@ Deno.serve(async (req: Request) => {
       return prompt;
     }
 
+    // v39 (Gap 2): lookup by (session, day_number) instead of (session, date).
+    // Pairs with UNIQUE (tracker_session_id, day_number) — at most one row per day.
     let checkinRecord: Record<string, unknown> | null = null;
     const { data: existingCheckin } = await supabase
       .from("checkin_history")
       .select("*")
       .eq("tracker_session_id", sessionId)
       .eq("user_id", userId)
-      .eq("checkin_date", today)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+      .eq("day_number", targetDay)
+      .maybeSingle();
     checkinRecord = existingCheckin;
+
+    // v39 (Gap 2): once a check-in is submitted (check_in_complete=true), it's
+    // locked forever. Reject any further append/userMessage with 409. Removes
+    // the Day-1 re-do artefact and enforces the locked Option C rule. The
+    // friendly response_text is what the panel surfaces inline.
+    if (checkinRecord && (checkinRecord.check_in_complete as boolean)) {
+      console.log(`${FUNCTION_VERSION} checkin_locked: session=${sessionId} day=${targetDay}`);
+      return jsonResponse({
+        error: "checkin_locked",
+        response_text: `Your Day ${targetDay} check-in is already submitted and can't be changed.`,
+        check_in_complete: true,
+        day_number: targetDay,
+        checkin_id: checkinRecord.id,
+      }, 409);
+    }
+
+    // v39: backfill triggers catch-up semantics (softer P5 tone + first-message
+    // call_type). Persisted on the row's is_catch_up column so follow-up
+    // exchanges in the same conversation see the same context.
+    const isCatchUpEffective = isCatchUp || isBackfill;
 
     const maxExchanges = isPortfolioReviewDay ? 5 : 3;
 
@@ -1072,7 +1139,7 @@ Deno.serve(async (req: Request) => {
       }
 
       let openingCallType: string;
-      if (isCatchUp) {
+      if (isCatchUpEffective) {
         openingCallType = "catch_up";
       } else if (isPortfolioReviewDay) {
         openingCallType = "portfolio_review";
@@ -1080,12 +1147,14 @@ Deno.serve(async (req: Request) => {
         openingCallType = "opening";
       }
 
-      const systemPrompt = buildSystemPrompt(openingCallType, isPortfolio, isCatchUp);
+      const systemPrompt = buildSystemPrompt(openingCallType, isPortfolio, isCatchUpEffective);
 
+      // v39 (Gap 2): pass targetDay (not currentDay) so P5 frames the opening for
+      // the day being checked in for. Backfill of Day 1 on Day 3 prompts "Day 1 — ...".
       const prompt5Input = {
         call_type: openingCallType,
         exchange_count: 1,
-        current_day: currentDay,
+        current_day: targetDay,
         days_since_last_checkin: daysSinceLastCheckin,
         user_profile: userProfile,
         original_plan: {
@@ -1146,20 +1215,23 @@ Deno.serve(async (req: Request) => {
         }, 502);
       }
 
-      const responseText = (p5Output.response_text as string) || `Day ${currentDay} — how's it going?`;
+      const responseText = (p5Output.response_text as string) || `Day ${targetDay} — how's it going?`;
       const state = (p5Output.state as string) || "on_track";
 
       const initialExchanges = [
         { role: "assistant", message: responseText, timestamp: new Date().toISOString() },
       ];
 
+      // v39 (Gap 2): day_number = targetDay (not currentDay) so backfill rows
+      // land under the correct day. check_in_complete explicit false; is_catch_up
+      // = isCatchUpEffective so the row carries the backfill context forward.
       const { data: newCheckin, error: insertError } = await supabase
         .from("checkin_history")
         .insert({
           tracker_session_id: sessionId,
           user_id: userId,
           checkin_date: today,
-          day_number: currentDay,
+          day_number: targetDay,
           state: state,
           exchanges: initialExchanges,
           plan_updates: [],
@@ -1169,7 +1241,8 @@ Deno.serve(async (req: Request) => {
           strand_status_updates: [],
           is_portfolio_review: isPortfolioReviewDay,
           portfolio_review_record: null,
-          is_catch_up: isCatchUp,
+          is_catch_up: isCatchUpEffective,
+          check_in_complete: false,
         })
         .select()
         .single();
@@ -1186,18 +1259,22 @@ Deno.serve(async (req: Request) => {
         checkin_id: newCheckin?.id || null,
         is_portfolio: isPortfolio,
         is_portfolio_review: isPortfolioReviewDay,
-        is_catch_up: isCatchUp,
+        is_catch_up: isCatchUpEffective,
+        day_number: targetDay,
+        is_backfill: isBackfill,
       });
     }
 
     if (!checkinRecord) {
+      // v39 (Gap 2): same targetDay + is_catch_up + check_in_complete:false invariants
+      // as the opening-call insert.
       const { data: newCheckin } = await supabase
         .from("checkin_history")
         .insert({
           tracker_session_id: sessionId,
           user_id: userId,
           checkin_date: today,
-          day_number: currentDay,
+          day_number: targetDay,
           state: "on_track",
           exchanges: [],
           plan_updates: [],
@@ -1206,7 +1283,8 @@ Deno.serve(async (req: Request) => {
           strand_status_updates: [],
           is_portfolio_review: isPortfolioReviewDay,
           portfolio_review_record: null,
-          is_catch_up: isCatchUp,
+          is_catch_up: isCatchUpEffective,
+          check_in_complete: false,
         })
         .select()
         .single();
@@ -1241,10 +1319,12 @@ Deno.serve(async (req: Request) => {
       { role: "user", message: userMessage, timestamp: new Date().toISOString() },
     ];
 
+    // v39 (Gap 2): current_day = targetDay so P5 frames follow-ups for the
+    // correct day (backfill of Day 1 stays in Day 1 context).
     const prompt5Input = {
       call_type: callType,
       exchange_count: currentExchangeCount,
-      current_day: currentDay,
+      current_day: targetDay,
       days_since_last_checkin: daysSinceLastCheckin,
       user_profile: userProfile,
       original_plan: {
@@ -1330,6 +1410,9 @@ Deno.serve(async (req: Request) => {
       state: state,
       narrative_addition: narrativeAddition || (checkinRecord.narrative_addition as string) || null,
       strand_signals: allStrandSignals,
+      // v39 (Gap 2): persist check_in_complete so the next call can read it
+      // and enforce the lock (returns 409 instead of silently appending).
+      check_in_complete: checkInComplete,
     };
 
     if (checkInComplete) {
@@ -1353,11 +1436,19 @@ Deno.serve(async (req: Request) => {
         : isPortfolioReviewDay ? "portfolio_review"
         : "standard";
 
+      // v39 (Gap 2): for a backfill, do NOT update last_checkin_date /
+      // last_checkin_mode. Those fields gate the re-entry email scheduler in
+      // send-checkin-email; updating them would suppress today's standard
+      // check-in email because the system would think the user "just checked in".
+      // Backfill still applies plan_updates, narrative_addition, and strand
+      // signals — those are about the day being backfilled, not about today.
       const sessionUpdate: Record<string, unknown> = {
-        last_checkin_date: today,
-        last_checkin_mode: checkinMode,
         updated_at: new Date().toISOString(),
       };
+      if (!isBackfill) {
+        sessionUpdate.last_checkin_date = today;
+        sessionUpdate.last_checkin_mode = checkinMode;
+      }
 
       if (planUpdates.length > 0) {
         const updatedPlan = applyPlanUpdates(workingPlan, planUpdates);
@@ -1406,17 +1497,21 @@ Deno.serve(async (req: Request) => {
 
     if (checkInComplete && replanRequired) {
       // User-confirmed replan: store pending flag + context, let the frontend prompt the user.
+      // v39 (Gap 2): same backfill rule — don't update last_checkin_date if this was
+      // a backfill, so today's email cadence is preserved.
       const sessionUpdate: Record<string, unknown> = {
-        last_checkin_date: today,
         updated_at: new Date().toISOString(),
         replan_pending: true,
         replan_context: replanContext || {
           circumstance_type: "busy_stretch",
-          circumstance_detail: `Replan triggered from Day ${currentDay} check-in.`,
+          circumstance_detail: `Replan triggered from Day ${targetDay} check-in${isBackfill ? " (backfill)" : ""}.`,
           triggered_checkin_id: checkinRecord.id,
           triggered_at: new Date().toISOString(),
         },
       };
+      if (!isBackfill) {
+        sessionUpdate.last_checkin_date = today;
+      }
 
       // Apply any non-replan plan_updates from this check-in so we don't lose them while the user decides.
       if (planUpdates.length > 0) {
@@ -1449,6 +1544,10 @@ Deno.serve(async (req: Request) => {
       is_portfolio: isPortfolio,
       is_portfolio_review: isPortfolioReviewDay,
       is_catch_up: effectiveCatchUp,
+      // v39 (Gap 2): echo target day + backfill flag back to the client so the
+      // panel can render the right "Day N saved" confirmation.
+      day_number: targetDay,
+      is_backfill: isBackfill,
       strand_signals: strandSignals,
       strand_status_updates: strandStatusUpdates,
       portfolio_review_record: portfolioReviewRecord,
