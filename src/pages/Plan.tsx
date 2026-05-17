@@ -136,15 +136,19 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     let cancelled = false;
     (async () => {
       try {
-        const { data, error } = await (supabase as any)
+        // Fetch all the user's reports and pick the BEST one — prefer paid
+        // over unpaid, then most recent within tier. Previously this just
+        // grabbed the most recent row regardless of payment status, which
+        // bounced paid users with newer unpaid test runs to /teaser. See
+        // AuthCallback.tsx for the matching fix.
+        const PAID_STATUSES = new Set(["pending_selection", "generating_plan", "complete"]);
+        const { data: reports, error } = await (supabase as any)
           .from("reports")
           .select(
-            "id, status, hook_insight, core_report, activation_plan, market_snapshots, recommended_selection, ai_impact_section, selected_strands, selected_option_rank, answers",
+            "id, status, hook_insight, core_report, activation_plan, market_snapshots, recommended_selection, ai_impact_section, selected_strands, selected_option_rank, answers, created_at",
           )
           .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
+          .order("created_at", { ascending: false });
 
         if (cancelled) return;
 
@@ -154,7 +158,11 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           return;
         }
 
-        if (!data || data.status === "pending" || data.status === "generating") {
+        // Pick the best report: most recent paid, else most recent of any tier.
+        const paidReport = (reports as Array<{ status: string }> | null)?.find((r) => PAID_STATUSES.has(r.status));
+        const data = paidReport ?? (reports as Array<unknown> | null)?.[0] ?? null;
+
+        if (!data || (data as { status?: string }).status === "pending" || (data as { status?: string }).status === "generating") {
           if (!isDevBypass()) {
             navigate("/teaser", { replace: true });
             return;
@@ -164,16 +172,16 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
           return;
         }
 
-        if (data.status === "teaser_ready") {
+        if ((data as { status: string }).status === "teaser_ready") {
           if (!isDevBypass()) {
-            navigate(`/teaser?report_id=${data.id}`, { replace: true });
+            navigate(`/teaser?report_id=${(data as { id: string }).id}`, { replace: true });
             return;
           }
         }
 
         setHasPaid(true);
         applyReportRow(data as Record<string, unknown>);
-        loadTrackerSession(user.id, data.id);
+        loadTrackerSession(user.id, (data as { id: string }).id);
       } catch (err) {
         if (cancelled) return;
         console.error("Plan: report fetch failed", err);

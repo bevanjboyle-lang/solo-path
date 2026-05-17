@@ -82,30 +82,41 @@ export default function AuthCallback() {
         return;
       }
 
-      // 4. Find the user's most recent teaser-or-better report.
-      const { data: report, error: reportLookupError } = await supabase
+      // 4. Find the user's "best" report — prefer paid over unpaid.
+      //
+      // Previously this picked the user's most-recent report regardless of
+      // payment status, which routed paid users with a newer unpaid test
+      // run to /teaser instead of their /plan. The fix: fetch all
+      // teaser-or-better reports and pick the most recent PAID one. Fall
+      // back to the most recent unpaid only if no paid report exists.
+      //
+      // PAID_STATUSES = anything past payment: pending_selection (paid,
+      // hasn't picked path yet), generating_plan (paid, plan running),
+      // complete (paid, plan done).
+      const PAID_STATUSES = new Set(["pending_selection", "generating_plan", "complete"]);
+      const { data: reports, error: reportLookupError } = await supabase
         .from("reports")
-        .select("id, status")
+        .select("id, status, created_at")
         .eq("user_id", session.user.id)
         .in("status", ["teaser_ready", "pending_selection", "generating_plan", "complete"])
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .order("created_at", { ascending: false });
       if (reportLookupError) {
         console.error("Report lookup after auth failed:", reportLookupError);
       }
       if (cancelled) return;
 
-      // 5. Route based on payment status. Paid users (status >=
-      // pending_selection) go straight to /plan, where the plan either
-      // already exists or is auto-generated. Unpaid users still see the
-      // teaser. NEVER redirect to /questionnaire?resume=true.
-      if (report?.id) {
-        const PAID_STATUSES = new Set(["pending_selection", "generating_plan", "complete"]);
-        if (PAID_STATUSES.has(report.status)) {
-          navigate(`/plan?report_id=${report.id}`, { replace: true });
+      // Pick the best report: most recent paid, else most recent unpaid.
+      const paidReport = reports?.find((r) => PAID_STATUSES.has(r.status));
+      const chosen = paidReport ?? reports?.[0] ?? null;
+
+      // 5. Route based on payment status. Paid → /plan (plan exists or
+      // auto-generates). Unpaid → /teaser. NEVER redirect to
+      // /questionnaire?resume=true.
+      if (chosen?.id) {
+        if (PAID_STATUSES.has(chosen.status)) {
+          navigate(`/plan?report_id=${chosen.id}`, { replace: true });
         } else {
-          navigate(`/teaser?report_id=${report.id}`, { replace: true });
+          navigate(`/teaser?report_id=${chosen.id}`, { replace: true });
         }
         return;
       }
