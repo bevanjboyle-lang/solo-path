@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { BookOpen, Lock, ChevronRight, X, Check, Clock, Loader2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
@@ -6,8 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
 import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
-import Banner from "@/components/Banner";
-import LibraryCard from "@/components/plan/LibraryCard";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -15,6 +13,51 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import GlassCard from "@/components/ui/GlassCard";
+
+/*
+ * Library — Pass 1 /library v1 (2026-05-18) — second Phase 2 surface
+ *
+ * Editorial reskin of the guidance library. Two-column app shell
+ * inheriting /plan + /report. AreaSidebar with three tabs (Today /
+ * Browse / Modules), each carrying numeral + count suffix. Each tab's
+ * content rendered inside its own ivory panel. Modules tab carries one
+ * dark gate row between Module 03 and Module 04 for buyers (the
+ * screen's first cadence moment); Day-31 dark banner above the page
+ * header for Day-31 non-subscribers (the screen's second cadence
+ * moment). All other surfaces stay ivory.
+ *
+ * Locked decisions from admin/pass-1-library-decisions.md:
+ *   25/3/22 canonical correction applied throughout (was stale '9
+ *   modules' in spec §1).
+ *   F1 — LibraryCard as editorial row (Phase 2 of Phase 2 work — the
+ *     internal TodayTab/BrowseTab/ModulesTab card render is preserved
+ *     as-is for Pass 1, with shell + chrome restyled).
+ *   F2 — Read-history meta retained on Today rows.
+ *   F3 — Gate-row body: 'Same authors, same depth — 22 more on the
+ *     harder things.'
+ *   F4 — Drop cap in drawer but not in module lessons.
+ *   F5 — Browse: topic chips inline + More filters drawer (deferred).
+ *   F6 — Locked-lesson overlay as single block beneath Lesson 01.
+ *   F7 — Save for later dropped (out of scope per spec §12).
+ *   F8 — Level taxonomy: Practical / Foundational / Hard truth / Advanced.
+ *
+ * Cadence: two dark moments — Day-31 banner + single gate row in
+ * Modules tab. Both content-earned, both contained. Per v1.4 §8.
+ *
+ * Contrast safeguard (Bevan flagged 2026-05-18): every text element
+ * sits inside an ivory or stone container — nothing floats on the
+ * photo background. AreaSidebar wraps items in panel-ivory (already
+ * via the component). Page header is its own ivory panel. Tab content
+ * panels are ivory. Day-31 banner is opaque panel-dark.
+ *
+ * Pass 1 scope: shell + chrome + sidebar config + page-header panel +
+ * dark gate row in Modules + Day-31 banner. Internal TodayTab /
+ * BrowseTab / ModulesTab card renderings preserved.
+ *
+ * Drops framer-motion. Preserves: tab state in URL, data fetch for
+ * Today + Browse (separate edge function calls), drawer state, filter
+ * state, reading-progress writes (existing logic untouched).
+ */
 
 /* ── Types ── */
 interface FeaturedModule {
@@ -219,112 +262,163 @@ export default function Library() {
       : browseData.tracks[activeFilter]?.modules || []
     : [];
 
-  const tabs = [
-    { id: "today", label: "Today" },
-    { id: "browse", label: "Browse" },
-    { id: "modules", label: "Modules" },
-  ];
+  /*
+   * Sidebar config — numeral prefix + label + count suffix per F-block
+   * in pass-1-library-decisions.md. Counts derive from live data where
+   * available; fall back to bare label until data lands. Per the
+   * decisions doc, simplest is to append the count to the label string
+   * (rather than extending AreaSidebar's SidebarItem with a separate
+   * suffix prop). The mint numeral prop already carries the editorial
+   * hierarchy; the count is a quiet trailing fact.
+   */
+  const totalModulesCount = browseData
+    ? Object.values(browseData.tracks).reduce((sum, t) => sum + t.modules.length, 0)
+    : 0;
+  const unlockedModulesCount = browseData?.unlocked_module_ids.length ?? 0;
+  const todayCount = todayData?.featured.length ?? 0;
+  const modulesLabelSuffix = isSubscriber
+    ? totalModulesCount > 0 ? ` · ${totalModulesCount}` : ""
+    : totalModulesCount > 0 ? ` · ${unlockedModulesCount} of ${totalModulesCount}` : "";
 
   const sidebarItems: SidebarItem[] = [
-    { id: "today", label: "Today's pick", onClick: () => setTab("today"), isActive: activeTab === "today" },
-    { id: "browse", label: "Browse", onClick: () => setTab("browse"), isActive: activeTab === "browse" },
-    { id: "modules", label: "Modules", onClick: () => setTab("modules"), isActive: activeTab === "modules" },
+    {
+      id: "today",
+      label: `Today${todayCount > 0 ? ` · ${todayCount}` : ""}`,
+      numeral: "01",
+      onClick: () => setTab("today"),
+      isActive: activeTab === "today",
+    },
+    {
+      id: "browse",
+      label: `Browse${totalModulesCount > 0 ? ` · ${totalModulesCount}` : ""}`,
+      numeral: "02",
+      onClick: () => setTab("browse"),
+      isActive: activeTab === "browse",
+    },
+    {
+      id: "modules",
+      label: `Modules${modulesLabelSuffix}`,
+      numeral: "03",
+      onClick: () => setTab("modules"),
+      isActive: activeTab === "modules",
+    },
   ];
 
+  const sidebarHead: ReactNode = (
+    <>
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+      <span>Library</span>
+    </>
+  );
+
+  const sidebarFooter: ReactNode = (
+    <>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+        Curriculum
+      </div>
+      <div className="mt-1 text-[12px] text-foreground">
+        25 modules · {isSubscriber ? "all unlocked" : `${unlockedModulesCount || 3} unlocked`}
+      </div>
+    </>
+  );
+
+  /* Per-tab page-header content — H1 + subhead change with the tab. */
+  const headerByTab: Record<string, { eyebrow: string; h1: string; sub: string; stat?: string }> = {
+    today: {
+      eyebrow: "Today",
+      h1: "Library.",
+      sub: "Chosen for where you are right now — three to six picks against today's check-in signal.",
+      stat: todayCount > 0 ? `${todayCount} picks` : undefined,
+    },
+    browse: {
+      eyebrow: "Browse",
+      h1: "Browse.",
+      sub: "Everything we've written, sorted by topic. Filter to narrow the field.",
+      stat: totalModulesCount > 0 ? `${totalModulesCount} articles` : undefined,
+    },
+    modules: {
+      eyebrow: "Modules",
+      h1: "Modules.",
+      sub: "25 modules. Three included with your report; subscribe to unlock the other 22.",
+      stat: "25 modules",
+    },
+  };
+  const header = headerByTab[activeTab] || headerByTab.today;
+
   return (
-    <div className="min-h-screen flex flex-col text-foreground">
+    <div className="relative min-h-screen text-foreground">
       <TopBar />
 
-      {isDay31Plus && !isSubscriber && (
-        <div className="px-6">
-          <Banner variant="info">
-            Your 30 days are complete. Subscribe to keep getting new guidance.
-          </Banner>
-        </div>
-      )}
-
-      <div className="mx-auto w-full max-w-screen-xl px-6">
-        <div className="flex gap-10">
-          <AreaSidebar items={sidebarItems} />
-          <div className="flex-1 min-w-0 mx-auto w-full max-w-3xl py-10">
-          <h1
-            className="font-display text-3xl font-bold tracking-tight"
-            style={{ letterSpacing: "-0.02em" }}
-          >
-            Library
-          </h1>
-
-          {/* Tab bar */}
-          <div className="mt-6 flex gap-1 rounded-lg bg-[hsl(var(--surface-inset))] p-1" role="tablist">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                role="tab"
-                aria-selected={activeTab === t.id}
-                onClick={() => { setTab(t.id); }}
-                className={`flex-1 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                  activeTab === t.id
-                    ? "bg-[hsl(var(--surface-panel))] text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab content */}
-          <div className="mt-8">
-            {activeTab === "today" ? (
-              todayLoading ? (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-24 rounded-lg" />
-                  ))}
-                </div>
-              ) : todayData ? (
-                <TodayTab data={todayData} onOpenArticle={openArticle} onSubscribe={handleSubscribe} />
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-24 rounded-lg" />
-                  ))}
-                </div>
-              )
-            ) : activeTab === "browse" ? (
-              browseLoading ? (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="h-24 rounded-lg" />
-                  ))}
-                </div>
-              ) : browseData ? (
-                <BrowseTab
-                  tracks={browseData.tracks}
-                  completedIds={browseData.completed_module_ids}
-                  filter={activeFilter}
-                  filterOptions={trackFilters}
-                  onFilterChange={setActiveFilter}
-                  onOpenArticle={openArticle}
-                  onSubscribe={handleSubscribe}
-                />
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Skeleton key={i} className="h-24 rounded-lg" />
-                  ))}
-                </div>
-              )
-            ) : (
-              <ModulesTab
-                browseData={browseData}
-                onSelectModule={(id, unlocked) => openArticle(id, unlocked)}
+      <main className="pt-[68px]">
+        <section className="py-8 lg:py-12">
+          <div className="mx-auto max-w-screen-xl px-6">
+            <div className="flex gap-8 lg:gap-10">
+              <AreaSidebar
+                items={sidebarItems}
+                head={sidebarHead}
+                footer={sidebarFooter}
               />
-            )}
+
+              <div className="flex-1 min-w-0">
+                <h1 className="sr-only">Library</h1>
+
+                {/* Day-31 dark banner — first cadence moment, mirrors /plan's Day-31 wall. */}
+                {isDay31Plus && !isSubscriber && (
+                  <Day31Banner onSubscribe={handleSubscribe} />
+                )}
+
+                {/* Page-header panel — per-tab eyebrow + H1 + subhead + right-side stat. */}
+                <LibraryPageHeader
+                  eyebrow={header.eyebrow}
+                  h1={header.h1}
+                  sub={header.sub}
+                  stat={header.stat}
+                />
+
+                {/* Tab content panel — each tab on its own ivory surface. */}
+                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+                  {activeTab === "today" ? (
+                    todayLoading || !todayData ? (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <Skeleton key={i} className="h-24 rounded-lg" />
+                        ))}
+                      </div>
+                    ) : (
+                      <TodayTab data={todayData} onOpenArticle={openArticle} onSubscribe={handleSubscribe} />
+                    )
+                  ) : activeTab === "browse" ? (
+                    browseLoading || !browseData ? (
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <Skeleton key={i} className="h-24 rounded-lg" />
+                        ))}
+                      </div>
+                    ) : (
+                      <BrowseTab
+                        tracks={browseData.tracks}
+                        completedIds={browseData.completed_module_ids}
+                        filter={activeFilter}
+                        filterOptions={trackFilters}
+                        onFilterChange={setActiveFilter}
+                        onOpenArticle={openArticle}
+                        onSubscribe={handleSubscribe}
+                      />
+                    )
+                  ) : (
+                    <ModulesTab
+                      browseData={browseData}
+                      onSelectModule={(id, unlocked) => openArticle(id, unlocked)}
+                      showGateRow={!isSubscriber}
+                      onSubscribe={handleSubscribe}
+                    />
+                  )}
+                </section>
+              </div>
+            </div>
           </div>
-          </div>
-        </div>
-      </div>
+        </section>
+      </main>
 
       {/* Reading drawer */}
       <Sheet open={drawerOpen} onOpenChange={(open) => { if (!open) backToModules(); }}>
@@ -556,14 +650,29 @@ function BrowseTab({
   );
 }
 
-/* ── Modules Tab — fetches browse data to render module cards ── */
-/* ── Modules Tab — receives browse data from parent ── */
+/* ── Modules Tab — receives browse data from parent ──
+ *
+ * Pass 1 (2026-05-18): patches in the single dark gate row (DarkGateRow)
+ * between the last unlocked module and the first locked module for
+ * buyers (showGateRow = true). This is the screen's second cadence
+ * moment per pass-1-library-decisions.md (the first is the Day-31
+ * banner above the page header). Subscribers get neither — their
+ * library runs all-ivory throughout.
+ *
+ * Existing module-row rendering preserved as-is for Pass 1; Phase 2 of
+ * Phase 2 will rebuild it as the editorial typographic row vocabulary
+ * per F1 of the decisions doc.
+ */
 function ModulesTab({
   browseData,
   onSelectModule,
+  showGateRow,
+  onSubscribe,
 }: {
   browseData: BrowseData | null;
   onSelectModule: (id: number, unlocked: boolean) => void;
+  showGateRow: boolean;
+  onSubscribe: () => void;
 }) {
   if (!browseData) {
     return (
@@ -577,44 +686,193 @@ function ModulesTab({
 
   const modules: BrowseModule[] = Object.values(browseData.tracks).flatMap((t) => t.modules);
 
+  // Find the index where the unlocked/locked boundary sits. The gate row
+  // renders after the last unlocked module and before the first locked.
+  const firstLockedIndex = modules.findIndex((m) => !m.is_unlocked);
+
   return (
     <div className="space-y-3">
-      {modules.map((mod) => (
-        <button
-          key={mod.module_id}
-          onClick={() => onSelectModule(mod.module_id, mod.is_unlocked)}
-          className={`w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-4 text-left transition-colors ${
-            mod.is_unlocked ? "hover:border-primary/30 cursor-pointer" : "opacity-70 cursor-pointer hover:border-primary/30"
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--surface-inset))]">
-              {!mod.is_unlocked ? (
-                <Lock className="h-4 w-4 text-muted-foreground" />
-              ) : mod.is_completed ? (
-                <Check className="h-4 w-4 text-primary" />
-              ) : (
-                <BookOpen className="h-4 w-4 text-primary" />
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">{mod.track_name}</span>
-                {mod.is_completed && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">Done</span>}
-              </div>
-              <h3 className="text-sm font-semibold text-foreground leading-snug">{mod.title}</h3>
-              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{mod.description}</p>
-            </div>
-            <div className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground/60">
-              <Clock className="h-3 w-3" />
-              {mod.estimated_minutes} min
-            </div>
-          </div>
-          {!mod.is_unlocked && (
-            <p className="mt-2 text-[10px] font-medium text-muted-foreground ml-11">Subscribe to unlock</p>
+      {modules.map((mod, i) => (
+        <div key={mod.module_id}>
+          {/* Insert dark gate row before the first locked module (buyer view only). */}
+          {showGateRow && i === firstLockedIndex && firstLockedIndex > 0 && (
+            <DarkGateRow onSubscribe={onSubscribe} />
           )}
-        </button>
+
+          <button
+            onClick={() => onSelectModule(mod.module_id, mod.is_unlocked)}
+            className={`w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-4 text-left transition-colors ${
+              mod.is_unlocked ? "hover:border-primary/30 cursor-pointer" : "opacity-70 cursor-pointer hover:border-primary/30"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--surface-inset))]">
+                {!mod.is_unlocked ? (
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                ) : mod.is_completed ? (
+                  <Check className="h-4 w-4 text-primary" />
+                ) : (
+                  <BookOpen className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">{mod.track_name}</span>
+                  {mod.is_completed && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">Done</span>}
+                </div>
+                <h3 className="text-sm font-semibold text-foreground leading-snug">{mod.title}</h3>
+                <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{mod.description}</p>
+              </div>
+              <div className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                <Clock className="h-3 w-3" />
+                {mod.estimated_minutes} min
+              </div>
+            </div>
+            {!mod.is_unlocked && (
+              <p className="mt-2 text-[10px] font-medium text-muted-foreground ml-11">In subscription</p>
+            )}
+          </button>
+        </div>
       ))}
+    </div>
+  );
+}
+
+/* ── LibraryPageHeader — per-tab page header in its own ivory panel ──
+ *
+ * Mirrors the /report header pattern: small-caps eyebrow with mint dot
+ * + drafted-at meta, large display H1, supporting subhead. The H1 is
+ * a `aria-hidden` div (the real H1 is sr-only on the page wrapper) so
+ * scale doesn't fight the document outline.
+ *
+ * Stat pill (right-side) is optional and renders only when present —
+ * "25 modules" on the Modules tab, article count on Browse, picks
+ * count on Today. Reads as a quiet fact, not a banner.
+ */
+function LibraryPageHeader({
+  eyebrow,
+  h1,
+  sub,
+  stat,
+}: {
+  eyebrow: string;
+  h1: string;
+  sub: string;
+  stat?: string;
+}) {
+  return (
+    <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+        <span className="text-foreground">{eyebrow}</span>
+        {stat && (
+          <>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="normal-case tracking-normal text-[12px] font-normal">{stat}</span>
+          </>
+        )}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
+        <div className="lg:col-span-9">
+          <div
+            aria-hidden
+            className="text-[40px] sm:text-[48px] lg:text-[52px] font-extrabold tracking-tight leading-[1.05] text-foreground"
+          >
+            {h1}
+          </div>
+          <p className="mt-4 text-[15.5px] text-muted-foreground leading-relaxed max-w-2xl">
+            {sub}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── DarkGateRow — the screen's first dark moment ──
+ *
+ * Single thin dark band inserted once between Module 03 (last unlocked
+ * for buyers) and Module 04 (first locked). ~88px tall, full-width of
+ * the panel. Mint dot + white small-caps label + short body sentence
+ * + inline mint Subscribe CTA. Per pass-1-library-decisions.md F3:
+ * "Modules 04 to 25 are in the subscription. Same authors, same
+ * depth — 22 more on the harder things."
+ *
+ * Subscribers don't see this row (showGateRow is false). 22 dark walls
+ * would be punitive; a single contained gate row marks the boundary
+ * without darkening every locked module.
+ */
+function DarkGateRow({ onSubscribe }: { onSubscribe: () => void }) {
+  return (
+    <div className="panel-dark px-5 sm:px-8 py-5 my-4 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: "#FAF9F7" }}>
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+        <span>Included period ends here</span>
+      </div>
+      <p
+        className="flex-1 text-[14px] sm:text-[15px] leading-snug"
+        style={{ color: "rgba(250,249,247,0.85)" }}
+      >
+        Modules 04 to 25 are in the subscription.{" "}
+        <span style={{ color: "#FAF9F7" }}>Same authors, same depth — 22 more on the harder things.</span>
+      </p>
+      <button
+        type="button"
+        onClick={onSubscribe}
+        className="shrink-0 inline-flex items-center justify-center rounded-md px-4 py-2 text-[12px] font-semibold transition-opacity hover:opacity-90"
+        style={{ background: "#2ECDB0", color: "#0F2A2A" }}
+      >
+        Subscribe to unlock
+      </button>
+    </div>
+  );
+}
+
+/* ── Day31Banner — the screen's second dark moment ──
+ *
+ * Appears above the page header for Day-31 non-subscribers. Mirrors
+ * /plan's Day-31 wall vocabulary: same panel-dark band, same position
+ * above the page content, same "you've reached the end of the
+ * included window — keep going on subscription" framing. Cross-surface
+ * consistency: the same structural moment renders the same way on
+ * both /plan and /library.
+ *
+ * Subscribers never see this. Buyers within their 30 days never see
+ * this either — only buyers past Day 30 with no active subscription.
+ */
+function Day31Banner({ onSubscribe }: { onSubscribe: () => void }) {
+  return (
+    <div className="panel-dark px-6 sm:px-10 lg:px-12 py-6 sm:py-7 mb-6">
+      <div className="flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "#FAF9F7" }}>
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+        <span>Day 31 · Included period complete</span>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-center">
+        <div className="lg:col-span-9">
+          <h2
+            className="text-[22px] sm:text-[26px] font-extrabold tracking-tight leading-tight"
+            style={{ color: "#FAF9F7" }}
+          >
+            Your 30 days are complete.
+          </h2>
+          <p
+            className="mt-2 text-[14.5px] leading-relaxed"
+            style={{ color: "rgba(250,249,247,0.85)" }}
+          >
+            Library is read-only on older items. Subscribe to keep getting new guidance — the 22 deeper modules and weekly Today picks come with the £19/month subscription.
+          </p>
+        </div>
+        <div className="lg:col-span-3 flex lg:justify-end">
+          <button
+            type="button"
+            onClick={onSubscribe}
+            className="inline-flex items-center justify-center rounded-md px-5 py-2.5 text-[13px] font-semibold transition-opacity hover:opacity-90"
+            style={{ background: "#2ECDB0", color: "#0F2A2A" }}
+          >
+            Subscribe
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
