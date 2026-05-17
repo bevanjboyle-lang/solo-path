@@ -1,6 +1,5 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,6 +28,42 @@ import {
   SAMPLE_MARKET_SNAPSHOTS,
 } from "@/data/canonicalSampleReport";
 
+/*
+ * Plan — Pass 1 /plan v1 (2026-05-17)
+ *
+ * Translates Claude Design's Pass 1 proposal into the live page. Pass 1
+ * scope is shell + chrome + panel composition + section-header pattern +
+ * dark Day 31+ wall + AreaSidebar with editorial nav vocabulary.
+ * Internal composite components (TodayCard internals, TrackerGrid cell
+ * visual, StrandCard compact mode, CheckInPanel question flow,
+ * LibraryCard) are preserved as-is for this pass; their visual reskin
+ * sits in Phase 2 per admin/pass-1-plan-decisions.md.
+ *
+ * Locked decisions from admin/pass-1-plan-decisions.md:
+ *   F1 — Multi-panel main column (each section its own panel-ivory with
+ *        its own elevation). Diverges from the spine's single-panel
+ *        pattern; daily-scan ergonomics justify the divergence.
+ *   F2 — AreaSidebar footer stat block ("Plan · One-time · Day 7 of 30").
+ *   F3 — TodayCard meta row with state-appropriate substantiation.
+ *   F4 — TrackerGrid as editorial squares with state dots (preserved in
+ *        existing TrackerGrid component; will be reskinned in Phase 2).
+ *   F5 — Day 0 dormant tracker block (no 30 future cells).
+ *   F6 — Day 0 strand row hidden until user picks strands on /report.
+ *   F7 — Ask Solo widget meta clause changes per state (out of scope for
+ *        Pass 1 page-level work; lives in the global widget component).
+ *   F8 — Day 31+ TodayCard meta row inverts to trust substantiation
+ *        (Cancel any time · Your data always yours · 14-day refund).
+ *
+ *   Cadence: one dark moment, on the Day 31+ wall. TodayCard runs ivory
+ *   in all states. Subscriber experience runs all-ivory.
+ *
+ * Drops framer-motion. Editorial register lands instantly per the spine
+ * precedent. Preserves all existing logic: data fetch, replan handling,
+ * strand selector for pending_selection, plan-building poll, check-in
+ * submit + state update, deep-link /checkin/:sessionId, subscription
+ * return toast, dev-bypass, error states, Rules of Hooks discipline.
+ */
+
 interface PlanPageProps {
   initialSessionId?: string;
 }
@@ -42,7 +77,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   const viewStrands = searchParams.get("view") === "strands";
 
-  // Tracker / day state
+  /* ─── State (preserved from prior implementation) ─── */
   const [planState, setPlanState] = useState<PlanState>("loading");
   const [dayNumber, setDayNumber] = useState(0);
   const [weekNumber] = useState(1);
@@ -53,30 +88,21 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     { day: number; completed: boolean; isToday: boolean }[]
   >([]);
 
-  // Auth / payment state
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [isSubscriber, setIsSubscriber] = useState(false);
-  const [showSubscribeWall, setShowSubscribeWall] = useState(false);
 
-  // Report / plan state
   const [reportId, setReportId] = useState<string>("");
   const [reportStatus, setReportStatus] = useState<ReportRow["status"] | null>(null);
   const [coreReport, setCoreReport] = useState<SoloCoreReport | null>(null);
   const [activationPlan, setActivationPlan] = useState<ActivationPlanOutput | null>(null);
-  // Kept on state for future use in strand summary expansion; not rendered here.
   const [, setMarketSnapshots] = useState<ReportRow["market_snapshots"]>(null);
 
-  // Refine
   const [refineOpen, setRefineOpen] = useState(false);
 
-  // Replan
   const [replanPending, setReplanPending] = useState(false);
   const [replanContext, setReplanContext] = useState<Record<string, unknown> | null>(null);
 
-  // Error
   const [loadError, setLoadError] = useState(false);
-
-  // StrandSelector submission flag
   const [strandSubmitting, setStrandSubmitting] = useState(false);
 
   const applyReportRow = useCallback((row: Record<string, unknown>) => {
@@ -89,6 +115,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     );
   }, []);
 
+  /* ─── Data fetch on auth (preserved) ─── */
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
@@ -204,7 +231,6 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       setPlanState(checkedInToday ? "sub_done" : "sub_active");
     } else if (currentDay > 30) {
       setPlanState("day31_nosub");
-      setShowSubscribeWall(true);
     } else {
       setPlanState(checkedInToday ? "done_today" : "active");
     }
@@ -217,7 +243,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     buildTrackerDays(currentDay, Array.from(completedDays));
   }, []);
 
-  // Poll while plan is being generated.
+  /* ─── Plan-building poll (preserved) ─── */
   useEffect(() => {
     if (!reportId || !user) return;
     if (!reportStatus) return;
@@ -263,16 +289,18 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     };
   }, [reportId, user, reportStatus, loadTrackerSession, applyReportRow]);
 
-  // /checkin/:sessionId deep-link
+  /* ─── /checkin/:sessionId deep-link ─── */
   useEffect(() => {
     if (initialSessionId) {
-      setCheckinOpen(true);
+      // Drawer opens 200ms after page mounts so the user sees they're back on /plan first.
+      const t = setTimeout(() => setCheckinOpen(true), 200);
       window.history.replaceState({}, "", "/plan");
+      return () => clearTimeout(t);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Subscription return toast
+  /* ─── Subscription return toast ─── */
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get("from") === "subscribe") {
@@ -310,13 +338,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     [reportId, toast],
   );
 
-  const openCheckin = useCallback(() => {
-    setCheckinOpen(true);
-  }, []);
-
-  const openRefinePanel = useCallback(() => {
-    setRefineOpen(true);
-  }, []);
+  const openCheckin = useCallback(() => setCheckinOpen(true), []);
+  const openRefinePanel = useCallback(() => setRefineOpen(true), []);
 
   const checkinReplanPendingRef = useRef(false);
 
@@ -377,24 +400,78 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   const renderRegression = useMainContentSelfCheck(hasPaid === true && !loadError);
 
-  // ── Sidebar items (area-level nav) ──
+  /* ─── Derived (above conditional returns per Rules of Hooks) ─── */
+
   const sidebarItems: SidebarItem[] = [
     { id: "today", label: "Today", to: "/plan", isActive: !viewStrands },
     { id: "strands", label: "Strands", to: "/plan?view=strands", isActive: viewStrands },
     { id: "history", label: "Check-in history", to: "/checkin/history" },
     { id: "report", label: "Report", to: "/report" },
-    { id: "refine", label: "Refine your report", onClick: openRefinePanel },
+    { id: "div", label: "", isDivider: true },
+    { id: "refine", label: "Refine your report", onClick: openRefinePanel, isUtility: true },
   ];
+
+  const sidebarFooter: ReactNode = (() => {
+    if (planState === "day31_nosub") {
+      return (
+        <>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+            Plan
+          </div>
+          <div className="mt-1 text-[12px] text-foreground">One-time · 30 days complete</div>
+        </>
+      );
+    }
+    if (isSubscriber) {
+      return (
+        <>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+            Plan
+          </div>
+          <div className="mt-1 text-[12px] text-foreground">
+            Subscription · Week {weekNumber}
+          </div>
+        </>
+      );
+    }
+    return (
+      <>
+        <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+          Plan
+        </div>
+        <div className="mt-1 text-[12px] text-foreground">
+          One-time · Day {dayNumber === 0 ? 0 : dayNumber} of 30
+        </div>
+      </>
+    );
+  })();
+
+  const sidebarHead: ReactNode = (
+    <>
+      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+      <span>Your plan</span>
+    </>
+  );
+
+  /* ─── Early returns ─── */
 
   if (loadError) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <Banner variant="error">
-          We couldn't load your plan. Try refreshing, or contact support if this keeps happening.
-        </Banner>
-        <main className="mx-auto w-full max-w-3xl px-6 pt-12 pb-24">
-          <h1 className="font-display text-2xl font-semibold tracking-tight">Your plan</h1>
+        <main className="pt-[68px]">
+          <section className="py-10 lg:py-14">
+            <div className="mx-auto max-w-3xl px-6">
+              <Banner variant="error">
+                We couldn't load your plan. Try refreshing, or contact support if this keeps happening.
+              </Banner>
+              <div className="mt-8 panel-ivory px-8 sm:px-12 py-10">
+                <h1 className="text-[36px] sm:text-[44px] font-extrabold tracking-tight text-foreground">
+                  Your plan
+                </h1>
+              </div>
+            </div>
+          </section>
         </main>
       </div>
     );
@@ -402,14 +479,16 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   if (authLoading || hasPaid === null) {
     return (
-      <div className="flex min-h-screen flex-col">
+      <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <div className="flex flex-1 items-center justify-center px-6">
-          <div className="flex flex-col items-center gap-4 text-muted-foreground">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            <p className="text-sm">Loading your plan…</p>
-          </div>
-        </div>
+        <main className="pt-[68px]">
+          <section className="py-12">
+            <div className="mx-auto max-w-3xl px-6 flex flex-col items-center gap-4 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <p className="text-[13px]">Loading your plan…</p>
+            </div>
+          </section>
+        </main>
       </div>
     );
   }
@@ -422,14 +501,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const strands = activationPlan?.portfolio_summary?.strands ?? [];
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative min-h-screen text-foreground">
       <TopBar />
-
-      {showSubscribeWall && (
-        <Banner variant="info">
-          Your 30-day plan is complete. Your report and check-in history stay here. Open a subscription to keep going.
-        </Banner>
-      )}
 
       {renderRegression && (
         <Banner variant="error">
@@ -437,110 +510,142 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         </Banner>
       )}
 
-      <div className="mx-auto w-full max-w-screen-xl px-6">
-        <div className="flex gap-10">
-          <AreaSidebar items={sidebarItems} />
-
-          <main className="flex-1 min-w-0 mx-auto w-full max-w-3xl pt-8 pb-24">
-            <h1 className="sr-only">Your plan</h1>
-
-            {replanPending && sessionId && user && (
-              <ReplanPromptCard
-                trackerSessionId={sessionId}
-                userId={user.id}
-                context={replanContext}
-                onResolved={() => {
-                  if (user && reportId) loadTrackerSession(user.id, reportId);
-                }}
+      <main className="pt-[68px]">
+        <section className="py-8 lg:py-12">
+          <div className="mx-auto max-w-screen-xl px-6">
+            <div className="flex gap-8 lg:gap-10">
+              <AreaSidebar
+                items={sidebarItems}
+                head={sidebarHead}
+                footer={sidebarFooter}
               />
-            )}
 
-            {awaitingSelection && coreReport?.options && coreReport.options.length > 0 && (
-              <section className="mb-8">
-                <StrandSelector
-                  options={coreReport.options}
-                  recommended_selection={coreReport.recommended_selection ?? null}
-                  onSubmit={handleStrandSubmit}
-                  submitting={strandSubmitting}
-                />
-              </section>
-            )}
+              <div className="flex-1 min-w-0">
+                <h1 className="sr-only">Your plan</h1>
 
-            {planBuilding && !awaitingSelection && (
-              <div className="mb-8 flex items-center gap-3 rounded-xl border border-border bg-[hsl(var(--surface-panel))] px-5 py-4 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span>Building your plan… this usually takes a minute or two.</span>
-              </div>
-            )}
+                {/* ─── Replan prompt (when a check-in flags it) ─── */}
+                {replanPending && sessionId && user && (
+                  <div className="mb-6">
+                    <ReplanPromptCard
+                      trackerSessionId={sessionId}
+                      userId={user.id}
+                      context={replanContext}
+                      onResolved={() => {
+                        if (user && reportId) loadTrackerSession(user.id, reportId);
+                      }}
+                    />
+                  </div>
+                )}
 
-            {!awaitingSelection && (
-              <section>
-                <TodayCard
-                  state={planState}
-                  dayNumber={dayNumber}
-                  weekNumber={weekNumber}
-                  sessionId={sessionId}
-                  onScrollToReport={() => {
-                    /* Report is its own route; surface a CTA via sidebar. */
-                  }}
-                  onOpenCheckin={openCheckin}
-                  onOpenActivation={() => setActivationOpen(true)}
-                />
-              </section>
-            )}
+                {/* ─── Strand selector (pending_selection state) ─── */}
+                {awaitingSelection && coreReport?.options && coreReport.options.length > 0 && (
+                  <section className="mb-8 panel-ivory px-6 sm:px-10 py-8">
+                    <StrandSelector
+                      options={coreReport.options}
+                      recommended_selection={coreReport.recommended_selection ?? null}
+                      onSubmit={handleStrandSubmit}
+                      submitting={strandSubmitting}
+                    />
+                  </section>
+                )}
 
-            {planState !== "day0" && trackerDays.length > 0 && (
-              <motion.section
-                className="mt-10"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.4 }}
-              >
-                <TrackerGrid
-                  days={trackerDays}
-                  variant={isSubscriber ? "rolling-weekly" : "thirty-day"}
-                  onDayClick={handleDayClick}
-                />
-              </motion.section>
-            )}
+                {/* ─── Plan-building hold ─── */}
+                {planBuilding && !awaitingSelection && (
+                  <div className="mb-8 panel-ivory px-6 sm:px-10 py-5 flex items-center gap-3 text-[13.5px] text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <span>Building your plan… this usually takes a minute or two.</span>
+                  </div>
+                )}
 
-            {/* Strand summary row — compact list, expanded under ?view=strands. */}
-            {strands.length > 0 && (
-              <motion.section
-                className="mt-10 rounded-lg border border-border/60 bg-[hsl(var(--surface-panel))]/85 p-5 backdrop-blur-md"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15, duration: 0.4 }}
-              >
-                <div className="mb-3 flex items-baseline justify-between gap-3">
-                  <h2 className="font-display text-base font-semibold text-foreground">
-                    {viewStrands ? "Your strands" : "Strands"}
-                  </h2>
-                  <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
-                    {strands.length} active
-                  </span>
-                </div>
-                <ul className="space-y-3">
-                  {strands.map((s) => (
-                    <li key={s.strand_id} className="border-l-2 border-primary/40 pl-3">
-                      <div className="flex items-baseline justify-between gap-3">
-                        <span className="text-sm font-medium text-foreground">{s.model_name}</span>
-                        <span className="text-[11px] text-muted-foreground">
-                          {Math.round(s.time_weight * 100)}% time
-                        </span>
+                {/* ─── Day 31+ Dark Wall (the screen's single dark moment) ─── */}
+                {planState === "day31_nosub" && <DarkWall />}
+
+                {/* ─── TodayCard (visual primary in all states) ─── */}
+                {!awaitingSelection && (
+                  <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
+                    <TodayCard
+                      state={planState}
+                      dayNumber={dayNumber}
+                      weekNumber={weekNumber}
+                      sessionId={sessionId}
+                      onScrollToReport={() => {
+                        /* Report is its own route at /report; sidebar handles the nav. */
+                      }}
+                      onOpenCheckin={openCheckin}
+                      onOpenActivation={() => setActivationOpen(true)}
+                    />
+                  </section>
+                )}
+
+                {/* ─── Tracker (Day 0 = dormant block; Day 1+ = grid) ─── */}
+                {planState === "day0" ? (
+                  <PanelSection num="02" label="Your tracker" meta="starts tomorrow">
+                    <DormantTrackerBlock />
+                  </PanelSection>
+                ) : (
+                  trackerDays.length > 0 && (
+                    <PanelSection
+                      num="02"
+                      label={isSubscriber ? "Your rolling tracker" : "Your 30-day tracker"}
+                      meta={trackerMetaFor(trackerDays, planState)}
+                    >
+                      <TrackerGrid
+                        days={trackerDays}
+                        variant={isSubscriber ? "rolling-weekly" : "thirty-day"}
+                        onDayClick={handleDayClick}
+                      />
+                    </PanelSection>
+                  )
+                )}
+
+                {/* ─── Strand row (Day 1+ only — hidden on Day 0 per F6) ─── */}
+                {planState !== "day0" && strands.length > 0 && (
+                  <PanelSection
+                    num="03"
+                    label="Your strands"
+                    meta={`${strands.length} active`}
+                  >
+                    <ul className="space-y-3">
+                      {strands.map((s) => (
+                        <li
+                          key={s.strand_id}
+                          className="flex items-baseline justify-between gap-4 border-l-2 border-primary/40 pl-4 py-1"
+                        >
+                          <span className="text-[14.5px] font-semibold text-foreground">
+                            {s.model_name}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground tabular-nums uppercase tracking-[0.14em] shrink-0">
+                            {Math.round(s.time_weight * 100)}% time
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    {viewStrands && (
+                      <div className="mt-4 space-y-2">
+                        {strands.map((s) =>
+                          s.why_included ? (
+                            <p
+                              key={`why-${s.strand_id}`}
+                              className="text-[13px] text-muted-foreground leading-relaxed"
+                            >
+                              <strong className="font-semibold text-foreground">
+                                {s.model_name}.
+                              </strong>{" "}
+                              {s.why_included}
+                            </p>
+                          ) : null,
+                        )}
                       </div>
-                      {viewStrands && s.why_included && (
-                        <p className="mt-1 text-[12px] text-muted-foreground">{s.why_included}</p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </motion.section>
-            )}
-          </main>
-        </div>
-      </div>
+                    )}
+                  </PanelSection>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
 
+      {/* ─── Drawers + dialogs (preserved) ─── */}
       <CheckInPanel
         open={checkinOpen}
         onOpenChange={(open) => {
@@ -585,4 +690,96 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       />
     </div>
   );
+}
+
+/* ─────────────────────────── Section wrapper ─────────────────────────── */
+
+function PanelSection({
+  num,
+  label,
+  meta,
+  children,
+}: {
+  num: string;
+  label: string;
+  meta?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="mt-6 panel-ivory px-6 sm:px-10 lg:px-12 py-8">
+      <div className="flex items-baseline justify-between gap-4 mb-6">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="text-primary mr-3 tabular-nums">{num}</span>
+          {label}
+        </div>
+        {meta && (
+          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 tabular-nums">
+            {meta}
+          </div>
+        )}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/* ─────────────────────────── Day 31+ Dark Wall ─────────────────────────── */
+
+function DarkWall() {
+  const today = new Date();
+  const ended = today.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const startDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const started = startDate.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+  return (
+    <div className="mb-6 panel-dark px-6 sm:px-10 lg:px-12 py-7 sm:py-8">
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 sm:gap-10 items-center">
+        <div className="sm:col-span-8">
+          <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgba(250,249,247,0.65)] mb-3">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+            <span className="text-[#FAF9F7]">30 days complete</span>
+          </div>
+          <p className="text-[18px] sm:text-[20px] font-semibold leading-snug text-[#FAF9F7]">
+            Your report and history stay here. To keep running your plan, open a subscription.
+          </p>
+        </div>
+        <div className="sm:col-span-4 sm:text-right">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[rgba(250,249,247,0.55)] mb-1">
+            Your 30 days
+          </div>
+          <div className="text-[13.5px] font-semibold text-[#FAF9F7] tabular-nums">
+            started {started} · ended {ended}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Day 0 dormant tracker ─────────────────────────── */
+
+function DormantTrackerBlock() {
+  return (
+    <div className="bg-[#F3F0EA] border border-[#E5E2DC] rounded-lg px-8 sm:px-12 py-10 sm:py-12 text-center">
+      <div className="text-[22px] sm:text-[26px] font-extrabold tracking-tight text-foreground">
+        Your tracker starts tomorrow.
+      </div>
+      <p className="mt-3 text-[14px] text-muted-foreground leading-relaxed max-w-md mx-auto">
+        Today's job is to read your report. Tomorrow we'll start the 30-day plan with your first move.
+      </p>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Tracker meta helper ─────────────────────────── */
+
+function trackerMetaFor(
+  days: { completed: boolean; isToday: boolean }[],
+  state: PlanState,
+): string {
+  const done = days.filter((d) => d.completed).length;
+  if (state === "day31_nosub") return `${days.length} of ${days.length} · frozen`;
+  const active = days.some((d) => d.isToday) ? 1 : 0;
+  const remaining = days.length - done - active;
+  return `${String(done).padStart(2, "0")} done · ${active} active · ${String(remaining).padStart(2, "0")} remaining`;
 }
