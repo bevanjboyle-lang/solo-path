@@ -157,8 +157,37 @@ export default function Library() {
   const [submitting, setSubmitting] = useState(false);
   const [moduleOutput, setModuleOutput] = useState<ModuleOutput | null>(null);
 
-  const isSubscriber = false; // Will be derived from user state later
-  const isDay31Plus = false;
+  // Drift 1 fix (2026-05-18, journey-diagnostic): subscription state and
+  // day-31 boundary were hardcoded false. Subscribers got no module unlocks,
+  // and the day-31 dark banner never fired for buyers. Now derived from
+  // tracker_sessions.subscription_status + current_day, same source Plan.tsx
+  // already uses. Loads once per user session; held in component state so
+  // every gated branch (modules unlocked count, locked-overlay overlay,
+  // Day-31 banner, openArticle navigation gate) reads the truth.
+  const [isSubscriber, setIsSubscriber] = useState(false);
+  const [isDay31Plus, setIsDay31Plus] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("tracker_sessions")
+        .select("subscription_status, current_day")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) return;
+      const row = data as { subscription_status?: string; current_day?: number };
+      setIsSubscriber(row.subscription_status === "active");
+      setIsDay31Plus(typeof row.current_day === "number" && row.current_day > 30);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // ── Today tab data ──
   useEffect(() => {
@@ -187,8 +216,11 @@ export default function Library() {
   }, [activeTab, browseData, browseLoading]);
 
   // ── Open article drawer ──
+  // Drift 1 fix: subscribers can open any module regardless of the per-module
+  // is_unlocked flag returned by browse (which is the buyer-tier default).
+  // For non-subscribers, an isUnlocked=false click still routes to /subscribe.
   const openArticle = useCallback((moduleId: number, isUnlocked: boolean) => {
-    if (!isUnlocked) {
+    if (!isUnlocked && !isSubscriber) {
       navigateAuthed(navigate, "/subscribe");
       return;
     }

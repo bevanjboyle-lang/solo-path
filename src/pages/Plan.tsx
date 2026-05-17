@@ -344,9 +344,28 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         if (error) throw error;
         setTimeout(() => setStrandSubmitting(false), 12000);
       } catch (err) {
+        // Drift 4 fix (2026-05-18, journey-diagnostic): surface the server's
+        // response_text in the toast so 400 "select 2-5 paths" or other
+        // structured errors land as actionable copy, not a generic "please
+        // try again." Same pattern as CheckInPanel's 409 lock handling.
         console.error("Plan: generate-plan invoke failed", err);
         setStrandSubmitting(false);
-        toast({ title: "We couldn't start your plan. Please try again." });
+        let title = "We couldn't start your plan. Please try again.";
+        type FunctionsHttpErrorLike = {
+          context?: { json?: () => Promise<{ response_text?: string; error?: string }> };
+        };
+        const ctx = (err as FunctionsHttpErrorLike).context;
+        if (ctx?.json) {
+          try {
+            const body = await ctx.json();
+            if (body?.response_text) {
+              title = body.response_text;
+            }
+          } catch {
+            /* keep the generic title */
+          }
+        }
+        toast({ title });
       }
     },
     [reportId, toast],

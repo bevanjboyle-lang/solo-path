@@ -25,7 +25,14 @@ interface StrandSelectorProps {
   submitting: boolean;
 }
 
-const MIN_SELECTED = 1;
+// Drift 2 fix (2026-05-18, journey-diagnostic): MIN_SELECTED lifted from 1 to 2
+// to match the generate-plan backend contract (selected_ranks.length >= 2). The
+// canonical product rule is "10 options, up to 5 selected" but the portfolio
+// mechanic that differentiates Solo's plan from a generic single-path tool
+// requires at least 2 — picking only 1 collapses the portfolio frame. Backend
+// rejected single-rank arrays with a 400 the frontend swallowed; users saw a
+// generic "We couldn't start your plan" toast with no path forward.
+const MIN_SELECTED = 2;
 const MAX_SELECTED = 5;
 
 function formatPriceRange(opt: Option): string {
@@ -188,9 +195,19 @@ export default function StrandSelector({
 
   const recommendedRanks = useMemo<number[]>(() => {
     const fromRec = recommended_selection?.selected_ranks;
-    if (Array.isArray(fromRec) && fromRec.length > 0) return fromRec;
-    // Fallback: pre-select top 2 by rank if backend gave us nothing.
-    return sorted.slice(0, 2).map((o) => o.rank);
+    // Drift 2 fix (2026-05-18): backend's P1 prompt instructs "always recommend
+    // at least 2 ranks", but defensive — if the recommendation comes back with
+    // fewer than MIN_SELECTED, pad from the top-ranked options. Prevents the
+    // user landing with a sub-minimum pre-selection.
+    if (Array.isArray(fromRec) && fromRec.length >= MIN_SELECTED) return fromRec;
+    if (Array.isArray(fromRec) && fromRec.length > 0) {
+      const padding = sorted
+        .map((o) => o.rank)
+        .filter((rank) => !fromRec.includes(rank))
+        .slice(0, MIN_SELECTED - fromRec.length);
+      return [...fromRec, ...padding];
+    }
+    return sorted.slice(0, MIN_SELECTED).map((o) => o.rank);
   }, [recommended_selection, sorted]);
 
   const recommendedSet = useMemo(
@@ -230,7 +247,7 @@ export default function StrandSelector({
   // Stable disabled-reason for screen readers on the submit button.
   const submitAriaLabel = (() => {
     if (submitting) return "Building your plan, please wait";
-    if (tooFew) return "Pick at least 1 path to continue";
+    if (tooFew) return `Pick at least ${MIN_SELECTED} paths to continue`;
     if (tooMany)
       return `Too many selected. Deselect at least ${count - MAX_SELECTED} to continue`;
     return `Build my plan with ${count} selected ${count === 1 ? "path" : "paths"}`;
@@ -265,7 +282,7 @@ export default function StrandSelector({
           Pick the paths you want to take forward
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Pick up to 5 from your 10 options. We've pre-selected the ones we
+          Pick 2 to 5 from your 10 options. We've pre-selected the ones we
           recommend — you can swap any.
         </p>
 
@@ -326,10 +343,12 @@ export default function StrandSelector({
             ].join(" ")}
             aria-live="polite"
           >
-            {count} of up to {MAX_SELECTED} selected
+            {count} of {MIN_SELECTED}–{MAX_SELECTED} selected
           </span>
           {tooFew && (
-            <p className="text-xs text-red-600">Pick at least 1 to continue.</p>
+            <p className="text-xs text-red-600">
+              Pick at least {MIN_SELECTED} to continue.
+            </p>
           )}
           {tooMany && (
             <p className="text-xs text-red-600">
