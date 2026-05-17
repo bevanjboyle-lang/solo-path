@@ -21,6 +21,8 @@ import type {
   SoloCoreReport,
   ActivationPlanOutput,
   ReportRow,
+  DayDetail,
+  Phase,
 } from "@/types/canonical";
 import {
   SAMPLE_CORE_REPORT,
@@ -386,10 +388,63 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     [sessionId, initialSessionId],
   );
 
-  const handleDayClick = useCallback((day: number) => {
+  /* ── Day-by-day list state (plan visibility gap fix, 2026-05-18) ──
+   * The §03 "Your 30 days" list lets the user browse plan content by
+   * day. `expandedDayInList` tracks which day's row is open. Today is
+   * expanded by default once we know the current day; user can toggle.
+   * Hash deep-link `/plan#day-15` is parsed below; opening from there
+   * also scrolls to the day row. */
+  const [expandedDayInList, setExpandedDayInList] = useState<number | null>(null);
+  const dayListRef = useRef<HTMLDivElement | null>(null);
+  const dayRowRefs = useRef<Record<number, HTMLDivElement | null>>({});
+
+  // Expand today by default once dayNumber is known (Day 1+)
+  useEffect(() => {
+    if (dayNumber > 0 && expandedDayInList === null) {
+      setExpandedDayInList(dayNumber);
+    }
+  }, [dayNumber, expandedDayInList]);
+
+  // Hash deep-link: /plan#day-15 expands + scrolls to day 15
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    const match = hash.match(/^day-(\d+)$/);
+    if (match) {
+      const day = parseInt(match[1], 10);
+      if (day >= 1 && day <= 30) {
+        setExpandedDayInList(day);
+        // Defer scroll so the row is in the DOM
+        requestAnimationFrame(() => {
+          dayRowRefs.current[day]?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      }
+    }
+  }, [location.hash]);
+
+  /* ── handleDayBrowse — Chunk 2 wiring ──
+   * Replaces the previous "click tracker cell → open check-in drawer"
+   * behaviour. Now clicking a tracker cell scrolls to and expands the
+   * matching day row in §03's day-by-day list. The check-in drawer is
+   * still accessible from inside the expanded row (today's row has a
+   * "Submit check-in" button; past completed rows have a "View check-in"
+   * button). Preserves the /checkin/:sessionId deep-link path — it
+   * still opens the check-in drawer via initialSessionId. */
+  const handleDayBrowse = useCallback((day: number) => {
     setDayNumber(day);
-    setCheckinOpen(true);
+    setExpandedDayInList(day);
+    requestAnimationFrame(() => {
+      dayRowRefs.current[day]?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   }, []);
+
+  const handleDayInListToggle = useCallback((day: number) => {
+    setExpandedDayInList((prev) => (prev === day ? null : day));
+  }, []);
+
+  // Kept for compatibility — TodayCard may still call this; routes through the new browse behaviour.
+  const handleDayClick = useCallback((day: number) => {
+    handleDayBrowse(day);
+  }, [handleDayBrowse]);
 
   const handleRefined = useCallback(
     (updatedReport: unknown) => {
@@ -410,8 +465,19 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   /* ─── Derived (above conditional returns per Rules of Hooks) ─── */
 
+  /* Scroll-to-day-list handler — sidebar "Your 30 days" item scrolls
+   * the page to the §03 list and expands today's row if nothing is
+   * currently expanded. */
+  const handleScrollToDayList = useCallback(() => {
+    dayListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (expandedDayInList === null && dayNumber > 0) {
+      setExpandedDayInList(dayNumber);
+    }
+  }, [expandedDayInList, dayNumber]);
+
   const sidebarItems: SidebarItem[] = [
     { id: "today", label: "Today", to: "/plan", isActive: !viewStrands },
+    { id: "days", label: "Your 30 days", onClick: handleScrollToDayList },
     { id: "strands", label: "Strands", to: "/plan?view=strands", isActive: viewStrands },
     { id: "history", label: "Check-in history", to: "/checkin/history" },
     { id: "report", label: "Report", to: "/report" },
@@ -606,10 +672,67 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   )
                 )}
 
-                {/* ─── Strand row (Day 1+ only — hidden on Day 0 per F6) ─── */}
+                {/* ─── §03 Your 30 days — day-by-day plan browser ───
+                  * Plan visibility gap fix (2026-05-18). Renders 30 day
+                  * rows (or rolling window for subscribers) populated
+                  * from activation_plan.activation_plan.phases[].days_detail.
+                  * Each row collapsed by default except today (set via
+                  * useEffect above). Click toggles. Hash deep-link
+                  * /plan#day-N expands and scrolls to that row.
+                  * TrackerGrid cell clicks (handleDayBrowse) route here.
+                  * Hidden on Day 0 — no day-by-day plan to browse yet. */}
+                {planState !== "day0" && trackerDays.length > 0 && (
+                  <div ref={dayListRef} className="scroll-mt-24">
+                    <PanelSection
+                      num="03"
+                      label="Your 30 days"
+                      meta={isSubscriber ? "rolling window" : `${dayNumber} of 30`}
+                    >
+                      <p className="text-[13.5px] text-muted-foreground leading-[1.5] mb-5 max-w-[60ch]">
+                        Click any day to see its tasks, time allocation, and any templates Solo drafted for you. Today is expanded by default.
+                      </p>
+                      <div className="space-y-0">
+                        {trackerDays.map((d) => {
+                          const dayDetail = activationPlan
+                            ? findDayDetail(activationPlan, d.day)
+                            : null;
+                          const status: DayRowStatus = d.completed
+                            ? "completed"
+                            : d.isToday
+                            ? "today"
+                            : d.day < dayNumber
+                            ? "missed"
+                            : "future";
+                          return (
+                            <div
+                              key={d.day}
+                              ref={(el) => { dayRowRefs.current[d.day] = el; }}
+                              id={`day-${d.day}`}
+                              className="scroll-mt-24"
+                            >
+                              <DayRow
+                                day={d.day}
+                                dayDetail={dayDetail}
+                                status={status}
+                                isExpanded={expandedDayInList === d.day}
+                                onToggle={() => handleDayInListToggle(d.day)}
+                                onOpenCheckin={() => {
+                                  setDayNumber(d.day);
+                                  setCheckinOpen(true);
+                                }}
+                              />
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </PanelSection>
+                  </div>
+                )}
+
+                {/* ─── §04 Strand row (Day 1+ only — hidden on Day 0 per F6) ─── */}
                 {planState !== "day0" && strands.length > 0 && (
                   <PanelSection
-                    num="03"
+                    num="04"
                     label="Your strands"
                     meta={`${strands.length} active`}
                   >
@@ -790,4 +913,280 @@ function trackerMetaFor(
   const active = days.some((d) => d.isToday) ? 1 : 0;
   const remaining = days.length - done - active;
   return `${String(done).padStart(2, "0")} done · ${active} active · ${String(remaining).padStart(2, "0")} remaining`;
+}
+
+/* ─────────────────────────── Day-by-day list helpers + DayRow ─────────────────────────── */
+
+/*
+ * findDayDetail — walks the phases.days_detail nested structure to
+ * find the DayDetail for a given day number. activation_plan structure:
+ *   activation_plan
+ *     └── activation_plan          (yes, nested again)
+ *         └── phases[]
+ *             └── days_detail[]    (each has { day: "1" | "Day 1", ... })
+ *
+ * Day strings vary in the source data ("1", "Day 1", "day-1"), so we
+ * normalise by extracting the first integer in the string. Returns null
+ * when no matching DayDetail exists — the row renders an "empty" message.
+ */
+type DayRowStatus = "completed" | "today" | "missed" | "future";
+
+function findDayDetail(
+  plan: ActivationPlanOutput,
+  dayNum: number,
+): DayDetail | null {
+  const phases = plan?.activation_plan?.phases;
+  if (!Array.isArray(phases)) return null;
+  for (const phase of phases as Phase[]) {
+    if (!Array.isArray(phase.days_detail)) continue;
+    for (const detail of phase.days_detail) {
+      const match = String(detail.day).match(/\d+/);
+      if (match && parseInt(match[0], 10) === dayNum) {
+        return detail;
+      }
+    }
+  }
+  return null;
+}
+
+/*
+ * DayRow — a single day in the §03 list. Collapsed shows day numeral +
+ * label + time + status pill + toggle. Expanded shows the label as a
+ * substantive heading, the time allocation, each task as a sub-block
+ * with description + move-type tag + outreach_draft (when present) in
+ * a stone callout box, and a context-appropriate check-in CTA.
+ *
+ * Status drives:
+ *   - status pill colour + glyph (Completed mint solid, Today mint
+ *     outline pulse, Missed stone, Future faint)
+ *   - check-in CTA presence (Today: "Submit your check-in"; Completed:
+ *     "View this check-in" — opens existing read-only drawer; Missed
+ *     and Future: no CTA)
+ *
+ * Empty-data fallback: if dayDetail is null, the expanded body shows a
+ * quiet "No specific tasks logged for this day" message. Real activation
+ * plans may not have day-by-day content for every day; the message is
+ * honest rather than rendering empty space.
+ */
+function DayRow({
+  day, dayDetail, status, isExpanded, onToggle, onOpenCheckin,
+}: {
+  day: number;
+  dayDetail: DayDetail | null;
+  status: DayRowStatus;
+  isExpanded: boolean;
+  onToggle: () => void;
+  onOpenCheckin: () => void;
+}) {
+  const isMissed = status === "missed";
+  const isFuture = status === "future";
+  const isToday = status === "today";
+  const isCompleted = status === "completed";
+
+  // Status pill — matches /checkin-history's four-pill vocabulary.
+  const pill = (() => {
+    if (isCompleted) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-white" style={{ background: "#2ECDB0" }}>
+          <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.9)" }} />
+          Done
+        </span>
+      );
+    }
+    if (isToday) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em]" style={{ border: "1.5px solid #2ECDB0", color: "#1A8A72" }}>
+          <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#2ECDB0" }} />
+          Today
+        </span>
+      );
+    }
+    if (isMissed) {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground" style={{ background: "#F3F1ED", border: "1px solid #D5D0C8" }}>
+          <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#A09A92" }} />
+          Missed
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
+        <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ border: "1px solid #A09A92" }} />
+        Future
+      </span>
+    );
+  })();
+
+  return (
+    <div
+      className={`border-t border-[#EDEBE6] first:border-t-0 transition-colors ${
+        isExpanded ? "bg-[#FAFAF7]" : ""
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isExpanded}
+        className="w-full grid grid-cols-[auto_1fr_auto_auto] gap-x-4 items-center px-2 py-4 text-left hover:bg-[#F3F1ED]/40 transition-colors"
+      >
+        <span
+          className={`shrink-0 font-display font-bold text-[15px] tabular-nums tracking-[0.04em] ${
+            isFuture || isMissed ? "text-muted-foreground/70" : "text-foreground"
+          }`}
+        >
+          <span
+            className={`mr-1 ${
+              isToday || isCompleted ? "text-primary" : "text-muted-foreground/50"
+            }`}
+          >
+            Day {String(day).padStart(2, "0")}
+          </span>
+        </span>
+        <span
+          className={`min-w-0 truncate font-display text-[14.5px] sm:text-[15.5px] ${
+            isExpanded ? "font-semibold" : "font-medium"
+          } ${isFuture || isMissed ? "text-muted-foreground/70" : "text-foreground"}`}
+          style={{ letterSpacing: "-0.012em" }}
+        >
+          {dayDetail?.label ?? <span className="italic text-muted-foreground/60">No detail yet</span>}
+        </span>
+        <span className="shrink-0">{pill}</span>
+        <span className="shrink-0 text-[20px] text-muted-foreground/60 font-light leading-none select-none">
+          {isExpanded ? "–" : "+"}
+        </span>
+      </button>
+
+      {isExpanded && (
+        <div className="px-2 sm:px-6 pb-6 pt-2">
+          {dayDetail ? (
+            <DayBody dayDetail={dayDetail} />
+          ) : (
+            <p className="text-[13.5px] italic text-muted-foreground/70 leading-relaxed">
+              No specific tasks logged for this day. Your activation plan's day-by-day detail may be lighter for certain days — your overall plan structure still applies.
+            </p>
+          )}
+          {(isToday || isCompleted) && (
+            <div className="mt-5 pt-5 border-t border-[#E5E2DC]">
+              <button
+                onClick={onOpenCheckin}
+                className="inline-flex items-center justify-center rounded-md px-4 py-2 text-[13px] font-semibold transition-colors"
+                style={
+                  isToday
+                    ? { background: "#2ECDB0", color: "#FFFFFF" }
+                    : { background: "#F3F1ED", color: "#1D2025", border: "1px solid #D5D0C8" }
+                }
+              >
+                {isToday ? "Submit your check-in →" : "View this check-in →"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* DayBody — renders the substantive content for an expanded day:
+ * time allocation, tasks (with descriptions, move tags, outreach drafts). */
+function DayBody({ dayDetail }: { dayDetail: DayDetail }) {
+  // time_allocation can be array (TimeAllocationEntry[]) or object form
+  // (Record<string, string>) per the deployed adapter. Components must
+  // handle both per the type comment.
+  const timeAllocationEntries: Array<[string, string]> = (() => {
+    const ta = dayDetail.time_allocation;
+    if (Array.isArray(ta)) {
+      return ta.map((e) => [String(e.strand_key ?? "Activity"), String(e.minutes ?? "")]);
+    }
+    if (ta && typeof ta === "object") {
+      return Object.entries(ta).map(([k, v]) => [k, String(v)]);
+    }
+    return [];
+  })();
+
+  return (
+    <div>
+      {/* Meta row — time required */}
+      {dayDetail.time_required && (
+        <div className="flex items-baseline gap-3 mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="text-primary">Time required</span>
+          <span className="normal-case tracking-normal text-[13px] font-medium text-foreground">
+            {dayDetail.time_required}
+          </span>
+        </div>
+      )}
+
+      {/* Time allocation */}
+      {timeAllocationEntries.length > 0 && (
+        <div className="mb-5 rounded-md px-4 py-3" style={{ background: "#F3F1ED" }}>
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+            How to spend the time
+          </div>
+          <div className="space-y-1.5">
+            {timeAllocationEntries.map(([activity, time]) => (
+              <div key={activity} className="flex items-baseline justify-between gap-3 text-[13px]">
+                <span className="text-foreground/85">{activity}</span>
+                <span className="text-muted-foreground tabular-nums shrink-0">{time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Tasks */}
+      {dayDetail.tasks?.length > 0 && (
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-3">
+            <span className="text-primary mr-2">Tasks</span>
+            <span>{dayDetail.tasks.length}</span>
+          </div>
+          <ul className="space-y-4">
+            {dayDetail.tasks.map((task, i) => (
+              <li key={task.task_id || i} className="border-l-2 border-[#D5D0C8] pl-4">
+                <div className="flex items-baseline justify-between gap-3 mb-1.5">
+                  <p className="font-display text-[14.5px] font-semibold text-foreground leading-snug" style={{ letterSpacing: "-0.012em" }}>
+                    {task.description}
+                  </p>
+                  {task.move_type && (
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: "#1A8A72" }}>
+                      {task.move_type}
+                    </span>
+                  )}
+                </div>
+
+                {task.outreach_draft && (
+                  <div
+                    className="mt-3 rounded-md px-4 py-3.5"
+                    style={{ background: "#F3F1ED", borderLeft: "3px solid #2ECDB0" }}
+                  >
+                    <div className="flex items-baseline justify-between gap-3 mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "#1A8A72" }}>
+                        Draft Solo prepared
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (typeof navigator !== "undefined" && navigator.clipboard) {
+                            navigator.clipboard.writeText(task.outreach_draft || "");
+                          }
+                        }}
+                        className="text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC]"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                    <p
+                      className="text-[13.5px] text-foreground/85 leading-[1.6] whitespace-pre-wrap"
+                      style={{ fontFamily: "'Source Serif 4', Georgia, serif" }}
+                    >
+                      {task.outreach_draft}
+                    </p>
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
 }
