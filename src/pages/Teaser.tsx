@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { triggerStripeCheckout } from "@/lib/handlers";
 import { isDevBypass } from "@/lib/devBypass";
 import TopBar from "@/components/TopBar";
@@ -68,8 +69,32 @@ import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
 export default function Teaser() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const reportId = searchParams.get("report_id");
   const cancelReturn = searchParams.get("canceled") === "true";
+
+  // Drift D fix (2026-05-18, journey-trace audit): authed paid users
+  // landing on /teaser with no report_id should bounce to /report (their
+  // canonical post-payment surface), not to / (the marketing landing).
+  // Used by both the no-report-id mount check and the "no data" branch
+  // of the fetch path.
+  const noReportFallback = useCallback(async () => {
+    if (user) {
+      const PAID_STATUSES = ["pending_selection", "generating_plan", "complete"];
+      const { data } = await supabase
+        .from("reports")
+        .select("id, status")
+        .eq("user_id", user.id)
+        .in("status", PAID_STATUSES)
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        navigate("/report", { replace: true });
+        return;
+      }
+    }
+    navigate("/", { replace: true });
+  }, [user, navigate]);
   const recoveryToken = searchParams.get("token");
 
   const [loading, setLoading] = useState(!!reportId);
@@ -83,10 +108,14 @@ export default function Teaser() {
 
   /* ─── Effects (all above early returns per Rules of Hooks discipline) ─── */
 
-  // No report_id → redirect home unless dev-bypass.
+  // No report_id → redirect to /report (authed paid users) or / (everyone
+  // else), unless dev-bypass. Drift D fix routes paid users to their
+  // canonical surface instead of dumping them on marketing.
   useEffect(() => {
-    if (!reportId && !isDevBypass()) navigate("/", { replace: true });
-  }, [reportId, navigate]);
+    if (!reportId && !isDevBypass()) {
+      noReportFallback();
+    }
+  }, [reportId, noReportFallback]);
 
   // Dev-bypass — render canonical sample fixture without going through Supabase.
   useEffect(() => {
@@ -131,7 +160,8 @@ export default function Teaser() {
 
           if (!data) {
             if (!isDevBypass()) {
-              navigate("/", { replace: true });
+              // Drift D fix: same fallback as the no-report-id branch.
+              noReportFallback();
               return;
             }
             setLoading(false);

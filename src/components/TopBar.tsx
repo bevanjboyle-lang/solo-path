@@ -29,8 +29,12 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
           <SoloLogo width={110} height={32} />
         </Link>
 
-        {/* Desktop links */}
-        {!minimal && (
+        {/* Desktop links — anon nav only renders for anon visitors. Authed
+          * users get the authed nav block on the right; showing Pricing/FAQ
+          * to a paid user is clutter (Drift A fix, 2026-05-18). The minimal
+          * prop still suppresses anon links on funnel surfaces for anon
+          * visitors too. */}
+        {!minimal && !user && (
           <div className="hidden items-center gap-8 md:flex">
             {anonLinks.map((l) => (
               <Link
@@ -97,7 +101,12 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
               Sign in
             </Link>
           ) : null}
-          {!minimal && (
+          {/* Drift A fix (2026-05-18): "Take the test" only renders for anon
+            * visitors. Authed users with an existing report use Account →
+            * TakeAnotherTestCard for second-report flow; the prominent mint
+            * "Take the test" pitch is conceptually wrong for someone who's
+            * already paid. */}
+          {!minimal && !user && (
             <button
               onClick={handleStartTest}
               className="rounded-lg bg-primary px-5 py-2 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
@@ -131,7 +140,8 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
       {open && (
         <div className="border-t border-border bg-[hsl(var(--surface-panel))] px-6 py-4 md:hidden">
           <div className="flex flex-col gap-3">
-            {!minimal && anonLinks.map((l) => (
+            {/* Drift A fix (2026-05-18): mobile anon links hidden for authed users. */}
+            {!minimal && !user && anonLinks.map((l) => (
               <Link
                 key={l.to}
                 to={l.to}
@@ -141,7 +151,7 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
                 {l.label}
               </Link>
             ))}
-            {!minimal && <hr className="border-border" />}
+            {!minimal && !user && <hr className="border-border" />}
             {user ? (
               <>
                 <button
@@ -184,7 +194,8 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
                 Sign in
               </Link>
             ) : null}
-            {!minimal && (
+            {/* Drift A fix (2026-05-18): mobile "Take the test" hidden for authed users. */}
+            {!minimal && !user && (
               <button
                 onClick={() => { handleStartTest(); setOpen(false); }}
                 className="w-full rounded-lg bg-primary px-5 py-2.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"

@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import { questions, Question } from "@/data/questions";
 import { getClientSessionId, generateReport } from "@/lib/handlers";
 import { readCvPrefill } from "@/lib/cvPrefill";
@@ -97,6 +98,28 @@ export default function Questionnaire() {
         return;
       }
       setIsAuthed(true);
+
+      // Drift C fix (2026-05-18, journey-trace audit): if this authed user
+      // already has a paid report, redirect to /plan. Without this guard
+      // they can start a fresh test that either overwrites the existing
+      // report or creates a duplicate row that breaks the post-questionnaire
+      // flow. The second-report flow at /account → TakeAnotherTestCard is
+      // the canonical path for retakes.
+      const PAID_STATUSES = ["pending_selection", "generating_plan", "complete"];
+      const { data: existingReport } = await supabase
+        .from("reports")
+        .select("id, status")
+        .eq("user_id", user.id)
+        .in("status", PAID_STATUSES)
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (existingReport) {
+        toast.message("You already have a plan.", {
+          description: "To take a fresh test, open Account → Take another test.",
+        });
+        navigate("/plan", { replace: true });
+      }
     })();
 
     return () => {

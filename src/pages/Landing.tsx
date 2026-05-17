@@ -538,28 +538,43 @@ export default function Landing() {
         <section className="pb-12 pt-8 lg:pb-20 lg:pt-12">
           <div className="mx-auto max-w-6xl px-6">
             <ScrollReveal>
+              {/* Drift B fix (2026-05-18): closing CTA is auth-aware. For an
+                * anon visitor: "Take the test" pitch. For an authed paid user
+                * who's just scrolled the home page: "Open my plan" — they
+                * don't need to be re-sold the report they've already bought.
+                * Mirrors the hero CTAs which already handle this correctly. */}
               <div className="panel-dark px-8 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24">
                 <div className="mx-auto max-w-2xl text-center">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(250,249,247,0.65)" }}>
-                    — Ready when you are —
+                    {isAuthed ? "— Pick up where you left off —" : "— Ready when you are —"}
                   </div>
                   <h2
                     className="mt-6 font-display text-[30px] font-semibold leading-[1.15] tracking-tight sm:text-[36px] lg:text-[44px]"
                     style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
                   >
-                    Your Plan B should already exist.
+                    {isAuthed ? "Your plan is waiting." : "Your Plan B should already exist."}
                   </h2>
                   <p className="mt-5 text-[15px] leading-[1.65]" style={{ color: "rgba(250,249,247,0.80)" }}>
-                    The test takes 8 minutes. You'll see your archetype, your top income paths, and your first recommended move before you pay anything.
+                    {isAuthed
+                      ? "Your report, your 30-day plan, and your check-in history are right where you left them."
+                      : "The test takes 8 minutes. You'll see your archetype, your top income paths, and your first recommended move before you pay anything."}
                   </p>
                   <div className="mt-9">
-                    <PrimaryButton onClick={handleStartTest}>
-                      Take the test
-                    </PrimaryButton>
+                    {isAuthed ? (
+                      <PrimaryButton onClick={handleOpenPlan}>
+                        Open my plan
+                      </PrimaryButton>
+                    ) : (
+                      <PrimaryButton onClick={handleStartTest}>
+                        Take the test
+                      </PrimaryButton>
+                    )}
                   </div>
-                  <div className="mt-5 text-[11px] uppercase tracking-[0.12em]" style={{ color: "rgba(250,249,247,0.65)" }}>
-                    £19.99 one-time · No subscription required
-                  </div>
+                  {!isAuthed && (
+                    <div className="mt-5 text-[11px] uppercase tracking-[0.12em]" style={{ color: "rgba(250,249,247,0.65)" }}>
+                      £19.99 one-time · No subscription required
+                    </div>
+                  )}
                 </div>
               </div>
             </ScrollReveal>

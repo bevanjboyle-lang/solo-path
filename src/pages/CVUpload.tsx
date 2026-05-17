@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import { continueFunnel } from "@/lib/handlers";
 import { getClientSessionId } from "@/lib/clientSession";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
 import ProgressHeader from "@/components/ProgressHeader";
 import CVUploadZone from "@/components/CVUploadZone";
@@ -111,7 +114,39 @@ function WhyWeAskMobile() {
 export default function CVUpload() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const [cvPath, setCvPath] = useState<string | null>(null);
+
+  // Drift C fix (2026-05-18, journey-trace audit): guard authed users with an
+  // existing complete report. Without this, they can start a fresh test from
+  // /cv-upload and either overwrite their report or create a duplicate row
+  // that breaks the post-questionnaire flow. The second-report flow is the
+  // canonical path for retakes — lives at /account → TakeAnotherTestCard.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const PAID_STATUSES = ["pending_selection", "generating_plan", "complete"];
+      const { data } = await supabase
+        .from("reports")
+        .select("id, status")
+        .eq("user_id", user.id)
+        .in("status", PAID_STATUSES)
+        .limit(1)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data) {
+        toast.message("You already have a plan.", {
+          description:
+            "To take a fresh test, open Account → Take another test.",
+        });
+        navigate("/plan", { replace: true });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user, navigate]);
 
   const clientSessionId = getClientSessionId();
   const cvExtractKey = `solo.cv_extract.${clientSessionId}`;

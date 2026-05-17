@@ -160,17 +160,30 @@ export default function CheckinHistory() {
     return entries;
   }, [startDate, checkins, currentDay]);
 
-  /* ── Stats for page header right-column ── */
+  /* ── Stats for page header right-column ──
+   * Drift F fix (2026-05-18, journey-trace audit): "today" is no longer
+   * counted as "ahead" — it's its own category. Previously a Day-11 user
+   * saw "20 AHEAD" when 19 days were genuinely ahead + 1 was today.
+   * Today is now silent in the stats row (the TodayCard on /plan and the
+   * timeline below already mark today as the active row). Counts sum to 30.
+   */
   const completedCount = timeline.filter((t) => t.status === "completed").length;
   const missedCount = timeline.filter((t) => t.status === "missed").length;
-  const aheadCount = timeline.filter((t) => t.status === "future" || t.status === "today").length;
+  const aheadCount = timeline.filter((t) => t.status === "future").length;
 
-  /* ── Sidebar config — mirror /plan ── */
+  /* ── Sidebar config — mirror /plan ──
+   * Drift E fix (2026-05-18, journey-trace audit): added "Your 30 days"
+   * item to match /plan's sidebar exactly. Navigates to /plan which
+   * auto-expands today's row in §03 (Hash deep-link /plan#day-N also
+   * available for specific-day jumps). Renumbered subsequent items so the
+   * sidebar numerals stay sequential.
+   */
   const sidebarItems: SidebarItem[] = [
     { id: "today", label: "Today", numeral: "01", to: "/plan" },
-    { id: "strands", label: "Strands", numeral: "02", to: "/plan?view=strands" },
-    { id: "history", label: "Check-in history", numeral: "03", to: "/checkin/history", isActive: true },
-    { id: "report", label: "Report", numeral: "04", to: "/report" },
+    { id: "days", label: "Your 30 days", numeral: "02", to: "/plan#day-list" },
+    { id: "strands", label: "Strands", numeral: "03", to: "/plan?view=strands" },
+    { id: "history", label: "Check-in history", numeral: "04", to: "/checkin/history", isActive: true },
+    { id: "report", label: "Report", numeral: "05", to: "/report" },
     { id: "sep", label: "", isDivider: true },
     { id: "refine", label: "Refine your report", isUtility: true, to: "/plan" },
   ];
@@ -319,10 +332,18 @@ export default function CheckinHistory() {
                     </div>
 
                     <div className="lg:col-span-4 lg:text-right">
+                      {/* Drift F fix (2026-05-18): added "Today" stat between
+                        * Missed and Ahead so the four counts sum to 30
+                        * (previously today was folded into Ahead, making 1+9+20=30
+                        * but reading misleadingly as "20 days ahead" when only 19
+                        * actually are). Today is silent on Day 0. */}
                       <div className="flex gap-6 lg:justify-end">
                         <Stat value={completedCount} label="Completed" />
                         {(missedCount > 0 || completedCount > 0) && (
                           <Stat value={missedCount} label="Missed" />
+                        )}
+                        {currentDay > 0 && currentDay <= 30 && (
+                          <Stat value={1} label="Today" />
                         )}
                         <Stat value={aheadCount} label="Ahead" />
                       </div>
