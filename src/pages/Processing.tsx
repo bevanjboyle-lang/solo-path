@@ -1,9 +1,48 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import TopBar from "@/components/TopBar";
+import SoloLogo from "@/components/SoloLogo";
 import { isDevBypass } from "@/lib/devBypass";
+
+/*
+ * Processing — Pass 1 /processing v1 (2026-05-17)
+ *
+ * Translates Claude Design's Pass 1 proposal into the live page. Inherits
+ * the editorial composition vocabulary established on the previous spine
+ * screens. Narrower panel (max-w-2xl ≈ 672px, target ~760px on widescreen
+ * via responsive sizing) — the screen is a short, centred moment, not a
+ * long working surface. The narrower panel makes the photo bleed more
+ * visible.
+ *
+ * Locked decisions from admin/pass-1-processing-decisions.md:
+ *   Central — typography-led + heartbeat dot. Cycling status text is the
+ *     visual primary; a single mint dot adjacent to the message pulses on
+ *     a 2.8s ease-in-out cycle as the page's only motion element (uses
+ *     the existing eyebrow-dot vocabulary, not a new visual primitive).
+ *     Reduced-motion variant: dot becomes static, crossfade dropped.
+ *   F1 — Keep the heartbeat dot.
+ *   F2 — Keep the elapsed counter on the estimate row (honest, not
+ *     predictive — "elapsed · 0:04" never "remaining").
+ *   F3 — Keep the reference row visible on the Failed state (small
+ *     stone-tinted inset with report ID prefix + timestamp).
+ *   F4 — Approve eyebrow second clauses ("your answers received" /
+ *     "your answers are saved").
+ *   Top bar — simplified to a "Generating" / "Generation failed" status
+ *     chip (mint or red dot + small-caps label only). No session/report
+ *     ID exposure in the chrome.
+ *
+ * Dark-card cadence: zero. /processing is operational/transitional —
+ * runs all-ivory per design-direction.md v1.4 §8.
+ *
+ * Drops framer-motion AnimatePresence (no slide animations between page
+ * states). Message crossfade uses tailwindcss-animate fade-in only, not
+ * framer-motion.
+ *
+ * Preserves existing polling logic, prefers-reduced-motion hook, retry
+ * behaviour (handleRetry restarts polling without navigating to
+ * /questionnaire, which would wipe the user's Q1–Q15 answers).
+ */
 
 const CYCLING_MESSAGES = [
   "Reading your answers.",
@@ -13,8 +52,9 @@ const CYCLING_MESSAGES = [
   "Finishing up.",
 ];
 
-const CYCLE_INTERVAL = 2800;
-const TIMEOUT_MS = 300_000;
+const CYCLE_INTERVAL = 2800; // matches the heartbeat dot's breath cycle
+const TIMEOUT_MS = 300_000;  // 5 minutes — lenient vs spec's 60s, kept from prior implementation
+const READY_FLASH_MS = 400;
 
 function usePrefersReducedMotion() {
   const [reduced, setReduced] = useState(false);
@@ -30,6 +70,32 @@ function usePrefersReducedMotion() {
 
 type PageState = "generating" | "ready" | "failed" | "timed_out";
 
+function formatElapsed(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+}
+
+function formatTimestamp(d: Date): string {
+  // Local time, HH:mm, with a short timezone abbreviation if available.
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  // Try to extract a short TZ name (e.g. "BST", "GMT", "PDT"). Falls back
+  // to UTC offset if the runtime doesn't expose a name.
+  let tz = "";
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZoneName: "short",
+    }).formatToParts(d);
+    const tzPart = parts.find((p) => p.type === "timeZoneName");
+    if (tzPart) tz = ` ${tzPart.value}`;
+  } catch {
+    /* no-op */
+  }
+  return `${hh}:${mm}${tz}`;
+}
+
 export default function Processing() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -37,19 +103,21 @@ export default function Processing() {
 
   const [state, setState] = useState<PageState>("generating");
   const [msgIndex, setMsgIndex] = useState(0);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [failureTime, setFailureTime] = useState<Date | null>(null);
   const reducedMotion = usePrefersReducedMotion();
   const pollingRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startRef = useRef(Date.now());
   const mountedRef = useRef(true);
 
-  // No report_id → redirect home
+  /* No report_id — redirect home */
   useEffect(() => {
     if (!reportId && !isDevBypass()) {
       navigate("/", { replace: true });
     }
   }, [reportId, navigate]);
 
-  // Cycling messages
+  /* Cycling messages — only while generating */
   useEffect(() => {
     if (state !== "generating") return;
     const id = setInterval(() => {
@@ -58,12 +126,24 @@ export default function Processing() {
     return () => clearInterval(id);
   }, [state]);
 
-  // Polling
+  /* Elapsed counter — ticks every second while generating */
+  useEffect(() => {
+    if (state !== "generating") return;
+    const id = setInterval(() => {
+      setElapsedMs(Date.now() - startRef.current);
+    }, 1000);
+    // Also update once immediately so the counter shows 0:00 not nothing.
+    setElapsedMs(Date.now() - startRef.current);
+    return () => clearInterval(id);
+  }, [state]);
+
+  /* Polling */
   const poll = useCallback(async () => {
     if (!reportId || !mountedRef.current) return;
 
     const elapsed = Date.now() - startRef.current;
     if (elapsed >= TIMEOUT_MS) {
+      setFailureTime(new Date());
       setState("timed_out");
       return;
     }
@@ -79,26 +159,26 @@ export default function Processing() {
 
       if (data?.status === "teaser_ready") {
         setState("ready");
-        // Brief flash then navigate
         setTimeout(() => {
           if (mountedRef.current) {
             navigate(`/teaser?report_id=${reportId}`, { replace: true });
           }
-        }, 400);
+        }, READY_FLASH_MS);
         return;
       }
 
       if (data?.status === "failed") {
+        setFailureTime(new Date());
         setState("failed");
         return;
       }
     } catch {
-      // Single failed poll is self-recovering — continue
+      /* Single failed poll is self-recovering — continue */
     }
 
     if (!mountedRef.current) return;
 
-    // Schedule next poll with adaptive interval
+    /* Adaptive polling interval: tighter early, looser later */
     const nextElapsed = Date.now() - startRef.current;
     let delay: number;
     if (nextElapsed < 10_000) delay = 1000;
@@ -120,151 +200,316 @@ export default function Processing() {
   }, [reportId, poll, state]);
 
   const handleRetry = () => {
-    // Reset timer and restart polling — DO NOT navigate to /questionnaire,
-    // which would wipe the user's Q1-Q17 answers.
+    /* Reset timer and restart polling — DO NOT navigate to /questionnaire,
+     * which would wipe the user's answers. The report row already exists;
+     * the backend may still be working on it. */
     startRef.current = Date.now();
+    setElapsedMs(0);
+    setFailureTime(null);
     setState("generating");
-    // The useEffect on state === "generating" will start a fresh poll cycle.
   };
 
   if (!reportId && !isDevBypass()) return null;
 
+  /* ─── Status chip for the top of the panel ─── */
+  const statusChip = (() => {
+    if (state === "failed") {
+      return { tone: "error" as const, label: "Generation failed" };
+    }
+    if (state === "timed_out") {
+      return { tone: "error" as const, label: "Taking longer than usual" };
+    }
+    return { tone: "neutral" as const, label: "Generating" };
+  })();
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="relative min-h-screen text-foreground">
       <TopBar minimal />
 
-      <main className="flex flex-1 flex-col items-center justify-center px-6">
-        <AnimatePresence mode="wait">
-          {state === "generating" && (
-            <motion.div
-              key="generating"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center text-center"
-            >
-              {/* Spinner / static indicator */}
-              {reducedMotion ? (
-                <div className="mb-10 h-10 w-10 rounded-full border-2 border-muted-foreground/30 border-t-[#2ECDB0]" />
+      <main className="pt-[68px]">
+        <section className="py-12 lg:py-20">
+          <div className="mx-auto max-w-2xl px-6">
+            <div className="panel-ivory">
+              {/* ─── Panel top row: status chip + small Solo logo ─── */}
+              <div className="px-8 sm:px-12 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+                <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em]">
+                  <span
+                    className={`inline-block w-1.5 h-1.5 rounded-full ${
+                      statusChip.tone === "error" ? "bg-red-600" : "bg-primary"
+                    }`}
+                  />
+                  <span
+                    className={
+                      statusChip.tone === "error"
+                        ? "text-red-700"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {statusChip.label}
+                  </span>
+                </div>
+                <SoloLogo width={88} height={26} />
+              </div>
+
+              {/* ─── Body — branches by state ─── */}
+              {state === "generating" || state === "ready" ? (
+                <GeneratingBody
+                  message={
+                    state === "ready"
+                      ? "Your report is ready."
+                      : CYCLING_MESSAGES[msgIndex]
+                  }
+                  msgKey={state === "ready" ? "ready" : `m-${msgIndex}`}
+                  elapsedMs={elapsedMs}
+                  reducedMotion={reducedMotion}
+                  isReady={state === "ready"}
+                />
+              ) : state === "failed" ? (
+                <FailedBody
+                  reportId={reportId}
+                  failureTime={failureTime}
+                  onRetry={handleRetry}
+                />
               ) : (
-                <motion.div
-                  className="mb-10 h-10 w-10 rounded-full border-2 border-muted-foreground/30 border-t-[#2ECDB0]"
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                <TimedOutBody
+                  reportId={reportId}
+                  failureTime={failureTime}
+                  onRetry={handleRetry}
                 />
               )}
-
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                Building your report.
-              </h1>
-
-              <p className="mt-3 text-sm text-muted-foreground">
-                Usually a minute or two — sometimes a bit longer.
-              </p>
-
-              {/* Cycling messages */}
-              <div
-                className="mt-8 h-6"
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={msgIndex}
-                    initial={reducedMotion ? {} : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reducedMotion ? {} : { opacity: 0, y: -6 }}
-                    transition={{ duration: 0.25 }}
-                    className="text-sm text-muted-foreground/70"
-                  >
-                    {CYCLING_MESSAGES[msgIndex]}
-                  </motion.p>
-                </AnimatePresence>
-              </div>
-
-              <p className="mt-8 max-w-md text-xs leading-relaxed text-muted-foreground/70">
-                No need to wait here — we've also emailed you a link to your report. You can close this tab and come back when you're ready.
-              </p>
-            </motion.div>
-          )}
-
-          {state === "ready" && (
-            <motion.div
-              key="ready"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center text-center"
-            >
-              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2ECDB0]/15">
-                <svg className="h-6 w-6 text-[#2ECDB0]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-                Your report is ready.
-              </h1>
-            </motion.div>
-          )}
-
-          {state === "failed" && (
-            <motion.div
-              key="failed"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex max-w-md flex-col items-center text-center"
-            >
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                We couldn't generate your report.
-              </h1>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                Something went wrong on our side. Your answers are saved — you can retry without starting over.
-              </p>
-              <button
-                onClick={handleRetry}
-                className="mt-8 rounded-lg px-8 py-2.5 text-sm font-semibold text-primary-foreground transition-colors"
-                style={{ backgroundColor: "hsl(var(--primary))" }}
-              >
-                Try again
-              </button>
-              <a
-                href="mailto:support@solo-plan.com"
-                className="mt-4 text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
-              >
-                Contact support
-              </a>
-            </motion.div>
-          )}
-
-          {state === "timed_out" && (
-            <motion.div
-              key="timed_out"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex max-w-md flex-col items-center text-center"
-            >
-              <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-                Still working on your report.
-              </h1>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                This is taking longer than usual. Your answers are saved. You can keep waiting, or check the email we just sent and come back later via the link.
-              </p>
-              <button
-                onClick={handleRetry}
-                className="mt-8 rounded-lg px-8 py-2.5 text-sm font-semibold text-primary-foreground transition-colors"
-                style={{ backgroundColor: "hsl(var(--primary))" }}
-              >
-                Keep waiting
-              </button>
-              <a
-                href="mailto:support@solo-plan.com"
-                className="mt-4 text-xs text-muted-foreground underline underline-offset-2 transition-colors hover:text-foreground"
-              >
-                Contact support
-              </a>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </div>
+        </section>
       </main>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Generating body ─────────────────────────── */
+
+function GeneratingBody({
+  message,
+  msgKey,
+  elapsedMs,
+  reducedMotion,
+  isReady,
+}: {
+  message: string;
+  msgKey: string;
+  elapsedMs: number;
+  reducedMotion: boolean;
+  isReady: boolean;
+}) {
+  return (
+    <div className="px-8 sm:px-12 pt-6 pb-12">
+      {/* Eyebrow */}
+      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+        <span>Generating report</span>
+        <span className="text-muted-foreground/40">·</span>
+        <span className="text-muted-foreground normal-case tracking-normal text-[12px] font-normal">
+          your answers received
+        </span>
+      </div>
+
+      {/* H1 + subhead */}
+      <h1 className="mt-6 text-[36px] sm:text-[44px] lg:text-[48px] font-extrabold tracking-tight leading-[1.1] text-foreground">
+        Building your report.
+      </h1>
+      <p className="mt-3 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed">
+        This takes about five seconds.
+      </p>
+
+      {/* Hairline separator */}
+      <div className="h-px bg-[#E5E2DC] my-8" />
+
+      {/* Cycling region — aria-live, heartbeat dot + display-weight message */}
+      <div
+        className="flex items-center gap-4 min-h-[52px]"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <span
+          className={`shrink-0 inline-block w-[9px] h-[9px] rounded-full ${
+            isReady
+              ? "bg-primary opacity-100"
+              : reducedMotion
+              ? "bg-primary"
+              : "bg-primary animate-heartbeat"
+          }`}
+        />
+        {/*
+         * Key-based remount triggers tailwindcss-animate fade-in on each
+         * new message. Reduced-motion users see the swap without the
+         * fade (the animate classes are no-ops under their CSS query in
+         * tailwindcss-animate; the content updates still occur on the
+         * same cadence — content updates are not motion).
+         */}
+        <span
+          key={msgKey}
+          className={`text-[22px] sm:text-[26px] font-semibold leading-snug ${
+            isReady ? "text-primary" : "text-foreground"
+          } ${reducedMotion ? "" : "animate-in fade-in duration-300"}`}
+        >
+          {message}
+        </span>
+      </div>
+
+      {/* Hairline separator */}
+      <div className="h-px bg-[#E5E2DC] my-8" />
+
+      {/* Estimate row: framing on the left, elapsed counter on the right */}
+      <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
+        <div className="flex items-baseline gap-3 text-[13.5px] text-muted-foreground leading-relaxed">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80 shrink-0">
+            Usually
+          </span>
+          <span>Around 5 seconds. We'll move you on the moment it's done.</span>
+        </div>
+        <div className="text-[12px] text-muted-foreground tabular-nums shrink-0">
+          elapsed <span className="text-muted-foreground/40 mx-1">·</span>
+          <strong className="font-semibold text-foreground">
+            {formatElapsed(elapsedMs)}
+          </strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Failed body ─────────────────────────── */
+
+function FailedBody({
+  reportId,
+  failureTime,
+  onRetry,
+}: {
+  reportId: string | null;
+  failureTime: Date | null;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="px-8 sm:px-12 pt-6 pb-12">
+      {/* Eyebrow — red dot + small-caps label + muted reassurance */}
+      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600" />
+        <span className="text-red-700">Generation failed</span>
+        <span className="text-muted-foreground/40">·</span>
+        <span className="text-muted-foreground normal-case tracking-normal text-[12px] font-normal">
+          your answers are saved
+        </span>
+      </div>
+
+      {/* H1 + explainer */}
+      <h1 className="mt-6 text-[36px] sm:text-[44px] lg:text-[48px] font-extrabold tracking-tight leading-[1.1] text-foreground">
+        We couldn't generate your report.
+      </h1>
+      <p className="mt-4 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed max-w-2xl">
+        Something went wrong on our side. Your answers are saved — you can retry
+        without starting over.
+      </p>
+
+      {/* Reference row — small stone-tinted inset */}
+      <ReferenceRow reportId={reportId} failureTime={failureTime} />
+
+      {/* Vertical action stack */}
+      <div className="mt-8 flex flex-col items-start gap-3">
+        <button
+          onClick={onRetry}
+          className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors"
+        >
+          Try again
+        </button>
+        <a
+          href="mailto:support@solo-plan.com"
+          className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
+        >
+          Contact support →
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Timed-out body ─────────────────────────── */
+
+function TimedOutBody({
+  reportId,
+  failureTime,
+  onRetry,
+}: {
+  reportId: string | null;
+  failureTime: Date | null;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="px-8 sm:px-12 pt-6 pb-12">
+      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
+        <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600" />
+        <span className="text-red-700">Taking longer than usual</span>
+        <span className="text-muted-foreground/40">·</span>
+        <span className="text-muted-foreground normal-case tracking-normal text-[12px] font-normal">
+          your answers are saved
+        </span>
+      </div>
+
+      <h1 className="mt-6 text-[36px] sm:text-[44px] lg:text-[48px] font-extrabold tracking-tight leading-[1.1] text-foreground">
+        This is taking longer than usual.
+      </h1>
+      <p className="mt-4 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed max-w-2xl">
+        Your answers are saved. You can retry now, or come back via the email
+        we just sent and we'll pick up where we left off.
+      </p>
+
+      <ReferenceRow reportId={reportId} failureTime={failureTime} />
+
+      <div className="mt-8 flex flex-col items-start gap-3">
+        <button
+          onClick={onRetry}
+          className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors"
+        >
+          Try again
+        </button>
+        <a
+          href="mailto:support@solo-plan.com"
+          className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
+        >
+          Contact support →
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Reference row (shared) ─────────────────────────── */
+
+function ReferenceRow({
+  reportId,
+  failureTime,
+}: {
+  reportId: string | null;
+  failureTime: Date | null;
+}) {
+  if (!reportId) return null;
+  const prefix = reportId.slice(0, 6);
+  const ts = failureTime ? formatTimestamp(failureTime) : "";
+  return (
+    <div className="mt-8 bg-[#F3F0EA] border border-[#E5E2DC] rounded-lg px-5 py-3 flex items-center gap-4">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground shrink-0">
+        Reference
+      </span>
+      <span
+        className="text-[12.5px] text-foreground tabular-nums"
+        style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}
+      >
+        report {prefix}
+        {ts && (
+          <>
+            {" "}
+            <span className="text-muted-foreground/40">·</span> {ts}
+          </>
+        )}
+      </span>
     </div>
   );
 }

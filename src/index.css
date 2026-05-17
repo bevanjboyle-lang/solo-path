@@ -210,3 +210,22 @@
 .animate-typing-dot {
   animation: typing-dot 1.4s ease-in-out infinite;
 }
+
+/*
+ * Heartbeat — the slowly-pulsing mint dot on /processing.
+ * Per Pass 1 /processing F1 resolution 2026-05-17. Opacity 100% → 40% +
+ * small scale change on a 2.8s ease-in-out cycle. Reads as breathing,
+ * not as computation. The cycle deliberately matches the cycling-message
+ * interval so the dot and the messages feel like one rhythm.
+ *
+ * Reduced-motion: the .animate-heartbeat class is conditionally applied
+ * in Processing.tsx — when prefers-reduced-motion is set, the dot stays
+ * static (no class, no animation, same shape/colour).
+ */
+@keyframes heartbeat {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+.animate-heartbeat {
+  animation: heartbeat 2.8s ease-in-out infinite;
+}
