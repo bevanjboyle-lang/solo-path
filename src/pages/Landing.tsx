@@ -201,20 +201,35 @@ const PROPS = [
   },
 ] as const;
 
+/*
+ * §05 Who it's for — three representative personas (2026-05-18 rewrite).
+ *
+ * Replaced the prior paired pull-quote shape (with fictional first-person
+ * quotes and "Composite" attributions) with three structured descriptive
+ * tiles. Bevan's brief: avoid asymmetric offsets, drop fake quotes,
+ * present three representative examples as descriptive paragraphs.
+ *
+ * Personas calibrated to the ICP: senior, structured, mid-career, real
+ * career to protect. Finance + Programme retained from the prior version
+ * (Bevan confirmed they were the right kind of people); Comms /
+ * Marketing Director added to pick up the AI-anxiety / quiet-uncertainty
+ * thread the other two don't cover.
+ */
 const PERSONAS = [
   {
-    tag: "01 The Director, 11 years in",
-    quote:
-      "Finance director, two restructures behind me, third one on the horizon. I'm not looking for inspiration. I'm looking for the three things I could actually go and sell next Monday.",
-    attribution: "Composite, FP&A / Big Four / FTSE 250",
-    align: "left" as const,
+    num: "01",
+    tag: "The Finance Director, 11 years in",
+    body: "A senior FP&A or finance leader in a corporate, Big Four, or FTSE-listed business. Two restructures already behind them. The next one feels close. They are not looking for inspiration. They want a concrete shortlist of work they could actually go and win in the next quarter, with realistic numbers attached.",
   },
   {
-    tag: "02 The Operator, 9 years in",
-    quote:
-      "Programme director in a regulated business. The exit isn't tomorrow but it isn't five years either. I want the plan in the drawer.",
-    attribution: "Composite, Risk / Operations / Regulated industries",
-    align: "right" as const,
+    num: "02",
+    tag: "The Programme Director, 9 years in",
+    body: "A senior delivery or operations lead in a regulated business — financial services, defence, healthcare, infrastructure. The exit is not tomorrow but it is not five years either. They want the plan built properly and sitting in the drawer, ready to act on when something shifts, rather than assembled in panic when it does.",
+  },
+  {
+    num: "03",
+    tag: "The Comms or Marketing Director, 10 years in",
+    body: "A senior communications, marketing, or strategy leader watching colleagues leave for fractional work and noticing the AI conversation in their function sharpen every quarter. Not in immediate trouble, but no longer confident the role they have built will look the same in three years. They want a credible independent path that uses their actual skills, not a side hustle to fill the gap.",
   },
 ] as const;
 
@@ -492,7 +507,7 @@ export default function Landing() {
                 id="who-its-for"
                 num="05"
                 title="Who it's for."
-                tease="Two professionals who recognise the question."
+                tease="Three professionals Solo was built for."
                 isOpen={openSection === "who-its-for"}
                 onToggle={() => toggle("who-its-for")}
               >
@@ -803,38 +818,61 @@ function ChatGPTDifferenceBody({ onTake }: { onTake: () => void }) {
   );
 }
 
-/* §05 Who it's for — paired pull-quotes */
+/*
+ * §05 Who it's for — three structured representative personas (2026-05-18).
+ *
+ * Editorial 3-up grid, equal columns, hairline vertical rules between
+ * columns on desktop (mirrors the §02 How it works pattern but with
+ * symmetric spans). Stacks vertically on mobile.
+ *
+ * H3 + intro paragraph above the tiles per the brief: "useful for many,
+ * particularly aimed at..." framing. No boxes, no shadows — the editorial
+ * direction prohibits over-boxed three-column feature grids; the vertical
+ * rules carry the rhythm instead.
+ */
 function WhoItsForBody() {
   return (
-    <div className="space-y-12 lg:space-y-14">
-      {PERSONAS.map((p, i) => (
-        <div
-          key={p.tag}
-          className={`grid gap-6 lg:grid-cols-12 lg:gap-10 ${
-            p.align === "right" ? "lg:[&>*:first-child]:order-2" : ""
-          } ${i > 0 ? "border-t border-border/50 pt-12 lg:pt-14" : ""}`}
+    <div className="space-y-8 lg:space-y-10">
+      {/* In-section H3 + intro paragraph */}
+      <div>
+        <h3
+          className="font-display text-[22px] sm:text-[26px] lg:text-[28px] font-semibold leading-[1.2] tracking-tight"
+          style={{ letterSpacing: "-0.02em" }}
         >
-          <div className="lg:col-span-3">
+          Solo works for a lot of people. It works best for these.
+        </h3>
+        <p className="mt-4 font-display text-[15.5px] sm:text-[16px] leading-[1.65] text-muted-foreground max-w-[68ch]">
+          Solo can be useful to anyone considering independent work. It is
+          calibrated for a particular kind of professional: senior, structured,
+          mid-career, with a real career to protect and a real reason to be
+          thinking ahead. The three examples below are the people Solo serves
+          best.
+        </p>
+      </div>
+
+      {/* Three structured persona tiles — symmetric 3-up, hairline rules on lg+ */}
+      <div className="grid gap-10 lg:grid-cols-3 lg:gap-0">
+        {PERSONAS.map((p, i) => (
+          <div
+            key={p.num}
+            className={
+              i === 0
+                ? "lg:pr-10"
+                : i === 1
+                ? "lg:px-10 lg:border-l lg:border-border/60"
+                : "lg:pl-10 lg:border-l lg:border-border/60"
+            }
+          >
             <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              <span className="text-primary mr-2 tabular-nums">
-                {p.tag.split(" ")[0]}
-              </span>
-              {p.tag.split(" ").slice(1).join(" ")}
+              <span className="text-primary mr-2 tabular-nums">{p.num}</span>
+              {p.tag}
             </div>
+            <p className="mt-5 text-[14.5px] leading-[1.7] text-foreground/90">
+              {p.body}
+            </p>
           </div>
-          <div className="lg:col-span-9">
-            <blockquote
-              className="font-display text-[22px] font-medium leading-[1.4] tracking-tight text-foreground sm:text-[26px] lg:text-[28px]"
-              style={{ letterSpacing: "-0.015em" }}
-            >
-              &ldquo;{p.quote}&rdquo;
-            </blockquote>
-            <div className="mt-4 text-[12px] italic text-muted-foreground">
-              — {p.attribution}
-            </div>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
