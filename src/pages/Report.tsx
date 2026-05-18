@@ -325,7 +325,7 @@ export default function Report() {
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
                   <span>No report yet</span>
                 </div>
-                <h1 className="text-[32px] sm:text-[36px] font-extrabold tracking-tight leading-tight text-foreground">
+                <h1 className="title-h1">
                   No report yet.
                 </h1>
                 <p className="mt-4 text-[15px] text-muted-foreground leading-relaxed">
@@ -397,10 +397,7 @@ export default function Report() {
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
                     <div className="lg:col-span-8">
-                      <div
-                        aria-hidden
-                        className="text-[40px] sm:text-[48px] lg:text-[52px] font-extrabold tracking-tight leading-[1.05] text-foreground"
-                      >
+                      <div aria-hidden className="title-h1">
                         {h1Title}
                       </div>
                       <p className="mt-4 text-[15.5px] text-muted-foreground leading-relaxed max-w-2xl">

@@ -182,11 +182,7 @@ export default function Pricing() {
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
               <span className="text-foreground">Pricing</span>
             </div>
-            <h1
-              aria-label="One test. Two ways to keep going."
-              className="text-[44px] sm:text-[52px] lg:text-[56px] font-extrabold tracking-tight leading-[1.02] text-foreground"
-              style={{ letterSpacing: "-0.035em", textWrap: "balance" } as React.CSSProperties}
-            >
+            <h1 aria-label="One test. Two ways to keep going." className="title-h1">
               One test. Two ways to keep going.
             </h1>
             <p className="mt-4 font-display text-[17px] sm:text-[19px] text-muted-foreground leading-[1.4] max-w-[52ch]">

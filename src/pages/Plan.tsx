@@ -630,7 +630,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                 We couldn't load your plan. Try refreshing, or contact support if this keeps happening.
               </Banner>
               <div className="mt-8 panel-ivory px-8 sm:px-12 py-10">
-                <h1 className="text-[36px] sm:text-[44px] font-extrabold tracking-tight text-foreground">
+                <h1 className="title-h1">
                   Your plan
                 </h1>
               </div>
@@ -727,10 +727,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                       {/* H1 + sub on left, right-meta block stacked on right */}
                       <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 lg:gap-10 items-end">
                         <div>
-                          <h2
-                            className="font-display text-[34px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
-                            style={{ letterSpacing: "-0.028em", textWrap: "balance" } as React.CSSProperties}
-                          >
+                          <h2 className="title-h1">
                             {isSubscriber ? "Your plan." : "Your 30-day plan."}
                           </h2>
                           <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[60ch]">

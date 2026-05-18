@@ -223,7 +223,7 @@ export default function CheckinHistory() {
         <main className="pt-[68px]">
           <section className="py-16 px-6">
             <div className="mx-auto max-w-[600px] panel-ivory px-8 sm:px-12 py-10 text-center">
-              <h1 className="font-display text-[28px] font-bold text-foreground" style={{ letterSpacing: "-0.025em" }}>
+              <h1 className="title-h1">
                 Couldn't load your history.
               </h1>
               <p className="mt-3 text-sm text-muted-foreground">
@@ -265,7 +265,7 @@ export default function CheckinHistory() {
                 <AreaSidebar items={sidebarItems} head={sidebarHead} footer={sidebarFooter} />
                 <div className="flex-1 min-w-0">
                   <div className="panel-ivory px-8 sm:px-12 py-10">
-                    <h1 className="font-display text-[28px] font-bold text-foreground" style={{ letterSpacing: "-0.025em" }}>
+                    <h1 className="title-h1">
                       Your tracker hasn't started yet.
                     </h1>
                     <p className="mt-3 text-sm text-muted-foreground">

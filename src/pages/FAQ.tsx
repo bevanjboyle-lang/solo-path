@@ -232,11 +232,7 @@ export default function FAQ() {
                     <span className="text-muted-foreground/40">·</span>
                     <span className="text-muted-foreground/70">Common questions</span>
                   </div>
-                  <div
-                    aria-hidden
-                    className="text-[34px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
-                    style={{ letterSpacing: "-0.028em" }}
-                  >
+                  <div aria-hidden className="title-h1">
                     Questions, answered.
                   </div>
                   <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[54ch]">

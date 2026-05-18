@@ -149,10 +149,7 @@ export default function SampleReport() {
 
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 lg:gap-10 items-end">
                 <div>
-                  <h1
-                    className="text-[34px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
-                    style={{ letterSpacing: "-0.028em", textWrap: "balance" } as React.CSSProperties}
-                  >
+                  <h1 className="title-h1">
                     See what Sarah's £19.99 actually got her.
                   </h1>
                   <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[58ch]">

@@ -143,6 +143,45 @@
     border: 1px solid #E5E2DC;
     border-radius: 10px;
   }
+
+  /*
+   * .title-h1 — canonical page-hero heading.
+   *
+   * Locked 2026-05-18 after the /plan title card rolled out and read as
+   * substantially more confident than the inconsistent H1 sizes/weights
+   * across the rest of the site. Every page hero (the main visible title
+   * at the top of a route, typically inside a panel-ivory title card)
+   * MUST use this class. Inline typographic overrides on page H1/H2 hero
+   * elements are forbidden — they are what fragmented the system in the
+   * first place. Positional classes (mt-X, mb-X, max-w-[N]) are fine on
+   * top of .title-h1; typographic ones (font-*, text-*, leading-*,
+   * tracking-*, letter-spacing) are not.
+   *
+   * Spec:
+   *   font-family   Plus Jakarta Sans (display)
+   *   weight        800 (extrabold)
+   *   size          34px → 40px (≥ sm) → 44px (≥ lg)
+   *   line-height   1.05
+   *   letter-spacing -0.028em
+   *   color         text-foreground
+   *   wrap          balanced (avoids stray short last lines)
+   *
+   * If a surface genuinely needs a heroic over-scale (e.g. Teaser's
+   * "this is yours" moment), add a follow-up `.title-h1--hero` modifier
+   * — do NOT inline a new font-size. Keeping the variants in one place
+   * is the whole point of this class.
+   */
+  .title-h1 {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 800;
+    font-size: 34px;
+    line-height: 1.05;
+    letter-spacing: -0.028em;
+    color: hsl(var(--foreground));
+    text-wrap: balance;
+  }
+  @media (min-width: 640px)  { .title-h1 { font-size: 40px; } }
+  @media (min-width: 1024px) { .title-h1 { font-size: 44px; } }
 }
 
 /* Nav link mint underline slide-in */

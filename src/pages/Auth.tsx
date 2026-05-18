@@ -227,7 +227,7 @@ function FormBody({
         </span>
       </div>
 
-      <h1 className="mt-5 text-[32px] sm:text-[36px] font-extrabold tracking-tight leading-tight text-foreground">
+      <h1 className="mt-5 title-h1">
         Sign in.
       </h1>
       <p className="mt-3 text-[14.5px] sm:text-[15px] text-muted-foreground leading-relaxed">
@@ -347,7 +347,7 @@ function SentBody({
       <h1
         ref={successH1Ref}
         tabIndex={-1}
-        className="mt-5 text-[32px] sm:text-[36px] font-extrabold tracking-tight leading-tight text-foreground outline-none"
+        className="mt-5 title-h1 outline-none"
       >
         Check your email.
       </h1>

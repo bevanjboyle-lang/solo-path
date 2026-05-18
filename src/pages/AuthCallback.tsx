@@ -144,10 +144,7 @@ export default function AuthCallback() {
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
                   <span className="text-foreground">Sign-in link expired</span>
                 </div>
-                <h1
-                  className="font-display text-[28px] sm:text-[32px] font-extrabold tracking-tight leading-[1.1] text-foreground"
-                  style={{ letterSpacing: "-0.028em" }}
-                >
+                <h1 className="title-h1">
                   This sign-in link has expired.
                 </h1>
                 <p className="mt-4 font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[40ch] mx-auto">

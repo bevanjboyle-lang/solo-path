@@ -33,10 +33,7 @@ export default function NotFound() {
               <span className="text-foreground">404 · Page not found</span>
             </div>
 
-            <h1
-              className="font-display text-[32px] sm:text-[38px] font-extrabold tracking-tight leading-[1.05] text-foreground"
-              style={{ letterSpacing: "-0.03em" }}
-            >
+            <h1 className="title-h1">
               We couldn't find that page.
             </h1>
 

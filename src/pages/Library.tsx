@@ -809,10 +809,7 @@ function LibraryPageHeader({
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
         <div className="lg:col-span-9">
-          <div
-            aria-hidden
-            className="text-[40px] sm:text-[48px] lg:text-[52px] font-extrabold tracking-tight leading-[1.05] text-foreground"
-          >
+          <div aria-hidden className="title-h1">
             {h1}
           </div>
           <p className="mt-4 text-[15.5px] text-muted-foreground leading-relaxed max-w-2xl">

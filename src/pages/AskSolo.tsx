@@ -793,10 +793,7 @@ function EmptyWelcome({ onSuggest }: { onSuggest: (q: string) => void }) {
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
         <span className="text-foreground">Ask Solo</span>
       </div>
-      <h1
-        className="font-display text-[32px] sm:text-[36px] font-extrabold text-foreground leading-[1.1] max-w-[18ch]"
-        style={{ letterSpacing: "-0.028em" }}
-      >
+      <h1 className="title-h1 max-w-[18ch]">
         Ask anything about your plan.
       </h1>
       <p className="mt-4 font-display text-[16px] sm:text-[17px] font-medium text-muted-foreground leading-[1.45] max-w-[46ch]">

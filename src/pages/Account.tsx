@@ -475,10 +475,7 @@ function AccountPageHeader({ memberSince }: { memberSince: string | null }) {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
         <div className="lg:col-span-9">
-          <div
-            aria-hidden
-            className="text-[36px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
-          >
+          <div aria-hidden className="title-h1">
             Account.
           </div>
           <p className="mt-3 font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[52ch]">

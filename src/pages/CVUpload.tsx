@@ -224,7 +224,7 @@ export default function CVUpload() {
               {/* ─── H1 + standfirst (asymmetric on desktop, stacked on mobile) ─── */}
               <div className="px-8 sm:px-12 lg:px-16 pb-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12">
                 <div className="lg:col-span-7">
-                  <h1 className="text-[34px] sm:text-[40px] lg:text-[48px] font-semibold tracking-tight leading-[1.1] text-foreground">
+                  <h1 className="title-h1">
                     Upload your CV{" "}
                     <span className="text-muted-foreground">— we'll tailor the report to your background.</span>
                   </h1>

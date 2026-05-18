@@ -165,7 +165,7 @@ export default function Subscribe() {
                   </span>
                   <span>Subscribed · active</span>
                 </div>
-                <h1 className="font-display text-[34px] sm:text-[38px] font-extrabold tracking-tight leading-[1.05] text-foreground" style={{ letterSpacing: "-0.03em" }}>
+                <h1 className="title-h1">
                   You're already subscribed.
                 </h1>
                 <p className="mt-3.5 font-display text-[16px] sm:text-[17px] text-muted-foreground leading-[1.45] max-w-[38ch]">
@@ -261,10 +261,7 @@ export default function Subscribe() {
             )}
 
             {/* H1 — placeholder copy per F5 (production should not ship inline placeholder tag). */}
-            <h1
-              className="text-[40px] sm:text-[48px] lg:text-[52px] font-extrabold tracking-tight leading-[1.02] text-foreground"
-              style={{ letterSpacing: "-0.03em", textWrap: "balance" } as React.CSSProperties}
-            >
+            <h1 className="title-h1">
               {/* F5: H1 copy is placeholder pending positioning-strategy review. */}
               Keep your plan alive.
             </h1>
