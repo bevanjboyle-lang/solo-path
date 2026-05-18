@@ -119,6 +119,11 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const [loadError, setLoadError] = useState(false);
   const [strandSubmitting, setStrandSubmitting] = useState(false);
 
+  // Coaching layer Phase 1 (admin/coaching-layer-design.md v1.2, 2026-05-18).
+  // Tracks which task is currently being marked sent so per-task buttons can
+  // show a spinner without race-condition risk (only one in-flight at a time).
+  const [sentInFlightTaskId, setSentInFlightTaskId] = useState<string | null>(null);
+
   const applyReportRow = useCallback((row: Record<string, unknown>) => {
     setReportId(row.id as string);
     setReportStatus(row.status as ReportRow["status"]);
@@ -556,6 +561,57 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     document.getElementById("plan-section-strands")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
+  /*
+   * handleMarkTaskSent — coaching layer Phase 1 (admin/coaching-layer-design.md
+   * v1.2, 2026-05-18). Captures the action moment when the user sends a Direct
+   * or Visibility move. Posts to mark-task-sent edge function which mutates
+   * working_plan in place (status='sent' + sent_at on the matching task) and
+   * then re-loads the tracker session so the UI reflects the new state.
+   *
+   * Without this signal the Non-Response Catcher (Phase 3) has no way to
+   * detect a sent-but-silent move. Drives the highest-leverage psychological
+   * intervention in the coaching layer.
+   */
+  const handleMarkTaskSent = useCallback(
+    async (taskId: string) => {
+      if (!sessionId || !user || !reportId || sentInFlightTaskId) return;
+      setSentInFlightTaskId(taskId);
+      try {
+        const { data, error } = await supabase.functions.invoke(
+          "mark-task-sent",
+          { body: { tracker_session_id: sessionId, task_id: taskId } },
+        );
+        if (error) {
+          console.error("mark-task-sent invoke error:", error);
+          const responseText =
+            (data as { response_text?: string } | null)?.response_text ||
+            "Please try again in a moment.";
+          toast({
+            title: "Couldn't mark as sent",
+            description: responseText,
+            variant: "destructive",
+          });
+          return;
+        }
+        // Re-load tracker session so working_plan reflects the new sent_at.
+        // The day-list renders directly off activationPlan which is hydrated
+        // from working_plan in loadTrackerSession.
+        await loadTrackerSession(user.id, reportId);
+        toast({ title: "Marked as sent." });
+      } catch (err) {
+        console.error("mark-task-sent threw:", err);
+        toast({
+          title: "Couldn't mark as sent",
+          description: "Please try again in a moment.",
+          variant: "destructive",
+        });
+      } finally {
+        setSentInFlightTaskId(null);
+      }
+    },
+    [sessionId, user, reportId, sentInFlightTaskId, loadTrackerSession, toast],
+  );
+
   // Consistency-sweep 2026-05-18: numbered scroll-anchors for in-page
   // sections (01/02/03), then a divider, then route-out links with no
   // numeral, then a second divider, then the utility action. Matches the
@@ -890,6 +946,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                                 isExpanded={expandedDayInList === d.day}
                                 onToggle={() => handleDayInListToggle(d.day)}
                                 strandsMap={Object.fromEntries(strands.map((s) => [s.strand_id, s.model_name]))}
+                                onMarkTaskSent={handleMarkTaskSent}
+                                sentInFlightTaskId={sentInFlightTaskId}
                                 onOpenCheckin={() => {
                                   // v39 (Gap 2): the panel mode is derived from
                                   // the day's status — today=submit, missed=backfill,
@@ -1167,6 +1225,7 @@ function findDayDetail(
  */
 function DayRow({
   day, dayDetail, status, isExpanded, onToggle, onOpenCheckin, strandsMap,
+  onMarkTaskSent, sentInFlightTaskId,
 }: {
   day: number;
   dayDetail: DayDetail | null;
@@ -1178,6 +1237,12 @@ function DayRow({
   // raw keys like "strand_1" in time_allocation entries (visual-audit
   // 2026-05-18 critical finding). Optional so old call sites still build.
   strandsMap?: Record<string, string>;
+  // Coaching layer Phase 1 (admin/coaching-layer-design.md v1.2, 2026-05-18).
+  // Pass-through to DayBody for the "Mark as sent" affordance on Direct +
+  // Visibility moves. Optional so any future call sites that don't need the
+  // affordance still build cleanly.
+  onMarkTaskSent?: (taskId: string) => void;
+  sentInFlightTaskId?: string | null;
 }) {
   const isMissed = status === "missed";
   const isFuture = status === "future";
@@ -1278,7 +1343,13 @@ function DayRow({
       {isExpanded && (
         <div className="px-2 sm:px-6 pb-6 pt-2">
           {dayDetail ? (
-            <DayBody dayDetail={dayDetail} status={status} strandsMap={strandsMap} />
+            <DayBody
+              dayDetail={dayDetail}
+              status={status}
+              strandsMap={strandsMap}
+              onMarkTaskSent={onMarkTaskSent}
+              sentInFlightTaskId={sentInFlightTaskId}
+            />
           ) : (
             <p className="text-[13.5px] italic text-muted-foreground/70 leading-relaxed">
               No specific tasks logged for this day. Your activation plan's day-by-day detail may be lighter for certain days — your overall plan structure still applies.
@@ -1341,6 +1412,8 @@ function DayBody({
   dayDetail,
   status,
   strandsMap,
+  onMarkTaskSent,
+  sentInFlightTaskId,
 }: {
   dayDetail: DayDetail;
   status: DayRowStatus;
@@ -1351,6 +1424,11 @@ function DayBody({
   // name they recognised. Falls back to the raw key when the strand
   // isn't in the map (e.g., "shared" buckets — kept as-is).
   strandsMap?: Record<string, string>;
+  // Coaching layer Phase 1 (admin/coaching-layer-design.md v1.2, 2026-05-18).
+  // When provided, the "Mark as sent" affordance renders on each Direct or
+  // Visibility task whose status is not already 'sent' or 'completed'.
+  onMarkTaskSent?: (taskId: string) => void;
+  sentInFlightTaskId?: string | null;
 }) {
   const isMissedRow = status === "missed";
 
@@ -1485,6 +1563,52 @@ function DayBody({
                       {task.outreach_draft}
                     </p>
                   </div>
+                )}
+
+                {/*
+                 * Coaching layer Phase 1 (admin/coaching-layer-design.md v1.2,
+                 * 2026-05-18). "Mark as sent" affordance for Direct + Visibility
+                 * moves. Suppressed on missed rows (the action moment has
+                 * passed; backfilling sent_at after the fact would muddy the
+                 * Catcher's silence detection). Replaced by a "Sent · DD MMM"
+                 * pill once the user marks it; pill carries the sent_at date
+                 * so the user can see when they did it.
+                 *
+                 * Drives the Non-Response Catcher (Phase 3) — without this
+                 * signal there is no clean way to detect a sent-but-silent
+                 * move five days later.
+                 */}
+                {!isMissedRow &&
+                  task.move_type &&
+                  (task.move_type === "direct" || task.move_type === "visibility") && (
+                  task.status === "sent" ? (
+                    <div
+                      className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-white"
+                      style={{ background: "#2ECDB0" }}
+                    >
+                      <span
+                        className="inline-flex items-center justify-center w-2 h-2 rounded-full text-[7px] font-bold leading-none"
+                        style={{ background: "rgba(255,255,255,0.92)", color: "#1A8A72" }}
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </span>
+                      <span>
+                        Sent
+                        {task.sent_at &&
+                          ` · ${new Date(task.sent_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`}
+                      </span>
+                    </div>
+                  ) : task.status !== "completed" && onMarkTaskSent ? (
+                    <button
+                      type="button"
+                      onClick={() => onMarkTaskSent(task.task_id)}
+                      disabled={sentInFlightTaskId === task.task_id}
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-[#D8D4CC] bg-transparent px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground hover:bg-[#F3F1ED] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {sentInFlightTaskId === task.task_id ? "Marking…" : "Mark as sent"}
+                    </button>
+                  ) : null
                 )}
               </li>
             ))}

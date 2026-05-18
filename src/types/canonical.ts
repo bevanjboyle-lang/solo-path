@@ -229,6 +229,15 @@ export interface Task {
   apollo_query: ApolloQuery | null;
   move: Move | null;
   outreach_draft: string | null;
+  // Runtime additions written after the canonical schema:
+  //   - status, update_notes — written by process-checkin via plan_updates
+  //     (values: "completed" | "missed" | "moved").
+  //   - sent_at, plus the "sent" status — written by the mark-task-sent
+  //     edge function when the user taps "Mark as sent" on /plan.
+  // See admin/coaching-layer-design.md §14 (Phase 1, 2026-05-18).
+  status?: "completed" | "missed" | "moved" | "sent" | null;
+  sent_at?: string | null;
+  update_notes?: string | null;
 }
 
 export interface DayDetail {
