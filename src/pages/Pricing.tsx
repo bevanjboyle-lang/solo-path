@@ -65,7 +65,7 @@ const reportCard: PricingCardData = {
     <>3 of the 25 guidance modules.</>,
     <>Permanent access to your report.</>,
   ],
-  ctaLabel: "Take the test",
+  ctaLabel: "Find what fits",
   secondaryMicrocopy: "8 minutes · pay after you see the preview",
 };
 
@@ -81,10 +81,10 @@ const subscriptionCard: PricingCardData = {
     <><strong>All 25 guidance modules</strong> — 22 more than the report includes.</>,
     <>Weekly check-ins after your first 30 days.</>,
     <>Unlimited Ask Solo — context-aware to your plan.</>,
-    <>New guidance every week. Cancel any time.</>,
+    <>Plan regenerates when your moves don't land. Cancel any time.</>,
   ],
-  ctaLabel: "Take the test",
-  secondaryMicrocopy: "Subscribe after the test — only if you decide to",
+  ctaLabel: "Find what fits",
+  secondaryMicrocopy: "Subscribe after the fit-check — only if you decide to",
 };
 
 /* ── Comparison rows — editorial sentences per cell, not binary ── */
@@ -92,7 +92,7 @@ const comparisonRows: { feat: string; oneTime: ReactNode; sub: ReactNode; faint?
   {
     feat: "Report",
     oneTime: <>Yours forever</>,
-    sub: <>Yours forever — plus a fresh test when you need one</>,
+    sub: <>Yours forever — plus a fresh fit-check when you need one</>,
   },
   {
     feat: "30-day plan",
@@ -108,12 +108,6 @@ const comparisonRows: { feat: string; oneTime: ReactNode; sub: ReactNode; faint?
     feat: "Ask Solo",
     oneTime: <>Capped to your 30-day window</>,
     sub: <>Unlimited</>,
-  },
-  {
-    feat: "New guidance",
-    oneTime: <>Not included</>,
-    sub: <>Every week</>,
-    faint: true,
   },
   {
     feat: "Commitment",
@@ -141,16 +135,16 @@ const faqs: { q: string; a: ReactNode }[] = [
         The report is a one-shot diagnostic — your archetype, your ten scored paths (we recommend
         two to five), your 30-day plan. You
         can use it forever. The subscription keeps the loop running past day 30: weekly check-ins,
-        the rest of the modules, unlimited Ask Solo, fresh tests when your situation changes.
+        the rest of the modules, unlimited Ask Solo, fresh fit-checks when your situation changes.
       </>
     ),
   },
   {
-    q: 'Why "Take the test" and not "Buy now"?',
+    q: 'Why "Find what fits" and not "Buy now"?',
     a: (
       <>
-        Because buying without your report is buying generic content. The test takes 8 minutes and
-        gives you a preview before you pay — so you know what you're paying for.
+        Because buying without your report is buying generic content. The fit-check takes 8 minutes
+        and gives you a preview before you pay — so you know what you're paying for.
       </>
     ),
   },
@@ -182,8 +176,8 @@ export default function Pricing() {
               <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
               <span className="text-foreground">Pricing</span>
             </div>
-            <h1 aria-label="One test. Two ways to keep going." className="title-h1">
-              One test. Two ways to keep going.
+            <h1 aria-label="One fit-check. Two ways to keep going." className="title-h1">
+              One fit-check. Two ways to keep going.
             </h1>
             <p className="mt-4 font-display text-[17px] sm:text-[19px] text-muted-foreground leading-[1.4] max-w-[52ch]">
               £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling — with the 22
@@ -309,7 +303,7 @@ export default function Pricing() {
               className="font-display text-[28px] sm:text-[34px] lg:text-[36px] font-extrabold tracking-tight leading-[1.1] text-foreground max-w-[22ch] mx-auto mb-4"
               style={{ letterSpacing: "-0.03em", textWrap: "balance" } as React.CSSProperties}
             >
-              {isAuthedBuyer ? "Your plan is waiting." : "Eight minutes to a preview. Pay only if it's right."}
+              {isAuthedBuyer ? "Your plan is waiting." : "See what fits."}
             </h3>
             {!isAuthedBuyer && (
               <p className="font-display text-[16px] sm:text-[17px] text-muted-foreground max-w-[56ch] mx-auto mb-7">
@@ -322,7 +316,7 @@ export default function Pricing() {
               className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
               style={{ background: "#2ECDB0" }}
             >
-              {isAuthedBuyer ? "Open my plan" : "Take the test"}
+              {isAuthedBuyer ? "Open my plan" : "Find what fits"}
             </button>
             {!isAuthedBuyer && (
               <div className="mt-4 text-[11px] text-muted-foreground/70 tracking-[0.04em]">
@@ -347,7 +341,7 @@ export default function Pricing() {
               className="w-full rounded-md px-6 py-3 text-[14px] font-semibold text-white"
               style={{ background: "#2ECDB0" }}
             >
-              Take the test
+              Find what fits
             </button>
           </div>
         </div>

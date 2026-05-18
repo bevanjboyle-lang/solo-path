@@ -64,8 +64,8 @@ const monthlyCard: PricingCardData = {
     <>Weekly check-ins · ongoing</>,
     <>22 more guidance modules (25 total)</>,
     <>Unlimited Ask Solo</>,
-    <>New guidance every week</>,
-    <>Fresh test included when you need one</>,
+    <>Plan regenerates when your moves don't land</>,
+    <>Fresh fit-check included when you need one</>,
   ],
   ctaLabel: "Subscribe — £19 / month",
   ctaLoadingLabel: "Opening checkout…",
@@ -98,7 +98,7 @@ const WHAT_THE_SUB_DOES: { n: string; t: string; d: string }[] = [
   },
   {
     n: "02",
-    t: "Unlocks 22 more guidance modules.",
+    t: "Adds 22 more guidance modules.",
     d: "Discovery calls, proposal writing, recovering difficult engagements, second-engagement retainers. The harder lessons live here.",
   },
   {
@@ -108,7 +108,7 @@ const WHAT_THE_SUB_DOES: { n: string; t: string; d: string }[] = [
   },
   {
     n: "04",
-    t: "A fresh test when your situation changes.",
+    t: "A fresh fit-check when your situation changes.",
     d: "Re-run the questionnaire without paying again. Included.",
   },
 ];

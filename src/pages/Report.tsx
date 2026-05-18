@@ -329,7 +329,7 @@ export default function Report() {
                   No report yet.
                 </h1>
                 <p className="mt-4 text-[15px] text-muted-foreground leading-relaxed">
-                  Complete the test to generate yours. About eight minutes; you'll see your warmest path inside the first read.
+                  Complete the fit-check to generate yours. About eight minutes; you'll see your warmest path inside the first read.
                 </p>
                 <div className="mt-7 flex flex-col items-start gap-3 border-t border-[#E5E2DC] pt-7">
                   <button
@@ -337,7 +337,7 @@ export default function Report() {
                     onClick={() => startTest(navigate)}
                     className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors"
                   >
-                    Take the test →
+                    Find what fits →
                   </button>
                   <button
                     type="button"

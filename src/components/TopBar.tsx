@@ -111,7 +111,7 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
               onClick={handleStartTest}
               className="rounded-lg bg-primary px-5 py-2 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              Take the test
+              Find what fits
             </button>
           )}
         </div>
@@ -200,7 +200,7 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
                 onClick={() => { handleStartTest(); setOpen(false); }}
                 className="w-full rounded-lg bg-primary px-5 py-2.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
-                Take the test
+                Find what fits
               </button>
             )}
           </div>

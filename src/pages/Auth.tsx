@@ -298,13 +298,13 @@ function FormBody({
        * relying on photo-background contrast.
        */}
       <p className="mt-5 text-center text-[12.5px] text-muted-foreground">
-        Haven't taken the test yet?{" "}
+        New here?{" "}
         <button
           type="button"
           onClick={onStartTest}
           className="text-foreground border-b border-[#D8D4CC] hover:border-foreground transition-colors"
         >
-          Start here →
+          Find what fits →
         </button>
       </p>
     </div>
@@ -403,13 +403,13 @@ function SentBody({
        * user is on the form or the sent confirmation.
        */}
       <p className="mt-5 text-center text-[12.5px] text-muted-foreground">
-        Haven't taken the test yet?{" "}
+        New here?{" "}
         <button
           type="button"
           onClick={onStartTest}
           className="text-foreground border-b border-[#D8D4CC] hover:border-foreground transition-colors"
         >
-          Start here →
+          Find what fits →
         </button>
       </p>
     </div>

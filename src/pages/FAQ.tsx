@@ -52,12 +52,14 @@ interface FAQCategory {
 
 const categories: FAQCategory[] = [
   {
+    // Internal id kept as "about-the-test" — existing deep links (if any) still resolve.
+    // The visible label and Q&A bodies use the L04 cascade vocabulary ("fit-check").
     id: "about-the-test",
-    label: "About the test",
+    label: "About the fit-check",
     items: [
-      { id: "faq-how-long", q: "How long does the test take?", a: "About eight minutes. The questionnaire saves your progress, so you can leave and come back if you need to. The CV upload at the start is skippable in one click; skipping doesn't change the test, only adds about thirty seconds of context to the report when included." },
+      { id: "faq-how-long", q: "How long does the fit-check take?", a: "About eight minutes. The questionnaire saves your progress, so you can leave and come back if you need to. The CV upload at the start is skippable in one click; skipping doesn't change the fit-check, only adds about thirty seconds of context to the report when included." },
       { id: "faq-cv-required", q: "Do I need to upload my CV?", a: "No, it's optional. Uploading your CV pre-fills some questions and grounds the analysis in your actual role and history. You can skip it and answer everything manually." },
-      { id: "faq-who-for", q: "Who is Solo designed for?", a: "Mid-career professionals with 8+ years of experience who want to understand their independent options. The test is calibrated against archetypes that emerge from senior structured roles." },
+      { id: "faq-who-for", q: "Who is Solo designed for?", a: "Mid-career professionals with 8+ years of experience who want to understand their independent options. The fit-check is calibrated against archetypes that emerge from senior structured roles." },
       { id: "faq-ai-worry", q: "Do I need to be worried about AI to use Solo?", a: "No. Solo is for anyone who wants to build independent income — whether you are exploring a career change, planning for greater flexibility, preparing for redundancy, or simply want financial options that don't depend entirely on one employer. AI displacement is one reason people come to Solo. It is not the only one, and you do not need to believe your job is at risk to benefit from having a Plan B." },
     ],
   },
@@ -94,7 +96,7 @@ const categories: FAQCategory[] = [
     items: [
       { id: "faq-sub-required", q: "Do I need a subscription?", a: "No. The report and 30-day plan are standalone. The subscription is what keeps the tracker running past day 30 and unlocks the remaining 22 guidance modules." },
       { id: "faq-sub-cancel", q: "Can I cancel?", a: "Yes, any time. Access continues to the end of your billing period — no refund mid-period for monthly. Annual subscriptions are pro-rata refundable in the first 14 days." },
-      { id: "faq-sub-includes", q: "What does the subscription include?", a: "Ongoing tracker with weekly check-ins past day 30, the remaining 22 guidance modules (25 total), unlimited Ask Solo conversations, and a fresh test whenever your situation changes." },
+      { id: "faq-sub-includes", q: "What does the subscription include?", a: "Ongoing tracker with weekly check-ins past day 30, the remaining 22 guidance modules (25 total), unlimited Ask Solo conversations, and a fresh fit-check whenever your situation changes." },
     ],
   },
 ];
@@ -350,7 +352,7 @@ export default function FAQ() {
                     className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
                     style={{ background: "#2ECDB0" }}
                   >
-                    {user ? "Open my plan" : "Take the test"}
+                    {user ? "Open my plan" : "Find what fits"}
                   </button>
                   {!user && (
                     <div className="mt-4 text-[11px] text-muted-foreground/70 tracking-[0.04em]">

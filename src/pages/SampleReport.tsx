@@ -126,7 +126,7 @@ export default function SampleReport() {
           onClick={handleStartTest}
           className="text-[12px] font-semibold text-foreground underline underline-offset-[3px] decoration-[#A37500] hover:decoration-foreground whitespace-nowrap"
         >
-          Take the test for your own →
+          Find what fits — for you →
         </button>
       </div>
 
@@ -292,7 +292,7 @@ export default function SampleReport() {
                     className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
                     style={{ background: "#2ECDB0" }}
                   >
-                    Take the test
+                    Find what fits
                   </button>
                   <div className="mt-4 text-[11px] text-muted-foreground/70 tracking-[0.04em]">
                     One-time payment · No subscription required · Free preview before you pay
@@ -483,7 +483,7 @@ function MidContentConversion({ onTake }: { onTake: () => void }) {
         className="inline-flex items-center justify-center rounded-md px-5 py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
         style={{ background: "#2ECDB0" }}
       >
-        Take the test
+        Find what fits
       </button>
     </section>
   );

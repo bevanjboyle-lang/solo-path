@@ -257,7 +257,7 @@ export function BottomCTA() {
           className="mt-6 rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
           onClick={() => navigate("/auth")}
         >
-          Take the test →
+          Find what fits →
         </Button>
         <p className="mt-3 text-xs text-primary-foreground/50">15-question questionnaire. No credit card required to start.</p>
       </div>

@@ -381,7 +381,7 @@ export default function Landing() {
                       </PrimaryButton>
                     ) : (
                       <PrimaryButton onClick={handleStartTest}>
-                        Take the test
+                        Find what fits
                       </PrimaryButton>
                     )}
                     {/*
@@ -541,7 +541,7 @@ export default function Landing() {
           <div className="mx-auto max-w-6xl px-6">
             <ScrollReveal>
               {/* Drift B fix (2026-05-18): closing CTA is auth-aware. For an
-                * anon visitor: "Take the test" pitch. For an authed paid user
+                * anon visitor: "Find what fits" pitch. For an authed paid user
                 * who's just scrolled the home page: "Open my plan" — they
                 * don't need to be re-sold the report they've already bought.
                 * Mirrors the hero CTAs which already handle this correctly. */}
@@ -559,7 +559,7 @@ export default function Landing() {
                   <p className="mt-5 text-[15px] leading-[1.65]" style={{ color: "rgba(250,249,247,0.80)" }}>
                     {isAuthed
                       ? "Your report, your 30-day plan, and your check-in history are right where you left them."
-                      : "The test takes 8 minutes. You'll see your archetype, your top income paths, and your first recommended move before you pay anything."}
+                      : "The fit-check takes 8 minutes. You'll see your archetype, your top income paths, and your first recommended move before you pay anything."}
                   </p>
                   <div className="mt-9">
                     {isAuthed ? (
@@ -568,7 +568,7 @@ export default function Landing() {
                       </PrimaryButton>
                     ) : (
                       <PrimaryButton onClick={handleStartTest}>
-                        Take the test
+                        Find what fits
                       </PrimaryButton>
                     )}
                   </div>
@@ -793,10 +793,10 @@ function ChatGPTDifferenceBody({ onTake }: { onTake: () => void }) {
         className="mx-auto mt-10 max-w-3xl text-[14.5px] font-medium leading-[1.6]"
         style={{ color: "#FAF9F7" }}
       >
-        You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually reach out to. Or take the Solo test — and walk away with a real plan and a real list of people to contact.
+        You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually reach out to. Or take the Solo fit-check — and walk away with a real plan and a real list of people to contact.
       </p>
       <div className="mt-9">
-        <PrimaryButton onClick={onTake}>Take the test</PrimaryButton>
+        <PrimaryButton onClick={onTake}>Find what fits</PrimaryButton>
       </div>
     </div>
   );

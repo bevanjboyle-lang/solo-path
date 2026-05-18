@@ -117,7 +117,7 @@ export default function PrivacyPolicy() {
     <LegalPage
       title="Privacy policy"
       eyebrow="Privacy"
-      subhead="How Solo handles the information you give us when you take the test, pay for a report, and use the product."
+      subhead="How Solo handles the information you give us when you take the fit-check, pay for a report, and use the product."
       lastUpdated="April 2026"
       sections={sections}
       isTBC
