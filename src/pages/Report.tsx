@@ -27,39 +27,39 @@ import type { SoloCoreReport, ReportRow } from "@/types/canonical";
 import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
 
 /*
- * Report — Pass 1 /report v1 (2026-05-18) — first Phase 2 surface
+ * Report Pass 1 /report v1 (2026-05-18) first Phase 2 surface
  *
  * Editorial reskin of the full unlocked report. Two-column app shell
  * inheriting /plan (AreaSidebar + flexible main column). 9 sections in
- * canonical order, each on its own ivory panel — except the dark #ai
+ * canonical order, each on its own ivory panel, except the dark #ai
  * section at the bottom which is the screen's single dark moment per
  * cadence rule v1.4 §8.
  *
  * Locked decisions from admin/pass-1-report-decisions.md:
- *   F1 — Report added to TopBar.authed centre nav (Plan · Report ·
+ *   F1, Report added to TopBar.authed centre nav (Plan · Report ·
  *        Library · Account · Sign out).
- *   F2 — Page-header H1 sources from archetype name, falls back to
+ *   F2, Page-header H1 sources from archetype name, falls back to
  *        "Your Plan B Report" if missing.
- *   F3 — Brief-collapse for Sell, Recommendation, Reality sections:
+ *   F3, Brief-collapse for Sell, Recommendation, Reality sections:
  *        single-row preview, click to expand to full content in place.
- *   F4 — Page-header CTAs: secondary button "Download as PDF" +
+ *   F4, Page-header CTAs: secondary button "Download as PDF" +
  *        tertiary text link "Refine your report". Different weights
  *        match different frequencies of use.
- *   F5 — Body prose in Source Serif 4 (real exception to the locked
+ *   F5, Body prose in Source Serif 4 (real exception to the locked
  *        two-typeface rule). Scoped to .prose-serif p inside section
  *        bodies. Everything else stays sans.
- *   F6 — Drop cap on the first paragraph of #edge. The page's one
+ *   F6, Drop cap on the first paragraph of #edge. The page's one
  *        typographic flourish.
- *   F7 — Business Paths as stacked list, not chart. Existing
+ *   F7, Business Paths as stacked list, not chart. Existing
  *        BusinessPaths composite handles the rendering.
  *
- *   Cadence: one dark section — #ai-impact at the bottom of the read.
+ *   Cadence: one dark section, #ai-impact at the bottom of the read.
  *   Closing weight, not mid-scroll interruption. Per v1.4 §8.
  *
  * Pass 1 scope: shell + chrome + sidebar + page-header + section heads
  * + brief-collapse + dark wrapper + serif + drop cap. Internal section
  * composites (HookInsightSection, ArchetypeSection, BusinessPaths, etc.)
- * preserved as-is — Phase 2 of Phase 2 may reskin them.
+ * preserved as-is, Phase 2 of Phase 2 may reskin them.
  *
  * Drops framer-motion. Editorial register lands instantly per the spine
  * precedent. Preserves: data fetch, refinement state + limit, PDF export,
@@ -104,7 +104,7 @@ export default function Report() {
   const [refineOpen, setRefineOpen] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
-  // Brief-collapse state per section (F3) — defaults all to collapsed; user can expand any.
+  // Brief-collapse state per section (F3), defaults all to collapsed; user can expand any.
   const [expandedBriefs, setExpandedBriefs] = useState<Record<string, boolean>>({});
 
   /* ─── Load report ─── */
@@ -445,7 +445,7 @@ export default function Report() {
                   </div>
                 </section>
 
-                {/* ─── Sections — render in canonical order ─── */}
+                {/* ─── Sections, render in canonical order ─── */}
                 {visibleSections.map((s) => {
                   if (s.variant === "brief") {
                     return (
@@ -543,7 +543,7 @@ function SectionHead({
   const labelColour = tone === "dark" ? "text-[#FAF9F7]" : "text-foreground";
   const metaColour = tone === "dark" ? "text-[rgba(250,249,247,0.55)]" : "text-muted-foreground/80";
   const ruleColour = tone === "dark" ? "border-white/10" : "border-[#E5E2DC]";
-  const numColour = "text-primary"; // mint on both tones — same eyebrow vocabulary
+  const numColour = "text-primary"; // mint on both tones, same eyebrow vocabulary
   return (
     <div className={`flex items-baseline justify-between gap-4 pb-4 border-b ${ruleColour} mb-6`}>
       <div className="text-[11px] font-semibold uppercase tracking-[0.18em]">
@@ -576,7 +576,7 @@ function FullSection({
        * render their own H2/lede/structure in sans (the component's own
        * styling); the serif scopes to <p> tags inside .prose-serif.
        * The drop-cap (per F6) is applied via the .has-dropcap class
-       * on the wrapper — the index.css rule targets the first <p>
+       * on the wrapper, the index.css rule targets the first <p>
        * inside that wrapper at any nesting depth.
        */}
       <div className={`prose-serif ${dropCap ? "has-dropcap" : ""}`}>

@@ -20,10 +20,10 @@ const sections: LegalSection[] = [
     title: "What We Collect",
     content: (
       <ul className="list-disc list-inside space-y-2">
-        <li><strong>Account data</strong> — email address, password hash</li>
-        <li><strong>Profile data</strong> — questionnaire answers, CV text if uploaded, archetype classification</li>
-        <li><strong>Usage data</strong> — pages viewed, features used, check-in history</li>
-        <li><strong>Payment data</strong> — processed by Stripe. We never see or store full card numbers</li>
+        <li><strong>Account data</strong>, email address, password hash</li>
+        <li><strong>Profile data</strong>, questionnaire answers, CV text if uploaded, archetype classification</li>
+        <li><strong>Usage data</strong>, pages viewed, features used, check-in history</li>
+        <li><strong>Payment data</strong>, processed by Stripe. We never see or store full card numbers</li>
       </ul>
     ),
   },
@@ -56,11 +56,11 @@ const sections: LegalSection[] = [
     title: "Third-Party Processors",
     content: (
       <ul className="list-disc list-inside space-y-2">
-        <li><strong>Database and authentication</strong> — EU-hosted</li>
-        <li><strong>Stripe</strong> — payments, PCI DSS compliant</li>
-        <li><strong>AI provider</strong> — generation, with SCCs</li>
-        <li><strong>Hosting</strong> — application hosting</li>
-        <li><strong>Resend</strong> — transactional email</li>
+        <li><strong>Database and authentication</strong>, EU-hosted</li>
+        <li><strong>Stripe</strong>, payments, PCI DSS compliant</li>
+        <li><strong>AI provider</strong>, generation, with SCCs</li>
+        <li><strong>Hosting</strong>, application hosting</li>
+        <li><strong>Resend</strong>, transactional email</li>
       </ul>
     ),
   },

@@ -53,7 +53,7 @@ export default function AskSoloInfoPopover({
           <div>
             <p className="font-semibold text-foreground mb-1.5">What it can't do</p>
             <ul className="space-y-1 text-muted-foreground list-disc pl-4">
-              <li>Make changes to your plan — use check-ins for that</li>
+              <li>Make changes to your plan, use check-ins for that</li>
               <li>Access the internet or real-time data</li>
               <li>Remember you across devices if you're not signed in</li>
             </ul>
@@ -61,7 +61,7 @@ export default function AskSoloInfoPopover({
           <div className="pt-2 border-t border-border">
             <p className="text-[11px] text-foreground">
               {isSubscriber
-                ? "Unlimited questions — part of your subscription"
+                ? "Unlimited questions, part of your subscription"
                 : `${questionsRemaining} of ${totalQuestions} questions left`}
             </p>
           </div>

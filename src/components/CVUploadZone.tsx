@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 /*
- * CVUploadZone — Pass 1 /cv-upload v1 (2026-05-16)
+ * CVUploadZone, Pass 1 /cv-upload v1 (2026-05-16)
  *
  * Editorial drop zone for /cv-upload. Replaces the previous dashed-border
  * dropzone-icon SaaS surface with a deliberate stone-inset surface where
@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
  * reframes the purpose; border colour marks the active state).
  *
  * The Toast on upload success is dropped per Pass 1 /cv-upload F7
- * resolution 2026-05-16 — the in-surface chip + Encrypted trust line is
+ * resolution 2026-05-16, the in-surface chip + Encrypted trust line is
  * the success signal. ARIA-live on the surface covers the screen-reader
  * announcement.
  *
@@ -195,7 +195,7 @@ export default function CVUploadZone({
       // The Supabase JS client doesn't expose upload progress events on the
       // storage upload helper, so we run a synthetic progress estimate during
       // the request. Real progress would require switching to a signed-URL
-      // direct PUT and using XHR — out of scope for this Pass 1 visual lift.
+      // direct PUT and using XHR, out of scope for this Pass 1 visual lift.
       const fakeProgressTimer = setInterval(() => {
         setUploadProgress((p) => (p >= 90 ? 90 : p + 7));
       }, 120);
@@ -219,7 +219,7 @@ export default function CVUploadZone({
       setState("uploaded");
       onUploadComplete(storagePath);
 
-      // Fire parse-cv in the background. Non-fatal — the report can be
+      // Fire parse-cv in the background. Non-fatal, the report can be
       // generated without CV context if parsing fails.
       try {
         const fd = new FormData();
@@ -383,7 +383,7 @@ export default function CVUploadZone({
             <Eyebrow tone="success" label="Uploaded" spec="Ready to continue" />
           </div>
           <div className="px-8 sm:px-12 py-8 flex items-center gap-5">
-            {/* CSS document chip — no icon import */}
+            {/* CSS document chip, no icon import */}
             <div className="shrink-0 w-12 h-14 bg-white border border-[#D8D4CC] relative">
               <div className="absolute top-0 right-0 w-3 h-3 bg-[#E5E2DC]" style={{ clipPath: "polygon(0 0, 100% 100%, 100% 0)" }} />
               <div className="absolute inset-x-2 top-3 space-y-1">
@@ -458,7 +458,7 @@ export default function CVUploadZone({
                 )}
                 {state === "error-failed" && (
                   <>
-                    <strong className="font-semibold">Upload failed.</strong> Please try again — your
+                    <strong className="font-semibold">Upload failed.</strong> Please try again, your
                     file wasn't sent.
                   </>
                 )}

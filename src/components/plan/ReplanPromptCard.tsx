@@ -19,9 +19,9 @@ interface ReplanPromptCardProps {
 
 const BODY_BY_TYPE: Record<string, string> = {
   busy_stretch:
-    "You've got a busy stretch ahead. I can rebuild the next few days around that — same strands, adjusted pace.",
+    "You've got a busy stretch ahead. I can rebuild the next few days around that, same strands, adjusted pace.",
   stuck:
-    "We've hit the same block twice. I can rework the plan to move around it — same strands, different angle.",
+    "We've hit the same block twice. I can rework the plan to move around it, same strands, different angle.",
 };
 
 const FALLBACK_BODY =

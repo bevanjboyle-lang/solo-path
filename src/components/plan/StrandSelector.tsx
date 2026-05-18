@@ -29,7 +29,7 @@ interface StrandSelectorProps {
 // to match the generate-plan backend contract (selected_ranks.length >= 2). The
 // canonical product rule is "10 options, up to 5 selected" but the portfolio
 // mechanic that differentiates Solo's plan from a generic single-path tool
-// requires at least 2 — picking only 1 collapses the portfolio frame. Backend
+// requires at least 2, picking only 1 collapses the portfolio frame. Backend
 // rejected single-rank arrays with a 400 the frontend swallowed; users saw a
 // generic "We couldn't start your plan" toast with no path forward.
 const MIN_SELECTED = 2;
@@ -97,7 +97,7 @@ function OptionRow({
       }
     >
       <div className="flex items-start gap-4">
-        {/* Visual checkbox — driven by `checked`, the whole row is the hit target */}
+        {/* Visual checkbox, driven by `checked`, the whole row is the hit target */}
         <span
           aria-hidden="true"
           className={[
@@ -196,7 +196,7 @@ export default function StrandSelector({
   const recommendedRanks = useMemo<number[]>(() => {
     const fromRec = recommended_selection?.selected_ranks;
     // Drift 2 fix (2026-05-18): backend's P1 prompt instructs "always recommend
-    // at least 2 ranks", but defensive — if the recommendation comes back with
+    // at least 2 ranks", but defensive, if the recommendation comes back with
     // fewer than MIN_SELECTED, pad from the top-ranked options. Prevents the
     // user landing with a sub-minimum pre-selection.
     if (Array.isArray(fromRec) && fromRec.length >= MIN_SELECTED) return fromRec;
@@ -220,7 +220,7 @@ export default function StrandSelector({
     () => new Set(recommendedRanks),
   );
 
-  // Recommendation rationale is collapsed by default — tone-of-voice principle
+  // Recommendation rationale is collapsed by default, tone-of-voice principle
   // is to lead with action, not justification. User can expand on demand.
   const [rationaleOpen, setRationaleOpen] = useState(false);
 
@@ -283,7 +283,7 @@ export default function StrandSelector({
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           Pick 2 to 5 from your 10 options. We've pre-selected the ones we
-          recommend — you can swap any.
+          recommend, you can swap any.
         </p>
 
         {rationale && rationale.trim().length > 0 && (
@@ -352,7 +352,7 @@ export default function StrandSelector({
           )}
           {tooMany && (
             <p className="text-xs text-red-600">
-              You can pick up to {MAX_SELECTED} — deselect at least{" "}
+              You can pick up to {MAX_SELECTED}, deselect at least{" "}
               {count - MAX_SELECTED}.
             </p>
           )}

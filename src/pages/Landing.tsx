@@ -4,12 +4,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
-// SoloLogo import dropped 2026-05-18 — hero mark removed per visual-audit (TopBar carries the brand).
+// SoloLogo import dropped 2026-05-18, hero mark removed per visual-audit (TopBar carries the brand).
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
 
 /*
- * Landing — Pass 1 facelift v3 (2026-05-18) — post-Phase-2 restructure
+ * Landing Pass 1 facelift v3 (2026-05-18) post-Phase-2 restructure
  *
  * Reorganises the landing page into a hero-dominant + accordion model
  * per Bevan's 2026-05-18 dispatch. Hero stays at full editorial weight;
@@ -18,12 +18,12 @@ import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
  * closing band.
  *
  * Locked changes for this commit:
- *   1. CTA fix — "See your free preview" → "See a sample report",
+ *   1. CTA fix, "See your free preview" → "See a sample report",
  *      routes to /sample-report (was startTest()).
- *   2. Duplicate logo — drop "Solo" word from hero eyebrow; SoloLogo
+ *   2. Duplicate logo, drop "Solo" word from hero eyebrow; SoloLogo
  *      SVG stays prominent above. Eyebrow becomes "• A Plan B engine
  *      for mid-career professionals · Edition 04 · 2026."
- *   3. Accordion restructure — post-hero sections collapse to a stacked
+ *   3. Accordion restructure, post-hero sections collapse to a stacked
  *      list. /faq vocabulary (mint numeral + display title + tease +
  *      +/– toggle; all collapsed by default).
  *   4. ChatGPT differentiator section gets proper numbered eyebrow
@@ -32,7 +32,7 @@ import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
  *   5. §6 Sample report preview DROPPED entirely. /sample-report page
  *      handles that job now.
  *   6. §7 Repeat CTA DROPPED (redundant in accordion layout).
- *   7. §03 Why Solo (formerly "What you get") — keep asymmetric 8/4
+ *   7. §03 Why Solo (formerly "What you get"), keep asymmetric 8/4
  *      → 6/6 → 4/8 mirror grid but TIGHTEN typographic hierarchy:
  *      big props (01, 06) get noticeably larger headings; small props
  *      (02, 05) get visibly smaller headings; medium props (03, 04)
@@ -91,8 +91,8 @@ const HERO_TRUST = [
 const WHAT_SOLO_IS_NOT = [
   { strong: true, text: "Not a generic business plan generator or startup-advice chatbot." },
   { strong: true, text: "Not a side-hustle tool, course funnel, or passive-income pitch." },
-  { strong: false, text: "It's a structured process for taking the niche skills you've already built into the market — to real, paying customers in your sector." },
-  { strong: false, text: "Built for mid-career professionals with a decade of expertise — not first-time founders chasing a generic startup playbook." },
+  { strong: false, text: "It's a structured process for taking the niche skills you've already built into the market, to real, paying customers in your sector." },
+  { strong: false, text: "Built for mid-career professionals with a decade of expertise, not first-time founders chasing a generic startup playbook." },
 ] as const;
 
 const STEPS = [
@@ -107,25 +107,25 @@ const STEPS = [
     num: "02",
     title: "Get your report",
     body:
-      "Solo classifies you against 95 professional archetypes and scores your profile across 480 business models. You receive a ranked shortlist of your top paths — each with a difficulty rating, a speed-to-revenue estimate, and an explanation of why it fits your profile.",
+      "Solo classifies you against 95 professional archetypes and scores your profile across 480 business models. You receive a ranked shortlist of your top paths, each with a difficulty rating, a speed-to-revenue estimate, and an explanation of why it fits your profile.",
     meta: "Delivered in < 8 min",
   },
   {
     num: "03",
     title: "Start making moves",
     body:
-      "A 30-day activation plan starts immediately. Daily check-ins track your progress. Named contacts are ready when you are. Ask Solo anything at any point — it knows your situation.",
+      "A 30-day activation plan starts immediately. Daily check-ins track your progress. Named contacts are ready when you are. Ask Solo anything at any point, it knows your situation.",
     meta: "30 days · ~15 min / day",
   },
 ] as const;
 
 /*
- * §03 Why Solo — 6 propositions in mirror asymmetric grid (8/4 → 6/6
+ * §03 Why Solo, 6 propositions in mirror asymmetric grid (8/4 → 6/6
  * → 4/8) with TIGHTENED typographic hierarchy per 2026-05-18 dispatch:
  *   - Big props (01, 06): 8-col, heading 30-36px scale, generous body
  *   - Medium props (03, 04): 6-col, heading 22-26px scale, normal body
  *   - Small props (02, 05): 4-col, heading 17-19px scale, focused body
- * Size differences are now unmistakable — the asymmetry reads as
+ * Size differences are now unmistakable, the asymmetry reads as
  * deliberate ranking ("this proposition matters more than that one")
  * rather than visual whim.
  */
@@ -146,7 +146,7 @@ const PROPS = [
     eyebrow: "Adaptive plan",
     title: "A plan that responds to real life",
     body:
-      "The 30-day plan isn't a template. It's built from your profile and updated daily based on what actually happens. Fall behind in week two — the plan adjusts.",
+      "The 30-day plan isn't a template. It's built from your profile and updated daily based on what actually happens. Fall behind in week two, the plan adjusts.",
     titleClass: "text-[17px] sm:text-[18px] lg:text-[19px] leading-[1.3]",
     bodyClass: "text-[13.5px] leading-[1.6]",
     span: "lg:col-span-4",
@@ -158,7 +158,7 @@ const PROPS = [
     eyebrow: "Named outreach contacts",
     title: "Real names. Not \"try LinkedIn.\"",
     body:
-      "For paths that involve direct contact, Solo finds actual people — by name, role, and company. When you're ready to send a message, Solo drafts it for you, in your voice, for that specific person. The harder part — deciding to send it — is yours.",
+      "For paths that involve direct contact, Solo finds actual people, by name, role, and company. When you're ready to send a message, Solo drafts it for you, in your voice, for that specific person. The harder part deciding to send it is yours.",
     titleClass: "text-[20px] sm:text-[22px] lg:text-[24px] leading-[1.2]",
     bodyClass: "text-[14.5px] leading-[1.65]",
     span: "lg:col-span-6",
@@ -169,7 +169,7 @@ const PROPS = [
     eyebrow: "Contextual coaching",
     title: "The more you use it, the sharper it gets",
     body:
-      "Ask Solo anything about your progress, your options, or your next move. Every answer draws on everything it has built about you — your archetype, your active paths, your check-in history, your blockers. Not generic advice. A specific answer to your specific situation, from a system that has been paying attention.",
+      "Ask Solo anything about your progress, your options, or your next move. Every answer draws on everything it has built about you, your archetype, your active paths, your check-in history, your blockers. Not generic advice. A specific answer to your specific situation, from a system that has been paying attention.",
     titleClass: "text-[20px] sm:text-[22px] lg:text-[24px] leading-[1.2]",
     bodyClass: "text-[14.5px] leading-[1.65]",
     span: "lg:col-span-6",
@@ -181,7 +181,7 @@ const PROPS = [
     eyebrow: "Guidance library",
     title: "Guidance for the hard parts",
     body:
-      "Going independent involves challenges that are genuinely difficult — pricing your work, positioning yourself, handling rejection.",
+      "Going independent involves challenges that are genuinely difficult, pricing your work, positioning yourself, handling rejection.",
     titleClass: "text-[17px] sm:text-[18px] lg:text-[19px] leading-[1.3]",
     bodyClass: "text-[13.5px] leading-[1.6]",
     span: "lg:col-span-4",
@@ -192,7 +192,7 @@ const PROPS = [
     eyebrow: "Four types of move",
     title: "Every move drafted. You decide whether to make it.",
     body:
-      "Whether your path calls for a direct approach to a named contact, registering on a marketplace, writing a LinkedIn post, or joining the right community — Solo generates the move. You don't have to figure out what to do next. The next move is always ready.",
+      "Whether your path calls for a direct approach to a named contact, registering on a marketplace, writing a LinkedIn post, or joining the right community, Solo generates the move. You don't have to figure out what to do next. The next move is always ready.",
     titleClass: "text-[26px] sm:text-[30px] lg:text-[36px] leading-[1.1]",
     bodyClass: "text-[15px] leading-[1.7]",
     span: "lg:col-span-8",
@@ -202,7 +202,7 @@ const PROPS = [
 ] as const;
 
 /*
- * §05 Who it's for — three representative personas (2026-05-18 rewrite).
+ * §05 Who it's for, three representative personas (2026-05-18 rewrite).
  *
  * Replaced the prior paired pull-quote shape (with fictional first-person
  * quotes and "Composite" attributions) with three structured descriptive
@@ -224,7 +224,7 @@ const PERSONAS = [
   {
     num: "02",
     tag: "The Programme Director, 9 years in",
-    body: "A senior delivery or operations lead in a regulated business — financial services, defence, healthcare, infrastructure. The exit is not tomorrow but it is not five years either. They want the plan built properly and sitting in the drawer, ready to act on when something shifts, rather than assembled in panic when it does.",
+    body: "A senior delivery or operations lead in a regulated business, financial services, defence, healthcare, infrastructure. The exit is not tomorrow but it is not five years either. They want the plan built properly and sitting in the drawer, ready to act on when something shifts, rather than assembled in panic when it does.",
   },
   {
     num: "03",
@@ -241,7 +241,7 @@ const PRICING = [
     amount: "£19.99",
     qualifier: "once",
     features: [
-      "Full report — 10 scored business paths",
+      "Full report, 10 scored business paths",
       "30-day activation plan",
       "Lifetime access to your report",
     ],
@@ -332,11 +332,11 @@ export default function Landing() {
   const { handleStartTest, handleOpenPlan, handleSampleReport, isAuthed } = useHomeHandlers();
   const renderRegression = useMainContentSelfCheck();
 
-  /* Accordion state — all collapsed by default per locked decision */
+  /* Accordion state, all collapsed by default per locked decision */
   const [openSection, setOpenSection] = useState<string | null>(null);
   const toggle = (id: string) => setOpenSection((p) => (p === id ? null : id));
 
-  // report_id recovery redirect — never renders the page
+  // report_id recovery redirect, never renders the page
   useEffect(() => {
     const reportId = searchParams.get("report_id");
     if (reportId) {
@@ -365,12 +365,12 @@ export default function Landing() {
             <div className="panel-ivory p-8 sm:p-12 lg:p-16">
               {/*
                * Visual-audit 2026-05-18 fixes:
-               *   1. Hero SoloLogo SVG dropped — the TopBar already renders
+               *   1. Hero SoloLogo SVG dropped, the TopBar already renders
                *      the solo mark. Stacking a second larger mark inside
                *      the hero created a visible duplicate ("Landing duplicate
                *      solo brand mark" finding). The TopBar mark is now the
                *      sole brand cue at the top of the page.
-               *   2. "Edition 04 · 2026" framing dropped — feels premature
+               *   2. "Edition 04 · 2026" framing dropped, feels premature
                *      pre-launch (suggests it's the 4th edition of a shipped
                *      thing). Eyebrow reduced to the single framing line +
                *      mint dot. Cleaner, less version-y, doesn't need the
@@ -388,7 +388,7 @@ export default function Landing() {
                     If you needed to earn an independent income fast, what would you do?
                   </h1>
                   <p className="mt-6 max-w-xl text-[17px] leading-[1.55] text-muted-foreground">
-                    Most professionals don't have a credible answer to that. Solo builds one — from your actual career, not a template.
+                    Most professionals don't have a credible answer to that. Solo builds one, from your actual career, not a template.
                   </p>
                   <div className="mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
                     {isAuthed ? (
@@ -484,7 +484,7 @@ export default function Landing() {
                 id="why-solo"
                 num="03"
                 title="Why Solo."
-                tease="What Solo actually does for you — six structural propositions."
+                tease="What Solo actually does for you, six structural propositions."
                 isOpen={openSection === "why-solo"}
                 onToggle={() => toggle("why-solo")}
               >
@@ -558,13 +558,13 @@ export default function Landing() {
             <ScrollReveal>
               {/* Drift B fix (2026-05-18): closing CTA is auth-aware. For an
                 * anon visitor: "Find what fits" pitch. For an authed paid user
-                * who's just scrolled the home page: "Open my plan" — they
+                * who's just scrolled the home page: "Open my plan", they
                 * don't need to be re-sold the report they've already bought.
                 * Mirrors the hero CTAs which already handle this correctly. */}
               <div className="panel-dark px-8 py-16 sm:px-12 sm:py-20 lg:px-16 lg:py-24">
                 <div className="mx-auto max-w-2xl text-center">
                   <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(250,249,247,0.65)" }}>
-                    {isAuthed ? "— Pick up where you left off —" : "— Ready when you are —"}
+                    {isAuthed ? "Pick up where you left off" : "Ready when you are"}
                   </div>
                   <h2
                     className="mt-6 font-display text-[30px] font-semibold leading-[1.15] tracking-tight sm:text-[36px] lg:text-[44px]"
@@ -674,7 +674,7 @@ function AccordionRow({
 
 /* ─────────────────────────── Section body components ─────────────────────────── */
 
-/* §01 What Solo is — dark when expanded (cadence moment) */
+/* §01 What Solo is, dark when expanded (cadence moment) */
 function WhatSoloIsBody() {
   return (
     <div>
@@ -687,7 +687,7 @@ function WhatSoloIsBody() {
 
       <div className="mt-9 grid gap-8 lg:grid-cols-2 lg:gap-12">
         <p className="text-[14.5px] leading-[1.75]" style={{ color: "rgba(250,249,247,0.80)" }}>
-          Solo takes your career history, your skills, your working style, your risk appetite, and your financial reality — and produces a specific, ranked shortlist of income paths you can actually pursue. Not brainstorming. Not frameworks. Paths scored against 95 professional archetypes and 480 business models, with the weak ones already removed.
+          Solo takes your career history, your skills, your working style, your risk appetite, and your financial reality, and produces a specific, ranked shortlist of income paths you can actually pursue. Not brainstorming. Not frameworks. Paths scored against 95 professional archetypes and 480 business models, with the weak ones already removed.
         </p>
         <p className="text-[14.5px] leading-[1.75]" style={{ color: "rgba(250,249,247,0.80)" }}>
           Then it builds a 30-day activation plan, finds you the right people to contact, drafts your first moves, and coaches you through the whole thing. The more you use it, the more specific it gets.
@@ -749,7 +749,7 @@ function HowItWorksBody() {
 }
 
 /*
- * §03 Why Solo — TIGHTENED typographic hierarchy per 2026-05-18 dispatch.
+ * §03 Why Solo, TIGHTENED typographic hierarchy per 2026-05-18 dispatch.
  * Big props get unmistakably larger headings; small props get visibly
  * smaller; medium props sit clearly between. Per-prop title/body classes
  * defined in the PROPS data array.
@@ -783,7 +783,7 @@ function WhySoloBody() {
   );
 }
 
-/* §04 The ChatGPT difference — dark when expanded, polemic interrupt */
+/* §04 The ChatGPT difference, dark when expanded, polemic interrupt */
 function ChatGPTDifferenceBody({ onTake }: { onTake: () => void }) {
   return (
     <div className="text-center">
@@ -801,7 +801,7 @@ function ChatGPTDifferenceBody({ onTake }: { onTake: () => void }) {
           General-purpose AI will give you a framework. A list of options. Advice to "build a personal brand" and "network with people in your target sector." It does not know who you are. Every session starts from scratch.
         </p>
         <p className="text-[14.5px] leading-[1.75]" style={{ color: "rgba(250,249,247,0.85)" }}>
-          Solo runs your profile against a decision engine built from 95 archetypes, 480 business models, and 2,159 scored match combinations. It builds a personalised activation system around the paths that fit you. The context it builds over time — your history, your progress, your blockers, your check-ins — is something no general-purpose AI can replicate, because it was never designed to track a specific person through a specific goal.
+          Solo runs your profile against a decision engine built from 95 archetypes, 480 business models, and 2,159 scored match combinations. It builds a personalised activation system around the paths that fit you. The context it builds over time your history, your progress, your blockers, your check-ins is something no general-purpose AI can replicate, because it was never designed to track a specific person through a specific goal.
         </p>
       </div>
 
@@ -809,7 +809,7 @@ function ChatGPTDifferenceBody({ onTake }: { onTake: () => void }) {
         className="mx-auto mt-10 max-w-3xl text-[14.5px] font-medium leading-[1.6]"
         style={{ color: "#FAF9F7" }}
       >
-        You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually reach out to. Or take the Solo fit-check — and walk away with a real plan and a real list of people to contact.
+        You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually reach out to. Or take the Solo fit-check, and walk away with a real plan and a real list of people to contact.
       </p>
       <div className="mt-9">
         <PrimaryButton onClick={onTake}>Find what fits</PrimaryButton>
@@ -819,14 +819,14 @@ function ChatGPTDifferenceBody({ onTake }: { onTake: () => void }) {
 }
 
 /*
- * §05 Who it's for — three structured representative personas (2026-05-18).
+ * §05 Who it's for, three structured representative personas (2026-05-18).
  *
  * Editorial 3-up grid, equal columns, hairline vertical rules between
  * columns on desktop (mirrors the §02 How it works pattern but with
  * symmetric spans). Stacks vertically on mobile.
  *
  * H3 + intro paragraph above the tiles per the brief: "useful for many,
- * particularly aimed at..." framing. No boxes, no shadows — the editorial
+ * particularly aimed at..." framing. No boxes, no shadows, the editorial
  * direction prohibits over-boxed three-column feature grids; the vertical
  * rules carry the rhythm instead.
  */
@@ -850,7 +850,7 @@ function WhoItsForBody() {
         </p>
       </div>
 
-      {/* Three structured persona tiles — symmetric 3-up, hairline rules on lg+ */}
+      {/* Three structured persona tiles, symmetric 3-up, hairline rules on lg+ */}
       <div className="grid gap-10 lg:grid-cols-3 lg:gap-0">
         {PERSONAS.map((p, i) => (
           <div
@@ -889,7 +889,7 @@ function PricingBody() {
           One-time. Or monthly, if you want the check-in loop.
         </h3>
         <p className="mt-4 text-[14.5px] leading-[1.65] text-muted-foreground">
-          Most buy the one-time. The subscription is for people who want their plan to keep going after the first 30 days — with weekly check-ins, all 25 guidance modules, and unlimited Ask Solo.
+          Most buy the one-time. The subscription is for people who want their plan to keep going after the first 30 days, with weekly check-ins, all 25 guidance modules, and unlimited Ask Solo.
         </p>
         <a
           href="/pricing"
@@ -970,10 +970,10 @@ function AboutBody() {
         >
           S
         </span>
-        olo was built by someone who has worked through three of these conversations themselves and has run them with several hundred mid-career professionals. The product is the artefact of those conversations — the spreadsheets, the scoring system, the move templates, the questions you ask when someone walks into the room not yet ready to say "I might leave."
+        olo was built by someone who has worked through three of these conversations themselves and has run them with several hundred mid-career professionals. The product is the artefact of those conversations, the spreadsheets, the scoring system, the move templates, the questions you ask when someone walks into the room not yet ready to say "I might leave."
       </p>
       {/*
-        Interim copy 2026-05-18 — full About body rewrite pending in Task #212
+        Interim copy 2026-05-18, full About body rewrite pending in Task #212
         (Landing §07 entire-section rewrite). The original visible placeholder
         text ("Placeholder paragraph for composition...") was shipping live to
         users and has been replaced with a neutral one-liner until the rewrite
@@ -981,7 +981,7 @@ function AboutBody() {
         update once the founder background page exists.
       */}
       <p className="mt-4 text-[14.5px] leading-[1.7] text-muted-foreground">
-        More about how Solo was built — and why — coming soon.
+        More about how Solo was built and why coming soon.
       </p>
     </div>
   );

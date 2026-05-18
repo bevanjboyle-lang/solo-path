@@ -11,7 +11,7 @@ import CheckinHistoryList, {
 import CheckInPanel from "@/components/plan/CheckInPanel";
 
 /*
- * CheckinHistory — Pass 1 /checkin-history v1 (2026-05-18) — fifth Phase 2 surface
+ * CheckinHistory Pass 1 /checkin-history v1 (2026-05-18) fifth Phase 2 surface
  *
  * Editorial reskin of the read-only 30-day check-in log. Two-column shell
  * inheriting /plan + /report + /library + /account. AreaSidebar with the
@@ -20,15 +20,15 @@ import CheckInPanel from "@/components/plan/CheckInPanel";
  * + right-side stats block (Completed / Missed / Ahead).
  *
  * Locked decisions from admin/pass-1-checkin-history-decisions.md:
- *   F1 — Week separators inline in the timeline composite (rebuilt in v1).
- *   F2 — Right-side stats block: 3 columns (or 2 when no missed days yet).
+ *   F1, Week separators inline in the timeline composite (rebuilt in v1).
+ *   F2, Right-side stats block: 3 columns (or 2 when no missed days yet).
  *     Honest tabular counts, not gamification.
- *   F3 — Move-tag column DROPPED for Pass 1 (data flow not yet wired).
- *   F4 — Drawer prev/next deferred (CheckInPanel doesn't expose hooks;
+ *   F3, Move-tag column DROPPED for Pass 1 (data flow not yet wired).
+ *   F4, Drawer prev/next deferred (CheckInPanel doesn't expose hooks;
  *     lands alongside the read-only data-loading fix in a follow-up).
  *
  * Cadence: zero dark. /checkin-history is the quietest surface in the
- * system — a calm read-only log of the user's own daily reflections.
+ * system, a calm read-only log of the user's own daily reflections.
  * System carries cadence load from /plan, /library, /report, /pricing.
  *
  * Pass 1 scope: shell + sidebar + page-header with stats + rebuilt
@@ -162,7 +162,7 @@ export default function CheckinHistory() {
 
   /* ── Stats for page header right-column ──
    * Drift F fix (2026-05-18, journey-trace audit): "today" is no longer
-   * counted as "ahead" — it's its own category. Previously a Day-11 user
+   * counted as "ahead", it's its own category. Previously a Day-11 user
    * saw "20 AHEAD" when 19 days were genuinely ahead + 1 was today.
    * Today is now silent in the stats row (the TodayCard on /plan and the
    * timeline below already mark today as the active row). Counts sum to 30.
@@ -171,7 +171,7 @@ export default function CheckinHistory() {
   const missedCount = timeline.filter((t) => t.status === "missed").length;
   const aheadCount = timeline.filter((t) => t.status === "future").length;
 
-  /* ── Sidebar config — mirror /plan ──
+  /* ── Sidebar config, mirror /plan ──
    * Drift E fix (2026-05-18, journey-trace audit): added "Your 30 days"
    * item to match /plan's sidebar exactly. Navigates to /plan which
    * auto-expands today's row in §03 (Hash deep-link /plan#day-N also
@@ -253,7 +253,7 @@ export default function CheckinHistory() {
     );
   }
 
-  /* ── No tracker session — paid user whose tracker hasn't initialised ── */
+  /* ── No tracker session, paid user whose tracker hasn't initialised ── */
   if (timeline.length === 0) {
     return (
       <div className="relative min-h-screen text-foreground">
@@ -326,7 +326,7 @@ export default function CheckinHistory() {
                       </div>
                       <p className="mt-3 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.4] max-w-[54ch]">
                         {completedCount === 0
-                          ? "No check-ins yet — your first one is today. The rest of your 30 days will fill in here as you go."
+                          ? "No check-ins yet, your first one is today. The rest of your 30 days will fill in here as you go."
                           : "Every day of your 30-day plan. Read past check-ins, see today's, watch the days ahead."}
                       </p>
                     </div>
@@ -378,7 +378,7 @@ export default function CheckinHistory() {
   );
 }
 
-/* ── Stat — tabular count + small-caps label, no gamification ── */
+/* ── Stat, tabular count + small-caps label, no gamification ── */
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div>

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { startTest } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-// Footer import dropped 2026-05-18 (consistency-sweep) — App.tsx renders the Footer.
+// Footer import dropped 2026-05-18 (consistency-sweep), App.tsx renders the Footer.
 import { useActiveSection } from "@/hooks/useActiveSection";
 
 import HookInsightSection from "@/components/sample-report/HookInsightSection";
@@ -19,7 +19,7 @@ import type { SoloCoreReport } from "@/types/canonical";
 import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
 
 /*
- * SampleReport — Pass 1 /sample-report v1 (2026-05-18) — eighth and final Phase 2 surface
+ * SampleReport Pass 1 /sample-report v1 (2026-05-18) eighth and final Phase 2 surface
  *
  * Path B: React render through /report's actual section composites using
  * the canonical SAMPLE_CORE_REPORT data. The sample IS the product.
@@ -34,20 +34,20 @@ import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
  *   - Editorial closing CTA beneath the report body.
  *
  * Locked decisions from admin/pass-1-sample-report-decisions.md:
- *   Path B — React render through /report composites. Sample IS product.
- *   F1 — Plan toggle DROPPED entirely for Pass 1. /sample-plan will
+ *   Path B, React render through /report composites. Sample IS product.
+ *   F1, Plan toggle DROPPED entirely for Pass 1. /sample-plan will
  *     be a separate route later.
- *   F2 — Sarah's name in H1 renders in heading colour (NOT mint).
+ *   F2, Sarah's name in H1 renders in heading colour (NOT mint).
  *     Avoids cross-contamination with /teaser's mint-name-as-personal
  *     vocabulary.
- *   F3 — Sample-strip persistent, no dismiss.
- *   F4 — One mid-content conversion strip (between #paths and briefs).
- *   F5 — TOC sidebar kept on desktop.
- *   F6 — Labelled as "example profile" (not "synthetic" / "composite" /
+ *   F3, Sample-strip persistent, no dismiss.
+ *   F4, One mid-content conversion strip (between #paths and briefs).
+ *   F5, TOC sidebar kept on desktop.
+ *   F6, Labelled as "example profile" (not "synthetic" / "composite" /
  *     "fictional"). Plain language wins.
  *
  * Cadence: zero NEW dark chrome. The dark #ai-impact section inside
- * the rendered report IS the page's cadence moment — same dark surface
+ * the rendered report IS the page's cadence moment, same dark surface
  * a buyer would see on /report. Mid-content conversion uses mint-rule
  * callout; closing CTA stays ivory; sample-strip uses warning vocab.
  *
@@ -86,7 +86,7 @@ export default function SampleReport() {
 
   const coreReport: SoloCoreReport = SAMPLE_CORE_REPORT;
 
-  /* Brief-collapse state per F3 of /report — same pattern */
+  /* Brief-collapse state per F3 of /report, same pattern */
   const [expandedBriefs, setExpandedBriefs] = useState<Record<string, boolean>>({});
   const toggleBrief = (id: string) => setExpandedBriefs((p) => ({ ...p, [id]: !p[id] }));
 
@@ -102,12 +102,12 @@ export default function SampleReport() {
     <div className="relative min-h-screen flex flex-col text-foreground">
 
       {/*
-        ── Sample-strip — persistent warning band (F3).
+        ── Sample-strip, persistent warning band (F3).
         Visual-audit 2026-05-18: when this strip rendered with
         py-2.5 + its own borderBottom it read as a second header
         chrome stacked above the TopBar ("double chrome" finding).
         Tightened to py-1.5 and the separator border dropped so
-        the strip sits flush against the TopBar's top edge — one
+        the strip sits flush against the TopBar's top edge, one
         visual chrome unit, warning context on top, nav below.
         Kept sticky-top-0 z-50 so it pins above the TopBar on scroll.
       */}
@@ -126,7 +126,7 @@ export default function SampleReport() {
           onClick={handleStartTest}
           className="text-[12px] font-semibold text-foreground underline underline-offset-[3px] decoration-[#A37500] hover:decoration-foreground whitespace-nowrap"
         >
-          Find what fits — for you →
+          Find what fits, for you →
         </button>
       </div>
 
@@ -153,7 +153,7 @@ export default function SampleReport() {
                     See what Sarah's £19.99 actually got her.
                   </h1>
                   <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[58ch]">
-                    A real example report — fractional FD path, 11 years in corporate finance, ten
+                    A real example report, fractional FD path, 11 years in corporate finance, ten
                     scored business paths with our top recommendations, archetype analysis,
                     AI defensibility. Yours would look like this; the details would be yours.
                   </p>
@@ -178,7 +178,7 @@ export default function SampleReport() {
             {/* ── Two-column shell: TOC sidebar + report body ── */}
             <div className="flex gap-8 lg:gap-10">
 
-              {/* TOC sidebar — desktop only (F5) */}
+              {/* TOC sidebar, desktop only (F5) */}
               <aside className="hidden lg:block w-[220px] shrink-0">
                 <div className="sticky top-[68px] pt-2">
                   <div className="panel-ivory py-5">
@@ -225,9 +225,9 @@ export default function SampleReport() {
                 </div>
               </aside>
 
-              {/* ── Report body — /report composites ── */}
+              {/* ── Report body, /report composites ── */}
               <div className="flex-1 min-w-0">
-                <h1 className="sr-only">Sample report — Sarah Okafor</h1>
+                <h1 className="sr-only">Sample report, Sarah Okafor</h1>
 
                 {/* Render sections, with the mid-content conversion strip inserted after #paths */}
                 {visibleSections.map((s) => {
@@ -275,7 +275,7 @@ export default function SampleReport() {
                   */}
                 <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-14 sm:py-16 text-center mt-2">
                   <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
-                    — You've seen Sarah's —
+                    You've seen Sarah's
                   </div>
                   <h3
                     className="font-display text-[28px] sm:text-[34px] lg:text-[36px] font-extrabold tracking-tight leading-[1.1] text-foreground max-w-[20ch] mx-auto mb-4"
@@ -284,7 +284,7 @@ export default function SampleReport() {
                     Eight minutes for yours.
                   </h3>
                   <p className="font-display text-[15px] sm:text-[17px] text-muted-foreground max-w-[58ch] mx-auto mb-7">
-                    Your archetype, your paths, your income outlook, your AI defensibility — built
+                    Your archetype, your paths, your income outlook, your AI defensibility, built
                     from your answers, not Sarah's. £19.99 after the free preview.
                   </p>
                   <button
@@ -309,7 +309,7 @@ export default function SampleReport() {
         Footer removed from page render 2026-05-18 (consistency-sweep).
         App.tsx renders <Footer /> for /sample-report (it's not in
         FOOTERLESS_ROUTES). The page-level render was producing a duplicate
-        dark bar at the bottom — confirmed via DOM `document.querySelectorAll(
+        dark bar at the bottom, confirmed via DOM `document.querySelectorAll(
         'footer').length === 2`. App.tsx is now the sole Footer authority
         across the app.
       */}
@@ -474,7 +474,7 @@ function MidContentConversion({ onTake }: { onTake: () => void }) {
         What you'd get
       </span>
       <p className="font-display text-[15.5px] text-foreground leading-[1.45]" style={{ letterSpacing: "-0.012em" }}>
-        <strong>This is real — and Sarah's is just one shape.</strong>{" "}
+        <strong>This is real, and Sarah's is just one shape.</strong>{" "}
         Yours would map to your archetype, your domains, your day-rate band. Eight minutes; pay only
         after the preview.
       </p>

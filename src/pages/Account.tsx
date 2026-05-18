@@ -33,7 +33,7 @@ import {
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 
 /*
- * Account — Pass 1 /account v1 (2026-05-18) — third Phase 2 surface
+ * Account Pass 1 /account v1 (2026-05-18) third Phase 2 surface
  *
  * Editorial reskin of the account / billing / privacy surface. Two-
  * column app shell inheriting /plan + /report + /library. AreaSidebar
@@ -47,22 +47,22 @@ import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
  *     system carries dark cadence load from /plan's Day-31 wall,
  *     /library's Day-31 banner + gate row, /report's #ai-impact.
  *     Restraint here protects those moments' meaning elsewhere.
- *   F1 — Page-header right-side stat: "Member since [date]" only.
+ *   F1, Page-header right-side stat: "Member since [date]" only.
  *     Topbar avatar already substantiates identity; full name in
  *     display weight on the page header would be redundant and edge
  *     toward badge-y.
- *   F2 — Subscribe CTA on buyer Subscription: inline at standard
+ *   F2, Subscribe CTA on buyer Subscription: inline at standard
  *     weight inside upgrade-block. Mint small-caps framing label +
  *     price-pair beside button (equal weight, not stacked). No
  *     banner, no urgency.
- *   F3 — Cancel subscription: ghost link beside Manage billing
- *     button. Honest — available, not promoted.
- *   F4 — Billing as its own section: kept separate.
- *   F5 — Mobile Danger-zone preview indicator: dropped (CD's own
+ *   F3, Cancel subscription: ghost link beside Manage billing
+ *     button. Honest, available, not promoted.
+ *   F4, Billing as its own section: kept separate.
+ *   F5, Mobile Danger-zone preview indicator: dropped (CD's own
  *     risk flag landed; hamburger sheet already exposes Privacy).
- *   F6 — Account-delete modal "what gets deleted" 5-item inset.
+ *   F6, Account-delete modal "what gets deleted" 5-item inset.
  *     Honesty over abstraction.
- *   F7 — Cancel-pending + payment-failed banners: inside Subscription
+ *   F7, Cancel-pending + payment-failed banners: inside Subscription
  *     section panel, above section-head. Contextual placement.
  *
  * Mobile: AreaSidebar's existing hamburger-sheet pattern (inherited
@@ -153,7 +153,7 @@ export default function Account() {
     navigate("/");
   };
 
-  // removed — handled by TakeAnotherTestCard
+  // removed, handled by TakeAnotherTestCard
 
   const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
 
@@ -199,8 +199,8 @@ export default function Account() {
       h2: isSubscriber ? (subscriptionPlan === "annual" ? "Annual subscription." : "Monthly subscription.") : "30-day report.",
       lede: isSubscriber
         ? (isCancelPending
-            ? `You've scheduled a cancellation. Nothing else changes until ${accessEndDate} — your library stays unlocked, weekly check-ins continue.`
-            : "Renews automatically. Cancel any time — access continues until the end of the paid month.")
+            ? `You've scheduled a cancellation. Nothing else changes until ${accessEndDate}, your library stays unlocked, weekly check-ins continue.`
+            : "Renews automatically. Cancel any time, access continues until the end of the paid month.")
         : "One-time purchase. Access to your report and 30-day plan stays until the date below.",
     },
     billing: {
@@ -236,7 +236,7 @@ export default function Account() {
     </>
   );
 
-  /* Member-since date — derived from auth.users.created_at when present. */
+  /* Member-since date, derived from auth.users.created_at when present. */
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
     : null;
@@ -393,7 +393,7 @@ export default function Account() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Account delete — typed confirmation with "what gets deleted" inset (F6).
+      {/* Account delete, typed confirmation with "what gets deleted" inset (F6).
        *
        * Pass 1: enhanced from spec four-item sentence to a five-item itemised
        * list inside a stone-tinted inset. Honesty over abstraction.
@@ -420,11 +420,11 @@ export default function Account() {
               What gets deleted
             </div>
             <ul className="space-y-1 text-[13px] text-foreground/85 leading-snug">
-              <li className="flex gap-2"><span className="text-muted-foreground">—</span>Your Plan B report and 30-day plan.</li>
-              <li className="flex gap-2"><span className="text-muted-foreground">—</span>All questionnaire answers and your CV.</li>
-              <li className="flex gap-2"><span className="text-muted-foreground">—</span>Check-in history and conversations with Ask Solo.</li>
-              <li className="flex gap-2"><span className="text-muted-foreground">—</span>Subscription record (we'll cancel it as part of deletion).</li>
-              <li className="flex gap-2"><span className="text-muted-foreground">—</span>Email address and profile.</li>
+              <li className="flex gap-2"><span className="text-muted-foreground">·</span>Your Plan B report and 30-day plan.</li>
+              <li className="flex gap-2"><span className="text-muted-foreground">·</span>All questionnaire answers and your CV.</li>
+              <li className="flex gap-2"><span className="text-muted-foreground">·</span>Check-in history and conversations with Ask Solo.</li>
+              <li className="flex gap-2"><span className="text-muted-foreground">·</span>Subscription record (we'll cancel it as part of deletion).</li>
+              <li className="flex gap-2"><span className="text-muted-foreground">·</span>Email address and profile.</li>
             </ul>
           </div>
 
@@ -465,7 +465,7 @@ export default function Account() {
 
 /* ─────────────────────────── Helper components ─────────────────────────── */
 
-/* ── AccountPageHeader — H1 + subhead + right-side Member-since (F1) ── */
+/* ── AccountPageHeader, H1 + subhead + right-side Member-since (F1) ── */
 function AccountPageHeader({ memberSince }: { memberSince: string | null }) {
   return (
     <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
@@ -497,7 +497,7 @@ function AccountPageHeader({ memberSince }: { memberSince: string | null }) {
   );
 }
 
-/* ── SectionHead — mint numeral + small-caps eyebrow + right-side state meta ── */
+/* ── SectionHead, mint numeral + small-caps eyebrow + right-side state meta ── */
 function SectionHead({ numeral, eyebrow, meta }: { numeral: string; eyebrow: string; meta: string }) {
   return (
     <div className="flex items-baseline justify-between pb-4 mb-5 border-b border-[#E5E2DC]">
@@ -512,7 +512,7 @@ function SectionHead({ numeral, eyebrow, meta }: { numeral: string; eyebrow: str
   );
 }
 
-/* ── ProfileSection — two field rows, inline first-name edit (F1) ── */
+/* ── ProfileSection, two field rows, inline first-name edit (F1) ── */
 function ProfileSection({
   firstName, onFirstNameChange, email, editing, onEdit, onCancelEdit, onSave, saving,
 }: {
@@ -568,7 +568,7 @@ function ProfileSection({
         )}
       </div>
 
-      {/* Sign-in email — read-only */}
+      {/* Sign-in email, read-only */}
       <div className="grid grid-cols-[140px_1fr_auto] sm:grid-cols-[180px_1fr_auto] gap-x-6 sm:gap-x-8 items-start py-4 border-t border-[#EDEBE6]">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground pt-1">
           Sign-in email
@@ -587,7 +587,7 @@ function ProfileSection({
   );
 }
 
-/* ── SubscriptionSection — plan-row + upgrade-block (buyer) or actions (subscriber) ── */
+/* ── SubscriptionSection, plan-row + upgrade-block (buyer) or actions (subscriber) ── */
 function SubscriptionSection({
   isSubscriber, isCancelPending, paymentFailed, subscriptionPlan, renewDate, accessEndDate,
   onSubscribe, onManageBilling, onCancel, onResume,
@@ -603,7 +603,7 @@ function SubscriptionSection({
   onCancel: () => void;
   onResume: () => void;
 }) {
-  /* Buyer view — plan-row read-only + upgrade-block. */
+  /* Buyer view, plan-row read-only + upgrade-block. */
   if (!isSubscriber) {
     return (
       <div>
@@ -614,7 +614,7 @@ function SubscriptionSection({
               Current plan
             </div>
             <div className="font-display text-[18px] font-bold text-foreground tracking-tight">
-              Report — £19.99 paid once
+              Report, £19.99 paid once
             </div>
             <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
               <span>
@@ -627,7 +627,7 @@ function SubscriptionSection({
           </div>
         </div>
 
-        {/* Upgrade block — F2: inline at standard weight, no urgency. */}
+        {/* Upgrade block, F2: inline at standard weight, no urgency. */}
         <div className="mt-6 pt-6 border-t border-[#E5E2DC] grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 lg:gap-8 items-center">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary mb-2">
@@ -648,7 +648,7 @@ function SubscriptionSection({
     );
   }
 
-  /* Subscriber view — plan-row + Manage primary + Cancel ghost (F3). */
+  /* Subscriber view, plan-row + Manage primary + Cancel ghost (F3). */
   const priceLine = subscriptionPlan === "annual" ? "£149 / year · Annual" : "£19 / month · Monthly";
   return (
     <div>
@@ -707,11 +707,11 @@ function SubscriptionSection({
   );
 }
 
-/* ── BillingSection — invoice list + Stripe portal deferral (F4: kept separate) ── */
+/* ── BillingSection, invoice list + Stripe portal deferral (F4: kept separate) ── */
 function BillingSection({ onOpenPortal }: { onOpenPortal: () => void }) {
   return (
     <div>
-      {/* Empty-state for now — invoice fetch is post-Pass 1 wiring.
+      {/* Empty-state for now, invoice fetch is post-Pass 1 wiring.
        * Renders the Stripe deferral footnote as the section's primary content. */}
       <div className="rounded-md bg-[#F3F1ED] border border-[#E5E2DC] px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex-1">
@@ -731,7 +731,7 @@ function BillingSection({ onOpenPortal }: { onOpenPortal: () => void }) {
   );
 }
 
-/* ── PrivacySection — two normal actions + Danger zone sub-panel ── */
+/* ── PrivacySection, two normal actions + Danger zone sub-panel ── */
 function PrivacySection({
   onRemoveCv, cvRemoved, onRequestExport, onDeleteAccount,
 }: {
@@ -749,7 +749,7 @@ function PrivacySection({
             Remove my CV.
           </div>
           <p className="text-[13px] text-muted-foreground leading-snug max-w-[60ch]">
-            Deletes your uploaded file and the extracted text. Your report and plan stay — only the source CV is removed.
+            Deletes your uploaded file and the extracted text. Your report and plan stay, only the source CV is removed.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onRemoveCv} disabled={cvRemoved}>
@@ -764,7 +764,7 @@ function PrivacySection({
             Request my data.
           </div>
           <p className="text-[13px] text-muted-foreground leading-snug max-w-[60ch]">
-            We'll email a full export of everything we hold about you — answers, report, check-ins, library reads — within 14 days.
+            We'll email a full export of everything we hold about you answers, report, check-ins, library reads within 14 days.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onRequestExport}>
@@ -772,7 +772,7 @@ function PrivacySection({
         </Button>
       </div>
 
-      {/* Danger zone sub-panel — stone-tinted segregation, not red wall. */}
+      {/* Danger zone sub-panel, stone-tinted segregation, not red wall. */}
       <div
         className="mt-6 rounded-md px-6 py-5"
         style={{ background: "#F3F1ED", border: "1px solid #D5D0C8" }}
@@ -791,7 +791,7 @@ function PrivacySection({
         </div>
         <p className="text-[13px] text-foreground/85 leading-snug mb-4 max-w-[60ch]">
           <span className="font-semibold text-foreground">This deletes your report, plan, check-in history, and conversations.</span>
-          {" "}It can't be undone. You'll be asked to type the word "delete" to confirm — no accidental clicks.
+          {" "}It can't be undone. You'll be asked to type the word "delete" to confirm, no accidental clicks.
         </p>
         <button
           onClick={onDeleteAccount}
@@ -807,7 +807,7 @@ function PrivacySection({
   );
 }
 
-/* ── CancelPendingBanner — info-tinted, contextual inside Subscription section (F7) ── */
+/* ── CancelPendingBanner, info-tinted, contextual inside Subscription section (F7) ── */
 function CancelPendingBanner({ accessEndDate, onResume }: { accessEndDate: string; onResume: () => void }) {
   return (
     <div
@@ -831,7 +831,7 @@ function CancelPendingBanner({ accessEndDate, onResume }: { accessEndDate: strin
   );
 }
 
-/* ── PaymentFailedBanner — error-tinted, informational not alarmist (F7) ── */
+/* ── PaymentFailedBanner, error-tinted, informational not alarmist (F7) ── */
 function PaymentFailedBanner({ onUpdate }: { onUpdate: () => void }) {
   return (
     <div

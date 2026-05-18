@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import PlanSidebar, { type SidebarItem } from "@/components/plan/PlanSidebar";
 
-// Existing canonical sample-report sections — kept untouched as a Pass 1
+// Existing canonical sample-report sections, kept untouched as a Pass 1
 // scope decision (see admin/pass-1-teaser-decisions.md "Scope decision").
 import HookInsight from "@/components/sample-report/HookInsight";
 import ArchetypeSection from "@/components/sample-report/ArchetypeSection";
@@ -29,7 +29,7 @@ import type { SoloCoreReport, ReportRow } from "@/types/canonical";
 import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
 
 /*
- * Teaser — Pass 1 /teaser v1 (2026-05-17)
+ * Teaser, Pass 1 /teaser v1 (2026-05-17)
  *
  * Translates Claude Design's Pass 1 proposal into the live page. Pass 1 scope
  * is shell + chrome + corrections (single panel-ivory containment, hero with
@@ -37,25 +37,25 @@ import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
  * locked treatment, new unlock callout, what-you-get strip with corrected
  * counts, trust strip, bottom CTA). The existing inner sample-report sections
  * (HookInsight, Archetype, TransferableValue, TransferableSkills,
- * BusinessPaths) are kept untouched — they reflect the actual core_report
+ * BusinessPaths) are kept untouched, they reflect the actual core_report
  * payload shape and would require a content+component refactor to replace.
  * That sits in Phase 2. See admin/pass-1-teaser-decisions.md.
  *
  * Locked decisions from admin/pass-1-teaser-decisions.md:
- *   Canonical correction — 10 options (not 5), user picks up to 5 for the plan
- *   Canonical correction — 25 guidance modules total, 3 included with £19.99,
+ *   Canonical correction, 10 options (not 5), user picks up to 5 for the plan
+ *   Canonical correction, 25 guidance modules total, 3 included with £19.99,
  *     22 more with £19/month subscription
- *   F1 — Single continuous ivory panel with internal zone changes (ivory →
+ *   F1, Single continuous ivory panel with internal zone changes (ivory →
  *     dark gate band → stone locked area → ivory)
- *   F2 — Mint first name in hero ("Your plan, Jane.") — one-off precedent
- *   F3 — Strand 2x2 substantiation grid kept (Phase 2 work)
- *   F4 — First 3 locked strands with real titles + "and 5 more" rolled up
+ *   F2 Mint first name in hero ("Your plan, Jane.") one-off precedent
+ *   F3, Strand 2x2 substantiation grid kept (Phase 2 work)
+ *   F4, First 3 locked strands with real titles + "and 5 more" rolled up
  *     (Phase 2 work; BusinessPaths handles current locked rendering)
- *   F5 — 20-day calendar silhouette in locked area (Phase 2 work)
- *   F6 — Drop "Drafted at" timestamp from spec sheet
- *   F7 — Keep word count substantiation in dark gate band
+ *   F5, 20-day calendar silhouette in locked area (Phase 2 work)
+ *   F6, Drop "Drafted at" timestamp from spec sheet
+ *   F7, Keep word count substantiation in dark gate band
  *
- * Dark-card cadence: one dark moment — the gate band. Bottom CTA stays ivory
+ * Dark-card cadence: one dark moment, the gate band. Bottom CTA stays ivory
  * (a dark closing band would read as SaaS conversion stack). Per
  * design-direction.md v1.4 §8.
  *
@@ -117,7 +117,7 @@ export default function Teaser() {
     }
   }, [reportId, noReportFallback]);
 
-  // Dev-bypass — render canonical sample fixture without going through Supabase.
+  // Dev-bypass, render canonical sample fixture without going through Supabase.
   useEffect(() => {
     if (!reportId && isDevBypass()) {
       setCoreReport(SAMPLE_CORE_REPORT);
@@ -197,7 +197,7 @@ export default function Teaser() {
     };
   }, [reportId, navigate, retryNonce, loading]);
 
-  // Sticky CTA visibility — shows once the user scrolls past the hero.
+  // Sticky CTA visibility, shows once the user scrolls past the hero.
   useEffect(() => {
     const handleScroll = () => setShowSticky(window.scrollY > 300);
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -325,7 +325,7 @@ export default function Teaser() {
             {cancelReturn && (
               <div className="mb-6">
                 <Banner variant="warning">
-                  Your payment wasn't completed. Your report is still here — try again when you're ready.
+                  Your payment wasn't completed. Your report is still here, try again when you're ready.
                 </Banner>
               </div>
             )}
@@ -419,10 +419,10 @@ export default function Teaser() {
                 </div>
               </div>
 
-              {/* ─── Dark gate band — one earned dark moment per v1.4 §8 ─── */}
+              {/* ─── Dark gate band, one earned dark moment per v1.4 §8 ─── */}
               <GateBand optionsCount={coreReport?.options?.length ?? 10} />
 
-              {/* ─── Stone locked area — wraps the 3 existing Teaser composites ─── */}
+              {/* ─── Stone locked area, wraps the 3 existing Teaser composites ─── */}
               <LockedArea />
 
               {/* ─── Unlock callout ─── */}
@@ -457,7 +457,7 @@ export default function Teaser() {
             {payLoading && (
               <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
             )}
-            {payLoading ? "Redirecting…" : "Unlock my full report — £19.99"}
+            {payLoading ? "Redirecting…" : "Unlock my full report, £19.99"}
           </button>
           <div className="mt-1.5 text-center text-[11px] text-muted-foreground">
             One-time · No subscription · Stripe checkout
@@ -488,12 +488,12 @@ function HeroStrip({ firstName, optionsCount }: { firstName: string | null; opti
             {firstName ? (
               <span className="text-primary">{firstName}.</span>
             ) : (
-              <span>—</span>
+              <span>·</span>
             )}
           </h1>
           <p className="mt-4 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed max-w-2xl">
             We've drafted {optionsCount} options based on your answers. Here's
-            the opening of your report — and then the gate. Below the gate
+            the opening of your report, and then the gate. Below the gate
             sits the rest of the analysis, your 30-day plan, and your 3 starter
             guidance modules.
           </p>
@@ -524,7 +524,7 @@ function HeroStrip({ firstName, optionsCount }: { firstName: string | null; opti
 /* ─────────────────────────── Dark gate band ─────────────────────────── */
 
 function GateBand({ optionsCount }: { optionsCount: number }) {
-  // panel-dark applied as an internal zone (no rounded corners — sits inside
+  // panel-dark applied as an internal zone (no rounded corners, sits inside
   // the outer panel-ivory, full bleed). Per v1.4 §8 the cadence is at the
   // panel level; the gate band is the page's one earned dark moment.
   return (
@@ -633,7 +633,7 @@ function UnlockCallout({ onUnlock, payLoading }: { onUnlock: () => void; payLoad
             {payLoading && (
               <span className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
             )}
-            {payLoading ? "Redirecting…" : "Unlock my full report — £19.99"}
+            {payLoading ? "Redirecting…" : "Unlock my full report, £19.99"}
           </button>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
             <span className="uppercase tracking-[0.18em]">Pay with</span>
@@ -748,7 +748,7 @@ function BottomCTA({
   return (
     <div className="px-8 sm:px-12 lg:px-16 py-14 text-center border-t border-[#E5E2DC]">
       <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-        — Decide when you're ready —
+        Decide when you're ready
       </div>
       <h2 className="text-[26px] sm:text-[30px] font-semibold tracking-tight text-foreground leading-tight max-w-3xl mx-auto">
         {optionsCount} options. Choose up to five. One payment.
@@ -772,7 +772,7 @@ function BottomCTA({
           {payLoading && (
             <span className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
           )}
-          {payLoading ? "Redirecting…" : "Unlock my full report — £19.99"}
+          {payLoading ? "Redirecting…" : "Unlock my full report, £19.99"}
         </button>
         <div className="text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
           One-time payment · No subscription · No auto-renewal

@@ -11,30 +11,30 @@ import TopBar from "@/components/TopBar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 /*
- * AskSolo — Pass 1 /ask-solo v1 (2026-05-18) — sixth Phase 2 surface
+ * AskSolo Pass 1 /ask-solo v1 (2026-05-18) sixth Phase 2 surface
  *
  * Editorial reskin of the conversation surface. Two-column shell: 280px
  * ThreadList left, conversation main right, joined at the seam as one
  * composite ivory surface. Inherits TopBar.authed (no current item).
  *
  * Locked decisions from admin/pass-1-ask-solo-decisions.md:
- *   F1 — Thread list is a distinct ThreadList (inline composite),
+ *   F1, Thread list is a distinct ThreadList (inline composite),
  *     NOT AreaSidebar. Different list semantics (chronological,
  *     user-titled, time-grouped) but shared active-state vocabulary.
- *   F2 — Citations DROPPED for Pass 1 (backend doesn't surface them).
+ *   F2, Citations DROPPED for Pass 1 (backend doesn't surface them).
  *     Post-facelift backlog.
- *   F3 — Empty-state suggestions as serif underlined questions, not
+ *   F3, Empty-state suggestions as serif underlined questions, not
  *     button-chips with emoji.
- *   F4 — Streaming visual: text cursor + drafting flag. NOT iMessage
+ *   F4, Streaming visual: text cursor + drafting flag. NOT iMessage
  *     three-bouncing-dots.
- *   F5 — Quota nudge copy: spec's shorter version. No fractional-FD-
+ *   F5, Quota nudge copy: spec's shorter version. No fractional-FD-
  *     flavoured examples (would need server-side strand-aware copy).
- *   F6 — Input-foot persistent nudge DROPPED. Quota pill in header
+ *   F6, Input-foot persistent nudge DROPPED. Quota pill in header
  *     does the persistent work; input-foot keeps keyboard-shortcut hint.
- *   F7 — Context deep-link "You'll ask" preview block DROPPED. Pre-
+ *   F7, Context deep-link "You'll ask" preview block DROPPED. Pre-
  *     filled textarea alone is enough; no phantom message.
  *
- * Cadence: one dark moment — the quota-exhausted banner above the app
+ * Cadence: one dark moment, the quota-exhausted banner above the app
  * shell. Mirrors /plan Day-31 wall + /library Day-31 banner vocabulary.
  * Everything else stays calm-ivory. Subscribers see zero dark.
  *
@@ -354,7 +354,7 @@ export default function AskSolo() {
         className="inline-flex items-center justify-center rounded-md px-4 py-2 text-[12.5px] font-semibold text-white whitespace-nowrap"
         style={{ background: "#2ECDB0" }}
       >
-        Subscribe — £19/mo →
+        Subscribe, £19/mo →
       </button>
     </div>
   ) : null;
@@ -473,7 +473,7 @@ export default function AskSolo() {
                   <Message key={i} msg={msg} formatTime={formatTime} />
                 ))}
 
-                {/* Streaming message — text cursor + drafting flag */}
+                {/* Streaming message, text cursor + drafting flag */}
                 {sending && (
                   <div className="py-5 border-t border-[#EDEBE6] first:border-t-0">
                     <div className="flex items-baseline gap-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] mb-3.5" style={{ color: "#1A8A72" }}>
@@ -498,7 +498,7 @@ export default function AskSolo() {
                   </div>
                 )}
 
-                {/* 7/10 inline nudge — only show when quota is in warning state and not yet dismissed */}
+                {/* 7/10 inline nudge, only show when quota is in warning state and not yet dismissed */}
                 {quotaWarning && messages.length > 0 && !nudgeDismissed && (
                   <div
                     className="my-5 px-5 py-3.5 rounded-r grid grid-cols-[auto_1fr_auto] gap-x-4 items-baseline"
@@ -541,7 +541,7 @@ export default function AskSolo() {
                     onKeyDown={handleKeyDown}
                     placeholder={
                       quotaExhausted
-                        ? "No questions left in your report — subscribe for unlimited."
+                        ? "No questions left in your report, subscribe for unlimited."
                         : sending
                         ? "Solo is drafting…"
                         : "Ask anything about your plan."

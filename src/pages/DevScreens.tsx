@@ -78,7 +78,7 @@ export default function DevScreens() {
     <main style={{ padding: 24, fontFamily: "system-ui, sans-serif", maxWidth: 720, margin: "0 auto" }}>
       <h1 style={{ fontSize: 22, marginBottom: 4 }}>Dev · Screen Index</h1>
       <p style={{ fontSize: 13, color: "#666", marginBottom: 24 }}>
-        Auth + paid guards bypassed for this session. Some screens may render blank or in a loading state without real data — that's expected.
+        Auth + paid guards bypassed for this session. Some screens may render blank or in a loading state without real data, that's expected.
       </p>
       {SECTIONS.map((section) => (
         <section key={section.title} style={{ marginBottom: 20 }}>
@@ -96,7 +96,7 @@ export default function DevScreens() {
                   }}
                   style={{ color: "#0a58ca", textDecoration: "underline", fontSize: 14 }}
                 >
-                  {r.label} <span style={{ color: "#999" }}>— {r.path}</span>
+                  {r.label} <span style={{ color: "#999" }}>· {r.path}</span>
                 </a>
               </li>
             ))}

@@ -8,30 +8,30 @@ import TopBar from "@/components/TopBar";
 import { useToast } from "@/hooks/use-toast";
 
 /*
- * Subscribe — Pass 1 /subscribe v1 (2026-05-18) — fourth Phase 2 cycle (paired)
+ * Subscribe Pass 1 /subscribe v1 (2026-05-18) fourth Phase 2 cycle (paired)
  *
  * Editorial reskin of the buyer-to-subscriber conversion surface. Authed-only;
- * inherits authed chrome (TopBar.authed) but no AreaSidebar — single-purpose
+ * inherits authed chrome (TopBar.authed) but no AreaSidebar, single-purpose
  * conversion surface, not a managed-section page. NO inline FAQ (links out
  * to /faq#subscription), NO comparison versus /pricing, NO objections —
  * those live elsewhere. This surface is the close.
  *
  * Locked decisions from admin/pass-1-subscribe-pricing-decisions.md:
- *   F1 — Same PricingCard composite, here annual renders with `elevated`
+ *   F1, Same PricingCard composite, here annual renders with `elevated`
  *     (1px border-strong outline + "Two months free" top tag pill).
  *     Monthly stays unelevated as a credible peer.
- *   F5 — H1 "Keep your plan alive." renders with a code-comment-only
+ *   F5, H1 "Keep your plan alive." renders with a code-comment-only
  *     placeholder marker. No inline warning tag ships to production.
- *   F6 — Annual card carries "Equivalent to £12.42 / month" substantiation
+ *   F6, Annual card carries "Equivalent to £12.42 / month" substantiation
  *     line beneath its price. Honest factual comparison.
- *   F7 — "What stays the same" callout: stone-bg + 3px mint left-rule,
+ *   F7, "What stays the same" callout: stone-bg + 3px mint left-rule,
  *     two-column inline layout with mint-text label + display-weight
  *     sentence. NOT panel-dark (would over-weight reassurance).
- *   F8 — Day-31 context pill conditional on ?from=day31 query param.
+ *   F8, Day-31 context pill conditional on ?from=day31 query param.
  *   25/3/22 module canonical applied throughout.
  *
  * Cadence: zero dark. Calm continuation surface. User arrived here from
- * /plan's Day-31 wall — they've already seen the dark moment. Dark on
+ * /plan's Day-31 wall, they've already seen the dark moment. Dark on
  * top of dark would have stacked gravity unnecessarily.
  *
  * Pass 1 scope: shell + chrome + sections + state-variant rendering
@@ -67,7 +67,7 @@ const monthlyCard: PricingCardData = {
     <>Plan regenerates when your moves don't land</>,
     <>Fresh fit-check included when you need one</>,
   ],
-  ctaLabel: "Subscribe — £19 / month",
+  ctaLabel: "Subscribe, £19 / month",
   ctaLoadingLabel: "Opening checkout…",
 };
 
@@ -82,9 +82,9 @@ const annualCard: PricingCardData = {
     <>Everything in monthly</>,
     <>Paid once, runs for 12 months</>,
     <>Two months free vs monthly billing</>,
-    <>Cancel any time — refunded pro-rata in the first 14 days</>,
+    <>Cancel any time, refunded pro-rata in the first 14 days</>,
   ],
-  ctaLabel: "Subscribe — £149 / year",
+  ctaLabel: "Subscribe, £149 / year",
   ctaLoadingLabel: "Opening checkout…",
   topTag: "Two months free",
   elevated: true,
@@ -123,7 +123,7 @@ export default function Subscribe() {
   const fromDay31 = searchParams.get("from") === "day31";
   const paymentCancelled = searchParams.get("payment_cancelled") === "1";
 
-  // Cancel-pending placeholder — derive from subscription state once wired.
+  // Cancel-pending placeholder, derive from subscription state once wired.
   const isCancelPending = false;
   const cancelEndDate = "15 May 2026";
 
@@ -252,7 +252,7 @@ export default function Subscribe() {
 
           {/* ── Hero ── */}
           <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-10 sm:py-12 mb-6">
-            {/* Day-31 context pill — only when ?from=day31 (F8). */}
+            {/* Day-31 context pill, only when ?from=day31 (F8). */}
             {fromDay31 && (
               <div className="inline-flex items-center gap-2.5 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground" style={{ background: "#F3F1ED" }}>
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
@@ -260,19 +260,19 @@ export default function Subscribe() {
               </div>
             )}
 
-            {/* H1 — placeholder copy per F5 (production should not ship inline placeholder tag). */}
+            {/* H1, placeholder copy per F5 (production should not ship inline placeholder tag). */}
             <h1 className="title-h1">
               {/* F5: H1 copy is placeholder pending positioning-strategy review. */}
               Keep your plan alive.
             </h1>
             <p className="mt-4 font-display text-[17px] sm:text-[19px] text-muted-foreground leading-[1.4] max-w-[60ch]">
               Your 30-day report is yours forever. The subscription is what keeps the tracker moving
-              after day 30 — weekly check-ins, the 22 modules you haven't opened yet, and unlimited
+              after day 30, weekly check-ins, the 22 modules you haven't opened yet, and unlimited
               Ask Solo.
             </p>
           </section>
 
-          {/* ── Two PricingCards (peer/preferred — annual elevated) ── */}
+          {/* ── Two PricingCards (peer/preferred, annual elevated) ── */}
           <section className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
             <PricingCard
               data={monthlyCard}
@@ -288,7 +288,7 @@ export default function Subscribe() {
             />
           </section>
 
-          {/* ── What the subscription does — 2×2 grid ── */}
+          {/* ── What the subscription does, 2×2 grid ── */}
           <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
             <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-6">
               <span className="text-primary tabular-nums">02</span>
@@ -323,7 +323,7 @@ export default function Subscribe() {
             </div>
           </section>
 
-          {/* ── What stays the same — stone callout with mint left rule (F7) ── */}
+          {/* ── What stays the same, stone callout with mint left rule (F7) ── */}
           <section
             className="px-6 sm:px-8 py-5 mb-6 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-3 sm:gap-5 items-baseline rounded-r-md"
             style={{ background: "#F3F1ED", borderLeft: "3px solid #2ECDB0" }}
@@ -342,7 +342,7 @@ export default function Subscribe() {
             * "Not right now" + "See full subscription FAQ" links don't sit
             * illegibly against the office photo background. Stone band is
             * lighter than panel-ivory (these are secondary navigation, not
-            * a primary CTA — kept visually quieter than the upgrade cards
+            * a primary CTA, kept visually quieter than the upgrade cards
             * above).
             */}
           <section className="card-stone px-6 sm:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -391,7 +391,7 @@ function PricingCard({
       className="relative panel-ivory p-8 sm:p-9 flex flex-col"
       style={data.elevated ? { boxShadow: "0 4px 32px rgba(0,0,0,0.18), 0 1px 6px rgba(0,0,0,0.10), 0 0 0 1px #D5D0C8" } : undefined}
     >
-      {/* Optional top tag pill ("Two months free") — half-overlaps the top border. */}
+      {/* Optional top tag pill ("Two months free"), half-overlaps the top border. */}
       {data.topTag && (
         <div
           className="absolute -top-3 left-9 inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.18em]"

@@ -34,7 +34,7 @@ import {
 } from "@/data/canonicalSampleReport";
 
 /*
- * Plan — Pass 1 /plan v1 (2026-05-17)
+ * Plan, Pass 1 /plan v1 (2026-05-17)
  *
  * Translates Claude Design's Pass 1 proposal into the live page. Pass 1
  * scope is shell + chrome + panel composition + section-header pattern +
@@ -45,18 +45,18 @@ import {
  * sits in Phase 2 per admin/pass-1-plan-decisions.md.
  *
  * Locked decisions from admin/pass-1-plan-decisions.md:
- *   F1 — Multi-panel main column (each section its own panel-ivory with
+ *   F1, Multi-panel main column (each section its own panel-ivory with
  *        its own elevation). Diverges from the spine's single-panel
  *        pattern; daily-scan ergonomics justify the divergence.
- *   F2 — AreaSidebar footer stat block ("Plan · One-time · Day 7 of 30").
- *   F3 — TodayCard meta row with state-appropriate substantiation.
- *   F4 — TrackerGrid as editorial squares with state dots (preserved in
+ *   F2, AreaSidebar footer stat block ("Plan · One-time · Day 7 of 30").
+ *   F3, TodayCard meta row with state-appropriate substantiation.
+ *   F4, TrackerGrid as editorial squares with state dots (preserved in
  *        existing TrackerGrid component; will be reskinned in Phase 2).
- *   F5 — Day 0 dormant tracker block (no 30 future cells).
- *   F6 — Day 0 strand row hidden until user picks strands on /report.
- *   F7 — Ask Solo widget meta clause changes per state (out of scope for
+ *   F5, Day 0 dormant tracker block (no 30 future cells).
+ *   F6, Day 0 strand row hidden until user picks strands on /report.
+ *   F7, Ask Solo widget meta clause changes per state (out of scope for
  *        Pass 1 page-level work; lives in the global widget component).
- *   F8 — Day 31+ TodayCard meta row inverts to trust substantiation
+ *   F8, Day 31+ TodayCard meta row inverts to trust substantiation
  *        (Cancel any time · Your data always yours · 14-day refund).
  *
  *   Cadence: one dark moment, on the Day 31+ wall. TodayCard runs ivory
@@ -129,7 +129,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   // Coaching layer Phase 3 slice 1 (admin/coaching-layer-design.md v1.4
   // §4.2, 2026-05-18). Tracks which sent Direct task is currently being
-  // marked with a response signal — parallel to sentInFlightTaskId, kept
+  // marked with a response signal, parallel to sentInFlightTaskId, kept
   // separate so a sent in-flight on one task doesn't block a response
   // in-flight on another (they're orthogonal operations on different tiles).
   const [responseInFlightTaskId, setResponseInFlightTaskId] = useState<string | null>(null);
@@ -165,7 +165,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     let cancelled = false;
     (async () => {
       try {
-        // Fetch all the user's reports and pick the BEST one — prefer paid
+        // Fetch all the user's reports and pick the BEST one, prefer paid
         // over unpaid, then most recent within tier. Previously this just
         // grabbed the most recent row regardless of payment status, which
         // bounced paid users with newer unpaid test runs to /teaser. See
@@ -415,7 +415,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       });
 
       // v39: a 409 (checkin_locked) is surfaced as the panel's inline reply.
-      // FunctionsHttpError carries the response body on .context — parse it
+      // FunctionsHttpError carries the response body on .context, parse it
       // to get the friendly response_text the server returned.
       if (error) {
         type FunctionsHttpErrorLike = {
@@ -505,13 +505,13 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     }
   }, [location.hash]);
 
-  /* ── handleDayBrowse — Chunk 2 wiring ──
+  /* ── handleDayBrowse, Chunk 2 wiring ──
    * Replaces the previous "click tracker cell → open check-in drawer"
    * behaviour. Now clicking a tracker cell scrolls to and expands the
    * matching day row in §03's day-by-day list. The check-in drawer is
    * still accessible from inside the expanded row (today's row has a
    * "Submit check-in" button; past completed rows have a "View check-in"
-   * button). Preserves the /checkin/:sessionId deep-link path — it
+   * button). Preserves the /checkin/:sessionId deep-link path, it
    * still opens the check-in drawer via initialSessionId. */
   const handleDayBrowse = useCallback((day: number) => {
     setDayNumber(day);
@@ -525,7 +525,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     setExpandedDayInList((prev) => (prev === day ? null : day));
   }, []);
 
-  // Kept for compatibility — TodayCard may still call this; routes through the new browse behaviour.
+  // Kept for compatibility, TodayCard may still call this; routes through the new browse behaviour.
   const handleDayClick = useCallback((day: number) => {
     handleDayBrowse(day);
   }, [handleDayBrowse]);
@@ -549,7 +549,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   /* ─── Derived (above conditional returns per Rules of Hooks) ─── */
 
-  /* Scroll-to-day-list handler — sidebar "Your 30 days" item scrolls
+  /* Scroll-to-day-list handler, sidebar "Your 30 days" item scrolls
    * the page to the §03 list and expands today's row if nothing is
    * currently expanded. */
   const handleScrollToDayList = useCallback(() => {
@@ -561,7 +561,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   /* Consistency-sweep 2026-05-18: scroll handlers for Today (§01) and
    * Strands (§04). Both use document.getElementById since the panels are
-   * created by the PanelSection composite — we add id attributes to those
+   * created by the PanelSection composite, we add id attributes to those
    * sections below. Smooth scroll with `block: "start"` matches the day-
    * list pattern. */
   const handleScrollToToday = useCallback(() => {
@@ -572,7 +572,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   }, []);
 
   /*
-   * handleMarkTaskSent — coaching layer Phase 1 (admin/coaching-layer-design.md
+   * handleMarkTaskSent, coaching layer Phase 1 (admin/coaching-layer-design.md
    * v1.2, 2026-05-18). Captures the action moment when the user sends a Direct
    * or Visibility move. Posts to mark-task-sent edge function which mutates
    * working_plan in place (status='sent' + sent_at on the matching task) and
@@ -623,7 +623,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   );
 
   /*
-   * handleMarkTaskResponse — coaching layer Phase 3 slice 1
+   * handleMarkTaskResponse, coaching layer Phase 3 slice 1
    * (admin/coaching-layer-design.md v1.4 §4.2). Captures the explicit
    * response signal for a sent Direct task. Posts to mark-task-response
    * which mutates working_plan in place (response_received +
@@ -695,7 +695,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   // numeral, then a second divider, then the utility action. Matches the
   // /report + /library + /account + /sample-report sidebar grammar.
   // The Strands item now scrolls to #your-strands instead of toggling a
-  // ?view=strands param — simpler mental model, fewer URL states, and the
+  // ?view=strands param, simpler mental model, fewer URL states, and the
   // strand rationale is always visible in the panel rather than hidden
   // behind a click.
   const sidebarItems: SidebarItem[] = [
@@ -828,7 +828,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   *
                   * Conditional rendering: skip when the page is in
                   * pre-activation states (loading / awaitingSelection /
-                  * planBuilding) — the meta-block (Day X of 30, Started
+                  * planBuilding), the meta-block (Day X of 30, Started
                   * date) only makes sense once tracker_sessions.activated_at
                   * exists. For those transient states the strand selector
                   * / plan-building hold IS the page's hero.
@@ -851,7 +851,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                     : null;
                   return (
                     <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-10 sm:py-12 mb-6">
-                      {/* Eyebrow — mint dot + YOUR PLAN + tier */}
+                      {/* Eyebrow, mint dot + YOUR PLAN + tier */}
                       <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4 flex-wrap">
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
                         <span className="text-foreground">Your plan</span>
@@ -928,7 +928,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   * admin/coaching-layer-design.md v1.6 §4.2. Renders above
                   * Weekly Friction Review when one or more sent Direct moves
                   * have crossed the 5-day silence threshold. One banner per
-                  * row, stacked. Self-contained — fetches its own data,
+                  * row, stacked. Self-contained, fetches its own data,
                   * marks read_at on first view, writes action_taken /
                   * dismissed_at directly via the V-072 UPDATE RLS policy.
                   * Returns null when no active catchers exist for this user.
@@ -945,7 +945,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   * Self-contained: fetches its own data + marks read_at on
                   * first view. Returns null when no review exists, so it
                   * doesn't structurally interfere with /plan layout. Not
-                  * numbered as a §0N section — it's a weekly-appearing
+                  * numbered as a §0N section, it's a weekly-appearing
                   * editorial artefact, structurally distinct from the
                   * daily-action flow that follows.
                   */}
@@ -961,7 +961,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                 {!awaitingSelection && (
                   <div id="plan-section-today" className="scroll-mt-24">
                     <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
-                      {/* Section eyebrow — consistency-sweep 2026-05-18:
+                      {/* Section eyebrow, consistency-sweep 2026-05-18:
                         * surfaces "01 TODAY" so the in-body numerals read
                         * contiguously (01 Today / 02 Tracker / 03 Days / 04
                         * Strands) and align with the sidebar's numbered
@@ -1008,7 +1008,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   )
                 )}
 
-                {/* ─── §03 Your 30 days — day-by-day plan browser ───
+                {/* ─── §03 Your 30 days, day-by-day plan browser ───
                   * Plan visibility gap fix (2026-05-18). Renders 30 day
                   * rows (or rolling window for subscribers) populated
                   * from activation_plan.activation_plan.phases[].days_detail.
@@ -1016,7 +1016,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   * useEffect above). Click toggles. Hash deep-link
                   * /plan#day-N expands and scrolls to that row.
                   * TrackerGrid cell clicks (handleDayBrowse) route here.
-                  * Hidden on Day 0 — no day-by-day plan to browse yet. */}
+                  * Hidden on Day 0, no day-by-day plan to browse yet. */}
                 {planState !== "day0" && trackerDays.length > 0 && (
                   <div ref={dayListRef} className="scroll-mt-24">
                     <PanelSection
@@ -1059,7 +1059,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                                 responseInFlightTaskId={responseInFlightTaskId}
                                 onOpenCheckin={() => {
                                   // v39 (Gap 2): the panel mode is derived from
-                                  // the day's status — today=submit, missed=backfill,
+                                  // the day's status, today=submit, missed=backfill,
                                   // completed=read-only viewer (Chunk C below).
                                   setDayNumber(d.day);
                                   setCheckinPanelMode(
@@ -1078,7 +1078,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   </div>
                 )}
 
-                {/* ─── §04 Strand row (Day 1+ only — hidden on Day 0 per F6) ───
+                {/* ─── §04 Strand row (Day 1+ only, hidden on Day 0 per F6) ───
                   * Wrapped in #plan-section-strands anchor + scroll-mt-24 so
                   * sidebar "Strands" click scrolls here cleanly past the
                   * sticky TopBar (consistency-sweep 2026-05-18; this is the
@@ -1282,7 +1282,7 @@ function trackerMetaFor(
 /* ─────────────────────────── Day-by-day list helpers + DayRow ─────────────────────────── */
 
 /*
- * findDayDetail — walks the phases.days_detail nested structure to
+ * findDayDetail, walks the phases.days_detail nested structure to
  * find the DayDetail for a given day number. activation_plan structure:
  *   activation_plan
  *     └── activation_plan          (yes, nested again)
@@ -1291,7 +1291,7 @@ function trackerMetaFor(
  *
  * Day strings vary in the source data ("1", "Day 1", "day-1"), so we
  * normalise by extracting the first integer in the string. Returns null
- * when no matching DayDetail exists — the row renders an "empty" message.
+ * when no matching DayDetail exists, the row renders an "empty" message.
  */
 type DayRowStatus = "completed" | "today" | "missed" | "future";
 
@@ -1314,7 +1314,7 @@ function findDayDetail(
 }
 
 /*
- * DayRow — a single day in the §03 list. Collapsed shows day numeral +
+ * DayRow, a single day in the §03 list. Collapsed shows day numeral +
  * label + time + status pill + toggle. Expanded shows the label as a
  * substantive heading, the time allocation, each task as a sub-block
  * with description + move-type tag + outreach_draft (when present) in
@@ -1324,7 +1324,7 @@ function findDayDetail(
  *   - status pill colour + glyph (Completed mint solid, Today mint
  *     outline pulse, Missed stone, Future faint)
  *   - check-in CTA presence (Today: "Submit your check-in"; Completed:
- *     "View this check-in" — opens existing read-only drawer; Missed
+ *     "View this check-in", opens existing read-only drawer; Missed
  *     and Future: no CTA)
  *
  * Empty-data fallback: if dayDetail is null, the expanded body shows a
@@ -1366,7 +1366,7 @@ function DayRow({
   const isToday = status === "today";
   const isCompleted = status === "completed";
 
-  // Status pill — matches /checkin-history's four-pill vocabulary.
+  // Status pill, matches /checkin-history's four-pill vocabulary.
   const pill = (() => {
     if (isCompleted) {
       // Pass 2 (2026-05-18, F2): white tick glyph inside the Done pill. Tick is
@@ -1471,7 +1471,7 @@ function DayRow({
             />
           ) : (
             <p className="text-[13.5px] italic text-muted-foreground/70 leading-relaxed">
-              No specific tasks logged for this day. Your activation plan's day-by-day detail may be lighter for certain days — your overall plan structure still applies.
+              No specific tasks logged for this day. Your activation plan's day-by-day detail may be lighter for certain days, your overall plan structure still applies.
             </p>
           )}
           {(isToday || isCompleted || isMissed) && (
@@ -1502,7 +1502,7 @@ function DayRow({
               </button>
               {isMissed && (
                 <span className="text-[11px] text-muted-foreground/70 leading-snug">
-                  A retroactive note won't change today's tracker — just fills the gap.
+                  A retroactive note won't change today's tracker, just fills the gap.
                 </span>
               )}
             </div>
@@ -1513,11 +1513,11 @@ function DayRow({
   );
 }
 
-/* DayBody — renders the substantive content for an expanded day:
+/* DayBody, renders the substantive content for an expanded day:
  * time allocation, tasks (with descriptions, move tags, outreach drafts).
  *
  * Pass 2 (2026-05-18):
- *   - F5 resolution: no leading eyebrow above the H3 — the row label is
+ *   - F5 resolution: no leading eyebrow above the H3, the row label is
  *     promoted to a substantive H3 heading. Just heading + content.
  *   - F6 resolution: missed rows use past-tense labels throughout
  *     ("Was planned" / "Planned allocation" / "Tasks that were planned").
@@ -1541,9 +1541,9 @@ function DayBody({
   // strand_id → human-readable strand name (e.g., "strand_1" → "AI
   // Workflow Implementation"). Used to resolve raw IDs surfaced in
   // time_allocation. Visual-audit 2026-05-18 critical finding: without
-  // this lookup users saw "strand_1 — 45 mins" instead of the strand
+  // this lookup users saw "strand_1, 45 mins" instead of the strand
   // name they recognised. Falls back to the raw key when the strand
-  // isn't in the map (e.g., "shared" buckets — kept as-is).
+  // isn't in the map (e.g., "shared" buckets, kept as-is).
   strandsMap?: Record<string, string>;
   // Coaching layer Phase 1 (admin/coaching-layer-design.md v1.2, 2026-05-18).
   // When provided, the "Mark as sent" affordance renders on each Direct or
@@ -1555,7 +1555,7 @@ function DayBody({
   // small follow-up buttons ("Got a reply" / "No reply yet") below the
   // "Sent · DD MMM" pill, collapsing to a status pill once clicked. The
   // signal feeds the Non-Response Catcher suppression rule. Direct-only
-  // for v1 — Visibility extension is a Phase 2 of the Catcher feature
+  // for v1, Visibility extension is a Phase 2 of the Catcher feature
   // (see design doc §10 open question 6).
   onMarkTaskResponse?: (taskId: string, responseReceived: boolean) => void;
   responseInFlightTaskId?: string | null;
@@ -1568,7 +1568,7 @@ function DayBody({
   // gently title-cased so they read as labels rather than identifiers.
   const labelForKey = (key: string): string => {
     if (strandsMap && strandsMap[key]) return strandsMap[key];
-    if (/^strand_\d+$/i.test(key)) return key; // unmatched strand id — leave raw rather than mislead
+    if (/^strand_\d+$/i.test(key)) return key; // unmatched strand id, leave raw rather than mislead
     if (key === "shared") return "Shared across strands";
     return key;
   };
@@ -1595,7 +1595,7 @@ function DayBody({
   return (
     <div className="sm:pl-12">
       {/* Pass 2 (F5): substantive H3 heading promotes the day label to body
-        * weight. No eyebrow above — the row's collapsed header carries the
+        * weight. No eyebrow above, the row's collapsed header carries the
         * unit/date context; the H3 makes the expanded body's purpose. */}
       {dayDetail.label && (
         <h3
@@ -1608,7 +1608,7 @@ function DayBody({
         </h3>
       )}
 
-      {/* Meta row — time required */}
+      {/* Meta row, time required */}
       {dayDetail.time_required && (
         <div className="flex items-baseline gap-3 mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           <span className="text-primary">{labels.timeReq}</span>
@@ -1696,14 +1696,14 @@ function DayBody({
                 )}
 
                 {/*
-                 * Coaching layer Phase 4 — Pre-Send Brief
+                 * Coaching layer Phase 4, Pre-Send Brief
                  * (admin/coaching-layer-design.md v1.8 §4.1, 2026-05-18).
                  * Inline pre-flight brief on Direct + Visibility tasks that
                  * haven't yet been sent or completed. Surfaces between the
                  * outreach_draft callout (above) and the Mark-as-sent
                  * affordance (below) per the design doc's UX intent
                  * ("between the drafted-message reveal and the send action").
-                 * Static content keyed by move_type — synthetic at launch
+                 * Static content keyed by move_type, synthetic at launch
                  * with honest footnote; iterates to archetype-specific real
                  * data when cohort_aggregations is populated.
                  */}
@@ -1726,7 +1726,7 @@ function DayBody({
                  * pill once the user marks it; pill carries the sent_at date
                  * so the user can see when they did it.
                  *
-                 * Drives the Non-Response Catcher (Phase 3) — without this
+                 * Drives the Non-Response Catcher (Phase 3), without this
                  * signal there is no clean way to detect a sent-but-silent
                  * move five days later.
                  */}
@@ -1772,7 +1772,7 @@ function DayBody({
                  *   - response_received === false  → muted "No reply yet · DD MMM" pill
                  *   - response_received == null    → two small inline buttons
                  *
-                 * Direct-only by design — Visibility moves don't have a 1:1
+                 * Direct-only by design, Visibility moves don't have a 1:1
                  * "reply" semantic and the Catcher is Direct-only for v1
                  * (design doc §10 open question 6).
                  *

@@ -12,7 +12,7 @@ import SoloLogo from "@/components/SoloLogo";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 /*
- * Questionnaire — Pass 1 /questionnaire v1 (2026-05-16)
+ * Questionnaire, Pass 1 /questionnaire v1 (2026-05-16)
  *
  * Translates Claude Design's Pass 1 proposal into the live page. Inherits
  * the editorial composition vocabulary established on home + /cv-upload:
@@ -21,28 +21,28 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
  * stone-inset inputs, mint discipline.
  *
  * Locked decisions from admin/pass-1-questionnaire-decisions.md:
- *   F1 — RadioGroup-cards as vertical editorial stack (not a tile grid)
- *   F2 — Hybrid option prefixes: letters (A·B·C·D·E) when ≤8 options,
+ *   F1, RadioGroup-cards as vertical editorial stack (not a tile grid)
+ *   F2, Hybrid option prefixes: letters (A·B·C·D·E) when ≤8 options,
  *        numerals (01·02·03) when more. Codify as a system-level rule.
- *   F3 — EmailCaptureStep fields horizontal 5/7 on desktop, stacked on
+ *   F3, EmailCaptureStep fields horizontal 5/7 on desktop, stacked on
  *        mobile
- *   F4 — Trust line bracketed inline (stone-tinted inset) between
+ *   F4, Trust line bracketed inline (stone-tinted inset) between
  *        fields and button
- *   F5 — Refusal Modal inverted button hierarchy: mint primary on
+ *   F5, Refusal Modal inverted button hierarchy: mint primary on
  *        "Go back and add my email", tertiary link on "Continue without
  *        email"
- *   F6 — Question step eyebrow renders as "Question N" only (section
- *        half dropped — no section taxonomy in the data model)
- *   F7 — "Auto-saved" indicator (mint dot + label) in the panel top row
- *        after first interaction. No fake timestamps — answers are kept
+ *   F6, Question step eyebrow renders as "Question N" only (section
+ *        half dropped, no section taxonomy in the data model)
+ *   F7, "Auto-saved" indicator (mint dot + label) in the panel top row
+ *        after first interaction. No fake timestamps, answers are kept
  *        locally, only the final submit goes to the server.
- *   F8 — Time chip static "≈ 8 min" across question steps, shifts to
+ *   F8, Time chip static "≈ 8 min" across question steps, shifts to
  *        "≈ 1 min remaining" on the final step (only allowed reframe)
- *   F9 — Generating-report state: inline button spinner + body faded to
+ *   F9, Generating-report state: inline button spinner + body faded to
  *        ~50% opacity (not a full-screen overlay)
  *
  * Dark-card cadence: zero on question steps (all-ivory). One dark moment
- * earned by content — the consequence inset inside the Refusal Modal
+ * earned by content, the consequence inset inside the Refusal Modal
  * (three locked-copy sentences on a near-black surface, frame stays
  * ivory). Per design-direction.md v1.4 §8.
  *
@@ -52,7 +52,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
  * pass and not addressed here. The progress header renders the actual
  * length; the chip says ≈ 8 min (the promise).
  *
- * No framer-motion slide animations between steps — the editorial
+ * No framer-motion slide animations between steps, the editorial
  * register should land instantly per the /cv-upload precedent.
  */
 
@@ -213,7 +213,7 @@ export default function Questionnaire() {
     setShowRefusalModal(false);
   };
 
-  /* Progress labels — short "QN" for question steps, "Email" for final */
+  /* Progress labels, short "QN" for question steps, "Email" for final */
   const progressLabels = Array.from({ length: totalSteps }, (_, i) =>
     i < questions.length ? `Q${i + 1}` : "Email"
   );
@@ -389,7 +389,7 @@ export default function Questionnaire() {
               </DialogPrimitive.Title>
             </div>
 
-            {/* Dark consequence inset — three numbered sentences from the spec */}
+            {/* Dark consequence inset, three numbered sentences from the spec */}
             <div className="mx-8 my-2 bg-[#1A1915] rounded-xl overflow-hidden">
               {[
                 "If you close this tab, your report is gone.",
@@ -412,13 +412,13 @@ export default function Questionnaire() {
               ))}
             </div>
 
-            {/* Body — return to ivory, returns choice to the user */}
+            {/* Body, return to ivory, returns choice to the user */}
             <DialogPrimitive.Description className="px-8 pt-6 pb-6 text-[14.5px] text-muted-foreground leading-relaxed">
-              You can still continue without email — but we strongly recommend
+              You can still continue without email, but we strongly recommend
               you don't.
             </DialogPrimitive.Description>
 
-            {/* Inverted hierarchy — mint primary on cancel, tertiary link on confirm */}
+            {/* Inverted hierarchy, mint primary on cancel, tertiary link on confirm */}
             <div className="px-8 pb-8 pt-2 border-t border-[#E5E2DC]">
               <div className="flex flex-col items-stretch gap-3 pt-6">
                 <button
@@ -480,8 +480,8 @@ function QuestionEyebrow({
 
 /**
  * Returns the editorial prefix for a RadioGroup / CheckboxGroup option.
- * Letters (A·B·C…) when total options ≤ 8 — gives keyboard hint + selection
- * commitment. Numerals (01·02·03…) when more — scales beyond the alphabet.
+ * Letters (A·B·C…) when total options ≤ 8, gives keyboard hint + selection
+ * commitment. Numerals (01·02·03…) when more, scales beyond the alphabet.
  *
  * System-level rule from Pass 1 /questionnaire F2 resolution 2026-05-16.
  */
@@ -850,7 +850,7 @@ function EmailCaptureStep({
           )}
         </div>
 
-        {/* Trust line — bracketed stone-tinted inset between fields and button (F4) */}
+        {/* Trust line, bracketed stone-tinted inset between fields and button (F4) */}
         <div className="bg-[#F3F0EA] border border-[#E5E2DC] rounded-lg px-5 py-3.5 flex items-center gap-4">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
           <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary shrink-0">
@@ -871,7 +871,7 @@ function EmailCaptureStep({
               onClick={onRefuseClick}
               className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
             >
-              I'd rather not — continue without email
+              I'd rather not, continue without email
             </button>
           </div>
         )}

@@ -2,16 +2,16 @@
  * canonicalSampleReport.ts
  *
  * Canonical-shaped sample fixtures for dev-bypass mode on /plan and /teaser.
- * Persona: Sarah Okafor — Finance Business Partner, 11 years FS, FTSE 100 retail bank.
+ * Persona: Sarah Okafor, Finance Business Partner, 11 years FS, FTSE 100 retail bank.
  * Archetype: Financial Intelligence Operator.
  *
  * These constants conform to the canonical types in `src/types/canonical.ts`.
  * They give Plan.tsx and Teaser.tsx (when isDevBypass()) something rich to
  * render against without going through real generation. They are NOT a parity
- * test fixture — `activation_plan.phases` is one fully-fleshed phase plus three
+ * test fixture, `activation_plan.phases` is one fully-fleshed phase plus three
  * lighter phases to keep the file readable.
  *
- * NOTE: `src/data/sampleReportData.ts` is intentionally kept separate — that
+ * NOTE: `src/data/sampleReportData.ts` is intentionally kept separate, that
  * file uses a legacy ad-hoc shape and is still consumed by the static
  * /sample-report iframe page.
  */
@@ -32,9 +32,9 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
     secondary: "Commercial Translator",
     confidence: 0.92,
     summary:
-      "You sit in finance, but you operate like a commercial director. Your value is the translation layer between financial complexity and business decisions — the ability to walk numbers into a room of non-finance people and hold the story under challenge.",
+      "You sit in finance, but you operate like a commercial director. Your value is the translation layer between financial complexity and business decisions, the ability to walk numbers into a room of non-finance people and hold the story under challenge.",
     editorial_description:
-      "Most Finance Business Partners translate the numbers — they produce the reports, maintain the models, keep month-end running. You do that, and then you do the thing that's actually hard: you defend the financial story in a board room and adjust the narrative on the fly. The informal advisory pattern (pricing pre-ExCo, business case challenge) confirms what your CV understates: judgement, not technique, is the asset.",
+      "Most Finance Business Partners translate the numbers, they produce the reports, maintain the models, keep month-end running. You do that, and then you do the thing that's actually hard: you defend the financial story in a board room and adjust the narrative on the fly. The informal advisory pattern (pricing pre-ExCo, business case challenge) confirms what your CV understates: judgement, not technique, is the asset.",
     capability_tags: [
       "Commercial modelling",
       "Investment case development",
@@ -46,13 +46,13 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
   },
   transferable_value: {
     what_they_can_sell:
-      "Commercial finance partnership on a project or retained basis — investment case development, business case financial storytelling, board-level financial challenge and validation, and CFO-lite support for mid-market businesses preparing for critical financial decisions. The value is not the spreadsheet; it is taking the spreadsheet into a room and making it survive.",
+      "Commercial finance partnership on a project or retained basis, investment case development, business case financial storytelling, board-level financial challenge and validation, and CFO-lite support for mid-market businesses preparing for critical financial decisions. The value is not the spreadsheet; it is taking the spreadsheet into a room and making it survive.",
     why_buyers_would_pay:
-      "PE-backed and growth-stage mid-market businesses regularly face moments where they need a board-ready financial narrative but their internal finance team is accounting-focused, not commercially oriented. Before a board presentation, a capital raise, or an M&A transaction, they discover they need someone who can defend the financial story, not just build it. That gap — credible commercial finance capability on-demand — is what generates urgency and payment.",
+      "PE-backed and growth-stage mid-market businesses regularly face moments where they need a board-ready financial narrative but their internal finance team is accounting-focused, not commercially oriented. Before a board presentation, a capital raise, or an M&A transaction, they discover they need someone who can defend the financial story, not just build it. That gap credible commercial finance capability on-demand is what generates urgency and payment.",
     credibility_assets: [
-      "FTSE 100 FBP background — automatic credibility signal to mid-market buyers who equate large-bank finance with rigour",
-      "£38M digital transformation business case approved on first board presentation — proof of modelling capability and ability to withstand executive scrutiny",
-      "Informal advisory pattern across pricing, channel and investment decisions — evidence of trusted commercial judgement, not just technical competence",
+      "FTSE 100 FBP background, automatic credibility signal to mid-market buyers who equate large-bank finance with rigour",
+      "£38M digital transformation business case approved on first board presentation, proof of modelling capability and ability to withstand executive scrutiny",
+      "Informal advisory pattern across pricing, channel and investment decisions, evidence of trusted commercial judgement, not just technical competence",
     ],
   },
   transferable_skills: [
@@ -67,14 +67,14 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       skill_name: "Commercial Investment Case Development",
       strength: 89,
       evidence:
-        "Built investment cases for multiple corporate strategy initiatives, including scenario modelling, sensitivity analysis, and risk quantification — calibrated for non-finance executive audiences.",
+        "Built investment cases for multiple corporate strategy initiatives, including scenario modelling, sensitivity analysis, and risk quantification, calibrated for non-finance executive audiences.",
       market_demand: "high",
     },
     {
       skill_name: "Financial Scenario Modelling & Sensitivity Analysis",
       strength: 88,
       evidence:
-        "Multi-variate financial models with transparent assumption logic, stress-tested against changing business scenarios — a core requirement in the current FBP role.",
+        "Multi-variate financial models with transparent assumption logic, stress-tested against changing business scenarios, a core requirement in the current FBP role.",
       market_demand: "high",
     },
     {
@@ -95,7 +95,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       skill_name: "Financial Risk Identification & Quantification",
       strength: 82,
       evidence:
-        "Experience identifying and quantifying financial risk in business cases, operational changes, and commercial decisions — translating qualitative risk into financial impact.",
+        "Experience identifying and quantifying financial risk in business cases, operational changes, and commercial decisions, translating qualitative risk into financial impact.",
       market_demand: "medium",
     },
   ],
@@ -110,11 +110,11 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       fit_tags: ["fastest_revenue", "credibility_asset", "network_aligned"],
       source: "primary",
       positioning:
-        "Commercial finance partnership for PE-backed and growth-stage businesses preparing for board-level investment decisions. You deliver business case development, financial storytelling, and executive challenge — the capability internal finance teams lack.",
+        "Commercial finance partnership for PE-backed and growth-stage businesses preparing for board-level investment decisions. You deliver business case development, financial storytelling, and executive challenge, the capability internal finance teams lack.",
       target_buyer:
         "CFO or CEO of a PE-backed business, £15M–£100M revenue, preparing for a capital decision, board presentation, or M&A event.",
       what_they_are_buying:
-        "External commercial finance capability on a project basis — investment case development, business case validation, or CFO support for a specific decision moment.",
+        "External commercial finance capability on a project basis, investment case development, business case validation, or CFO support for a specific decision moment.",
       pricing: {
         model: "project",
         range_low_gbp: 750,
@@ -137,11 +137,11 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       fit_tags: ["higher_income", "retainer_model", "future_ready"],
       source: "primary",
       positioning:
-        "Ongoing fractional senior finance leadership for growth-stage and mid-market businesses that need strategic financial oversight without a full-time hire — board pack preparation, financial reporting leadership, commercial oversight, growth-stage financial strategy.",
+        "Ongoing fractional senior finance leadership for growth-stage and mid-market businesses that need strategic financial oversight without a full-time hire, board pack preparation, financial reporting leadership, commercial oversight, growth-stage financial strategy.",
       target_buyer:
         "CEO or CFO of a PE-backed or VC-backed business, £20M–£150M revenue, needing part-time senior finance leadership (2–4 days per month).",
       what_they_are_buying:
-        "Ongoing strategic finance capability delivered on retainer — board-ready financial reporting, commercial financial strategy, executive-level financial guidance.",
+        "Ongoing strategic finance capability delivered on retainer, board-ready financial reporting, commercial financial strategy, executive-level financial guidance.",
       pricing: {
         model: "retainer",
         range_low_gbp: 4000,
@@ -169,7 +169,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       target_buyer:
         "Chief Commercial Officer, COO, or Head of Business Development at mid-market businesses; training procurement for management development programmes.",
       what_they_are_buying:
-        "Half-day or full-day workshop delivery on commercial finance topics — financial literacy, financial challenge skills, board presentation skills for non-finance leaders.",
+        "Half-day or full-day workshop delivery on commercial finance topics, financial literacy, financial challenge skills, board presentation skills for non-finance leaders.",
       pricing: {
         model: "project",
         range_low_gbp: 2500,
@@ -197,7 +197,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       target_buyer:
         "PE partner or corporate development lead preparing for an acquisition or investment decision.",
       what_they_are_buying:
-        "Financial due diligence work on a transaction fee basis — detailed financial analysis ahead of investment or acquisition decision.",
+        "Financial due diligence work on a transaction fee basis, detailed financial analysis ahead of investment or acquisition decision.",
       pricing: {
         model: "project",
         range_low_gbp: 800,
@@ -221,11 +221,11 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       fit_tags: ["board_communication", "narrative_strength", "future_positioning"],
       source: "primary",
       positioning:
-        "Preparing growth-stage and pre-IPO businesses for investor scrutiny — equity story development, investor deck creation, financial narrative for fundraising rounds.",
+        "Preparing growth-stage and pre-IPO businesses for investor scrutiny, equity story development, investor deck creation, financial narrative for fundraising rounds.",
       target_buyer:
         "CFO or CEO of a VC-backed or pre-IPO company preparing a fundraising round or IPO process.",
       what_they_are_buying:
-        "Investor relations and capital markets advisory — developing and validating the financial narrative for investors.",
+        "Investor relations and capital markets advisory, developing and validating the financial narrative for investors.",
       pricing: {
         model: "project",
         range_low_gbp: 900,
@@ -253,7 +253,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       target_buyer:
         "CFO of a £20M–£150M business undertaking finance function transformation or significant operational change.",
       what_they_are_buying:
-        "Finance transformation consulting — design and implementation support for building a modern, commercially oriented finance function.",
+        "Finance transformation consulting, design and implementation support for building a modern, commercially oriented finance function.",
       pricing: {
         model: "project",
         range_low_gbp: 700,
@@ -263,7 +263,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       time_to_first_revenue: "4–7 months",
       difficulty_rating: "moderate",
       why_this_works_for_them:
-        "You've lived inside a well-structured FTSE 100 finance function — that direct experience is the product for mid-market businesses still running on spreadsheets and disconnected processes.",
+        "You've lived inside a well-structured FTSE 100 finance function, that direct experience is the product for mid-market businesses still running on spreadsheets and disconnected processes.",
       caution_note:
         "Big consultancies own the enterprise end. Mid-market is more accessible but requires clear positioning.",
     },
@@ -277,11 +277,11 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       fit_tags: ["board_ready", "governance", "portfolio_addition"],
       source: "primary",
       positioning:
-        "Board-level governance and financial oversight for scaling businesses — 1–2 days per month providing independent financial challenge, audit committee participation, strategic financial guidance.",
+        "Board-level governance and financial oversight for scaling businesses, 1–2 days per month providing independent financial challenge, audit committee participation, strategic financial guidance.",
       target_buyer:
         "Chair or CEO of a scaling business or PE-backed SME needing independent board-level financial scrutiny.",
       what_they_are_buying:
-        "Board seat and ongoing governance participation — independent financial challenge and oversight.",
+        "Board seat and ongoing governance participation, independent financial challenge and oversight.",
       pricing: {
         model: "retainer",
         range_low_gbp: 500,
@@ -291,7 +291,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       time_to_first_revenue: "12–18 months",
       difficulty_rating: "hard",
       why_this_works_for_them:
-        "NED roles require an established independent profile — boards hire people with visible track records.",
+        "NED roles require an established independent profile, boards hire people with visible track records.",
       caution_note:
         "Portfolio addition, not a primary income source. Realistic target: Year 2 once you have demonstrated track record.",
     },
@@ -305,11 +305,11 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       fit_tags: ["analytical_strength", "high_rate", "long_timeline"],
       source: "primary",
       positioning:
-        "Independent financial expert opinion for commercial litigation, regulatory proceedings, and dispute resolution — financial loss quantification, forensic analysis of commercial decisions, expert reports.",
+        "Independent financial expert opinion for commercial litigation, regulatory proceedings, and dispute resolution, financial loss quantification, forensic analysis of commercial decisions, expert reports.",
       target_buyer:
         "Commercial solicitor or in-house counsel requiring expert financial opinion for litigation or dispute resolution.",
       what_they_are_buying:
-        "Expert witness services — independent financial analysis and expert report for court or regulatory proceedings.",
+        "Expert witness services, independent financial analysis and expert report for court or regulatory proceedings.",
       pricing: {
         model: "day rate",
         range_low_gbp: 1200,
@@ -319,7 +319,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       time_to_first_revenue: "12–24 months",
       difficulty_rating: "hard",
       why_this_works_for_them:
-        "Highest day rates on this list, but barrier to entry is substantial — solicitors require published credentials and prior testimony.",
+        "Highest day rates on this list, but barrier to entry is substantial, solicitors require published credentials and prior testimony.",
       caution_note:
         "Requires formal expert witness training and accreditation. Realistic long-term addition after 2–3 years of established practice.",
     },
@@ -333,11 +333,11 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       fit_tags: ["visibility", "positioning", "low_barrier"],
       source: "primary",
       positioning:
-        "Commercial finance content — articles, white papers, newsletter content for financial services firms, PE houses, and B2B platforms that need credible finance voices.",
+        "Commercial finance content, articles, white papers, newsletter content for financial services firms, PE houses, and B2B platforms that need credible finance voices.",
       target_buyer:
         "Content team at a PE house, fintech platform, or B2B finance publication; or in-house marketing team building thought leadership.",
       what_they_are_buying:
-        "Authored commercial finance content — articles, guest posts, or newsletter pieces that position their brand as commercially astute.",
+        "Authored commercial finance content, articles, guest posts, or newsletter pieces that position their brand as commercially astute.",
       pricing: {
         model: "productised",
         range_low_gbp: 300,
@@ -349,7 +349,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       why_this_works_for_them:
         "Low barrier to entry and fast to first revenue, but rates are below your capability ceiling. Best as a visibility-building activity feeding into Options 1–3.",
       caution_note:
-        "Real value is positioning effect — being a visible voice in commercial finance opens doors that cold outreach cannot reach.",
+        "Real value is positioning effect, being a visible voice in commercial finance opens doors that cold outreach cannot reach.",
     },
     {
       rank: 10,
@@ -361,11 +361,11 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       fit_tags: ["domain_expert", "product_insight", "equity_opportunity"],
       source: "secondary",
       positioning:
-        "Advising fintech startups and finance SaaS companies on product-market fit and user research — domain expertise on how senior finance teams actually work.",
+        "Advising fintech startups and finance SaaS companies on product-market fit and user research, domain expertise on how senior finance teams actually work.",
       target_buyer:
         "Head of Product or founding team at a fintech or finance SaaS startup.",
       what_they_are_buying:
-        "Product advisory and user research facilitation — domain expertise on how finance teams operate and think.",
+        "Product advisory and user research facilitation, domain expertise on how finance teams operate and think.",
       pricing: {
         model: "retainer",
         range_low_gbp: 600,
@@ -375,7 +375,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
       time_to_first_revenue: "6–12 months",
       difficulty_rating: "moderate",
       why_this_works_for_them:
-        "Practitioner perspective is genuinely valuable to product teams building for finance — they rarely have access to senior FBPs.",
+        "Practitioner perspective is genuinely valuable to product teams building for finance, they rarely have access to senior FBPs.",
       caution_note:
         "Fintech advisory requires a different network than your current one. Compensation often includes equity rather than pure cash.",
     },
@@ -389,11 +389,11 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
   },
   reality_check: {
     most_likely_failure_mode:
-      "You will build the plan, update the LinkedIn, and then not send the first email. The psychological barrier between 'I have a plan' and 'I contacted someone' is where most professionals with your profile stop. This is not a plan failure — it's an activation failure.",
+      "You will build the plan, update the LinkedIn, and then not send the first email. The psychological barrier between 'I have a plan' and 'I contacted someone' is where most professionals with your profile stop. This is not a plan failure, it's an activation failure.",
     second_failure_mode:
       "You will send the first email, get no immediate response, and assume the market doesn't want what you're selling. In practice, email response rates are low but follow-up rates are high. Most positive responses come from a second message, not the first.",
     what_they_will_find_hard:
-      "You will find it uncomfortable to tell people what you're doing. Not as a pitch — as a conversation. Most professionals delay this indefinitely because it feels presumptuous. Your network wants to help if they can, and the only way they can is if they know you're thinking about this.",
+      "You will find it uncomfortable to tell people what you're doing. Not as a pitch, as a conversation. Most professionals delay this indefinitely because it feels presumptuous. Your network wants to help if they can, and the only way they can is if they know you're thinking about this.",
     honest_income_outlook:
       "Year 1: £25k–£72k depending on execution. Mid-range (£48k) assumes 2–3 project engagements at £20k–£30k each over 12 months. This is 40% of your current salary; the plan gets you to salary replacement by Year 2.",
   },
@@ -433,7 +433,7 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
         "Assumes £850/day rate. 50% of revenue from retainers, 50% from projects. Continued active management of network and positioning.",
     },
     sensitivity_factors:
-      "Three variables most affect the projection: (1) Time to first conversation — 90 days delay moves the whole projection back 3 months; (2) Close rate — moving from 60% to 50% reduces Year 1 by £8k–£15k; (3) Pricing — £50/day difference per engagement scales to £8k–£12k annually.",
+      "Three variables most affect the projection: (1) Time to first conversation 90 days delay moves the whole projection back 3 months; (2) Close rate moving from 60% to 50% reduces Year 1 by £8k–£15k; (3) Pricing, £50/day difference per engagement scales to £8k–£12k annually.",
     income_floor_analysis:
       "Realistic worst case (slow start, conservative pricing, low close rate): £15k–£25k in Year 1, with slower Year 2 growth. Floor happens if you don't make outreach calls until Months 4–6.",
     income_notes:
@@ -442,24 +442,24 @@ export const SAMPLE_CORE_REPORT: SoloCoreReport = {
   recommended_selection: {
     selected_ranks: [1, 2, 6],
     rationale:
-      "Strand 1 is the fastest-revenue, lowest-credibility-gap path and your primary focus. Strand 2 (Fractional CFO) is the natural Year 2 evolution — keep warm in parallel. Strand 6 (Finance Function Transformation) draws on operational experience and produces stickier engagements; pursue as a parallel test, not a substitute for Strand 1.",
+      "Strand 1 is the fastest-revenue, lowest-credibility-gap path and your primary focus. Strand 2 (Fractional CFO) is the natural Year 2 evolution, keep warm in parallel. Strand 6 (Finance Function Transformation) draws on operational experience and produces stickier engagements; pursue as a parallel test, not a substitute for Strand 1.",
   },
   hook_insight: {
     headline:
-      "Your most transferable skill isn't the Excel — it's that you can walk financial complexity into a room and hold the story under challenge.",
+      "Your most transferable skill isn't the Excel, it's that you can walk financial complexity into a room and hold the story under challenge.",
     paragraph:
-      "Mid-market businesses have finance managers who build the numbers. They rarely have anyone who can defend them commercially in front of a board. That specific gap — a business case-ready commercial thinker who can stand in front of a PE investor's questions and not fold — is your market entry point. Your first clients are not the ones advertising for finance consultants. They're PE-backed businesses between £20M and £100M revenue who are preparing for a board-level investment decision and suddenly realise their internal finance team can build the model but can't take the room.",
+      "Mid-market businesses have finance managers who build the numbers. They rarely have anyone who can defend them commercially in front of a board. That specific gap, a business case-ready commercial thinker who can stand in front of a PE investor's questions and not fold, is your market entry point. Your first clients are not the ones advertising for finance consultants. They're PE-backed businesses between £20M and £100M revenue who are preparing for a board-level investment decision and suddenly realise their internal finance team can build the model but can't take the room.",
     first_move: {
       action: "Reconnect with a former colleague now operating in a mid-market PE-backed business",
       target: "A senior finance or commercial peer you worked with for 1+ years, now at a PE-backed business £15M–£100M revenue",
-      draft_subject: "Reconnect — and a question for you",
+      draft_subject: "Reconnect, and a question for you",
       draft_body: `Hi [Name],
 
-Hope you're well — it's been a while. I've been keeping up with what [company] has been doing, looks like a strong period for you all.
+Hope you're well, it's been a while. I've been keeping up with what [company] has been doing, looks like a strong period for you all.
 
-I'm at a point where I'm thinking seriously about doing some independent work alongside my current role — commercial finance and business case work, the kind of thing I've been doing on the FBP side for the last few years but for businesses that don't have a strong commercial finance function internally.
+I'm at a point where I'm thinking seriously about doing some independent work alongside my current role, commercial finance and business case work, the kind of thing I've been doing on the FBP side for the last few years but for businesses that don't have a strong commercial finance function internally.
 
-I'd really value 20 minutes to pick your brain — not a pitch, genuinely just curiosity about how businesses like yours think about bringing in external finance support and whether there's a moment in the calendar when that's useful. Would you be up for a quick call in the next couple of weeks?
+I'd really value 20 minutes to pick your brain, not a pitch, genuinely just curiosity about how businesses like yours think about bringing in external finance support and whether there's a moment in the calendar when that's useful. Would you be up for a quick call in the next couple of weeks?
 
 Best,
 Sarah`,
@@ -472,11 +472,11 @@ Sarah`,
       displacement_risk: "medium",
       risk_horizon: "3–5 years",
       content:
-        "Standard FBP work — variance analysis, month-end reporting, model maintenance, data aggregation — is being automated rapidly. Large banks are deploying AI to handle these tasks at scale; the junior FBP population faces the most direct displacement risk. Your profile sits differently. Your value is in walking numbers into a room and holding the story under challenge from senior executives — work that requires real-time judgement, unexpected question handling, and narrative shifting on the fly. Precisely what AI cannot do reliably. The role is bifurcating: highly automated at the data layer, highly valued at the insight and influence layer.",
+        "Standard FBP work variance analysis, month-end reporting, model maintenance, data aggregation is being automated rapidly. Large banks are deploying AI to handle these tasks at scale; the junior FBP population faces the most direct displacement risk. Your profile sits differently. Your value is in walking numbers into a room and holding the story under challenge from senior executives, work that requires real-time judgement, unexpected question handling, and narrative shifting on the fly. Precisely what AI cannot do reliably. The role is bifurcating: highly automated at the data layer, highly valued at the insight and influence layer.",
     },
     part_2: {
       content:
-        "What you're selling as an independent — the ability to build a financial narrative, pressure-test it against executive challenge, and adjust on the fly — is precisely what AI cannot replace. AI tools can produce first-draft financial models and scenario summaries in hours instead of days. The smarter move is to use those tools to expand your capacity, not compete with them. You take on more engagements or higher-complexity work because the model-building is faster. The judgement, narrative, and ability to defend a financial story remain entirely in your hands. Board communication is an AI-hard problem.",
+        "What you're selling as an independent, the ability to build a financial narrative, pressure-test it against executive challenge, and adjust on the fly, is precisely what AI cannot replace. AI tools can produce first-draft financial models and scenario summaries in hours instead of days. The smarter move is to use those tools to expand your capacity, not compete with them. You take on more engagements or higher-complexity work because the model-building is faster. The judgement, narrative, and ability to defend a financial story remain entirely in your hands. Board communication is an AI-hard problem.",
     },
     part_3: {
       steps: [
@@ -491,14 +491,14 @@ Sarah`,
           action:
             "Start a simple content habit: one LinkedIn observation per month on commercial finance trends or board dynamics",
           rationale:
-            "Creates a visible track record AI cannot easily replicate — your judgement, your voice, your specific perspective on financial decision-making.",
+            "Creates a visible track record AI cannot easily replicate, your judgement, your voice, your specific perspective on financial decision-making.",
         },
         {
           priority: 3,
           action:
             "Identify 2–3 colleagues using AI tools for financial work; ask them what breaks",
           rationale:
-            "Understanding where AI fails helps you position your value precisely — you handle the edge cases and judgement calls automation cannot reach.",
+            "Understanding where AI fails helps you position your value precisely, you handle the edge cases and judgement calls automation cannot reach.",
         },
         {
           priority: 4,
@@ -546,9 +546,9 @@ export const SAMPLE_ACTIVATION_PLAN: ActivationPlanOutput = {
       },
     ],
     strategy:
-      "These three strands share a common buyer base (PE-backed and growth-stage mid-market) but test different value propositions and time-to-revenue patterns. Commercial Finance Consultancy is fastest revenue and lowest credibility gap — primary focus for Phase 1–3. Fractional CFO tests whether longer-term retainer relationships are accessible at your current stage. Finance Function Transformation draws on your operational experience.",
+      "These three strands share a common buyer base (PE-backed and growth-stage mid-market) but test different value propositions and time-to-revenue patterns. Commercial Finance Consultancy is fastest revenue and lowest credibility gap, primary focus for Phase 1–3. Fractional CFO tests whether longer-term retainer relationships are accessible at your current stage. Finance Function Transformation draws on your operational experience.",
     effort_distribution:
-      "Phase 2 time splits roughly 40% to Strand 1, 35% to Strand 2, 25% to Strand 3 — weighted by composite score and time-to-revenue. By Portfolio Review 1 (Day 19), you'll have enough market signal to adjust. Expect to narrow to 1–2 strands by Day 30.",
+      "Phase 2 time splits roughly 40% to Strand 1, 35% to Strand 2, 25% to Strand 3, weighted by composite score and time-to-revenue. By Portfolio Review 1 (Day 19), you'll have enough market signal to adjust. Expect to narrow to 1–2 strands by Day 30.",
   },
   first_move: {
     action: "Reconnect with a former colleague now operating in a mid-market PE-backed business",
@@ -560,14 +560,14 @@ export const SAMPLE_ACTIVATION_PLAN: ActivationPlanOutput = {
     move: {
       type: "direct",
       format: "email_reconnect",
-      subject: "Reconnect — and a question for you",
+      subject: "Reconnect, and a question for you",
       draft: `Hi [Name],
 
-Hope you're well — it's been a while. I've been keeping up with what [company] has been doing, looks like a strong period for you all.
+Hope you're well, it's been a while. I've been keeping up with what [company] has been doing, looks like a strong period for you all.
 
-I'm at a point where I'm thinking seriously about doing some independent work alongside my current role — commercial finance and business case work, the kind of thing I've been doing on the FBP side for the last few years but for businesses that don't have a strong commercial finance function internally.
+I'm at a point where I'm thinking seriously about doing some independent work alongside my current role, commercial finance and business case work, the kind of thing I've been doing on the FBP side for the last few years but for businesses that don't have a strong commercial finance function internally.
 
-I'd really value 20 minutes to pick your brain — not a pitch, genuinely just curiosity about how businesses like yours think about bringing in external finance support and whether there's a moment in the calendar when that's useful. Would you be up for a quick call in the next couple of weeks?
+I'd really value 20 minutes to pick your brain, not a pitch, genuinely just curiosity about how businesses like yours think about bringing in external finance support and whether there's a moment in the calendar when that's useful. Would you be up for a quick call in the next couple of weeks?
 
 Best,
 Sarah`,
@@ -588,14 +588,14 @@ Sarah`,
   },
   activation_plan: {
     summary:
-      "Three parallel paths — Commercial Finance Consultancy, Fractional CFO, and Finance Function Transformation — tested through a structured 30-day programme. Shared credibility-building work front-loaded in Phase 1. Phase 2 runs strand-specific outreach. By Day 19, enough evidence to begin narrowing. By Day 30, at least one strand with a real conversation or meeting booked.",
+      "Three parallel paths, Commercial Finance Consultancy, Fractional CFO, and Finance Function Transformation, tested through a structured 30-day programme. Shared credibility-building work front-loaded in Phase 1. Phase 2 runs strand-specific outreach. By Day 19, enough evidence to begin narrowing. By Day 30, at least one strand with a real conversation or meeting booked.",
     pacing_note:
       "You're currently employed full-time, so this plan is designed for 1–1.5 hours on weekday evenings and 3–4 hours on weekend days.",
     network_note:
-      "Your network is medium-strength — the plan includes 10–12 total outreach actions distributed across strands.",
+      "Your network is medium-strength, the plan includes 10–12 total outreach actions distributed across strands.",
     phases: [
       {
-        phase: "Phase 1 — Shared Foundations",
+        phase: "Phase 1, Shared Foundations",
         days: "Days 1–7",
         goal: "Build credibility narrative, activate first wave of warm contacts, establish visible positioning",
         strand_focus: "shared",
@@ -618,12 +618,12 @@ Sarah`,
                 move: {
                   type: "direct",
                   format: "email_reconnect",
-                  subject: "Reconnect — and something I'd value your view on",
+                  subject: "Reconnect, and something I'd value your view on",
                   draft: `Hi [Name],
 
-It's been a while — I've been following your move to [company] with real interest.
+It's been a while, I've been following your move to [company] with real interest.
 
-I'm at a point where I'm thinking seriously about doing some independent work alongside my current role. Commercial finance and business case work, primarily — the kind of FBP work I've been doing but for businesses that don't have a strong commercial finance function internally.
+I'm at a point where I'm thinking seriously about doing some independent work alongside my current role. Commercial finance and business case work, primarily, the kind of FBP work I've been doing but for businesses that don't have a strong commercial finance function internally.
 
 I'd find it genuinely useful to get your perspective on how that kind of work gets bought in the mid-market. Would you have 20 minutes for a catch-up call in the next couple of weeks?
 
@@ -648,7 +648,7 @@ Sarah`,
                 task_type: "admin",
                 move_type: null,
                 description:
-                  "Update LinkedIn headline to: 'Commercial Finance | Business Case Development | Independent Advisory for PE-backed & Growth Businesses.' This is passive visibility — costs 5 minutes.",
+                  "Update LinkedIn headline to: 'Commercial Finance | Business Case Development | Independent Advisory for PE-backed & Growth Businesses.' This is passive visibility, costs 5 minutes.",
                 outreach_subtype: null,
                 apollo_query: null,
                 move: null,
@@ -668,7 +668,7 @@ Sarah`,
                 task_type: "foundation",
                 move_type: null,
                 description:
-                  "Write your one-sentence positioning statement (not a LinkedIn bio — a sentence you can say out loud). Record yourself saying it twice. Practise until it feels natural, not rehearsed.",
+                  "Write your one-sentence positioning statement (not a LinkedIn bio, a sentence you can say out loud). Record yourself saying it twice. Practise until it feels natural, not rehearsed.",
                 outreach_subtype: null,
                 apollo_query: null,
                 move: null,
@@ -738,14 +738,14 @@ Sarah`,
                 move: {
                   type: "direct",
                   format: "email_reconnect",
-                  subject: "[Name] — catching up",
+                  subject: "[Name], catching up",
                   draft: `Hi [Name],
 
-A while since we worked together [on X project/in Y function] — you've clearly gone on to interesting things at [company].
+A while since we worked together [on X project/in Y function], you've clearly gone on to interesting things at [company].
 
-I'm thinking about doing some independent commercial finance work — financial case-building and board-level storytelling, but for mid-market and PE-backed businesses that don't have that capability in-house.
+I'm thinking about doing some independent commercial finance work, financial case-building and board-level storytelling, but for mid-market and PE-backed businesses that don't have that capability in-house.
 
-I'd value your perspective. Not a pitch — genuine curiosity. Would 20 minutes on a call work in the next couple of weeks?
+I'd value your perspective. Not a pitch, genuine curiosity. Would 20 minutes on a call work in the next couple of weeks?
 
 Best,
 Sarah`,
@@ -787,7 +787,7 @@ Sarah`,
         ],
       },
       {
-        phase: "Phase 2 — Strand Activation & Conversation",
+        phase: "Phase 2, Strand Activation & Conversation",
         days: "Days 8–18",
         goal: "Convert warm contacts into meetings; gather market intelligence from each strand; activate referral network",
         strand_focus: "all_strands",
@@ -815,7 +815,7 @@ Sarah`,
         ],
       },
       {
-        phase: "Phase 3 — Evidence & Narrowing",
+        phase: "Phase 3, Evidence & Narrowing",
         days: "Days 19–23",
         goal: "Assess strand viability based on market response; make go/narrow/pause decisions; keep momentum on strongest strand",
         strand_focus: "narrowing",
@@ -843,7 +843,7 @@ Sarah`,
         ],
       },
       {
-        phase: "Phase 4 — Focus & Acceleration",
+        phase: "Phase 4, Focus & Acceleration",
         days: "Days 24–30",
         goal: "Concentrate effort on strongest strand(s); book first client meeting or engagement; prepare for Day 31",
         strand_focus: "focus_strands",
@@ -880,23 +880,23 @@ Sarah`,
       model_name: "Commercial Finance Consultancy",
       signals: [
         {
-          signal: "FTSE 100 FBP background — automatic credibility with mid-market buyers",
+          signal: "FTSE 100 FBP background, automatic credibility with mid-market buyers",
           weight: "very_strong",
         },
         {
-          signal: "£38M digital transformation business case — proof of board-ready analysis",
+          signal: "£38M digital transformation business case, proof of board-ready analysis",
           weight: "very_strong",
         },
         {
-          signal: "Informal advisory pattern (pricing pre-ExCo) — evidence of trusted commercial judgement",
+          signal: "Informal advisory pattern (pricing pre-ExCo), evidence of trusted commercial judgement",
           weight: "strong",
         },
         {
-          signal: "PE-backed businesses in your network (former colleagues who've moved) — existing warm path",
+          signal: "PE-backed businesses in your network (former colleagues who've moved), existing warm path",
           weight: "moderate",
         },
         {
-          signal: "Weakness: no visible independent track record yet — requires trust-building via conversations",
+          signal: "Weakness: no visible independent track record yet, requires trust-building via conversations",
           weight: "moderate",
         },
       ],
@@ -906,7 +906,7 @@ Sarah`,
       model_name: "Fractional CFO / Strategic Finance Director",
       signals: [
         {
-          signal: "Board communication capability — core Fractional CFO requirement",
+          signal: "Board communication capability, core Fractional CFO requirement",
           weight: "very_strong",
         },
         {
@@ -928,7 +928,7 @@ Sarah`,
       model_name: "Finance Function Transformation Consultant",
       signals: [
         {
-          signal: "Direct experience inside a well-structured FTSE 100 finance function — the product",
+          signal: "Direct experience inside a well-structured FTSE 100 finance function, the product",
           weight: "very_strong",
         },
         {
@@ -969,12 +969,12 @@ Sarah`,
         type: "reconnect_email",
         strand_id: "strand_1",
         use_case: "Reconnect with a former colleague now in a mid-market PE-backed business",
-        subject: "Reconnect — and something I'd value your view on",
+        subject: "Reconnect, and something I'd value your view on",
         content: `Hi [Name],
 
-It's been a while — I've been following your move to [company] with real interest.
+It's been a while, I've been following your move to [company] with real interest.
 
-I'm at a point where I'm thinking seriously about doing some independent work alongside my current role. Commercial finance and business case work — the kind of FBP work I've been doing but for businesses that don't have a strong commercial finance function internally.
+I'm at a point where I'm thinking seriously about doing some independent work alongside my current role. Commercial finance and business case work, the kind of FBP work I've been doing but for businesses that don't have a strong commercial finance function internally.
 
 I'd find it genuinely useful to get your perspective. Would you have 20 minutes for a catch-up call in the next couple of weeks?
 
@@ -984,33 +984,33 @@ Sarah`,
       {
         type: "linkedin_dm",
         strand_id: "strand_2",
-        use_case: "Second-degree connection via mutual contact — Fractional CFO landscape",
+        use_case: "Second-degree connection via mutual contact, Fractional CFO landscape",
         subject: null,
-        content: `[Name] — [mutual contact] mentioned you've been thinking about fractional leadership. I'm exploring this angle myself and would value 20 minutes to pick your brain about what's real and what's hype. Happy to share what I'm seeing too.
+        content: `[Name], [mutual contact] mentioned you've been thinking about fractional leadership. I'm exploring this angle myself and would value 20 minutes to pick your brain about what's real and what's hype. Happy to share what I'm seeing too.
 
 Sarah`,
       },
       {
         type: "referral_ask_email",
         strand_id: "strand_1",
-        use_case: "After a genuine exploratory conversation — ask for warm referral",
-        subject: "Really useful call — and a question for you",
+        use_case: "After a genuine exploratory conversation, ask for warm referral",
+        subject: "Really useful call, and a question for you",
         content: `[Name],
 
-Really useful conversation yesterday — genuinely appreciate the time and your perspective.
+Really useful conversation yesterday, genuinely appreciate the time and your perspective.
 
-One thing I'm trying to do is expand the number of conversations I'm having with people in similar positions to you — CFOs and commercial directors in PE-backed or growth businesses dealing with the kind of decisions we discussed.
+One thing I'm trying to do is expand the number of conversations I'm having with people in similar positions to you, CFOs and commercial directors in PE-backed or growth businesses dealing with the kind of decisions we discussed.
 
-Is there anyone in your network you think I should speak to? Not asking you to vouch for me commercially — just a warm intro if you think it's a useful conversation for them too.
+Is there anyone in your network you think I should speak to? Not asking you to vouch for me commercially, just a warm intro if you think it's a useful conversation for them too.
 
 Sarah`,
       },
       {
         type: "verbal_positioning_statement",
         strand_id: "strand_1",
-        use_case: "In-person networking or phone conversation — frame what you do without slides",
+        use_case: "In-person networking or phone conversation, frame what you do without slides",
         subject: null,
-        content: `I'm a Finance Business Partner by background — most of my career in large financial services, working with senior leadership on commercial decisions: investment cases, pricing, financial analysis ahead of board presentations.
+        content: `I'm a Finance Business Partner by background, most of my career in large financial services, working with senior leadership on commercial decisions: investment cases, pricing, financial analysis ahead of board presentations.
 
 I'm now doing that work independently for mid-market and PE-backed businesses that need that capability on a project basis, rather than a full-time hire.
 
@@ -1039,7 +1039,7 @@ export const SAMPLE_MARKET_SNAPSHOTS: Record<
     location: "London / South East",
     sections: {
       demand_signal:
-        "Strong. PE-backed mid-market businesses consistently cite inability to build credible financial cases for board decisions as a live problem. Finance directors in this segment are typically from accounting backgrounds — strong on reporting, weaker on commercial narrative. The gap your FBP background can fill is real and recurring.",
+        "Strong. PE-backed mid-market businesses consistently cite inability to build credible financial cases for board decisions as a live problem. Finance directors in this segment are typically from accounting backgrounds, strong on reporting, weaker on commercial narrative. The gap your FBP background can fill is real and recurring.",
       pricing_benchmark:
         "£750–£900 per day for project-based work at your level and background. London premium applies. Rates above £950/day are achievable once you have 2–3 visible engagements. Starting below £700/day misaligns expectations with PE-backed buyers who equate rate with quality.",
       competitor_landscape:
@@ -1047,7 +1047,7 @@ export const SAMPLE_MARKET_SNAPSHOTS: Record<
       market_entry_insight:
         "First 3–4 engagements almost always come via personal referral from trusted contacts. Inbound from LinkedIn requires visible track record first. The plan prioritises network activation over inbound marketing for the first 90 days.",
       honest_assessment:
-        "The market supports this. The risk is not demand — it's distribution. This market does not advertise for what you do. First-client acquisition depends entirely on willingness to have Phase 1 conversations.",
+        "The market supports this. The risk is not demand, it's distribution. This market does not advertise for what you do. First-client acquisition depends entirely on willingness to have Phase 1 conversations.",
     },
   },
   strand_2: {
@@ -1056,7 +1056,7 @@ export const SAMPLE_MARKET_SNAPSHOTS: Record<
     location: "London / South East",
     sections: {
       demand_signal:
-        "Moderate to growing. Growth-stage and PE-backed businesses increasingly ask 'do we need a full-time CFO or can we hire fractional?' The category is real but not yet standardised — buyer language is inconsistent.",
+        "Moderate to growing. Growth-stage and PE-backed businesses increasingly ask 'do we need a full-time CFO or can we hire fractional?' The category is real but not yet standardised, buyer language is inconsistent.",
       pricing_benchmark:
         "£4,000–£6,000 per month for 2–3 days per week. Typical engagement duration 6–12 months. Higher total annual income (£48k–£72k) but lower close rate and longer sales cycle than Strand 1.",
       competitor_landscape:
@@ -1073,7 +1073,7 @@ export const SAMPLE_MARKET_SNAPSHOTS: Record<
     location: "London / South East",
     sections: {
       demand_signal:
-        "Strong but crowded. Mid-market businesses know their finance functions are behind. Demand is real. Challenge is competition — big consultancies own enterprise; mid-market (£20M–£150M) is more accessible but still competitive.",
+        "Strong but crowded. Mid-market businesses know their finance functions are behind. Demand is real. Challenge is competition, big consultancies own enterprise; mid-market (£20M–£150M) is more accessible but still competitive.",
       pricing_benchmark:
         "£700–£950 per day, typical engagement 3–6 months. Project-based pricing (£25k–£50k per engagement) is common. Longer sales cycle than Strand 1 because scope is larger and change management is slower.",
       competitor_landscape:

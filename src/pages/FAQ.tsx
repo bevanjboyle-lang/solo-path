@@ -4,11 +4,11 @@ import { List } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-// Footer import dropped 2026-05-18 — App.tsx renders the Footer for this route.
+// Footer import dropped 2026-05-18, App.tsx renders the Footer for this route.
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 /*
- * FAQ — Pass 1 /faq v1 (2026-05-18) — legal+FAQ paired translation
+ * FAQ Pass 1 /faq v1 (2026-05-18) legal+FAQ paired translation
  *
  * Editorial reskin of the FAQ surface. Two-column layout: 200px
  * category-nav sidebar left, separated category panels right. TopBar
@@ -16,18 +16,18 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
  * FOOTERLESS_ROUTES) so this page does not render its own.
  *
  * Locked decisions from admin/pass-1-legal-faq-decisions.md:
- *   Serif decision — FAQ answers stay in Inter sans (the system UI
+ *   Serif decision, FAQ answers stay in Inter sans (the system UI
  *     font). Answers are short, UI-adjacent, often contain inline
- *     product links — closer to UI register than long-form prose.
+ *     product links, closer to UI register than long-form prose.
  *     Question titles in display-weight sans; answer continuation in
  *     sans body keeps the typographic seam absent.
- *   F4 — All questions COLLAPSED by default. No seed example open.
+ *   F4, All questions COLLAPSED by default. No seed example open.
  *     Cleaner scan; chevron + question pattern is universally
  *     understood. Deep-link expansion still works.
- *   F5 — Light closing CTA band ("— Ready when you are —" +
+ *   F5, Light closing CTA band ("Ready when you are" +
  *     "Eight minutes to a preview." + mint Take-the-test button).
  *     Authed-buyer variant flips to "Open my plan".
- *   F6 — Category panels SEPARATED, not continuous. Each of 5
+ *   F6, Category panels SEPARATED, not continuous. Each of 5
  *     categories as its own ivory panel. Matches the conceptual
  *     model (topical sections, not interlocking clauses).
  *
@@ -52,7 +52,7 @@ interface FAQCategory {
 
 const categories: FAQCategory[] = [
   {
-    // Internal id kept as "about-the-test" — existing deep links (if any) still resolve.
+    // Internal id kept as "about-the-test", existing deep links (if any) still resolve.
     // The visible label and Q&A bodies use the L04 cascade vocabulary ("fit-check").
     id: "about-the-test",
     label: "About the fit-check",
@@ -60,14 +60,14 @@ const categories: FAQCategory[] = [
       { id: "faq-how-long", q: "How long does the fit-check take?", a: "About eight minutes. The questionnaire saves your progress, so you can leave and come back if you need to. The CV upload at the start is skippable in one click; skipping doesn't change the fit-check, only adds about thirty seconds of context to the report when included." },
       { id: "faq-cv-required", q: "Do I need to upload my CV?", a: "No, it's optional. Uploading your CV pre-fills some questions and grounds the analysis in your actual role and history. You can skip it and answer everything manually." },
       { id: "faq-who-for", q: "Who is Solo designed for?", a: "Mid-career professionals with 8+ years of experience who want to understand their independent options. The fit-check is calibrated against archetypes that emerge from senior structured roles." },
-      { id: "faq-ai-worry", q: "Do I need to be worried about AI to use Solo?", a: "No. Solo is for anyone who wants to build independent income — whether you are exploring a career change, planning for greater flexibility, preparing for redundancy, or simply want financial options that don't depend entirely on one employer. AI displacement is one reason people come to Solo. It is not the only one, and you do not need to believe your job is at risk to benefit from having a Plan B." },
+      { id: "faq-ai-worry", q: "Do I need to be worried about AI to use Solo?", a: "No. Solo is for anyone who wants to build independent income, whether you are exploring a career change, planning for greater flexibility, preparing for redundancy, or simply want financial options that don't depend entirely on one employer. AI displacement is one reason people come to Solo. It is not the only one, and you do not need to believe your job is at risk to benefit from having a Plan B." },
     ],
   },
   {
     id: "price-and-refunds",
     label: "Price & refunds",
     items: [
-      { id: "faq-cost", q: "What does it cost?", a: "The full report is £19.99 — a one-time payment. The optional subscription is £19/month or £149/year. Both are explained in detail on the pricing page." },
+      { id: "faq-cost", q: "What does it cost?", a: "The full report is £19.99, a one-time payment. The optional subscription is £19/month or £149/year. Both are explained in detail on the pricing page." },
       { id: "faq-refund", q: "Can I get a refund?", a: "Yes. The £19.99 one-time report is fully refundable within 14 days of purchase, no questions asked. Subscriptions are refundable pro-rata within the first 14 days of an annual plan; monthly subscriptions are cancellable any time but not refunded mid-period." },
       { id: "faq-free-preview", q: "What do I get for free?", a: "Your professional archetype, one hook insight headline, and the top-ranked business path headline. Enough to judge whether the full report is worth £19.99 for you." },
     ],
@@ -85,9 +85,9 @@ const categories: FAQCategory[] = [
     id: "after-the-report",
     label: "After the report",
     items: [
-      { id: "faq-come-back", q: "Can I come back to my report later?", a: "Yes. Sign in any time with your email — magic link, no password — and your report will be there. The report is yours permanently whether you subscribe or not." },
+      { id: "faq-come-back", q: "Can I come back to my report later?", a: "Yes. Sign in any time with your email magic link, no password and your report will be there. The report is yours permanently whether you subscribe or not." },
       { id: "faq-tracker", q: "What's the 30-day tracker?", a: "Daily check-ins for 30 days. Each one is a two-minute reflection on what you did, what got stuck, what you'd change. The system regenerates the plan if you fall behind on your moves." },
-      { id: "faq-guidance", q: "What are the guidance modules?", a: "Structured walkthroughs covering specific situations — discovery calls, proposal writing, recovering difficult engagements, registration, business setup, professional presence. 3 modules are included with the report; the remaining 22 unlock with the subscription." },
+      { id: "faq-guidance", q: "What are the guidance modules?", a: "Structured walkthroughs covering specific situations, discovery calls, proposal writing, recovering difficult engagements, registration, business setup, professional presence. 3 modules are included with the report; the remaining 22 unlock with the subscription." },
     ],
   },
   {
@@ -95,7 +95,7 @@ const categories: FAQCategory[] = [
     label: "Subscription",
     items: [
       { id: "faq-sub-required", q: "Do I need a subscription?", a: "No. The report and 30-day plan are standalone. The subscription is what keeps the tracker running past day 30 and unlocks the remaining 22 guidance modules." },
-      { id: "faq-sub-cancel", q: "Can I cancel?", a: "Yes, any time. Access continues to the end of your billing period — no refund mid-period for monthly. Annual subscriptions are pro-rata refundable in the first 14 days." },
+      { id: "faq-sub-cancel", q: "Can I cancel?", a: "Yes, any time. Access continues to the end of your billing period, no refund mid-period for monthly. Annual subscriptions are pro-rata refundable in the first 14 days." },
       { id: "faq-sub-includes", q: "What does the subscription include?", a: "Ongoing tracker with weekly check-ins past day 30, the remaining 22 guidance modules (25 total), unlimited Ask Solo conversations, and a fresh fit-check whenever your situation changes." },
     ],
   },
@@ -199,7 +199,7 @@ export default function FAQ() {
 
             <div className="flex gap-8 lg:gap-10">
 
-              {/* ── Category sidebar — desktop only ── */}
+              {/* ── Category sidebar, desktop only ── */}
               <aside className="hidden lg:block w-[220px] shrink-0">
                 <div className="sticky top-20">
                   <div className="panel-ivory py-5">
@@ -238,7 +238,7 @@ export default function FAQ() {
                     Questions, answered.
                   </div>
                   <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[54ch]">
-                    The questions people actually ask before paying. If yours isn't here, email us — the
+                    The questions people actually ask before paying. If yours isn't here, email us, the
                     link is at the bottom.
                   </p>
                 </section>
@@ -323,7 +323,7 @@ export default function FAQ() {
                     Still stuck?
                   </span>
                   <p className="font-display text-[15px] text-foreground leading-[1.45]" style={{ letterSpacing: "-0.012em" }}>
-                    Email us — we read every message.
+                    Email us, we read every message.
                   </p>
                   <a
                     href="mailto:support@solo-plan.com"
@@ -339,7 +339,7 @@ export default function FAQ() {
                   * background, making the body copy unreadable. */}
                 <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-12 sm:py-14 text-center mt-2">
                   <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
-                    — {user ? "Pick up where you left off" : "Ready when you are"} —
+                    {user ? "Pick up where you left off" : "Ready when you are"}
                   </div>
                   <h3
                     className="font-display text-[26px] sm:text-[30px] font-extrabold tracking-tight leading-[1.1] text-foreground max-w-[22ch] mx-auto mb-6"

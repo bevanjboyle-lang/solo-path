@@ -105,7 +105,7 @@ export default function CheckInPanel({
           }
           const rawDate = (data as { checkin_date?: string }).checkin_date;
           if (rawDate) {
-            // Format as "07 May" — light document metadata, no time, no year.
+            // Format as "07 May", light document metadata, no time, no year.
             try {
               const d = new Date(rawDate + "T00:00:00Z");
               setReadOnlyDate(
@@ -156,12 +156,12 @@ export default function CheckInPanel({
   // v39 (Gap 2): title + subhead vary by mode.
   const dayLabel = dayNumber ? `Day ${dayNumber}` : "Day";
   const title = readOnly
-    ? `${dayLabel} — what you logged`
+    ? `${dayLabel}, what you logged`
     : isBackfill
       ? `Backfill ${dayLabel}`
       : `${dayLabel} check-in`;
   const inputSubhead = isBackfill
-    ? `Tell us what happened on ${dayLabel.toLowerCase()} — what got done, what didn't.`
+    ? `Tell us what happened on ${dayLabel.toLowerCase()}, what got done, what didn't.`
     : "What did you do today? What's blocking you?";
 
   return (
@@ -171,7 +171,7 @@ export default function CheckInPanel({
           <DrawerHeader className="px-0">
             {/* Pass 2 (2026-05-18, lift-in): "Locked" pill in the readOnly
               * header. Honest disambiguation that the state is intentional and
-              * immutable — not a missing edit affordance. */}
+              * immutable, not a missing edit affordance. */}
             <div className="flex items-baseline justify-between gap-3">
               <DrawerTitle className="text-lg font-semibold text-foreground">
                 {title}
@@ -186,7 +186,7 @@ export default function CheckInPanel({
             </div>
             <DrawerDescription className="text-sm text-muted-foreground">
               {readOnly
-                ? "This check-in is locked — submitted check-ins can't be edited."
+                ? "This check-in is locked, submitted check-ins can't be edited."
                 : aiReply
                   ? "Here's what's been recorded."
                   : inputSubhead}
@@ -200,8 +200,8 @@ export default function CheckInPanel({
               // Pass 2 (2026-05-18): sender dots + Source Serif 4 for Solo text
               // (mirrors /ask-solo's vocabulary so the user reads "this is the
               // same kind of conversation, frozen as a record"). User text stays
-              // in display 500 — direct voice. Foot strip shows just "Submitted
-              // on DD MMM" — no time, no exchange count.
+              // in display 500, direct voice. Foot strip shows just "Submitted
+              // on DD MMM", no time, no exchange count.
               <div className="rounded-lg border border-border bg-[hsl(var(--surface-inset))] p-4 max-h-[55vh] overflow-y-auto">
                 {readOnlyLoading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -302,7 +302,7 @@ export default function CheckInPanel({
                 {isBackfill && dayNumber && (
                   <p className="text-[11.5px] text-muted-foreground/80 leading-snug">
                     Backfilling Day {dayNumber} won't change today's tracker
-                    state — it just fills the gap in your record.
+                    state, it just fills the gap in your record.
                   </p>
                 )}
                 <div className="flex gap-3">

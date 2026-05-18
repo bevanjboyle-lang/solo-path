@@ -208,7 +208,7 @@ function DayBlock({ day }: { day: DayDetail }) {
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md bg-muted px-4 py-3 text-left hover:bg-muted/80 transition-colors">
         <div>
-          <p className="text-sm font-semibold text-foreground">{day.day} — {day.label}</p>
+          <p className="text-sm font-semibold text-foreground">{day.day}, {day.label}</p>
           <p className="text-[11px] text-muted-foreground">
             {day.time_required} · {day.tasks.length} task{day.tasks.length === 1 ? "" : "s"}
           </p>

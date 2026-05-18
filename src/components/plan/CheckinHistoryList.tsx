@@ -1,14 +1,14 @@
 /*
- * CheckinHistoryList — Pass 1 v1 (2026-05-18)
+ * CheckinHistoryList, Pass 1 v1 (2026-05-18)
  *
  * Editorial timeline list for /checkin-history. Renders 30 day rows with
  * weekly separator headers, four discrete status pills, serif excerpts
  * on completed rows, mint-tint today row, faded future rows.
  *
  * Locked decisions from admin/pass-1-checkin-history-decisions.md:
- *   F1 — Week separators inline ("W1 Week 1 · 03-09 May · 7 of 7 done").
+ *   F1, Week separators inline ("W1 Week 1 · 03-09 May · 7 of 7 done").
  *     Computed from entries.
- *   F3 — Move-tag column dropped for Pass 1 (data flow not yet wired).
+ *   F3, Move-tag column dropped for Pass 1 (data flow not yet wired).
  *   Status pills distinguished by fill + shape + glyph, not colour alone:
  *     Completed: filled mint bg + white text + white tick glyph
  *     Today: mint-outline + pulsing inner dot
@@ -37,7 +37,7 @@ export interface CheckinTimelineEntry {
 interface CheckinHistoryListProps {
   entries: CheckinTimelineEntry[];
   onOpenEntry?: (entry: CheckinTimelineEntry) => void;
-  /** Optional today-row CTA — when present, today row shows "Open in Today →" link routed via this handler. */
+  /** Optional today-row CTA, when present, today row shows "Open in Today →" link routed via this handler. */
   onOpenToday?: () => void;
 }
 
@@ -76,7 +76,7 @@ function fmtDayOfWeek(d: Date): string {
   return d.toLocaleDateString("en-GB", { weekday: "short" });
 }
 
-/* ── Status pill — four discrete treatments distinguished by fill + shape + glyph. ── */
+/* ── Status pill, four discrete treatments distinguished by fill + shape + glyph. ── */
 function StatusPill({ status }: { status: CheckinTimelineEntryStatus }) {
   if (status === "completed") {
     return (
@@ -203,7 +203,7 @@ function TimelineRow({
         {fmtDayOfWeek(entry.date)}
       </span>
 
-      {/* Date (full) — hidden on mobile (collapses into day col on narrow viewports) */}
+      {/* Date (full), hidden on mobile (collapses into day col on narrow viewports) */}
       <span
         className={`hidden sm:block text-[12px] pt-1 tracking-[0.02em] ${
           isFuture || isMissed ? "text-muted-foreground/60" : "text-muted-foreground"
@@ -217,7 +217,7 @@ function TimelineRow({
         <StatusPill status={entry.status} />
       </span>
 
-      {/* Excerpt slot — varies by status */}
+      {/* Excerpt slot, varies by status */}
       <div className="min-w-0">
         {isCompleted && entry.excerpt && (
           <p
@@ -235,8 +235,8 @@ function TimelineRow({
         {isToday && (
           <p className="font-display font-semibold text-[14px] text-foreground pt-1" style={{ letterSpacing: "-0.01em" }}>
             {entry.day === 1
-              ? "Your first check-in is open — about two minutes."
-              : "Today's check-in is open — about two minutes."}
+              ? "Your first check-in is open, about two minutes."
+              : "Today's check-in is open, about two minutes."}
           </p>
         )}
       </div>

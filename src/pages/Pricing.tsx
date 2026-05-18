@@ -3,27 +3,27 @@ import { useState, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-// Footer import dropped 2026-05-18 — App.tsx renders the Footer for this route.
+// Footer import dropped 2026-05-18, App.tsx renders the Footer for this route.
 
 /*
- * Pricing — Pass 1 /pricing v1 (2026-05-18) — fourth Phase 2 cycle (paired)
+ * Pricing Pass 1 /pricing v1 (2026-05-18) fourth Phase 2 cycle (paired)
  *
  * Editorial reskin of the anonymous objection-handling pricing surface.
  * Inherits anonymous chrome (TopBar.anonymous + Footer), dense FT register,
  * editorial section vocabulary from /plan + /report + /library + /account.
  *
  * Locked decisions from admin/pass-1-subscribe-pricing-decisions.md:
- *   F1 — Same PricingCard composite carries peer/peer here, peer/preferred
+ *   F1, Same PricingCard composite carries peer/peer here, peer/preferred
  *     on /subscribe. Here both render unelevated.
- *   F2 — Comparison row uses editorial sentences (3 cells per row), NOT
+ *   F2, Comparison row uses editorial sentences (3 cells per row), NOT
  *     checkmark/X-mark grid. The brief explicitly forbids the SaaS grid.
- *   F3 — "Take the test" CTA appears 4 times on this page (top bar + two
+ *   F3, "Take the test" CTA appears 4 times on this page (top bar + two
  *     cards + closing band). Same handler. Per spec §10 + home precedent.
- *   F4 — Subscription card secondary microcopy: "Subscribe after the test —
+ *   F4 Subscription card secondary microcopy: "Subscribe after the test
  *     only if you decide to" (calmer than CD's original "or never").
  *   25/3/22 module canonical applied throughout (subhead, cards, comparison).
  *
- * Cadence: single dark moment — the commercial honesty strip between the
+ * Cadence: single dark moment, the commercial honesty strip between the
  * comparison row and FAQ teaser. Frames the terms ("no auto-renewal · cancel
  * anytime") as the page's pivot from explanation to decision. Per v1.4 §8.
  *
@@ -59,7 +59,7 @@ const reportCard: PricingCardData = {
     // Drift 5 fix (2026-05-18, journey-trace): canonical is 10 paths scored
     // + user picks 2-5 for the plan. Was '5 scored business paths' which
     // under-described what the buyer actually gets.
-    <>Your full report — <strong>10 scored business paths</strong> with our top 2–5 recommended, archetype, income outlook, AI defensibility.</>,
+    <>Your full report, <strong>10 scored business paths</strong> with our top 2–5 recommended, archetype, income outlook, AI defensibility.</>,
     <>A <strong>30-day activation plan</strong> built around your warmest strand.</>,
     <>Daily tracker for the 30 days.</>,
     <>3 of the 25 guidance modules.</>,
@@ -78,21 +78,21 @@ const subscriptionCard: PricingCardData = {
   annualLine: "or £149 / year · two months free",
   bullets: [
     <>Everything in the one-time, <strong>continued past day 30</strong>.</>,
-    <><strong>All 25 guidance modules</strong> — 22 more than the report includes.</>,
+    <><strong>All 25 guidance modules</strong>, 22 more than the report includes.</>,
     <>Weekly check-ins after your first 30 days.</>,
-    <>Unlimited Ask Solo — context-aware to your plan.</>,
+    <>Unlimited Ask Solo, context-aware to your plan.</>,
     <>Plan regenerates when your moves don't land. Cancel any time.</>,
   ],
   ctaLabel: "Find what fits",
-  secondaryMicrocopy: "Subscribe after the fit-check — only if you decide to",
+  secondaryMicrocopy: "Subscribe after the fit-check, only if you decide to",
 };
 
-/* ── Comparison rows — editorial sentences per cell, not binary ── */
+/* ── Comparison rows, editorial sentences per cell, not binary ── */
 const comparisonRows: { feat: string; oneTime: ReactNode; sub: ReactNode; faint?: boolean }[] = [
   {
     feat: "Report",
     oneTime: <>Yours forever</>,
-    sub: <>Yours forever — plus a fresh fit-check when you need one</>,
+    sub: <>Yours forever, plus a fresh fit-check when you need one</>,
   },
   {
     feat: "30-day plan",
@@ -102,7 +102,7 @@ const comparisonRows: { feat: string; oneTime: ReactNode; sub: ReactNode; faint?
   {
     feat: "Guidance modules",
     oneTime: <><strong>3 of 25</strong></>,
-    sub: <><strong>All 25</strong> — 22 more than the report</>,
+    sub: <><strong>All 25</strong>, 22 more than the report</>,
   },
   {
     feat: "Ask Solo",
@@ -111,18 +111,18 @@ const comparisonRows: { feat: string; oneTime: ReactNode; sub: ReactNode; faint?
   },
   {
     feat: "Commitment",
-    oneTime: <><strong>None</strong> — pay once, never again</>,
+    oneTime: <><strong>None</strong>, pay once, never again</>,
     sub: <>Monthly or annual · cancel any time</>,
   },
 ];
 
-/* ── FAQ items — three pricing-specific questions per F3 / spec §4 ── */
+/* ── FAQ items, three pricing-specific questions per F3 / spec §4 ── */
 const faqs: { q: string; a: ReactNode }[] = [
   {
     q: "Will the £19/month renew automatically?",
     a: (
       <>
-        Yes — that's what a subscription is. You can cancel any time from your account, and you keep
+        Yes, that's what a subscription is. You can cancel any time from your account, and you keep
         access until the end of the paid month. The £19.99 one-time payment does <strong>not</strong>{" "}
         renew; you pay once and that's the end of it.
       </>
@@ -132,7 +132,7 @@ const faqs: { q: string; a: ReactNode }[] = [
     q: "What's the difference between the report and the subscription?",
     a: (
       <>
-        The report is a one-shot diagnostic — your archetype, your ten scored paths (we recommend
+        The report is a one-shot diagnostic, your archetype, your ten scored paths (we recommend
         two to five), your 30-day plan. You
         can use it forever. The subscription keeps the loop running past day 30: weekly check-ins,
         the rest of the modules, unlimited Ask Solo, fresh fit-checks when your situation changes.
@@ -144,7 +144,7 @@ const faqs: { q: string; a: ReactNode }[] = [
     a: (
       <>
         Because buying without your report is buying generic content. The fit-check takes 8 minutes
-        and gives you a preview before you pay — so you know what you're paying for.
+        and gives you a preview before you pay, so you know what you're paying for.
       </>
     ),
   },
@@ -180,7 +180,7 @@ export default function Pricing() {
               One fit-check. Two ways to keep going.
             </h1>
             <p className="mt-4 font-display text-[17px] sm:text-[19px] text-muted-foreground leading-[1.4] max-w-[52ch]">
-              £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling — with the 22
+              £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling, with the 22
               modules and the library that doesn't expire.
             </p>
           </section>
@@ -297,7 +297,7 @@ export default function Pricing() {
             * background, making the body copy and microcopy unreadable. */}
           <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-14 sm:py-16 text-center">
             <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
-              — {isAuthedBuyer ? "Pick up where you left off" : "Decide when you're ready"} —
+              {isAuthedBuyer ? "Pick up where you left off" : "Decide when you're ready"}
             </div>
             <h3
               className="font-display text-[28px] sm:text-[34px] lg:text-[36px] font-extrabold tracking-tight leading-[1.1] text-foreground max-w-[22ch] mx-auto mb-4"
@@ -332,7 +332,7 @@ export default function Pricing() {
         * renders <Footer /> for /pricing (it's not in FOOTERLESS_ROUTES).
         * The page-level render was producing a duplicate dark bar. */}
 
-      {/* Mobile sticky bottom CTA — anon visitors only, hidden when authed (they have plan access via top bar). */}
+      {/* Mobile sticky bottom CTA, anon visitors only, hidden when authed (they have plan access via top bar). */}
       {!isAuthedBuyer && (
         <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#D8D4CC] sm:hidden" style={{ background: "rgba(250,249,247,0.97)", backdropFilter: "blur(8px)" }}>
           <div className="px-4 py-3">
@@ -359,9 +359,9 @@ export default function Pricing() {
  * the top border). Pass 1 /pricing renders both cards unelevated (peer/peer).
  *
  * For authed-buyer state: `authedBuyerVariant` flips the card content:
- *   - "owned" — one-time card reframes to "Already yours", CTA flips to
+ *   - "owned", one-time card reframes to "Already yours", CTA flips to
  *     "Open my plan" as a stone secondary button.
- *   - "upgrade" — subscription card primary CTA changes to "Upgrade now"
+ *   - "upgrade", subscription card primary CTA changes to "Upgrade now"
  *     routing to /subscribe.
  */
 function PricingCard({

@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import GlassCard from "@/components/ui/GlassCard";
 
 /*
- * Library — Pass 1 /library v1 (2026-05-18) — second Phase 2 surface
+ * Library Pass 1 /library v1 (2026-05-18) second Phase 2 surface
  *
  * Editorial reskin of the guidance library. Two-column app shell
  * inheriting /plan + /report. AreaSidebar with three tabs (Today /
@@ -29,23 +29,23 @@ import GlassCard from "@/components/ui/GlassCard";
  * Locked decisions from admin/pass-1-library-decisions.md:
  *   25/3/22 canonical correction applied throughout (was stale '9
  *   modules' in spec §1).
- *   F1 — LibraryCard as editorial row (Phase 2 of Phase 2 work — the
+ *   F1 LibraryCard as editorial row (Phase 2 of Phase 2 work the
  *     internal TodayTab/BrowseTab/ModulesTab card render is preserved
  *     as-is for Pass 1, with shell + chrome restyled).
- *   F2 — Read-history meta retained on Today rows.
- *   F3 — Gate-row body: 'Same authors, same depth — 22 more on the
+ *   F2, Read-history meta retained on Today rows.
+ *   F3 Gate-row body: 'Same authors, same depth 22 more on the
  *     harder things.'
- *   F4 — Drop cap in drawer but not in module lessons.
- *   F5 — Browse: topic chips inline + More filters drawer (deferred).
- *   F6 — Locked-lesson overlay as single block beneath Lesson 01.
- *   F7 — Save for later dropped (out of scope per spec §12).
- *   F8 — Level taxonomy: Practical / Foundational / Hard truth / Advanced.
+ *   F4, Drop cap in drawer but not in module lessons.
+ *   F5, Browse: topic chips inline + More filters drawer (deferred).
+ *   F6, Locked-lesson overlay as single block beneath Lesson 01.
+ *   F7, Save for later dropped (out of scope per spec §12).
+ *   F8, Level taxonomy: Practical / Foundational / Hard truth / Advanced.
  *
- * Cadence: two dark moments — Day-31 banner + single gate row in
+ * Cadence: two dark moments, Day-31 banner + single gate row in
  * Modules tab. Both content-earned, both contained. Per v1.4 §8.
  *
  * Contrast safeguard (Bevan flagged 2026-05-18): every text element
- * sits inside an ivory or stone container — nothing floats on the
+ * sits inside an ivory or stone container, nothing floats on the
  * photo background. AreaSidebar wraps items in panel-ivory (already
  * via the component). Page header is its own ivory panel. Tab content
  * panels are ivory. Day-31 banner is opaque panel-dark.
@@ -295,7 +295,7 @@ export default function Library() {
     : [];
 
   /*
-   * Sidebar config — numeral prefix + label + count suffix per F-block
+   * Sidebar config, numeral prefix + label + count suffix per F-block
    * in pass-1-library-decisions.md. Counts derive from live data where
    * available; fall back to bare label until data lands. Per the
    * decisions doc, simplest is to append the count to the label string
@@ -354,12 +354,12 @@ export default function Library() {
     </>
   );
 
-  /* Per-tab page-header content — H1 + subhead change with the tab. */
+  /* Per-tab page-header content, H1 + subhead change with the tab. */
   const headerByTab: Record<string, { eyebrow: string; h1: string; sub: string; stat?: string }> = {
     today: {
       eyebrow: "Today",
       h1: "Library.",
-      sub: "Chosen for where you are right now — three to six picks against today's check-in signal.",
+      sub: "Chosen for where you are right now, three to six picks against today's check-in signal.",
       // Visual-audit 2026-05-18: pluralise correctly. "1 picks" was reading
       // as a grammar bug in the eyebrow chip on /library.
       stat: todayCount > 0 ? `${todayCount} ${todayCount === 1 ? "pick" : "picks"}` : undefined,
@@ -397,12 +397,12 @@ export default function Library() {
               <div className="flex-1 min-w-0">
                 <h1 className="sr-only">Library</h1>
 
-                {/* Day-31 dark banner — first cadence moment, mirrors /plan's Day-31 wall. */}
+                {/* Day-31 dark banner, first cadence moment, mirrors /plan's Day-31 wall. */}
                 {isDay31Plus && !isSubscriber && (
                   <Day31Banner onSubscribe={handleSubscribe} />
                 )}
 
-                {/* Page-header panel — per-tab eyebrow + H1 + subhead + right-side stat. */}
+                {/* Page-header panel, per-tab eyebrow + H1 + subhead + right-side stat. */}
                 <LibraryPageHeader
                   eyebrow={header.eyebrow}
                   h1={header.h1}
@@ -410,7 +410,7 @@ export default function Library() {
                   stat={header.stat}
                 />
 
-                {/* Tab content panel — each tab on its own ivory surface. */}
+                {/* Tab content panel, each tab on its own ivory surface. */}
                 <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
                   {activeTab === "today" ? (
                     todayLoading || !todayData ? (
@@ -589,7 +589,7 @@ function BrowseTab({
 }) {
   const completedSet = new Set(completedIds);
 
-  // Get display data — either all tracks or single filtered track
+  // Get display data, either all tracks or single filtered track
   const displayTracks = filter === "All"
     ? Object.values(tracks)
     : tracks[filter] ? [tracks[filter]] : [];
@@ -685,13 +685,13 @@ function BrowseTab({
   );
 }
 
-/* ── Modules Tab — receives browse data from parent ──
+/* ── Modules Tab, receives browse data from parent ──
  *
  * Pass 1 (2026-05-18): patches in the single dark gate row (DarkGateRow)
  * between the last unlocked module and the first locked module for
  * buyers (showGateRow = true). This is the screen's second cadence
  * moment per pass-1-library-decisions.md (the first is the Day-31
- * banner above the page header). Subscribers get neither — their
+ * banner above the page header). Subscribers get neither, their
  * library runs all-ivory throughout.
  *
  * Existing module-row rendering preserved as-is for Pass 1; Phase 2 of
@@ -773,7 +773,7 @@ function ModulesTab({
   );
 }
 
-/* ── LibraryPageHeader — per-tab page header in its own ivory panel ──
+/* ── LibraryPageHeader, per-tab page header in its own ivory panel ──
  *
  * Mirrors the /report header pattern: small-caps eyebrow with mint dot
  * + drafted-at meta, large display H1, supporting subhead. The H1 is
@@ -821,14 +821,14 @@ function LibraryPageHeader({
   );
 }
 
-/* ── DarkGateRow — the screen's first dark moment ──
+/* ── DarkGateRow, the screen's first dark moment ──
  *
  * Single thin dark band inserted once between Module 03 (last unlocked
  * for buyers) and Module 04 (first locked). ~88px tall, full-width of
  * the panel. Mint dot + white small-caps label + short body sentence
  * + inline mint Subscribe CTA. Per pass-1-library-decisions.md F3:
  * "Modules 04 to 25 are in the subscription. Same authors, same
- * depth — 22 more on the harder things."
+ * depth, 22 more on the harder things."
  *
  * Subscribers don't see this row (showGateRow is false). 22 dark walls
  * would be punitive; a single contained gate row marks the boundary
@@ -846,7 +846,7 @@ function DarkGateRow({ onSubscribe }: { onSubscribe: () => void }) {
         style={{ color: "rgba(250,249,247,0.85)" }}
       >
         Modules 04 to 25 are in the subscription.{" "}
-        <span style={{ color: "#FAF9F7" }}>Same authors, same depth — 22 more on the harder things.</span>
+        <span style={{ color: "#FAF9F7" }}>Same authors, same depth, 22 more on the harder things.</span>
       </p>
       <button
         type="button"
@@ -860,17 +860,17 @@ function DarkGateRow({ onSubscribe }: { onSubscribe: () => void }) {
   );
 }
 
-/* ── Day31Banner — the screen's second dark moment ──
+/* ── Day31Banner, the screen's second dark moment ──
  *
  * Appears above the page header for Day-31 non-subscribers. Mirrors
  * /plan's Day-31 wall vocabulary: same panel-dark band, same position
  * above the page content, same "you've reached the end of the
- * included window — keep going on subscription" framing. Cross-surface
+ * included window, keep going on subscription" framing. Cross-surface
  * consistency: the same structural moment renders the same way on
  * both /plan and /library.
  *
  * Subscribers never see this. Buyers within their 30 days never see
- * this either — only buyers past Day 30 with no active subscription.
+ * this either, only buyers past Day 30 with no active subscription.
  */
 function Day31Banner({ onSubscribe }: { onSubscribe: () => void }) {
   return (
@@ -891,7 +891,7 @@ function Day31Banner({ onSubscribe }: { onSubscribe: () => void }) {
             className="mt-2 text-[14.5px] leading-relaxed"
             style={{ color: "rgba(250,249,247,0.85)" }}
           >
-            Library is read-only on older items. Subscribe to keep getting new guidance — the 22 deeper modules and weekly Today picks come with the £19/month subscription.
+            Library is read-only on older items. Subscribe to keep getting new guidance, the 22 deeper modules and weekly Today picks come with the £19/month subscription.
           </p>
         </div>
         <div className="lg:col-span-3 flex lg:justify-end">
@@ -1143,7 +1143,7 @@ function ArticleDrawer({
           </GlassCard>
         )}
 
-        {/* Completed state — show output */}
+        {/* Completed state, show output */}
         {data.is_completed && data.completion?.output && (
           <div className="space-y-5">
             {data.completion.output.key_insights && data.completion.output.key_insights.length > 0 && (

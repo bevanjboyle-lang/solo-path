@@ -23,7 +23,7 @@ export function RecommendationTeaser() {
     <LockedCard title="Solo's Recommendation">
       <p className="text-sm text-muted-foreground">Based on your profile, Path 1 is the strongest fit. Your regulatory fluency combined with nine years of stakeholder management maps directly to the independent risk consulting model.</p>
       <p className="text-sm text-muted-foreground" style={{ filter: "blur(1px)" }}>
-        The demand signal in Edinburgh's FinTech corridor is strong — three Series B companies raised in the last quarter alone.
+        The demand signal in Edinburgh's FinTech corridor is strong, three Series B companies raised in the last quarter alone.
       </p>
     </LockedCard>
   );
@@ -84,7 +84,7 @@ export function ActivationPlanTeaser() {
 
   const tasks = [
     "Day 1: Update LinkedIn headline: 'Regulatory Risk Consultant | Helping FinTechs & Scale-ups Navigate Compliance'",
-    "Day 2: Write your war story post — the audit finding that saved a client from a regulatory fine",
+    "Day 2: Write your war story post, the audit finding that saved a client from a regulatory fine",
     "Day 3: Send 3 reconnect messages to former Big Four colleagues now in FinTech or consulting",
   ];
 

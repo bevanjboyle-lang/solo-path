@@ -6,29 +6,29 @@ import SoloLogo from "@/components/SoloLogo";
 import { isDevBypass } from "@/lib/devBypass";
 
 /*
- * Processing — Pass 1 /processing v1 (2026-05-17)
+ * Processing, Pass 1 /processing v1 (2026-05-17)
  *
  * Translates Claude Design's Pass 1 proposal into the live page. Inherits
  * the editorial composition vocabulary established on the previous spine
  * screens. Narrower panel (max-w-2xl ≈ 672px, target ~760px on widescreen
- * via responsive sizing) — the screen is a short, centred moment, not a
+ * via responsive sizing), the screen is a short, centred moment, not a
  * long working surface. The narrower panel makes the photo bleed more
  * visible.
  *
  * Locked decisions from admin/pass-1-processing-decisions.md:
- *   Central — typography-led + heartbeat dot. Cycling status text is the
+ *   Central, typography-led + heartbeat dot. Cycling status text is the
  *     visual primary; a single mint dot adjacent to the message pulses on
  *     a 2.8s ease-in-out cycle as the page's only motion element (uses
  *     the existing eyebrow-dot vocabulary, not a new visual primitive).
  *     Reduced-motion variant: dot becomes static, crossfade dropped.
- *   F1 — Keep the heartbeat dot.
- *   F2 — Keep the elapsed counter on the estimate row (honest, not
- *     predictive — "elapsed · 0:04" never "remaining").
- *   F3 — Keep the reference row visible on the Failed state (small
+ *   F1, Keep the heartbeat dot.
+ *   F2, Keep the elapsed counter on the estimate row (honest, not
+ *     predictive, "elapsed · 0:04" never "remaining").
+ *   F3, Keep the reference row visible on the Failed state (small
  *     stone-tinted inset with report ID prefix + timestamp).
- *   F4 — Approve eyebrow second clauses ("your answers received" /
+ *   F4, Approve eyebrow second clauses ("your answers received" /
  *     "your answers are saved").
- *   Top bar — simplified to a "Generating" / "Generation failed" status
+ *   Top bar, simplified to a "Generating" / "Generation failed" status
  *     chip (mint or red dot + small-caps label only). No session/report
  *     ID exposure in the chrome.
  *
@@ -53,7 +53,7 @@ const CYCLING_MESSAGES = [
 ];
 
 const CYCLE_INTERVAL = 2800; // matches the heartbeat dot's breath cycle
-const TIMEOUT_MS = 300_000;  // 5 minutes — lenient vs spec's 60s, kept from prior implementation
+const TIMEOUT_MS = 300_000;  // 5 minutes, lenient vs spec's 60s, kept from prior implementation
 const READY_FLASH_MS = 400;
 
 function usePrefersReducedMotion() {
@@ -110,14 +110,14 @@ export default function Processing() {
   const startRef = useRef(Date.now());
   const mountedRef = useRef(true);
 
-  /* No report_id — redirect home */
+  /* No report_id, redirect home */
   useEffect(() => {
     if (!reportId && !isDevBypass()) {
       navigate("/", { replace: true });
     }
   }, [reportId, navigate]);
 
-  /* Cycling messages — only while generating */
+  /* Cycling messages, only while generating */
   useEffect(() => {
     if (state !== "generating") return;
     const id = setInterval(() => {
@@ -126,7 +126,7 @@ export default function Processing() {
     return () => clearInterval(id);
   }, [state]);
 
-  /* Elapsed counter — ticks every second while generating */
+  /* Elapsed counter, ticks every second while generating */
   useEffect(() => {
     if (state !== "generating") return;
     const id = setInterval(() => {
@@ -173,7 +173,7 @@ export default function Processing() {
         return;
       }
     } catch {
-      /* Single failed poll is self-recovering — continue */
+      /* Single failed poll is self-recovering, continue */
     }
 
     if (!mountedRef.current) return;
@@ -200,7 +200,7 @@ export default function Processing() {
   }, [reportId, poll, state]);
 
   const handleRetry = () => {
-    /* Reset timer and restart polling — DO NOT navigate to /questionnaire,
+    /* Reset timer and restart polling, DO NOT navigate to /questionnaire,
      * which would wipe the user's answers. The report row already exists;
      * the backend may still be working on it. */
     startRef.current = Date.now();
@@ -251,7 +251,7 @@ export default function Processing() {
                 <SoloLogo width={88} height={26} />
               </div>
 
-              {/* ─── Body — branches by state ─── */}
+              {/* ─── Body, branches by state ─── */}
               {state === "generating" || state === "ready" ? (
                 <GeneratingBody
                   message={
@@ -323,7 +323,7 @@ function GeneratingBody({
       {/* Hairline separator */}
       <div className="h-px bg-[#E5E2DC] my-8" />
 
-      {/* Cycling region — aria-live, heartbeat dot + display-weight message */}
+      {/* Cycling region, aria-live, heartbeat dot + display-weight message */}
       <div
         className="flex items-center gap-4 min-h-[52px]"
         aria-live="polite"
@@ -343,7 +343,7 @@ function GeneratingBody({
          * new message. Reduced-motion users see the swap without the
          * fade (the animate classes are no-ops under their CSS query in
          * tailwindcss-animate; the content updates still occur on the
-         * same cadence — content updates are not motion).
+         * same cadence, content updates are not motion).
          */}
         <span
           key={msgKey}
@@ -390,7 +390,7 @@ function FailedBody({
 }) {
   return (
     <div className="px-8 sm:px-12 pt-6 pb-12">
-      {/* Eyebrow — red dot + small-caps label + muted reassurance */}
+      {/* Eyebrow, red dot + small-caps label + muted reassurance */}
       <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600" />
         <span className="text-red-700">Generation failed</span>
@@ -405,11 +405,11 @@ function FailedBody({
         We couldn't generate your report.
       </h1>
       <p className="mt-4 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed max-w-2xl">
-        Something went wrong on our side. Your answers are saved — you can retry
+        Something went wrong on our side. Your answers are saved, you can retry
         without starting over.
       </p>
 
-      {/* Reference row — small stone-tinted inset */}
+      {/* Reference row, small stone-tinted inset */}
       <ReferenceRow reportId={reportId} failureTime={failureTime} />
 
       {/* Vertical action stack */}

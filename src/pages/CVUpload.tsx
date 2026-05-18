@@ -14,7 +14,7 @@ import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 /*
- * CVUpload — Pass 1 /cv-upload v1 (2026-05-16)
+ * CVUpload, Pass 1 /cv-upload v1 (2026-05-16)
  *
  * Translates Claude Design's Pass 1 proposal into the live page. Inherits
  * the editorial composition vocabulary established on the home page in
@@ -24,18 +24,18 @@ import { useIsMobile } from "@/hooks/use-mobile";
  * between Continue and Skip, footer compressed inside the panel.
  *
  * Locked decisions from admin/pass-1-cv-upload-decisions.md:
- *   F1 — Why we ask alongside the drop zone (not beneath)
- *   F2 — Skip is single-action; Continue stays "Continue", disabled until
+ *   F1, Why we ask alongside the drop zone (not beneath)
+ *   F2, Skip is single-action; Continue stays "Continue", disabled until
  *        upload completes. Reading B (simpler) locked.
- *   F3 — Time chip "≈ 1 min" on the ProgressHeader (funnel-wide pattern)
- *   F6 — Encrypted trust line sharpened to specifics:
+ *   F3, Time chip "≈ 1 min" on the ProgressHeader (funnel-wide pattern)
+ *   F6, Encrypted trust line sharpened to specifics:
  *        "Encrypted · EU storage · deletable from /account"
- *   F7 — Success Toast dropped; in-surface chip is the success signal
+ *   F7, Success Toast dropped; in-surface chip is the success signal
  *
  * Dark-card cadence: zero dark cards on this screen. Operational/
  * transitional surfaces run all-ivory under design-direction.md v1.4 §8.
  *
- * No framer-motion fade — the editorial register should land instantly.
+ * No framer-motion fade, the editorial register should land instantly.
  */
 
 const WHY_BULLETS = [
@@ -121,7 +121,7 @@ export default function CVUpload() {
   // existing complete report. Without this, they can start a fresh test from
   // /cv-upload and either overwrite their report or create a duplicate row
   // that breaks the post-questionnaire flow. The second-report flow is the
-  // canonical path for retakes — lives at /account → TakeAnotherTestCard.
+  // canonical path for retakes, lives at /account → TakeAnotherTestCard.
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -226,7 +226,7 @@ export default function CVUpload() {
                 <div className="lg:col-span-7">
                   <h1 className="title-h1">
                     Upload your CV{" "}
-                    <span className="text-muted-foreground">— we'll tailor the report to your background.</span>
+                    <span className="text-muted-foreground">, we'll tailor the report to your background.</span>
                   </h1>
                 </div>
                 <div className="lg:col-span-5 lg:pt-2">

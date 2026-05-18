@@ -40,7 +40,7 @@ export default function TrackerGrid({ days, variant = "thirty-day", onDayClick }
                   : "bg-[hsl(var(--surface-inset))] text-muted-foreground/50 border border-transparent cursor-default"
               }
             `}
-            aria-label={`Day ${day.day}${day.completed ? " — completed" : day.isToday ? " — today" : ""}`}
+            aria-label={`Day ${day.day}${day.completed ? " completed" : day.isToday ? " today" : ""}`}
           >
             {day.day}
           </button>
