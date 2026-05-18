@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback, type ReactNode } from "react";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -74,10 +74,14 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const viewStrands = searchParams.get("view") === "strands";
+  // Consistency-sweep 2026-05-18: viewStrands toggle removed. The strand
+  // rationale (`why_included`) is now always visible inside the §04 Strands
+  // panel rather than hidden behind a `?view=strands` URL state. Sidebar
+  // "Strands" click now scrolls to the panel via handleScrollToStrands.
+  // Simpler model, fewer URL states, no chance of the user clicking
+  // "Strands" and seeing nothing visibly change.
 
   /* ─── State (preserved from prior implementation) ─── */
   const [planState, setPlanState] = useState<PlanState>("loading");
@@ -96,6 +100,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   const [hasPaid, setHasPaid] = useState<boolean | null>(null);
   const [isSubscriber, setIsSubscriber] = useState(false);
+  // Consistency-sweep 2026-05-18: capture activated_at so the title card
+  // meta block can render "Started · {date}" matching the /report + /account
+  // right-meta pattern.
+  const [activatedAt, setActivatedAt] = useState<string | null>(null);
 
   const [reportId, setReportId] = useState<string>("");
   const [reportStatus, setReportStatus] = useState<ReportRow["status"] | null>(null);
@@ -226,6 +234,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
     const isSub = session.subscription_status === "active";
     setIsSubscriber(isSub);
+    setActivatedAt((session.activated_at as string | null) ?? null);
 
     setReplanPending(!!session.replan_pending);
     setReplanContext((session.replan_context as Record<string, unknown> | null) ?? null);
@@ -535,14 +544,35 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     }
   }, [expandedDayInList, dayNumber]);
 
+  /* Consistency-sweep 2026-05-18: scroll handlers for Today (§01) and
+   * Strands (§04). Both use document.getElementById since the panels are
+   * created by the PanelSection composite — we add id attributes to those
+   * sections below. Smooth scroll with `block: "start"` matches the day-
+   * list pattern. */
+  const handleScrollToToday = useCallback(() => {
+    document.getElementById("plan-section-today")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+  const handleScrollToStrands = useCallback(() => {
+    document.getElementById("plan-section-strands")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  // Consistency-sweep 2026-05-18: numbered scroll-anchors for in-page
+  // sections (01/02/03), then a divider, then route-out links with no
+  // numeral, then a second divider, then the utility action. Matches the
+  // /report + /library + /account + /sample-report sidebar grammar.
+  // The Strands item now scrolls to #your-strands instead of toggling a
+  // ?view=strands param — simpler mental model, fewer URL states, and the
+  // strand rationale is always visible in the panel rather than hidden
+  // behind a click.
   const sidebarItems: SidebarItem[] = [
-    { id: "today", label: "Today", to: "/plan", isActive: !viewStrands },
-    { id: "days", label: "Your 30 days", onClick: handleScrollToDayList },
-    { id: "strands", label: "Strands", to: "/plan?view=strands", isActive: viewStrands },
+    { id: "today",   numeral: "01", label: "Today",         onClick: handleScrollToToday },
+    { id: "days",    numeral: "02", label: "Your 30 days",  onClick: handleScrollToDayList },
+    { id: "strands", numeral: "03", label: "Strands",       onClick: handleScrollToStrands },
+    { id: "div1", label: "", isDivider: true },
     { id: "history", label: "Check-in history", to: "/checkin/history" },
-    { id: "report", label: "Report", to: "/report" },
-    { id: "div", label: "", isDivider: true },
-    { id: "refine", label: "Refine your report", onClick: openRefinePanel, isUtility: true },
+    { id: "report",  label: "Report",           to: "/report" },
+    { id: "div2", label: "", isDivider: true },
+    { id: "refine",  label: "Refine your report", onClick: openRefinePanel, isUtility: true },
   ];
 
   const sidebarFooter: ReactNode = (() => {
@@ -657,6 +687,75 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
               <div className="flex-1 min-w-0">
                 <h1 className="sr-only">Your plan</h1>
 
+                {/* ─── Title card (consistency-sweep 2026-05-18) ───
+                  * Panel-ivory hero with eyebrow + H1 + sub + right-meta,
+                  * matching the title-card pattern locked across /report,
+                  * /library, /account, /sample-report.
+                  *
+                  * Conditional rendering: skip when the page is in
+                  * pre-activation states (loading / awaitingSelection /
+                  * planBuilding) — the meta-block (Day X of 30, Started
+                  * date) only makes sense once tracker_sessions.activated_at
+                  * exists. For those transient states the strand selector
+                  * / plan-building hold IS the page's hero.
+                  *
+                  * Meta block content adapts to plan tier:
+                  *   - One-time:   DAY · 11 of 30  /  STARTED · 12 May 2026
+                  *   - Subscriber: TRACKER · Rolling / STARTED · 12 May 2026
+                  *   - Day 31+ (no sub): DAY · Past day 30 / STARTED · …
+                  */}
+                {!awaitingSelection && !planBuilding && planState !== "loading" && (() => {
+                  const tierLabel = isSubscriber ? "MONTHLY" : "ONE-TIME";
+                  const dayMeta = (() => {
+                    if (isSubscriber) return { label: "TRACKER", value: "Rolling" };
+                    if (planState === "day31_nosub") return { label: "DAY", value: "Past day 30" };
+                    if (dayNumber > 0) return { label: "DAY", value: `${dayNumber} of 30` };
+                    return { label: "DAY", value: "Starts tomorrow" };
+                  })();
+                  const startedDate = activatedAt
+                    ? new Date(activatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+                    : null;
+                  return (
+                    <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-10 sm:py-12 mb-6">
+                      {/* Eyebrow — mint dot + YOUR PLAN + tier */}
+                      <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4 flex-wrap">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+                        <span className="text-foreground">Your plan</span>
+                        <span className="text-muted-foreground/40">·</span>
+                        <span className="text-muted-foreground/70">{tierLabel}</span>
+                      </div>
+                      {/* H1 + sub on left, right-meta block stacked on right */}
+                      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 lg:gap-10 items-end">
+                        <div>
+                          <h2
+                            className="font-display text-[34px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
+                            style={{ letterSpacing: "-0.028em", textWrap: "balance" } as React.CSSProperties}
+                          >
+                            {isSubscriber ? "Your plan." : "Your 30-day plan."}
+                          </h2>
+                          <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[60ch]">
+                            {isSubscriber
+                              ? "Today's check-in, your rolling tracker, and the strands you're running. Refine the report when your situation shifts."
+                              : "Today's check-in, your 30-day tracker, and the strands you're running. Refine the report when your situation shifts."}
+                          </p>
+                        </div>
+                        <div className="text-right space-y-3 shrink-0">
+                          <div>
+                            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">{dayMeta.label}</div>
+                            <div className="mt-1 text-[14px] font-medium text-foreground tabular-nums">{dayMeta.value}</div>
+                          </div>
+                          {startedDate && (
+                            <div>
+                              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">STARTED</div>
+                              <div className="mt-1 text-[14px] font-medium text-foreground">{startedDate}</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </section>
+                  );
+                })()}
+
                 {/* ─── Replan prompt (when a check-in flags it) ─── */}
                 {replanPending && sessionId && user && (
                   <div className="mb-6">
@@ -694,21 +793,38 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                 {/* ─── Day 31+ Dark Wall (the screen's single dark moment) ─── */}
                 {planState === "day31_nosub" && <DarkWall />}
 
-                {/* ─── TodayCard (visual primary in all states) ─── */}
+                {/* ─── §01 TodayCard (visual primary in all states) ───
+                  * Wrapped in #plan-section-today anchor + scroll-mt-24 so
+                  * sidebar "Today" click scrolls here cleanly past the
+                  * sticky TopBar (consistency-sweep 2026-05-18).
+                  */}
                 {!awaitingSelection && (
-                  <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
-                    <TodayCard
-                      state={planState}
-                      dayNumber={dayNumber}
-                      weekNumber={weekNumber}
-                      sessionId={sessionId}
-                      onScrollToReport={() => {
-                        /* Report is its own route at /report; sidebar handles the nav. */
-                      }}
-                      onOpenCheckin={openCheckin}
-                      onOpenActivation={() => setActivationOpen(true)}
-                    />
-                  </section>
+                  <div id="plan-section-today" className="scroll-mt-24">
+                    <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
+                      {/* Section eyebrow — consistency-sweep 2026-05-18:
+                        * surfaces "01 TODAY" so the in-body numerals read
+                        * contiguously (01 Today / 02 Tracker / 03 Days / 04
+                        * Strands) and align with the sidebar's numbered
+                        * scroll-anchors. Previously the Today panel had no
+                        * numeral, which made the body sections appear to
+                        * jump from 02 to 04. */}
+                      <div className="flex items-baseline gap-3 mb-5 text-[11px] font-bold uppercase tracking-[0.18em]">
+                        <span className="text-primary tabular-nums">01</span>
+                        <span className="text-muted-foreground">Today</span>
+                      </div>
+                      <TodayCard
+                        state={planState}
+                        dayNumber={dayNumber}
+                        weekNumber={weekNumber}
+                        sessionId={sessionId}
+                        onScrollToReport={() => {
+                          /* Report is its own route at /report; sidebar handles the nav. */
+                        }}
+                        onOpenCheckin={openCheckin}
+                        onOpenActivation={() => setActivationOpen(true)}
+                      />
+                    </section>
+                  </div>
                 )}
 
                 {/* ─── Tracker (Day 0 = dormant block; Day 1+ = grid) ─── */}
@@ -798,13 +914,19 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   </div>
                 )}
 
-                {/* ─── §04 Strand row (Day 1+ only — hidden on Day 0 per F6) ─── */}
+                {/* ─── §04 Strand row (Day 1+ only — hidden on Day 0 per F6) ───
+                  * Wrapped in #plan-section-strands anchor + scroll-mt-24 so
+                  * sidebar "Strands" click scrolls here cleanly past the
+                  * sticky TopBar (consistency-sweep 2026-05-18; this is the
+                  * fix for the previously-non-working Strands link).
+                  */}
                 {planState !== "day0" && strands.length > 0 && (
-                  <PanelSection
-                    num="04"
-                    label="Your strands"
-                    meta={`${strands.length} active`}
-                  >
+                  <div id="plan-section-strands" className="scroll-mt-24">
+                    <PanelSection
+                      num="04"
+                      label="Your strands"
+                      meta={`${strands.length} active`}
+                    >
                     <ul className="space-y-3">
                       {strands.map((s) => (
                         <li
@@ -820,24 +942,28 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                         </li>
                       ))}
                     </ul>
-                    {viewStrands && (
-                      <div className="mt-4 space-y-2">
-                        {strands.map((s) =>
-                          s.why_included ? (
-                            <p
-                              key={`why-${s.strand_id}`}
-                              className="text-[13px] text-muted-foreground leading-relaxed"
-                            >
-                              <strong className="font-semibold text-foreground">
-                                {s.model_name}.
-                              </strong>{" "}
-                              {s.why_included}
-                            </p>
-                          ) : null,
-                        )}
-                      </div>
-                    )}
-                  </PanelSection>
+                    {/* Consistency-sweep 2026-05-18: strand rationale always
+                      * visible (previously gated on `viewStrands` toggle from
+                      * `?view=strands`). The rationale is useful enough to
+                      * deserve permanent surfacing; the sidebar Strands click
+                      * now just scrolls here. */}
+                    <div className="mt-4 space-y-2">
+                      {strands.map((s) =>
+                        s.why_included ? (
+                          <p
+                            key={`why-${s.strand_id}`}
+                            className="text-[13px] text-muted-foreground leading-relaxed"
+                          >
+                            <strong className="font-semibold text-foreground">
+                              {s.model_name}.
+                            </strong>{" "}
+                            {s.why_included}
+                          </p>
+                        ) : null,
+                      )}
+                    </div>
+                    </PanelSection>
+                  </div>
                 )}
               </div>
             </div>

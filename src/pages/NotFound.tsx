@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-import Footer from "@/components/Footer";
+// Footer import dropped 2026-05-18 (consistency-sweep) — App.tsx renders the Footer.
 
 /*
  * NotFound — Pass 1 v1 (2026-05-18) — utility shell direct translation
@@ -67,7 +67,14 @@ export default function NotFound() {
         </div>
       </main>
 
-      {!isAuthed && <Footer sticky={false} />}
+      {/*
+        Page-level Footer conditional removed 2026-05-18 (consistency-sweep).
+        App.tsx renders the Footer for every non-FOOTERLESS route, including
+        NotFound. Before this fix, anon visitors saw two stacked Footers
+        (page-level conditional fired + App.tsx unconditional render). Authed
+        visitors saw only the App.tsx one (page-level conditional skipped).
+        App.tsx is now the sole Footer authority across the app.
+      */}
     </div>
   );
 }

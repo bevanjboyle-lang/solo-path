@@ -52,7 +52,25 @@ function CheckinDeepLink() {
 
 const queryClient = new QueryClient();
 
-const FOOTERLESS_ROUTES = ["/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success", "/auth", "/privacy", "/terms", "/plan", "/library", "/ask-solo", "/account", "/subscribe", "/checkin", "/report"];
+// Footer policy (consistency-sweep 2026-05-18, locked by Bevan):
+// App.tsx renders the Footer for every route NOT in this list. The list is
+// narrowed to surfaces where chrome below the fold would actively hurt the
+// experience:
+//   • the focused conversion funnel (single-surface flow, no distraction)
+//   • auth surfaces (sign-in / magic-link confirmation)
+//   • full-screen conversation (Ask Solo)
+//   • the check-in drawer deep-link (opens over /plan, not a true route)
+// Every reference + reading + dashboard surface (Landing, Pricing, FAQ,
+// Privacy, Terms, Sample Report, Plan, Report, Library, Account, Subscribe,
+// NotFound, ServerError) renders the Footer. Page components do NOT render
+// their own <Footer />; App.tsx is the sole authority. The previous list
+// inadvertently hid Footer on 7 reading surfaces (visual-audit finding).
+const FOOTERLESS_ROUTES = [
+  "/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success",
+  "/auth", "/auth/callback", "/auth/confirm",
+  "/ask-solo",
+  "/checkin",
+];
 
 function AnimatedRoutes() {
 	const location = useLocation();

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { startTest } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-import Footer from "@/components/Footer";
+// Footer import dropped 2026-05-18 (consistency-sweep) — App.tsx renders the Footer.
 import { useActiveSection } from "@/hooks/useActiveSection";
 
 import HookInsightSection from "@/components/sample-report/HookInsightSection";
@@ -271,8 +271,12 @@ export default function SampleReport() {
                   return node;
                 })}
 
-                {/* ── Closing CTA ── */}
-                <section className="text-center py-14 sm:py-16 border-t border-[#E5E2DC] mt-2">
+                {/* ── Closing CTA ──
+                  * Consistency-sweep 2026-05-18: wrapped in panel-ivory so the
+                  * body copy + microcopy don't sit illegibly on the office
+                  * photo. Same fix pattern as /pricing + /faq closing CTAs.
+                  */}
+                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-14 sm:py-16 text-center mt-2">
                   <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
                     — You've seen Sarah's —
                   </div>
@@ -304,7 +308,14 @@ export default function SampleReport() {
         </section>
       </main>
 
-      <Footer sticky={false} />
+      {/*
+        Footer removed from page render 2026-05-18 (consistency-sweep).
+        App.tsx renders <Footer /> for /sample-report (it's not in
+        FOOTERLESS_ROUTES). The page-level render was producing a duplicate
+        dark bar at the bottom — confirmed via DOM `document.querySelectorAll(
+        'footer').length === 2`. App.tsx is now the sole Footer authority
+        across the app.
+      */}
     </div>
   );
 }

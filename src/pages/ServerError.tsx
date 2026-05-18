@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
-import Footer from "@/components/Footer";
+// Footer import dropped 2026-05-18 (consistency-sweep) — App.tsx renders the Footer.
 
 /*
  * ServerError — Pass 1 v1 (2026-05-18) — utility shell direct translation
@@ -79,7 +79,12 @@ export default function ServerError() {
         </div>
       </main>
 
-      {!isAuthed && <Footer sticky={false} />}
+      {/*
+        Page-level Footer conditional removed 2026-05-18 (consistency-sweep).
+        Same fix as NotFound — App.tsx is now sole Footer authority. The
+        anon-only conditional was producing a duplicate stacked Footer for
+        unauthenticated visitors hitting /500.
+      */}
     </div>
   );
 }

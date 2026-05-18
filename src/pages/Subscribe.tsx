@@ -340,8 +340,15 @@ export default function Subscribe() {
             </p>
           </section>
 
-          {/* ── Tertiary row ── */}
-          <section className="px-2 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* ── Tertiary row ──
+            * Consistency-sweep 2026-05-18: wrapped in card-stone so the
+            * "Not right now" + "See full subscription FAQ" links don't sit
+            * illegibly against the office photo background. Stone band is
+            * lighter than panel-ivory (these are secondary navigation, not
+            * a primary CTA — kept visually quieter than the upgrade cards
+            * above).
+            */}
+          <section className="card-stone px-6 sm:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <button
               onClick={handleBackToPlan}
               className="text-[13px] font-medium text-muted-foreground hover:text-foreground underline underline-offset-[4px] decoration-[#D8D4CC]"
