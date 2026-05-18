@@ -234,10 +234,21 @@ export interface Task {
   //     (values: "completed" | "missed" | "moved").
   //   - sent_at, plus the "sent" status — written by the mark-task-sent
   //     edge function when the user taps "Mark as sent" on /plan.
-  // See admin/coaching-layer-design.md §14 (Phase 1, 2026-05-18).
+  //   - response_received, response_logged_at — written by mark-task-response
+  //     when the user taps "Got a reply" or "No reply yet" on a sent Direct
+  //     task. Feeds the Non-Response Catcher suppression rule (Phase 3 of
+  //     the coaching layer; admin/coaching-layer-design.md §4.2).
+  //       response_received === true  → reply landed; Catcher suppressed.
+  //       response_received === false → user logged the silence; Catcher
+  //                                     still fires at 5-day mark.
+  //       response_received === null  → no signal yet; Catcher fires at
+  //                                     5-day mark.
+  // See admin/coaching-layer-design.md (Phase 1 + Phase 3, 2026-05-18).
   status?: "completed" | "missed" | "moved" | "sent" | null;
   sent_at?: string | null;
   update_notes?: string | null;
+  response_received?: boolean | null;
+  response_logged_at?: string | null;
 }
 
 export interface DayDetail {

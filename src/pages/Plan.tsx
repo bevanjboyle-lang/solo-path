@@ -125,6 +125,13 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
   // show a spinner without race-condition risk (only one in-flight at a time).
   const [sentInFlightTaskId, setSentInFlightTaskId] = useState<string | null>(null);
 
+  // Coaching layer Phase 3 slice 1 (admin/coaching-layer-design.md v1.4
+  // §4.2, 2026-05-18). Tracks which sent Direct task is currently being
+  // marked with a response signal — parallel to sentInFlightTaskId, kept
+  // separate so a sent in-flight on one task doesn't block a response
+  // in-flight on another (they're orthogonal operations on different tiles).
+  const [responseInFlightTaskId, setResponseInFlightTaskId] = useState<string | null>(null);
+
   const applyReportRow = useCallback((row: Record<string, unknown>) => {
     setReportId(row.id as string);
     setReportStatus(row.status as ReportRow["status"]);
@@ -613,6 +620,74 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     [sessionId, user, reportId, sentInFlightTaskId, loadTrackerSession, toast],
   );
 
+  /*
+   * handleMarkTaskResponse — coaching layer Phase 3 slice 1
+   * (admin/coaching-layer-design.md v1.4 §4.2). Captures the explicit
+   * response signal for a sent Direct task. Posts to mark-task-response
+   * which mutates working_plan in place (response_received +
+   * response_logged_at on the matching task) and then re-loads the tracker
+   * session so the UI reflects the new state.
+   *
+   * The Non-Response Catcher (slice 2-3) reads this signal to decide
+   * whether to fire. true suppresses the Catcher; false or null lets it
+   * fire at the 5-day mark.
+   */
+  const handleMarkTaskResponse = useCallback(
+    async (taskId: string, responseReceived: boolean) => {
+      if (!sessionId || !user || !reportId || responseInFlightTaskId) return;
+      setResponseInFlightTaskId(taskId);
+      try {
+        const { data, error } = await supabase.functions.invoke(
+          "mark-task-response",
+          {
+            body: {
+              tracker_session_id: sessionId,
+              task_id: taskId,
+              response_received: responseReceived,
+            },
+          },
+        );
+        if (error) {
+          console.error("mark-task-response invoke error:", error);
+          const responseText =
+            (data as { response_text?: string } | null)?.response_text ||
+            "Please try again in a moment.";
+          toast({
+            title: responseReceived
+              ? "Couldn't log the reply"
+              : "Couldn't log no reply",
+            description: responseText,
+            variant: "destructive",
+          });
+          return;
+        }
+        await loadTrackerSession(user.id, reportId);
+        toast({
+          title: responseReceived ? "Reply logged." : "Logged as no reply yet.",
+        });
+      } catch (err) {
+        console.error("mark-task-response threw:", err);
+        toast({
+          title: responseReceived
+            ? "Couldn't log the reply"
+            : "Couldn't log no reply",
+          description: "Please try again in a moment.",
+          variant: "destructive",
+        });
+      } finally {
+        setResponseInFlightTaskId(null);
+      }
+    },
+    [
+      sessionId,
+      user,
+      reportId,
+      responseInFlightTaskId,
+      loadTrackerSession,
+      toast,
+    ],
+  );
+
   // Consistency-sweep 2026-05-18: numbered scroll-anchors for in-page
   // sections (01/02/03), then a divider, then route-out links with no
   // numeral, then a second divider, then the utility action. Matches the
@@ -963,6 +1038,8 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                                 strandsMap={Object.fromEntries(strands.map((s) => [s.strand_id, s.model_name]))}
                                 onMarkTaskSent={handleMarkTaskSent}
                                 sentInFlightTaskId={sentInFlightTaskId}
+                                onMarkTaskResponse={handleMarkTaskResponse}
+                                responseInFlightTaskId={responseInFlightTaskId}
                                 onOpenCheckin={() => {
                                   // v39 (Gap 2): the panel mode is derived from
                                   // the day's status — today=submit, missed=backfill,
@@ -1241,6 +1318,7 @@ function findDayDetail(
 function DayRow({
   day, dayDetail, status, isExpanded, onToggle, onOpenCheckin, strandsMap,
   onMarkTaskSent, sentInFlightTaskId,
+  onMarkTaskResponse, responseInFlightTaskId,
 }: {
   day: number;
   dayDetail: DayDetail | null;
@@ -1258,6 +1336,13 @@ function DayRow({
   // affordance still build cleanly.
   onMarkTaskSent?: (taskId: string) => void;
   sentInFlightTaskId?: string | null;
+  // Coaching layer Phase 3 slice 1 (admin/coaching-layer-design.md v1.4
+  // §4.2, 2026-05-18). Pass-through to DayBody for the "Got a reply" /
+  // "No reply yet" affordance on sent Direct tasks. Direct-only by design
+  // (Visibility extension is Phase 2 of the Catcher feature per design doc
+  // §10). Optional so any future call sites still build.
+  onMarkTaskResponse?: (taskId: string, responseReceived: boolean) => void;
+  responseInFlightTaskId?: string | null;
 }) {
   const isMissed = status === "missed";
   const isFuture = status === "future";
@@ -1364,6 +1449,8 @@ function DayRow({
               strandsMap={strandsMap}
               onMarkTaskSent={onMarkTaskSent}
               sentInFlightTaskId={sentInFlightTaskId}
+              onMarkTaskResponse={onMarkTaskResponse}
+              responseInFlightTaskId={responseInFlightTaskId}
             />
           ) : (
             <p className="text-[13.5px] italic text-muted-foreground/70 leading-relaxed">
@@ -1429,6 +1516,8 @@ function DayBody({
   strandsMap,
   onMarkTaskSent,
   sentInFlightTaskId,
+  onMarkTaskResponse,
+  responseInFlightTaskId,
 }: {
   dayDetail: DayDetail;
   status: DayRowStatus;
@@ -1444,6 +1533,15 @@ function DayBody({
   // Visibility task whose status is not already 'sent' or 'completed'.
   onMarkTaskSent?: (taskId: string) => void;
   sentInFlightTaskId?: string | null;
+  // Coaching layer Phase 3 slice 1 (admin/coaching-layer-design.md v1.4
+  // §4.2, 2026-05-18). When provided, sent Direct tasks render two
+  // small follow-up buttons ("Got a reply" / "No reply yet") below the
+  // "Sent · DD MMM" pill, collapsing to a status pill once clicked. The
+  // signal feeds the Non-Response Catcher suppression rule. Direct-only
+  // for v1 — Visibility extension is a Phase 2 of the Catcher feature
+  // (see design doc §10 open question 6).
+  onMarkTaskResponse?: (taskId: string, responseReceived: boolean) => void;
+  responseInFlightTaskId?: string | null;
 }) {
   const isMissedRow = status === "missed";
 
@@ -1624,6 +1722,82 @@ function DayBody({
                       {sentInFlightTaskId === task.task_id ? "Marking…" : "Mark as sent"}
                     </button>
                   ) : null
+                )}
+
+                {/*
+                 * Coaching layer Phase 3 slice 1 (admin/coaching-layer-design.md
+                 * v1.4 §4.2, 2026-05-18). Response signal affordance for sent
+                 * Direct tasks. Renders on a new line below the Sent pill. Three
+                 * states:
+                 *   - response_received === true   → mint "Replied · DD MMM" pill
+                 *   - response_received === false  → muted "No reply yet · DD MMM" pill
+                 *   - response_received == null    → two small inline buttons
+                 *
+                 * Direct-only by design — Visibility moves don't have a 1:1
+                 * "reply" semantic and the Catcher is Direct-only for v1
+                 * (design doc §10 open question 6).
+                 *
+                 * Suppressed on missed rows and on tasks already 'completed'
+                 * (the response signal only applies to outstanding sent moves).
+                 */}
+                {!isMissedRow &&
+                  task.move_type === "direct" &&
+                  task.status === "sent" &&
+                  task.status !== "completed" &&
+                  onMarkTaskResponse && (
+                  task.response_received === true ? (
+                    <div
+                      className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-white"
+                      style={{ background: "#2ECDB0" }}
+                    >
+                      <span
+                        className="inline-flex items-center justify-center w-2 h-2 rounded-full text-[7px] font-bold leading-none"
+                        style={{ background: "rgba(255,255,255,0.92)", color: "#1A8A72" }}
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </span>
+                      <span>
+                        Replied
+                        {task.response_logged_at &&
+                          ` · ${new Date(task.response_logged_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`}
+                      </span>
+                    </div>
+                  ) : task.response_received === false ? (
+                    <div
+                      className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+                      style={{ background: "#F3F1ED", border: "1px solid #D5D0C8" }}
+                    >
+                      <span
+                        className="inline-block w-1.5 h-1.5 rounded-full"
+                        style={{ background: "#A09A92" }}
+                      />
+                      <span>
+                        No reply yet
+                        {task.response_logged_at &&
+                          ` · ${new Date(task.response_logged_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}`}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => onMarkTaskResponse(task.task_id, true)}
+                        disabled={responseInFlightTaskId === task.task_id}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-[#D8D4CC] bg-transparent px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground hover:bg-[#F3F1ED] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {responseInFlightTaskId === task.task_id ? "Logging…" : "Got a reply"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onMarkTaskResponse(task.task_id, false)}
+                        disabled={responseInFlightTaskId === task.task_id}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-[#D8D4CC] bg-transparent px-3 py-1.5 text-[12px] font-semibold text-muted-foreground transition-colors hover:text-foreground hover:border-foreground hover:bg-[#F3F1ED] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        No reply yet
+                      </button>
+                    </div>
+                  )
                 )}
               </li>
             ))}
