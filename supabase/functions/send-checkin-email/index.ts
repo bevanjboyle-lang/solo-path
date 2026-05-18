@@ -1,3 +1,21 @@
+// send-checkin-email v26 — 2026-05-18: coaching layer Phase 3 slice 3b.
+//   Extend the daily check-in email to also inject any active Non-Response
+//   Catcher rows for the user (admin/coaching-layer-design.md v1.7 §4.2).
+//   Per session-in-loop, before composing the email body we fetch
+//   non_response_catchers WHERE user_id = ... AND action_taken IS NULL
+//   AND dismissed_at IS NULL AND email_sent_at IS NULL, ordered by oldest
+//   dispatched_at, capped at 3 to keep emails scannable. If any exist, a
+//   compact "About the message(s) you sent" section is rendered between
+//   the intro copy and the Check-in CTA, with one short block per catcher
+//   showing the direct_address line and a link to /plan where the three
+//   action buttons live. On Resend 2xx we mark email_sent_at on those
+//   rows so they aren't re-sent on subsequent days. Idempotent against
+//   cron retries (same email_sent_at IS NULL filter).
+//
+//   Applies to both standard and re-entry email variants. The catcher
+//   section is structurally separate from the existing copy so the
+//   email reads cleanly whether or not any catchers are present.
+//
 // send-checkin-email v25 — 2026-05-08: F94 third try — use token_hash + a Solo
 //   /auth/confirm route that calls supabase.auth.verifyOtp() client-side. Live
 //   testing of v24 showed: /auth/v1/verify created a fresh auth.sessions row on
@@ -198,6 +216,12 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // v26 (coaching layer Phase 3 slice 3b): tracks catcher rows surfaced
+  // in emails this run so we can mark email_sent_at on those rows after a
+  // successful Resend send. Keyed by user_id so we look up the right list
+  // per session.
+  let catcherEmailsSent = 0;
+
   for (const session of sessions) {
     const email = userMap[session.user_id];
     if (!email) {
@@ -218,6 +242,13 @@ Deno.serve(async (req: Request) => {
     // F94: mint a fresh magic-link URL for this recipient before composing the email.
     const checkinUrl = await getCheckinUrl(email);
 
+    // v26: pull active catcher rows for this user that haven't been emailed
+    // yet. Cap at 3 by oldest so even users with many silenced moves get a
+    // scannable section. The /plan banner shows them all; the email is
+    // just a nudge to come back and act.
+    const catcherRows = await loadCatchersForUser(supabase, session.user_id);
+    const catcherHtml = renderCatcherSectionHtml(catcherRows, checkinUrl);
+
     if (isReentry && !reentryDeduped) {
       subject = "Your plan is still here — whenever you're ready";
       htmlBody = `
@@ -231,6 +262,7 @@ Deno.serve(async (req: Request) => {
           <p style="color: #4a4a4a; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
             There's no catching up required. Just check in when you're ready and we'll start from where you actually are today.
           </p>
+          ${catcherHtml}
           <a href="${checkinUrl}" style="display: inline-block; background: #2ECDB0; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 15px;">
             Check in now &rarr;
           </a>
@@ -262,6 +294,7 @@ Deno.serve(async (req: Request) => {
           <p style="color: #4a4a4a; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
             Take 2 minutes to check in — log what you did, what's next, and how you're tracking against your plan.
           </p>
+          ${catcherHtml}
           <a href="${checkinUrl}" style="display: inline-block; background: #2ECDB0; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 600; font-size: 15px;">
             Check in now
           </a>
@@ -294,6 +327,26 @@ Deno.serve(async (req: Request) => {
       if (res.ok) {
         isReentry ? sentReentry++ : sentStandard++;
         console.log(`${isReentry ? "Re-entry" : "Standard"} email sent to ${email} (day ${dayNumber})`);
+        // v26: mark email_sent_at on any catcher rows we surfaced in this
+        // email so they aren't re-sent tomorrow. Fire and forget — if the
+        // mark fails, the row will appear in tomorrow's email which is
+        // annoying but not dangerous; better than silently double-counting
+        // as success.
+        if (catcherRows.length > 0) {
+          const nowIso = new Date().toISOString();
+          const { error: markErr } = await supabase
+            .from("non_response_catchers")
+            .update({ email_sent_at: nowIso })
+            .in("id", catcherRows.map((r) => r.id));
+          if (markErr) {
+            console.error(
+              `Failed to mark email_sent_at on catcher rows for ${email}:`,
+              markErr
+            );
+          } else {
+            catcherEmailsSent += catcherRows.length;
+          }
+        }
       } else {
         const errBody = await res.text();
         console.error(`Failed to send email to ${email}:`, errBody);
@@ -308,7 +361,8 @@ Deno.serve(async (req: Request) => {
   const totalSent = sentStandard + sentReentry;
   console.log(
     `Check-in emails: ${sentStandard} standard, ${sentReentry} re-entry, ${errorCount} errors, ` +
-    `${magicLinkFailures} magic-link mint failures (fell back to bare /plan), ${sessions.length} total sessions`
+    `${magicLinkFailures} magic-link mint failures (fell back to bare /plan), ` +
+    `${catcherEmailsSent} catcher row(s) surfaced in emails, ${sessions.length} total sessions`
   );
   return new Response(
     JSON.stringify({
@@ -317,9 +371,112 @@ Deno.serve(async (req: Request) => {
       sent_reentry: sentReentry,
       errors: errorCount,
       magic_link_failures: magicLinkFailures,
+      catcher_rows_emailed: catcherEmailsSent,
       total_sessions: sessions.length,
-      response_text: `Sent ${totalSent} emails (${sentStandard} standard, ${sentReentry} re-entry)`,
+      response_text: `Sent ${totalSent} emails (${sentStandard} standard, ${sentReentry} re-entry). ${catcherEmailsSent} catcher row(s) surfaced.`,
     }),
     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
 });
+
+/* ─────────── v26 (coaching layer Phase 3 slice 3b): helpers ─────────── */
+
+interface CatcherRowForEmail {
+  id: string;
+  task_id: string;
+  direct_address: string;
+}
+
+/**
+ * Load up to 3 active catcher rows for this user that haven't been emailed
+ * yet. Ordered by oldest dispatched_at so the longest-silent moves bubble
+ * up first. The /plan banner shows all active rows; the email surfaces a
+ * capped subset to stay scannable.
+ */
+async function loadCatchersForUser(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<CatcherRowForEmail[]> {
+  const { data, error } = await supabase
+    .from("non_response_catchers")
+    .select("id, task_id, catcher_content")
+    .eq("user_id", userId)
+    .is("action_taken", null)
+    .is("dismissed_at", null)
+    .is("email_sent_at", null)
+    .order("dispatched_at", { ascending: true })
+    .limit(3);
+  if (error) {
+    console.error(`loadCatchersForUser error for ${userId}:`, error);
+    return [];
+  }
+  if (!data || data.length === 0) return [];
+  return (data as Array<{
+    id: string;
+    task_id: string;
+    catcher_content: { direct_address?: string };
+  }>).map((r) => ({
+    id: r.id,
+    task_id: r.task_id,
+    direct_address: r.catcher_content?.direct_address ?? "",
+  })).filter((r) => r.direct_address.length > 0);
+}
+
+/**
+ * Render the Catcher section HTML chunk that splices into the daily
+ * check-in email body between the intro copy and the Check-in CTA.
+ * Returns "" when there are no rows so the email reads identically to
+ * the v25 version. One short block per row with the direct_address line
+ * + a link to /plan where the three action buttons live.
+ *
+ * Voice: same brand register as the on-/plan banner (eyebrow + line).
+ * Deliberately short — the email is a nudge, the actions live on /plan.
+ */
+function renderCatcherSectionHtml(
+  rows: CatcherRowForEmail[],
+  planUrl: string,
+): string {
+  if (rows.length === 0) return "";
+
+  const escapeHtml = (s: string) =>
+    s
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const blocks = rows
+    .map(
+      (r) => `
+      <div style="margin-bottom: 14px; padding: 14px 16px; background: #FAF9F7; border-left: 3px solid #2ECDB0; border-radius: 0 4px 4px 0;">
+        <p style="color: #1a1a1a; font-size: 14.5px; line-height: 1.5; margin: 0;">
+          ${escapeHtml(r.direct_address)}
+        </p>
+      </div>`,
+    )
+    .join("");
+
+  const sectionTitle =
+    rows.length === 1
+      ? "About the message you sent"
+      : `About ${rows.length} messages you sent`;
+
+  return `
+    <div style="margin-bottom: 28px; padding: 20px 0; border-top: 1px solid #E5E2DC; border-bottom: 1px solid #E5E2DC;">
+      <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.18em; color: #6B6660; margin-bottom: 12px;">
+        <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #2ECDB0; vertical-align: middle; margin-right: 8px;"></span>
+        Five days on
+      </div>
+      <h2 style="font-size: 17px; line-height: 1.3; font-weight: 700; color: #1a1a1a; margin: 0 0 12px 0;">
+        ${escapeHtml(sectionTitle)}
+      </h2>
+      ${blocks}
+      <p style="margin: 12px 0 0 0; font-size: 13px; line-height: 1.5;">
+        <a href="${planUrl}" style="color: #1A8A72; text-decoration: underline; font-weight: 600;">
+          See your three options on /plan &rarr;
+        </a>
+      </p>
+    </div>
+  `;
+}
