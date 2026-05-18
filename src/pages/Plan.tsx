@@ -13,6 +13,7 @@ import CheckInPanel from "@/components/plan/CheckInPanel";
 import ReplanPromptCard from "@/components/plan/ReplanPromptCard";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
 import WeeklyFrictionReviewCard from "@/components/plan/WeeklyFrictionReviewCard";
+import NonResponseCatcherBanner from "@/components/plan/NonResponseCatcherBanner";
 import StrandSelector from "@/components/plan/StrandSelector";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { useToast } from "@/hooks/use-toast";
@@ -921,6 +922,21 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
                 {/* ─── Day 31+ Dark Wall (the screen's single dark moment) ─── */}
                 {planState === "day31_nosub" && <DarkWall />}
+
+                {/* ─── Non-Response Catcher (coaching layer Phase 3 slice 3a) ───
+                  * admin/coaching-layer-design.md v1.6 §4.2. Renders above
+                  * Weekly Friction Review when one or more sent Direct moves
+                  * have crossed the 5-day silence threshold. One banner per
+                  * row, stacked. Self-contained — fetches its own data,
+                  * marks read_at on first view, writes action_taken /
+                  * dismissed_at directly via the V-072 UPDATE RLS policy.
+                  * Returns null when no active catchers exist for this user.
+                  * Sits ABOVE the friction review because it's time-sensitive
+                  * (today's silence, not last week's pattern).
+                  */}
+                {!awaitingSelection && user && (
+                  <NonResponseCatcherBanner userId={user.id} />
+                )}
 
                 {/* ─── Weekly Friction Review (coaching layer Phase 2 slice 2) ───
                   * admin/coaching-layer-design.md v1.3 §4.3. Renders above
