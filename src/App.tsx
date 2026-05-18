@@ -50,6 +50,30 @@ function CheckinDeepLink() {
 	return <Plan initialSessionId={sessionId} />;
 }
 
+/**
+ * ScrollToTop — resets window scroll to top on every pathname change.
+ *
+ * Without this, React Router preserves scroll position across navigations
+ * (its default behaviour), so navigating from the bottom of a long page
+ * (e.g. Landing scrolled to §08) to a shorter page (e.g. /pricing) lands
+ * the user at the previous scroll offset on the new page — often below
+ * the visible content. Common SPA papercut, reported 2026-05-18.
+ *
+ * Hash-anchor deep links are respected: if the URL carries a #hash (e.g.
+ * /faq#faq-cost), this skips the reset and lets the destination page's
+ * own deep-link handler scroll to the anchored element (FAQ.tsx already
+ * has one). Search-string changes (e.g. ?from=day31) are not treated as
+ * navigation events for this purpose.
+ */
+function ScrollToTop() {
+	const { pathname, hash } = useLocation();
+	useEffect(() => {
+		if (hash) return;
+		window.scrollTo(0, 0);
+	}, [pathname, hash]);
+	return null;
+}
+
 const queryClient = new QueryClient();
 
 // Footer policy (consistency-sweep 2026-05-18, locked by Bevan):
@@ -166,6 +190,7 @@ const App = () => {
 					<Sonner />
 					<BrowserRouter>
 						<AuthProvider>
+							<ScrollToTop />
 							<AnimatedRoutes />
 							<AskSoloWidget mode="floating" />
 							<CookieBanner />
