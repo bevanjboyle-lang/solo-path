@@ -317,7 +317,7 @@ function GeneratingBody({
         Building your report.
       </h1>
       <p className="mt-3 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed">
-        This takes about five seconds.
+        This takes a couple of minutes.
       </p>
 
       {/* Hairline separator */}
@@ -364,7 +364,7 @@ function GeneratingBody({
           <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80 shrink-0">
             Usually
           </span>
-          <span>Around 5 seconds. We'll move you on the moment it's done.</span>
+          <span>Usually 2-3 minutes. We'll move you on the moment it's done.</span>
         </div>
         <div className="text-[12px] text-muted-foreground tabular-nums shrink-0">
           elapsed <span className="text-muted-foreground/40 mx-1">·</span>
