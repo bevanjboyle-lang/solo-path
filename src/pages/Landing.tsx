@@ -78,7 +78,7 @@ const HERO_SPEC = [
   { num: "95", label: "Professional archetypes" },
   { num: "14", label: "Domains" },
   { num: "480", label: "Business models" },
-  { num: "2,694", label: "Scored combinations" },
+  { num: "2,159", label: "Scored combinations" },
 ] as const;
 
 const HERO_TRUST = [
@@ -801,7 +801,7 @@ function ChatGPTDifferenceBody({ onTake }: { onTake: () => void }) {
           General-purpose AI will give you a framework. A list of options. Advice to "build a personal brand" and "network with people in your target sector." It does not know who you are. Every session starts from scratch.
         </p>
         <p className="text-[14.5px] leading-[1.75]" style={{ color: "rgba(250,249,247,0.85)" }}>
-          Solo runs your profile against a decision engine built from 95 archetypes, 480 business models, and 2,694 scored match combinations. It builds a personalised activation system around the paths that fit you. The context it builds over time — your history, your progress, your blockers, your check-ins — is something no general-purpose AI can replicate, because it was never designed to track a specific person through a specific goal.
+          Solo runs your profile against a decision engine built from 95 archetypes, 480 business models, and 2,159 scored match combinations. It builds a personalised activation system around the paths that fit you. The context it builds over time — your history, your progress, your blockers, your check-ins — is something no general-purpose AI can replicate, because it was never designed to track a specific person through a specific goal.
         </p>
       </div>
 
