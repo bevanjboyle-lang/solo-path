@@ -14,6 +14,7 @@ import ReplanPromptCard from "@/components/plan/ReplanPromptCard";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
 import WeeklyFrictionReviewCard from "@/components/plan/WeeklyFrictionReviewCard";
 import NonResponseCatcherBanner from "@/components/plan/NonResponseCatcherBanner";
+import PreSendBrief from "@/components/plan/PreSendBrief";
 import StrandSelector from "@/components/plan/StrandSelector";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { useToast } from "@/hooks/use-toast";
@@ -1693,6 +1694,28 @@ function DayBody({
                     </p>
                   </div>
                 )}
+
+                {/*
+                 * Coaching layer Phase 4 — Pre-Send Brief
+                 * (admin/coaching-layer-design.md v1.8 §4.1, 2026-05-18).
+                 * Inline pre-flight brief on Direct + Visibility tasks that
+                 * haven't yet been sent or completed. Surfaces between the
+                 * outreach_draft callout (above) and the Mark-as-sent
+                 * affordance (below) per the design doc's UX intent
+                 * ("between the drafted-message reveal and the send action").
+                 * Static content keyed by move_type — synthetic at launch
+                 * with honest footnote; iterates to archetype-specific real
+                 * data when cohort_aggregations is populated.
+                 */}
+                {!isMissedRow &&
+                  task.move_type &&
+                  (task.move_type === "direct" || task.move_type === "visibility") &&
+                  task.status !== "sent" &&
+                  task.status !== "completed" && (
+                    <PreSendBrief
+                      moveType={task.move_type as "direct" | "visibility"}
+                    />
+                  )}
 
                 {/*
                  * Coaching layer Phase 1 (admin/coaching-layer-design.md v1.2,
