@@ -972,16 +972,8 @@ function AboutBody() {
         </span>
         olo was built by someone who has worked through three of these conversations themselves and has run them with several hundred mid-career professionals. The product is the artefact of those conversations, the spreadsheets, the scoring system, the move templates, the questions you ask when someone walks into the room not yet ready to say "I might leave."
       </p>
-      {/*
-        Interim copy 2026-05-18, full About body rewrite pending in Task #212
-        (Landing §07 entire-section rewrite). The original visible placeholder
-        text ("Placeholder paragraph for composition...") was shipping live to
-        users and has been replaced with a neutral one-liner until the rewrite
-        lands. The 'Read the full background' link is anchored to #pending —
-        update once the founder background page exists.
-      */}
-      <p className="mt-4 text-[14.5px] leading-[1.7] text-muted-foreground">
-        More about how Solo was built and why coming soon.
+      <p className="mt-7 text-[16px] leading-[1.75] text-foreground/90">
+        The version you're using is built around a simple position: Plan B work is structured analysis, not motivational performance. Mid-career professionals are intelligent adults who want specificity over encouragement. Every part of Solo, from how the questions read to how the report writes back, follows that position.
       </p>
     </div>
   );
