@@ -169,7 +169,7 @@ export default function FAQ() {
       <TopBar />
 
       <main className="flex-1 pt-[68px]">
-        <section className="py-8 lg:py-12">
+        <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-lg px-6">
 
             {/* Mobile category trigger */}

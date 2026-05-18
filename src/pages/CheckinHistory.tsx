@@ -294,7 +294,7 @@ export default function CheckinHistory() {
       <TopBar />
 
       <main className="pt-[68px]">
-        <section className="py-8 lg:py-12">
+        <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-xl px-6">
             <div className="flex gap-8 lg:gap-10">
               <AreaSidebar

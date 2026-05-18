@@ -137,10 +137,19 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
 
   return (
     <>
-      {/* Desktop sticky rail */}
+      {/* Desktop sticky rail.
+        * Consistency-sweep 2026-05-18 (v1.6): pt-8 removed. The sidebar
+        * top edge now sits at the same Y as the title card top edge —
+        * both columns start at the top of the shared flex container.
+        * Previously pt-8 pushed the sidebar 32px down, creating a
+        * visible mis-alignment that Bevan flagged. The visible top
+        * offset is now entirely provided by the outer section's pt-6
+        * (24px), which is also Gap B (title card → next card), so the
+        * three vertical gaps (TopBar→title, title→card, sidebar top
+        * vs title top) are all consistent. */}
       <aside
         className={cn(
-          "hidden lg:block w-[220px] shrink-0 pt-8",
+          "hidden lg:block w-[220px] shrink-0",
           className,
         )}
       >

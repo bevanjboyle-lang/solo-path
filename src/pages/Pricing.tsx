@@ -174,7 +174,7 @@ export default function Pricing() {
       <TopBar />
 
       <main className="pt-[68px]">
-        <div className="mx-auto max-w-screen-lg px-6 py-10 lg:py-14">
+        <div className="mx-auto max-w-screen-lg px-6 pt-6 pb-10 lg:pb-14">
 
           {/* ── Page header ── */}
           <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-10 sm:py-12 mb-6">

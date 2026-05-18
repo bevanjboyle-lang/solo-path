@@ -133,7 +133,7 @@ export default function SampleReport() {
       <TopBar />
 
       <main className="flex-1">
-        <section className="py-8 lg:py-12">
+        <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-lg px-6">
 
             {/* ── Page-header panel ── */}

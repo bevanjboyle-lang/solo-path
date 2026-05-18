@@ -340,8 +340,11 @@ export default function Landing() {
 
       <main className="pt-[68px]">
 
-        {/* ═══ HERO · "The Standfirst" (unchanged structure, two small fixes) ═══ */}
-        <section className="pb-10 pt-8 lg:pb-14 lg:pt-12">
+        {/* ═══ HERO · "The Standfirst" (unchanged structure, two small fixes) ═══
+          * Consistency-sweep 2026-05-18: pt-8/12 → pt-6 to match the
+          * site-wide gap rule (TopBar → hero card = 24px = mb-6).
+          */}
+        <section className="pt-6 pb-10 lg:pb-14">
           <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12 lg:p-16">
               {/*

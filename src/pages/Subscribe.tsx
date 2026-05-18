@@ -194,7 +194,7 @@ export default function Subscribe() {
       <TopBar />
 
       <main className="pt-[68px]">
-        <div className="mx-auto max-w-screen-lg px-6 py-10 lg:py-14">
+        <div className="mx-auto max-w-screen-lg px-6 pt-6 pb-10 lg:pb-14">
 
           {/* Payment-cancelled info banner */}
           {paymentCancelled && (
