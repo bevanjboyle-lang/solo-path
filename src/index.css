@@ -157,9 +157,21 @@
    * top of .title-h1; typographic ones (font-*, text-*, leading-*,
    * tracking-*, letter-spacing) are not.
    *
+   * FONT FAMILY — system sans-serif (NOT Plus Jakarta Sans).
+   *
+   * The original /plan title card rendered in System Sans-Serif at
+   * weight 800 (SF Pro Display Heavy on Mac, Segoe UI Bold on Windows)
+   * because the Tailwind `font-display` utility maps to system fonts in
+   * tailwind.config.ts and beats the base h1-h6 PJS rule via the
+   * @layer utilities > @layer base precedence rule. That render path
+   * (system fonts at true 800) is the look Bevan locked in v1.5. A
+   * first attempt at this class used 'Plus Jakarta Sans' first; that
+   * was wrong — PJS doesn't load weight 800 and rendered at 700,
+   * different look from the original. Reverted 2026-05-18.
+   *
    * Spec:
-   *   font-family   Plus Jakarta Sans (display)
-   *   weight        800 (extrabold)
+   *   font-family   system sans-serif (San Francisco / Segoe UI / etc.)
+   *   weight        800 (extrabold — system fonts have real 800 weight)
    *   size          34px → 40px (≥ sm) → 44px (≥ lg)
    *   line-height   1.05
    *   letter-spacing -0.028em
@@ -172,7 +184,7 @@
    * is the whole point of this class.
    */
   .title-h1 {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-weight: 800;
     font-size: 34px;
     line-height: 1.05;

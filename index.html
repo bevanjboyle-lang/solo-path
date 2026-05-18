@@ -27,15 +27,15 @@
       Plus Jakarta Sans weights:
         600 = semibold (body H3/H4)
         700 = bold     (eyebrow + body H2)
-        800 = extrabold (canonical .title-h1 page hero)
-      The 800 weight was added 2026-05-18 after the .title-h1 lock
-      surfaced that the previous URL only loaded 600/700, so every
-      page hero was silently falling back to 700 (or browser faux-
-      bolding 700 to approximate 800). Real 800 weight file now
-      loads, so .title-h1 renders at its declared weight.
+      Weight 800 was briefly added 2026-05-18 when .title-h1 was
+      mistakenly set to use PJS as primary font. Reverted same day:
+      .title-h1 now uses the system sans-serif (the original /plan
+      title render path via Tailwind's font-display utility), so
+      PJS 800 isn't needed. Body / eyebrow / non-hero headings
+      still use PJS 600/700.
     -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap"
       rel="stylesheet"
     />
 
