@@ -916,7 +916,7 @@ function buildP0bUserMessage(qd: P0bQuestionnaireInput): string {
 // MAIN INDEX
 // =============================================================================
 
-const FUNCTION_VERSION = "v45.14-v055-getclaims-fix";
+const FUNCTION_VERSION = "v45.15-v096-second-report-gate";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
 const MAX_P1_VALIDATOR_RETRIES = 2;
@@ -1075,6 +1075,61 @@ Deno.serve(async (req: Request) => {
     const { count: recentCount, error: rateCheckError } = userId ? await rateQuery.eq("user_id", userId) : await rateQuery.eq("client_session_id", clientSessionId!);
     if (!rateCheckError && (recentCount ?? 0) >= 3) {
       return new Response(JSON.stringify({ error: "Rate limit exceeded", response_text: "3 reports in 24h limit. Try tomorrow." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    // V-096 second-report gate (2026-05-18): mirror claim-second-report v17's
+    // eligibility model so authed users can't bypass the £9.99 charge by calling
+    // generate-report directly. Anon users (no userId) keep the existing 3/24h
+    // rate limit as their only cap — they haven't been charged yet so a fresh
+    // report is fine. First-report authed users (no prior 'complete' report) also
+    // fall through — the questionnaire→teaser→pay path is pre-payment by design.
+    // Anyone else has to satisfy the canonical rule: hard 30-day cap, then
+    // subscription_active OR atomic consume of user_profiles.second_report_paid.
+    if (userId) {
+      const { count: totalComplete, error: totalErr } = await supabase
+        .from("reports")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .in("status", ["complete", "completed"]);
+      if (!totalErr && (totalComplete ?? 0) > 0) {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const { count: recent30 } = await supabase
+          .from("reports")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .in("status", ["complete", "completed"])
+          .gte("created_at", thirtyDaysAgo);
+        if ((recent30 ?? 0) >= 1) {
+          console.log(`${FUNCTION_VERSION} V-096 cap_reached user=${userId} recent30=${recent30}`);
+          return new Response(JSON.stringify({
+            error: "report_cap_reached",
+            response_text: "You already have a recent report. Plan B Reports are capped at one per 30-day window. Manage from your account.",
+          }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        const { data: profile } = await supabase
+          .from("user_profiles")
+          .select("subscription_active")
+          .eq("user_id", userId)
+          .single();
+        if (!profile?.subscription_active) {
+          // Atomic consume of second_report_paid (mirrors claim-second-report V-039).
+          const { count: consumed, error: consumeErr } = await supabase
+            .from("user_profiles")
+            .update({ second_report_paid: false, updated_at: new Date().toISOString() }, { count: "exact" })
+            .eq("user_id", userId)
+            .eq("second_report_paid", true);
+          if (consumeErr) {
+            console.error(`${FUNCTION_VERSION} V-096 second_report_paid consume error:`, consumeErr.message);
+          }
+          if (consumed !== 1) {
+            console.log(`${FUNCTION_VERSION} V-096 second_report_payment_required user=${userId}`);
+            return new Response(JSON.stringify({
+              error: "second_report_payment_required",
+              response_text: "A second Plan B Report costs £9.99 (or is free with an active subscription). Visit your account to start.",
+            }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          }
+        }
+        // Subscriber, or consumed flag — fall through and generate.
+      }
     }
     const questionnaireData = mapAnswersToQuestionnaireData(rawAnswers);
     const { data: skeletonReport, error: skeletonError } = await supabase.from("reports").insert({ user_id: userId, client_session_id: clientSessionId, answers: rawAnswers || null, status: "generating", created_at: new Date().toISOString(), function_version: FUNCTION_VERSION, started_at: new Date().toISOString() }).select("id").single();
