@@ -21,7 +21,14 @@ export default function AIImpactSection({ ai_impact }: Props) {
   const ai = ai_impact;
   return (
     <section className="space-y-6">
-      <h2 className="text-[1.8rem] font-bold text-foreground">AI & Your Future</h2>
+      {/*
+       * H2 sits directly on the dark panel wrapper in both /report and
+       * /sample-report (SECTION_META: variant: "dark"), so it uses the
+       * ivory token to stay legible. The three sub-cards below use
+       * bg-card (light) so their h3/body text stays as text-foreground.
+       * Fixed 2026-05-18 closing #198.
+       */}
+      <h2 className="text-[1.8rem] font-bold text-[#FAF9F7]">AI & Your Future</h2>
 
       {/* Part 1 — How AI is affecting your current role */}
       <div className="rounded-lg bg-card p-6">
