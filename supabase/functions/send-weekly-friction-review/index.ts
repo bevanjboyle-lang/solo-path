@@ -343,6 +343,23 @@ function renderHtmlEmail(r: ReviewRow, planUrl: string): string {
             </div>
           </td>
         </tr>
+        ${rc.cohort_pulse ? `
+        <tr>
+          <td style="padding:24px 40px 0 40px;">
+            <div style="border-top:1px solid #E5E2DC;padding-top:20px;">
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;color:#6B6660;margin-bottom:8px;">
+                <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#9A958E;vertical-align:middle;margin-right:8px;"></span>
+                Cohort pulse
+              </div>
+              <p style="font-size:14px;line-height:1.6;color:#3A3A3A;margin:0;font-style:italic;">
+                ${escapeHtml(rc.cohort_pulse)}
+              </p>
+              <p style="font-size:11px;line-height:1.5;color:#9A958E;margin:8px 0 0 0;">
+                Qualitative at launch. As Solo accumulates real cohort data, this line will become quantitative and specific to your archetype.
+              </p>
+            </div>
+          </td>
+        </tr>` : ""}
         <tr>
           <td style="padding:32px 40px 40px 40px;">
             <a href="${escapeHtmlAttr(planUrl)}" style="display:inline-block;background:#2ECDB0;color:#FFFFFF;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:6px;">
@@ -369,7 +386,7 @@ function renderHtmlEmail(r: ReviewRow, planUrl: string): string {
 function renderTextEmail(r: ReviewRow, planUrl: string): string {
   const rc = r.review_content;
   const dateRange = formatDateRange(r.week_start, r.week_end);
-  return [
+  const lines: string[] = [
     `This week · Friction review · ${dateRange}`,
     "",
     rc.dominant_pattern,
@@ -380,13 +397,27 @@ function renderTextEmail(r: ReviewRow, planUrl: string): string {
     "",
     `This week:`,
     rc.next_week_action,
+  ];
+  // Phase 5a: append cohort_pulse block if present. Older rows (pre-v3
+  // prompt) won't have it, in which case the block is suppressed cleanly.
+  if (rc.cohort_pulse) {
+    lines.push("");
+    lines.push("Cohort pulse:");
+    lines.push(rc.cohort_pulse);
+    lines.push("");
+    lines.push(
+      "(Qualitative at launch; will become quantitative as Solo accumulates real cohort data.)",
+    );
+  }
+  lines.push(
     "",
     `Open your plan: ${planUrl}`,
     "",
     "—",
     "You're receiving this because you have an active Solo plan.",
     "To stop these reviews, manage your subscription from your account.",
-  ].join("\n");
+  );
+  return lines.join("\n");
 }
 
 function escapeHtml(input: string): string {

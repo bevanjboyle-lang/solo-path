@@ -176,6 +176,32 @@ export default function WeeklyFrictionReviewCard({ userId }: Props) {
         </p>
       </div>
 
+      {/* Cohort pulse — Phase 5a (admin/coaching-layer-design.md v1.9 §4.5).
+        * Qualitative-only anchor: "most people in your cohort do X". The
+        * prompt is forbidden from inventing numbers and the validator
+        * rejects digits, so any line that lands here is non-quantitative
+        * by construction. Honest footnote names the synthetic-at-launch
+        * data sourcing.
+        * Suppressed cleanly if the row predates v3 of the prompt (older
+        * rows have no cohort_pulse field). */}
+      {r.cohort_pulse && (
+        <div className="mt-6 pt-5 border-t border-[#E5E2DC]">
+          <div className="flex items-baseline gap-3 mb-2">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground/60" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+              Cohort pulse
+            </span>
+          </div>
+          <p className="text-[14px] sm:text-[14.5px] text-foreground/85 leading-[1.6] max-w-[60ch] italic">
+            {r.cohort_pulse}
+          </p>
+          <p className="mt-2 text-[10.5px] leading-[1.5] text-muted-foreground/70 max-w-[58ch]">
+            Qualitative at launch. As Solo accumulates real cohort data, this
+            line will become quantitative and specific to your archetype.
+          </p>
+        </div>
+      )}
+
       {/* Generated-at footnote — tiny, muted, for transparency */}
       <div className="mt-6 pt-4 border-t border-[#EDEBE6] text-[10px] uppercase tracking-[0.14em] text-muted-foreground/60">
         Generated{" "}

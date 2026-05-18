@@ -31,7 +31,7 @@
  *   - active_strands: array of currently active strands (names only)
  */
 
-export const PROMPT_VERSION = "p-friction-review-v2-2026-05-18";
+export const PROMPT_VERSION = "p-friction-review-v3-2026-05-18";
 
 export interface FrictionReviewDay {
   date: string; // YYYY-MM-DD
@@ -58,14 +58,16 @@ export interface FrictionReviewOutput {
   dominant_pattern: string;
   reframe: string;
   next_week_action: string;
-  // cohort_pulse will be populated by Phase 5 — leave nullable for now.
-  cohort_pulse?: string | null;
+  // Phase 5a (2026-05-18): cohort_pulse is now REQUIRED. Qualitative only
+  // until cohort_aggregations is populated with real data; the prompt
+  // enforces "no numbers" and the validator rejects numeric leakage.
+  cohort_pulse: string;
 }
 
 export const REVIEW_RESPONSE_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["week_summary", "dominant_pattern", "reframe", "next_week_action"],
+  required: ["week_summary", "dominant_pattern", "reframe", "next_week_action", "cohort_pulse"],
   properties: {
     week_summary: {
       type: "string",
@@ -114,6 +116,23 @@ export const REVIEW_RESPONSE_SCHEMA = {
       minLength: 30,
       maxLength: 360,
     },
+    cohort_pulse: {
+      type: "string",
+      description:
+        "ONE to TWO sentences anchoring this user's experience in their " +
+        "cohort. QUALITATIVE ONLY — no numbers, no percentages, no counts. " +
+        "Real cohort data does not exist yet at launch, so any specific " +
+        "number would be invented. Reframe the user's friction or pattern " +
+        "as something shared by their cohort. Acceptable shapes: 'Most " +
+        "people in your cohort skipped at least one move last week; the " +
+        "state you logged is the state most of them logged.' or 'The " +
+        "pattern you are noticing this week is the same pattern most " +
+        "people on this archetype track through weeks two and three.' " +
+        "Never invent statistics. Never say 'X others' or 'Y percent'. " +
+        "Never name specific cohort sizes.",
+      minLength: 30,
+      maxLength: 280,
+    },
   },
 } as const;
 
@@ -157,6 +176,7 @@ export function validateReviewOutput(
     "dominant_pattern",
     "reframe",
     "next_week_action",
+    "cohort_pulse",
   ] as const;
   for (const key of requiredStrings) {
     const value = o[key];
@@ -179,6 +199,40 @@ export function validateReviewOutput(
       }
     }
   }
+
+  // Phase 5a cohort_pulse-specific check: reject any digit OR percent OR
+  // spelled-out number in the cohort pulse line. Real cohort data does
+  // not exist yet; the prompt is told to stay qualitative, but the LLM
+  // sometimes leaks numbers anyway and they would mislead the user.
+  // Exception: ordinal week references like "weeks two and three" are OK
+  // because they refer to the plan timeline, not cohort sizes — they
+  // would only trip the spelled-out-number regex if we listed plan-time
+  // words. Solution: regex catches digit / percent / "N percent" / counts
+  // like "23 others" but NOT bare ordinals when they appear in plan-time
+  // context. Keep this simple: any digit at all OR any of a small set of
+  // "N people / N percent / N others" spelled-out patterns triggers.
+  const cohortPulse = o.cohort_pulse;
+  if (typeof cohortPulse === "string") {
+    if (/\d/.test(cohortPulse)) {
+      errors.push(
+        "cohort_pulse contains a digit — qualitative-only rule violated",
+      );
+    }
+    if (/\bpercent\b|\bpercentage\b|\b%\b/i.test(cohortPulse)) {
+      errors.push(
+        "cohort_pulse mentions percent / percentage — qualitative-only rule violated",
+      );
+    }
+    if (
+      /\b(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand)\s+(other|others|people|users|members|of|percent)\b/i
+        .test(cohortPulse)
+    ) {
+      errors.push(
+        "cohort_pulse uses a spelled-out cohort count — qualitative-only rule violated",
+      );
+    }
+  }
+
   if (errors.length > 0) return { ok: false, errors };
   return { ok: true };
 }
@@ -239,12 +293,31 @@ Apply these rules without exception:
 
 OUTPUT STRUCTURE
 
-Return JSON matching the supplied schema. Four required fields:
+Return JSON matching the supplied schema. Five required fields:
 
 - week_summary: ONE sentence stating what actually happened, in numbers. No commentary.
 - dominant_pattern: ONE sentence naming the single dominant behavioural pattern from the data. Use the user's own logged words.
 - reframe: ONE to TWO sentences offering a sharper way to think about the pattern.
 - next_week_action: ONE to TWO sentences naming exactly ONE specific action for the coming week.
+- cohort_pulse: ONE to TWO sentences anchoring this user in their cohort. See the COHORT PULSE section below for the strict rules.
+
+COHORT PULSE — STRICT RULES (no exceptions)
+
+The cohort_pulse is a small anchoring line that locates this user in their peer population. It reduces the loneliness of the journey by naming that their experience is shared.
+
+The hard constraint: real cohort data does not exist yet at launch. Any specific number you invent would mislead the user. So:
+
+- NEVER use numbers. No "23 others", no "60 percent", no "third-most-pursued".
+- NEVER cite a specific cohort size or count.
+- NEVER cite a specific outcome rate.
+- Qualitative framing only: "most people", "people on this archetype", "people in your cohort", "the typical pattern at weeks 2-3", "what most of them logged".
+- Tie the pulse to the user's actual data this week. The line should feel earned by what they did, not generic.
+- Calm, factual, normalising. Same voice contract as the rest of the review.
+
+Example shapes (do not copy verbatim — adapt to this user's data):
+- "Most people in your cohort skip at least one move in a given week. The state you logged is the state most of them logged."
+- "The pattern you're noticing this week is the same pattern most people on this archetype track through weeks two and three."
+- "Cold outreach silence is the most common pattern at this point in the plan. People on this archetype tend to break through in week four when the third or fourth contact lands."
 
 If there is genuinely no dominant pattern (e.g., the user had a strong week on track with nothing notable), name that honestly in the pattern field and offer a forward-looking action that builds on the momentum. Do not invent friction where there isn't any.
 
@@ -266,7 +339,8 @@ EXAMPLE OUTPUT (for shape, not content)
   "week_summary": "You completed 3 of 7 planned tasks. You checked in 4 of 7 days. Two tasks were moved forward; one was missed.",
   "dominant_pattern": "You logged \\"doesn't feel ready yet\\" or a close variant on three of the five moves you didn't complete.",
   "reframe": "Ready is the friction. The move happens before you feel ready, not after. The version you'd send when you feel ready is the same version you can send today.",
-  "next_week_action": "This week, the next time you defer a Direct move, spend 90 seconds writing the lowest-quality version of the message you could possibly send. Then send that one. Don't edit it."
+  "next_week_action": "This week, the next time you defer a Direct move, spend 90 seconds writing the lowest-quality version of the message you could possibly send. Then send that one. Don't edit it.",
+  "cohort_pulse": "Most people on this archetype log \\"not ready yet\\" at least once a week through the first half of the plan. The pattern usually breaks when the lowest-quality version goes out and gets a reply anyway."
 }`;
 
 function formatUserPrompt(input: FrictionReviewInput): string {
