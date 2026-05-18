@@ -12,6 +12,7 @@ import TrackerGrid from "@/components/plan/TrackerGrid";
 import CheckInPanel from "@/components/plan/CheckInPanel";
 import ReplanPromptCard from "@/components/plan/ReplanPromptCard";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
+import WeeklyFrictionReviewCard from "@/components/plan/WeeklyFrictionReviewCard";
 import StrandSelector from "@/components/plan/StrandSelector";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { useToast } from "@/hooks/use-toast";
@@ -845,6 +846,20 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
                 {/* ─── Day 31+ Dark Wall (the screen's single dark moment) ─── */}
                 {planState === "day31_nosub" && <DarkWall />}
+
+                {/* ─── Weekly Friction Review (coaching layer Phase 2 slice 2) ───
+                  * admin/coaching-layer-design.md v1.3 §4.3. Renders above
+                  * TodayCard when a review exists for the current week.
+                  * Self-contained: fetches its own data + marks read_at on
+                  * first view. Returns null when no review exists, so it
+                  * doesn't structurally interfere with /plan layout. Not
+                  * numbered as a §0N section — it's a weekly-appearing
+                  * editorial artefact, structurally distinct from the
+                  * daily-action flow that follows.
+                  */}
+                {!awaitingSelection && user && (
+                  <WeeklyFrictionReviewCard userId={user.id} />
+                )}
 
                 {/* ─── §01 TodayCard (visual primary in all states) ───
                   * Wrapped in #plan-section-today anchor + scroll-mt-24 so
