@@ -411,7 +411,7 @@ export default function Teaser() {
                           We've drafted your report.
                         </h1>
                         <p className="mt-3 text-[15.5px] text-muted-foreground">
-                          Unlock the full version below.
+                          Get the full version below.
                         </p>
                       </div>
                     )}
@@ -457,7 +457,7 @@ export default function Teaser() {
             {payLoading && (
               <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
             )}
-            {payLoading ? "Redirecting…" : "Unlock my full report, £19.99"}
+            {payLoading ? "Redirecting…" : "Get my full report, £19.99"}
           </button>
           <div className="mt-1.5 text-center text-[11px] text-muted-foreground">
             One-time · No subscription · Stripe checkout
@@ -533,12 +533,12 @@ function GateBand({ optionsCount }: { optionsCount: number }) {
         <div className="lg:col-span-7">
           <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgba(250,249,247,0.65)] mb-3">
             <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-            <span className="text-[#FAF9F7]">Unlock the full plan</span>
+            <span className="text-[#FAF9F7]">Get the full plan</span>
           </div>
           <p className="text-[18px] sm:text-[20px] font-semibold leading-snug text-[#FAF9F7]">
             The recommendation, the income outlook, and the AI-impact analysis
             are behind the gate. Your 30-day activation plan and 3 starter
-            guidance modules unlock with them.
+            guidance modules come with them.
           </p>
         </div>
         <div className="lg:col-span-5">
@@ -633,7 +633,7 @@ function UnlockCallout({ onUnlock, payLoading }: { onUnlock: () => void; payLoad
             {payLoading && (
               <span className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
             )}
-            {payLoading ? "Redirecting…" : "Unlock my full report, £19.99"}
+            {payLoading ? "Redirecting…" : "Get my full report, £19.99"}
           </button>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
             <span className="uppercase tracking-[0.18em]">Pay with</span>
@@ -685,7 +685,7 @@ function WhatYouGet() {
           06
         </span>
         <span className="text-[20px] sm:text-[22px] font-semibold tracking-tight text-foreground">
-          What's behind the unlock
+          What's in the full report
         </span>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
@@ -756,7 +756,7 @@ function BottomCTA({
       <p className="mt-3 text-[14px] text-muted-foreground leading-relaxed max-w-2xl mx-auto">
         You've read the opening of your report. The recommendation, income
         outlook, AI-impact analysis, 30-day plan, and 3 starter guidance
-        modules are behind the unlock.
+        modules are in the full report.
       </p>
       <div className="mt-7 flex flex-col items-center gap-3">
         <button
@@ -772,7 +772,7 @@ function BottomCTA({
           {payLoading && (
             <span className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
           )}
-          {payLoading ? "Redirecting…" : "Unlock my full report, £19.99"}
+          {payLoading ? "Redirecting…" : "Get my full report, £19.99"}
         </button>
         <div className="text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
           One-time payment · No subscription · No auto-renewal

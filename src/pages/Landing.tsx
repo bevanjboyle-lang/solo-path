@@ -809,7 +809,7 @@ function ChatGPTDifferenceBody({ onTake }: { onTake: () => void }) {
         className="mx-auto mt-10 max-w-3xl text-[14.5px] font-medium leading-[1.6]"
         style={{ color: "#FAF9F7" }}
       >
-        You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually reach out to. Or take the Solo fit-check, and walk away with a real plan and a real list of people to contact.
+        You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually contact. Or take the Solo fit-check, and walk away with a real plan and a real list of people to contact.
       </p>
       <div className="mt-9">
         <PrimaryButton onClick={onTake}>Find what fits</PrimaryButton>

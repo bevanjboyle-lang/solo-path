@@ -129,7 +129,7 @@ export const questions: Question[] = [
     text: "How would you describe your professional network?",
     type: "single",
     options: [
-      "Small - fewer than 50 relevant contacts I could actually reach out to",
+      "Small - fewer than 50 relevant contacts I could actually contact",
       "Medium - 50–200 people I know reasonably well",
       "Large - 200+ contacts across multiple organisations and sectors",
     ],

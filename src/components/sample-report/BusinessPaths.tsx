@@ -290,7 +290,7 @@ export default function BusinessPaths({
             <p className="text-sm text-muted-foreground" style={{ filter: "blur(1px)" }}>
               {blurred}
             </p>
-            <LockedOverlay label="Unlock full path - £19.99" />
+            <LockedOverlay label="Get the full path - £19.99" />
           </div>
         );
       })}

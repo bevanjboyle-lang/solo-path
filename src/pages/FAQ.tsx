@@ -87,7 +87,7 @@ const categories: FAQCategory[] = [
     items: [
       { id: "faq-come-back", q: "Can I come back to my report later?", a: "Yes. Sign in any time with your email magic link, no password and your report will be there. The report is yours permanently whether you subscribe or not." },
       { id: "faq-tracker", q: "What's the 30-day tracker?", a: "Daily check-ins for 30 days. Each one is a two-minute reflection on what you did, what got stuck, what you'd change. The system regenerates the plan if you fall behind on your moves." },
-      { id: "faq-guidance", q: "What are the guidance modules?", a: "Structured walkthroughs covering specific situations, discovery calls, proposal writing, recovering difficult engagements, registration, business setup, professional presence. 3 modules are included with the report; the remaining 22 unlock with the subscription." },
+      { id: "faq-guidance", q: "What are the guidance modules?", a: "Structured walkthroughs covering specific situations, discovery calls, proposal writing, recovering difficult engagements, registration, business setup, professional presence. 3 modules are included with the report; the remaining 22 open with the subscription." },
     ],
   },
   {

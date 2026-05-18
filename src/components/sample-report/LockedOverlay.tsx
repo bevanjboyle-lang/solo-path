@@ -23,7 +23,7 @@ interface LockedOverlayProps {
  * line 90 via `localStorage.setItem("solo_report_id", reportId)`) so we
  * don't need to prop-drill through five layers of teaser components.
  */
-export default function LockedOverlay({ label = "Unlock full report - £19.99" }: LockedOverlayProps) {
+export default function LockedOverlay({ label = "Get the full report - £19.99" }: LockedOverlayProps) {
   const [busy, setBusy] = useState(false);
 
   const handleUnlock = useCallback(async () => {

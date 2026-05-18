@@ -819,7 +819,7 @@ Sarah`,
               strand_id: "strand_3",
               task_type: "admin",
               description:
-                "Begin monitoring 2–3 LinkedIn finance function transformation leaders. Look at their recent posts, see what they're talking about, identify angles you could add unique perspective to.",
+                "Begin monitoring 2–3 LinkedIn finance function transformation leaders. Look at their recent posts, see what they're talking about, identify angles you could add a distinct perspective to.",
             },
           ],
         },
@@ -870,7 +870,7 @@ Sarah`,
               strand_id: "strand_2",
               task_type: "outreach",
               description:
-                "Send LinkedIn DM to one Strand 2 contact (Fractional CFO angle), someone in your network but possibly second-degree. Use referral if available. Template: '[Name], [mutual contact] suggested I reach out. I'm exploring fractional CFO work for growth-stage and mid-market businesses. Would love 20 mins to pick your brain on whether this is a real category in your experience. Sarah'",
+                "Send LinkedIn DM to one Strand 2 contact (Fractional CFO angle), someone in your network but possibly second-degree. Use referral if available. Template: '[Name], [mutual contact] suggested I get in touch. I'm exploring fractional CFO work for growth-stage and mid-market businesses. Would love 20 mins to pick your brain on whether this is a real category in your experience. Sarah'",
               outreach_draft: {
                 format: "linkedin_dm",
                 body: `[Name], [mutual contact] mentioned you've been thinking about fractional leadership. I'm exploring this angle myself and would value 20 minutes to pick your brain about what's real and what's hype. Happy to share what I'm seeing too.
@@ -1390,7 +1390,7 @@ export const SAMPLE_MARKET_SNAPSHOTS: MarketSnapshot[] = [
       pricing_benchmark:
         "£750–£900 per day for project-based work at your level and background. London premium applies. Rates above £950/day are achievable once you have 2–3 visible engagements. Starting below £700/day misaligns expectations with PE-backed buyers who equate rate with quality.",
       competitor_landscape:
-        "The broad 'finance consultant' market is competitive. The narrow 'commercial finance / business case / board-level financial storytelling for PE-backed businesses' segment is significantly less crowded. Your positioning should be this specific, it is not a limitation, it is a signal.",
+        "The broad 'finance consultant' market is competitive. The narrow 'commercial finance / business case / board-level financial storytelling for PE-backed businesses' segment is significantly less crowded. Your positioning should be this specific. The narrowness is a signal, not a limitation.",
       market_entry_insight:
         "In this segment, first 3–4 engagements almost always come via personal referral from trusted contacts. Inbound from LinkedIn requires visible track record first. The plan prioritises network activation over inbound marketing for the first 90 days.",
       honest_assessment:

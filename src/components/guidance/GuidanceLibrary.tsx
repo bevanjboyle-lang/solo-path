@@ -197,7 +197,7 @@ export default function GuidanceLibrary() {
                         {needsSub && (
                           <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs" style={{ background: "rgba(46,205,176,0.06)", color: "#3D4048" }}>
                             <Lock className="h-3.5 w-3.5 shrink-0" style={{ color: "#2ECDB0" }} />
-                            <span>Continue your plan to unlock these modules.</span>
+                            <span>Continue your plan to open these modules.</span>
                             <button
                               onClick={() => navigate("/pricing")}
                               className="ml-auto text-xs font-semibold underline"

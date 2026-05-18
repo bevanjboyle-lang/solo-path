@@ -374,7 +374,7 @@ export default function Library() {
     modules: {
       eyebrow: "Modules",
       h1: "Modules.",
-      sub: "25 modules. Three included with your report; subscribe to unlock the other 22.",
+      sub: "25 modules. Three included with your report; subscribe to open the other 22.",
       stat: "25 modules",
     },
   };
@@ -566,7 +566,7 @@ function TodayTab({
               </div>
             </div>
             {!item.is_unlocked && (
-              <p className="mt-3 text-[10px] font-medium text-muted-foreground">Subscribe to unlock</p>
+              <p className="mt-3 text-[10px] font-medium text-muted-foreground">Subscribe to open</p>
             )}
           </button>
         ))}
@@ -672,7 +672,7 @@ function BrowseTab({
                         </div>
                       </div>
                       {!mod.is_unlocked && (
-                        <p className="mt-3 text-[10px] font-medium text-muted-foreground">Subscribe to unlock</p>
+                        <p className="mt-3 text-[10px] font-medium text-muted-foreground">Subscribe to open</p>
                       )}
                     </button>
                   ))}
@@ -854,7 +854,7 @@ function DarkGateRow({ onSubscribe }: { onSubscribe: () => void }) {
         className="shrink-0 inline-flex items-center justify-center rounded-md px-4 py-2 text-[12px] font-semibold transition-opacity hover:opacity-90"
         style={{ background: "#2ECDB0", color: "#0F2A2A" }}
       >
-        Subscribe to unlock
+        Subscribe to open
       </button>
     </div>
   );
@@ -1208,11 +1208,11 @@ function ArticleDrawer({
         {!data.is_unlocked && (
           <div className="rounded-lg border border-border bg-[hsl(var(--surface-inset))] p-6 text-center">
             <Lock className="mx-auto h-5 w-5 text-muted-foreground mb-3" />
-            <p className="text-sm font-medium text-foreground mb-1">Subscribe to unlock</p>
+            <p className="text-sm font-medium text-foreground mb-1">Subscribe to open</p>
             <p className="text-xs text-muted-foreground mb-4">
               This module is available with an active subscription.
             </p>
-            <Button onClick={onSubscribe} size="sm">Subscribe to unlock</Button>
+            <Button onClick={onSubscribe} size="sm">Subscribe to open</Button>
           </div>
         )}
       </div>
