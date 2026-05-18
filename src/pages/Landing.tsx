@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
-import SoloLogo from "@/components/SoloLogo";
+// SoloLogo import dropped 2026-05-18 — hero mark removed per visual-audit (TopBar carries the brand).
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
 
@@ -344,20 +344,22 @@ export default function Landing() {
         <section className="pb-10 pt-8 lg:pb-14 lg:pt-12">
           <div className="mx-auto max-w-6xl px-6">
             <div className="panel-ivory p-8 sm:p-12 lg:p-16">
-              {/* SoloLogo SVG prominent above — kept */}
-              <div className="flex justify-center lg:justify-start">
-                <SoloLogo width={140} height={40} />
-              </div>
-
               {/*
-               * Eyebrow — "Solo" word dropped per duplicate-logo fix.
-               * Reads cleanly: mint dot + framing + edition.
+               * Visual-audit 2026-05-18 fixes:
+               *   1. Hero SoloLogo SVG dropped — the TopBar already renders
+               *      the solo mark. Stacking a second larger mark inside
+               *      the hero created a visible duplicate ("Landing duplicate
+               *      solo brand mark" finding). The TopBar mark is now the
+               *      sole brand cue at the top of the page.
+               *   2. "Edition 04 · 2026" framing dropped — feels premature
+               *      pre-launch (suggests it's the 4th edition of a shipped
+               *      thing). Eyebrow reduced to the single framing line +
+               *      mint dot. Cleaner, less version-y, doesn't need the
+               *      hidden defence of explaining why we're on "Edition 4".
                */}
-              <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">
                 <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
                 <span>A Plan B engine for mid-career professionals</span>
-                <span aria-hidden className="text-muted-foreground/60">·</span>
-                <span className="text-muted-foreground/80">Edition 04 · 2026</span>
               </div>
 
               {/* Asymmetric 8/4 split */}

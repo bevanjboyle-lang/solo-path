@@ -101,16 +101,25 @@ export default function SampleReport() {
   return (
     <div className="relative min-h-screen flex flex-col text-foreground">
 
-      {/* ── Sticky sample-strip — persistent warning band (F3) ── */}
+      {/*
+        ── Sample-strip — persistent warning band (F3).
+        Visual-audit 2026-05-18: when this strip rendered with
+        py-2.5 + its own borderBottom it read as a second header
+        chrome stacked above the TopBar ("double chrome" finding).
+        Tightened to py-1.5 and the separator border dropped so
+        the strip sits flush against the TopBar's top edge — one
+        visual chrome unit, warning context on top, nav below.
+        Kept sticky-top-0 z-50 so it pins above the TopBar on scroll.
+      */}
       <div
-        className="sticky top-0 z-50 px-6 py-2.5 grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-x-4 items-baseline"
-        style={{ background: "#FDF8E8", borderBottom: "1px solid #E5D9A5" }}
+        className="sticky top-0 z-50 px-6 py-1.5 grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-x-4 items-baseline"
+        style={{ background: "#FDF8E8" }}
       >
         <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: "#A37500" }}>
           <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#D4940A" }} />
           <span>Sample</span>
         </div>
-        <div className="text-[13px] text-foreground leading-snug">
+        <div className="text-[12.5px] text-foreground leading-snug">
           <strong>This is Sarah Okafor's report</strong>, not yours. A real example of what the £19.99 produces for a mid-career FP&amp;A director.
         </div>
         <button

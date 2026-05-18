@@ -249,7 +249,15 @@ export default function Account() {
       <div className="mt-1 text-[12px] text-foreground">
         {isSubscriber
           ? subscriptionPlan === "annual" ? `Annual · Renews ${renewDate}` : `Monthly · Renews ${renewDate}`
-          : "One-time · Day 12 of 30"}
+          : /*
+             * Visual-audit 2026-05-18: previously read "One-time · Day 12 of 30"
+             * with the day count HARDCODED as 12 (not computed from
+             * tracker_sessions.current_day). That created an off-by-one with
+             * /plan's real day counter and turned stale immediately. /plan is
+             * the canonical surface for day-of-30 progress; /account just
+             * needs to communicate plan tier here. Day count dropped.
+             */
+            "One-time report"}
       </div>
     </>
   );

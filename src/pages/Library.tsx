@@ -360,13 +360,16 @@ export default function Library() {
       eyebrow: "Today",
       h1: "Library.",
       sub: "Chosen for where you are right now — three to six picks against today's check-in signal.",
-      stat: todayCount > 0 ? `${todayCount} picks` : undefined,
+      // Visual-audit 2026-05-18: pluralise correctly. "1 picks" was reading
+      // as a grammar bug in the eyebrow chip on /library.
+      stat: todayCount > 0 ? `${todayCount} ${todayCount === 1 ? "pick" : "picks"}` : undefined,
     },
     browse: {
       eyebrow: "Browse",
       h1: "Browse.",
       sub: "Everything we've written, sorted by topic. Filter to narrow the field.",
-      stat: totalModulesCount > 0 ? `${totalModulesCount} articles` : undefined,
+      // Same pluralisation discipline as Today's "picks".
+      stat: totalModulesCount > 0 ? `${totalModulesCount} ${totalModulesCount === 1 ? "article" : "articles"}` : undefined,
     },
     modules: {
       eyebrow: "Modules",

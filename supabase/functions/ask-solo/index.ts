@@ -1,3 +1,12 @@
+// ask-solo v30 — vowel-aware article in opening greeting — 2026-05-18
+//
+// Visual-audit 2026-05-18: opening cue rendered "as a AI Strategy &
+// Implementation Advisor professional" — bad article-vowel pairing whenever
+// the archetype display name starts with a written vowel (AI, Engineering,
+// Operations, etc.). Vowel-aware article selection in the start_session
+// branch; no other behaviour change. Greeting copy is now grammatical
+// regardless of archetype.
+//
 // ask-solo v29 — vibe code review fixes — 2026-05-14
 //
 // V-049: hardcoded 100+ archetype display-name Record replaced with a
@@ -455,7 +464,13 @@ Deno.serve(async (req: Request) => {
 
       let contextCue: string;
       if (archetypeDisplayName) {
-        contextCue = `I know your background as a ${archetypeDisplayName} professional and your Plan B options.`;
+        // Visual-audit 2026-05-18: vowel-aware article so we don't render
+        // "as a AI Strategy & Implementation Advisor". Picks "an" when
+        // the archetype display name starts with a vowel sound (close
+        // enough — AI, Engineering, Operations all start with a written
+        // vowel, which is what most archetype names rely on).
+        const article = /^[aeiouAEIOU]/.test(archetypeDisplayName) ? "an" : "a";
+        contextCue = `I know your background as ${article} ${archetypeDisplayName} professional and your Plan B options.`;
       } else {
         contextCue = "I have your full profile and plan in front of me.";
       }

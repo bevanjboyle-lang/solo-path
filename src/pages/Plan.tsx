@@ -776,6 +776,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                                 status={status}
                                 isExpanded={expandedDayInList === d.day}
                                 onToggle={() => handleDayInListToggle(d.day)}
+                                strandsMap={Object.fromEntries(strands.map((s) => [s.strand_id, s.model_name]))}
                                 onOpenCheckin={() => {
                                   // v39 (Gap 2): the panel mode is derived from
                                   // the day's status — today=submit, missed=backfill,
@@ -1042,7 +1043,7 @@ function findDayDetail(
  * honest rather than rendering empty space.
  */
 function DayRow({
-  day, dayDetail, status, isExpanded, onToggle, onOpenCheckin,
+  day, dayDetail, status, isExpanded, onToggle, onOpenCheckin, strandsMap,
 }: {
   day: number;
   dayDetail: DayDetail | null;
@@ -1050,6 +1051,10 @@ function DayRow({
   isExpanded: boolean;
   onToggle: () => void;
   onOpenCheckin: () => void;
+  // strand_id → human-readable strand name. Used by DayBody to resolve
+  // raw keys like "strand_1" in time_allocation entries (visual-audit
+  // 2026-05-18 critical finding). Optional so old call sites still build.
+  strandsMap?: Record<string, string>;
 }) {
   const isMissed = status === "missed";
   const isFuture = status === "future";
@@ -1150,7 +1155,7 @@ function DayRow({
       {isExpanded && (
         <div className="px-2 sm:px-6 pb-6 pt-2">
           {dayDetail ? (
-            <DayBody dayDetail={dayDetail} status={status} />
+            <DayBody dayDetail={dayDetail} status={status} strandsMap={strandsMap} />
           ) : (
             <p className="text-[13.5px] italic text-muted-foreground/70 leading-relaxed">
               No specific tasks logged for this day. Your activation plan's day-by-day detail may be lighter for certain days — your overall plan structure still applies.
@@ -1209,8 +1214,33 @@ function DayRow({
  *   - Missed rows do NOT show outreach_draft callouts (drafts were prep for
  *     tasks that didn't happen; surfacing them retroactively would confuse).
  */
-function DayBody({ dayDetail, status }: { dayDetail: DayDetail; status: DayRowStatus }) {
+function DayBody({
+  dayDetail,
+  status,
+  strandsMap,
+}: {
+  dayDetail: DayDetail;
+  status: DayRowStatus;
+  // strand_id → human-readable strand name (e.g., "strand_1" → "AI
+  // Workflow Implementation"). Used to resolve raw IDs surfaced in
+  // time_allocation. Visual-audit 2026-05-18 critical finding: without
+  // this lookup users saw "strand_1 — 45 mins" instead of the strand
+  // name they recognised. Falls back to the raw key when the strand
+  // isn't in the map (e.g., "shared" buckets — kept as-is).
+  strandsMap?: Record<string, string>;
+}) {
   const isMissedRow = status === "missed";
+
+  // Resolve a time_allocation key to a displayable label. Known strand
+  // IDs become the strand's model_name; unknown keys (like "shared",
+  // legacy "Activity" placeholders) pass through untouched and are
+  // gently title-cased so they read as labels rather than identifiers.
+  const labelForKey = (key: string): string => {
+    if (strandsMap && strandsMap[key]) return strandsMap[key];
+    if (/^strand_\d+$/i.test(key)) return key; // unmatched strand id — leave raw rather than mislead
+    if (key === "shared") return "Shared across strands";
+    return key;
+  };
 
   // time_allocation can be array (TimeAllocationEntry[]) or object form
   // (Record<string, string>) per the deployed adapter. Components must
@@ -1218,10 +1248,10 @@ function DayBody({ dayDetail, status }: { dayDetail: DayDetail; status: DayRowSt
   const timeAllocationEntries: Array<[string, string]> = (() => {
     const ta = dayDetail.time_allocation;
     if (Array.isArray(ta)) {
-      return ta.map((e) => [String(e.strand_key ?? "Activity"), String(e.minutes ?? "")]);
+      return ta.map((e) => [labelForKey(String(e.strand_key ?? "Activity")), String(e.minutes ?? "")]);
     }
     if (ta && typeof ta === "object") {
-      return Object.entries(ta).map(([k, v]) => [k, String(v)]);
+      return Object.entries(ta).map(([k, v]) => [labelForKey(k), String(v)]);
     }
     return [];
   })();
