@@ -14,7 +14,9 @@ export interface RichModuleQuestion {
 export interface RichModule {
   id: number;
   name: string;
-  track: "A" | "B" | "C" | "D" | "E";
+  // Track F (Rejection & Resilience) added 2026-05-18 for coaching layer
+  // Phase 5b (admin/coaching-layer-design.md v1.10 §4.4).
+  track: "A" | "B" | "C" | "D" | "E" | "F";
   access_tier: "tranche_1" | "subscription";
   applicable_sectors: string[] | null;
   applicable_archetypes?: string[] | null;

@@ -61,7 +61,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
-const BASE_SUBSCRIPTION_MODULES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+// Tracks A-D modules (1-19) PLUS Track F resilience modules (26-32) for all
+// subscribers. Track E (20-25) is sector-gated via getApplicableTrackEModules.
+// Track F added 2026-05-18 for coaching layer Phase 5b (admin/coaching-layer-design.md
+// v1.10 §4.4 — Rejection Library: subscription-only, unconditional unlock).
+const BASE_SUBSCRIPTION_MODULES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 26, 27, 28, 29, 30, 31, 32];
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {

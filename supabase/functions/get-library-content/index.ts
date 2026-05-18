@@ -1,3 +1,13 @@
+// get-library-content v16 — 2026-05-18 — coaching layer Phase 5b
+//   Adds Track F (Rejection & Resilience): seven new modules (26-32) covering
+//   the psychological topics no career book covers properly — silence after
+//   sending, explicit rejection, the imposter spike after a small win, the
+//   week-three dip, the "should I just take a job" moment, peer comparison
+//   anxiety, and the partner/family conversation. Subscription-only. Track F
+//   appears as the sixth track in the Browse view (after E) so the operational
+//   tracks A-D and the sector-specific E stay above the resilience track.
+//   See admin/coaching-layer-design.md v1.10 §4.4 + §10.
+//
 // get-library-content v15 — vibe code review V-057 — 2026-05-14
 // V-057: getApplicableTrackEModules now imported from _shared/track-e-mapping.ts.
 //        Previously inline regex that had drifted vs stripe-subscription-webhook's
@@ -38,6 +48,7 @@ const TRACK_METADATA: Record<string, { name: string; description: string }> = {
   C: { name: "Financial Operations", description: "Invoicing, cash flow, pricing, expenses, and long-term financial planning." },
   D: { name: "Commercial Practice", description: "Pipeline, proposals, client management, and scaling your practice." },
   E: { name: "Sector Specialisms", description: "Sector-specific guidance tailored to your market." },
+  F: { name: "Rejection & Resilience", description: "The psychological moves the career books skip. What to do at silence, at explicit rejection, at the week-three dip, and at the conversations that decide whether the plan survives." },
 };
 
 // V-057 (vibe code review 2026-05-14): thin wrapper around the shared helper.
@@ -128,9 +139,11 @@ Deno.serve(async (req: Request) => {
     if (subscriptionActive && sessionModulesUnlocked.length > 0) {
       unlockedIds = sessionModulesUnlocked;
     } else if (subscriptionActive) {
-      // Subscriber but session row not yet created — unlock all A-D + relevant E
+      // Subscriber but session row not yet created — unlock all A-D + relevant E + all F.
+      // Track F (Rejection & Resilience, 26-32) is unconditional for subscribers,
+      // not sector-gated like Track E.
       const trackEIds = getTrackEModulesForUser(q3a, q11);
-      unlockedIds = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, ...trackEIds];
+      unlockedIds = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19, ...trackEIds, 26,27,28,29,30,31,32];
     } else {
       // Buyer: check if paid, unlock tranche_1
       const { data: paymentData } = await supabase.from("payments").select("id").eq("user_id", userId).in("status", ["paid", "completed"]).limit(1).single();
@@ -220,7 +233,10 @@ Deno.serve(async (req: Request) => {
     }
 
     // ── BROWSE (default) ─────────────────────────────────────────────────────
-    const trackOrder = ["A", "B", "C", "D", "E"] as const;
+    // Track F (Rejection & Resilience) added 2026-05-18 as the sixth track,
+    // appearing after E so the operational tracks lead and the resilience
+    // track sits at the end where users tend to look for it when needed.
+    const trackOrder = ["A", "B", "C", "D", "E", "F"] as const;
     const tracks: Record<string, unknown> = {};
 
     for (const track of trackOrder) {
