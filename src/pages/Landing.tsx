@@ -158,7 +158,7 @@ const PROPS = [
     eyebrow: "Named outreach contacts",
     title: "Real names. Not \"try LinkedIn.\"",
     body:
-      "For paths that involve direct contact, Solo finds actual people — by name, role, and company. When you're ready to send a message, Solo drafts it for you, in your voice, for that specific person. The first client is the hardest part. Solo gets you to the message.",
+      "For paths that involve direct contact, Solo finds actual people — by name, role, and company. When you're ready to send a message, Solo drafts it for you, in your voice, for that specific person. The harder part — deciding to send it — is yours.",
     titleClass: "text-[20px] sm:text-[22px] lg:text-[24px] leading-[1.2]",
     bodyClass: "text-[14.5px] leading-[1.65]",
     span: "lg:col-span-6",
@@ -226,7 +226,7 @@ const PRICING = [
     amount: "£19.99",
     qualifier: "once",
     features: [
-      "Full report — five scored strands",
+      "Full report — 10 scored business paths",
       "30-day activation plan",
       "Lifetime access to your report",
     ],
@@ -240,8 +240,9 @@ const PRICING = [
     qualifier: "/month, cancel any time",
     features: [
       "Everything in one-time",
-      "Daily check-in loop",
-      "Move regeneration when something doesn't land",
+      "Weekly check-ins past day 30",
+      "All 25 guidance modules",
+      "Unlimited Ask Solo",
     ],
     primary: false,
   },
@@ -850,7 +851,7 @@ function PricingBody() {
           One-time. Or monthly, if you want the check-in loop.
         </h3>
         <p className="mt-4 text-[14.5px] leading-[1.65] text-muted-foreground">
-          Most users buy the one-time. The subscription exists because some users want the daily tracker running for the full thirty days.
+          Most buy the one-time. The subscription is for people who want their plan to keep going after the first 30 days — with weekly check-ins, all 25 guidance modules, and unlimited Ask Solo.
         </p>
         <a
           href="/pricing"
@@ -933,15 +934,17 @@ function AboutBody() {
         </span>
         olo was built by someone who has worked through three of these conversations themselves and has run them with several hundred mid-career professionals. The product is the artefact of those conversations — the spreadsheets, the scoring system, the move templates, the questions you ask when someone walks into the room not yet ready to say "I might leave."
       </p>
+      {/*
+        Interim copy 2026-05-18 — full About body rewrite pending in Task #212
+        (Landing §07 entire-section rewrite). The original visible placeholder
+        text ("Placeholder paragraph for composition...") was shipping live to
+        users and has been replaced with a neutral one-liner until the rewrite
+        lands. The 'Read the full background' link is anchored to #pending —
+        update once the founder background page exists.
+      */}
       <p className="mt-4 text-[14.5px] leading-[1.7] text-muted-foreground">
-        Placeholder paragraph for composition. The founder paragraph will run to about 140 words. The founder is deliberately not named in this slot until the marketing copy is reviewed.
+        More about how Solo was built — and why — coming soon.
       </p>
-      <a
-        href="#"
-        className="mt-6 inline-block text-[13px] font-semibold text-primary hover:underline"
-      >
-        Read the full background →
-      </a>
     </div>
   );
 }
