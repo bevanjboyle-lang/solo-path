@@ -435,7 +435,7 @@ export default function Landing() {
 
                   <div className="mt-7 border-l border-border/70 pl-6 lg:pl-8">
                     <div className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                      Built for, briefly
+                      Built for
                     </div>
                     <dl className="mt-5 space-y-2.5 text-[12px]">
                       {HERO_TRUST.map((row) => (
