@@ -11,3 +11,13 @@ verify_jwt = false
 
 [functions.draft-outreach]
 verify_jwt = false
+
+# get-library-content: verify_jwt explicitly true. The function reads a user-
+# specific library (subscription state, completions, unlocked modules) and
+# extracts user_id from the Authorization JWT. The gateway must validate the
+# JWT before the function runs; an unauthenticated request must 401.
+# Pinned explicitly 2026-05-25 (Option B reconciliation) so a future CLI
+# default change cannot silently flip this. Deployed v17 already runs with
+# verify_jwt: true; this block documents the intent in source.
+[functions.get-library-content]
+verify_jwt = true

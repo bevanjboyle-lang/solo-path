@@ -26,6 +26,13 @@ export interface RichModule {
   estimated_minutes: number;
   output_type: string;
   description: string;
+  // 2026-05-25 Option B reconciliation: one-line value-promise shown on the
+  // article-detail view in the /library drawer ("You'll get…"). Migrated from
+  // the now-retired _shared/modules-library.ts. Optional during migration so
+  // partially-populated module files still typecheck; Library.tsx falls back
+  // to the description when absent. Once all 32 modules carry a value, this
+  // field can be tightened to required.
+  what_you_get?: string;
   questions: RichModuleQuestion[];
   decision_logic?: Record<string, string>;
   ico_logic?: Record<string, unknown>;

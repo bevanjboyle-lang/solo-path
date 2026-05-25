@@ -1,3 +1,17 @@
+// get-library-content v17 — 2026-05-25 — Option B consolidation
+//   Single source of truth for module data is now _shared/modules-library-rich.ts.
+//   The browse-shape _shared/modules-library.ts duplicate is retired. Article
+//   responses now return the full rich `questions` array (id/text/type/options/
+//   optional/placeholder), not the legacy `key_questions: string[]` shape.
+//   Library.tsx renders multi-choice for type:"choice" and a text input for
+//   type:"text", submitting answers keyed by canonical question id (matching
+//   generate-guidance v28's expectations). Why: the previous shape sent three
+//   free-text textareas keyed `question_1..N`, which generate-guidance v28
+//   could not interpret against the strawman bar. See session memory
+//   project_session_2026_05_25_late_v28_deployed_drift_found.md for the
+//   full diagnosis. The `what_you_get` value-promise field is preserved and
+//   now lives on the rich module type (modules-rich-types.ts).
+//
 // get-library-content v16 — 2026-05-18 — coaching layer Phase 5b
 //   Adds Track F (Rejection & Resilience): seven new modules (26-32) covering
 //   the psychological topics no career book covers properly — silence after
@@ -21,7 +35,7 @@
 //
 // get-library-content v13 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-import { MODULES_LIBRARY as MODULES } from "../_shared/modules-library.ts";
+import { MODULES_RICH as MODULES } from "../_shared/modules-library-rich.ts";
 // V-057 (vibe code review 2026-05-14): shared Track-E classifier
 import { getApplicableTrackEModules } from "../_shared/track-e-mapping.ts";
 
@@ -172,6 +186,18 @@ Deno.serve(async (req: Request) => {
           .single();
         completionOutput = comp || null;
       }
+      // v17 (Option B): return the rich `questions` array so Library.tsx can
+      // render multi-choice / text inputs keyed by canonical question id.
+      // Stripped to UI-relevant fields only (no decision_logic / output_structure /
+      // module_addendum — those are backend prompt context, not UI).
+      const uiQuestions = mod.questions.map((q) => ({
+        id: q.id,
+        text: q.text,
+        type: q.type,
+        options: q.options ?? null,
+        optional: q.optional ?? false,
+        placeholder: q.placeholder ?? null,
+      }));
       return new Response(
         JSON.stringify({
           module_id: moduleId,
@@ -181,8 +207,8 @@ Deno.serve(async (req: Request) => {
           description: mod.description,
           estimated_minutes: mod.estimated_minutes,
           access_tier: mod.access_tier,
-          key_questions: mod.key_questions,
-          what_you_get: mod.what_you_get,
+          questions: uiQuestions,
+          what_you_get: mod.what_you_get ?? null,
           is_unlocked: unlockedIds.includes(moduleId),
           is_completed: isCompleted,
           completion: completionOutput,

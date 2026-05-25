@@ -103,6 +103,22 @@ interface BrowseData {
   unlocked_module_ids: number[];
 }
 
+// Option B reconciliation (2026-05-25): the article payload now carries the
+// rich question set served by get-library-content v17. Each question has a
+// canonical id, a display text, a type that controls render (multi-choice
+// buttons vs text input), and the option list / placeholder where relevant.
+// Answers are submitted keyed by `id` so generate-guidance v28's strawman
+// decision_logic can interpret them. The old `key_questions: string[]` shape
+// keyed answers `question_1..N` and silently degraded the v28 output.
+interface ArticleQuestion {
+  id: string;
+  text: string;
+  type: "text" | "choice" | "number";
+  options: string[] | null;
+  optional: boolean;
+  placeholder: string | null;
+}
+
 interface ArticleData {
   module_id: number;
   title: string;
@@ -110,8 +126,8 @@ interface ArticleData {
   track_name: string;
   description: string;
   estimated_minutes: number;
-  key_questions: string[];
-  what_you_get: string;
+  questions: ArticleQuestion[];
+  what_you_get: string | null;
   is_unlocked: boolean;
   is_completed: boolean;
   completion: {
@@ -247,11 +263,15 @@ export default function Library() {
   const handleSubscribe = () => navigateAuthed(navigate, "/subscribe");
 
   // ── Start question form ──
+  // Option B: initialise answers keyed by canonical question id (matches what
+  // generate-guidance v28 reads). Every question gets an empty string so the
+  // controlled inputs render — submit-side validation skips entries that are
+  // still empty AND optional.
   const startQuestions = useCallback(() => {
     if (!articleData) return;
     const initial: Record<string, string> = {};
-    articleData.key_questions.forEach((_, i) => {
-      initial[`question_${i + 1}`] = "";
+    articleData.questions.forEach((q) => {
+      initial[q.id] = "";
     });
     setModuleAnswers(initial);
     setDrawerView("questions");
@@ -961,23 +981,68 @@ function QuestionForm({
 
         <div className="h-px bg-border" />
 
-        <div className="space-y-5">
-          {data.key_questions.map((q, i) => {
-            const key = `question_${i + 1}`;
+        {/*
+          Option B (2026-05-25): render rich questions by type. Choice questions
+          render as single-select option buttons (selected = mint border + tint).
+          Text and number questions render as a Textarea (max 500 chars) or short
+          input (number). Optional questions show "(optional)" in the label.
+          Answers are dispatched keyed by canonical id, matching what
+          generate-guidance v28 reads against its decision_logic.
+        */}
+        <div className="space-y-6">
+          {data.questions.map((q) => {
+            const value = answers[q.id] || "";
+            const labelSuffix = q.optional ? (
+              <span className="ml-1 text-[11px] font-normal text-muted-foreground/70">(optional)</span>
+            ) : null;
+            if (q.type === "choice" && q.options && q.options.length > 0) {
+              return (
+                <div key={q.id}>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    {q.text}{labelSuffix}
+                  </label>
+                  <div className="flex flex-col gap-2">
+                    {q.options.map((opt) => {
+                      const selected = value === opt;
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          disabled={submitting}
+                          onClick={() => onAnswerChange(q.id, opt)}
+                          className={
+                            "text-left text-sm leading-relaxed px-4 py-3 rounded-md border transition-colors " +
+                            (selected
+                              ? "border-primary bg-primary/10 text-foreground"
+                              : "border-border bg-[hsl(var(--surface-panel))] text-muted-foreground hover:border-primary/40 hover:text-foreground")
+                          }
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+            // text or number — both render as a Textarea (number is rare enough
+            // not to warrant a dedicated input; the Textarea accepts numerals).
             return (
-              <div key={key}>
-                <label className="block text-sm font-medium text-foreground mb-2">{q}</label>
+              <div key={q.id}>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  {q.text}{labelSuffix}
+                </label>
                 <Textarea
-                  value={answers[key] || ""}
-                  onChange={(e) => onAnswerChange(key, e.target.value.slice(0, 500))}
-                  placeholder="Your answer..."
-                  rows={4}
+                  value={value}
+                  onChange={(e) => onAnswerChange(q.id, e.target.value.slice(0, 500))}
+                  placeholder={q.placeholder || "Your answer..."}
+                  rows={3}
                   maxLength={500}
                   disabled={submitting}
                   className="resize-none"
                 />
                 <p className="text-right text-[10px] text-muted-foreground/50 mt-1">
-                  {(answers[key] || "").length}/500
+                  {value.length}/500
                 </p>
               </div>
             );
@@ -1051,17 +1116,17 @@ function ArticleDrawer({
           <p>{data.description}</p>
         </div>
 
-        {/* Key questions */}
-        {data.key_questions && data.key_questions.length > 0 && (
+        {/* Key questions — Option B: read question.text from the rich payload */}
+        {data.questions && data.questions.length > 0 && (
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
               Key questions
             </h3>
             <ul className="space-y-2">
-              {data.key_questions.map((q, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+              {data.questions.map((q) => (
+                <li key={q.id} className="flex items-start gap-2 text-sm text-muted-foreground">
                   <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/50" />
-                  {q}
+                  {q.text}
                 </li>
               ))}
             </ul>
