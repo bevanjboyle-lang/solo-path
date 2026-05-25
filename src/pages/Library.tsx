@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { BookOpen, Lock, ChevronRight, X, Check, Clock, Loader2, MessageCircle } from "lucide-react";
+import { BookOpen, Lock, ChevronRight, X, Check, Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { navigateAuthed } from "@/lib/handlers";
@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import GlassCard from "@/components/ui/GlassCard";
+import GuidanceModuleOutput from "@/components/guidance/GuidanceModuleOutput";
 
 /*
  * Library Pass 1 /library v1 (2026-05-18) second Phase 2 surface
@@ -349,7 +350,7 @@ export default function Library() {
         Curriculum
       </div>
       <div className="mt-1 text-[12px] text-foreground">
-        25 modules · {isSubscriber ? "all unlocked" : `${unlockedModulesCount || 3} unlocked`}
+        32 modules · {isSubscriber ? "all unlocked" : `${unlockedModulesCount || 3} unlocked`}
       </div>
     </>
   );
@@ -374,8 +375,8 @@ export default function Library() {
     modules: {
       eyebrow: "Modules",
       h1: "Modules.",
-      sub: "25 modules. Three included with your report; subscribe to open the other 22.",
-      stat: "25 modules",
+      sub: "32 modules. Three included with your report; subscribe to open the other 29.",
+      stat: "32 modules",
     },
   };
   const header = headerByTab[activeTab] || headerByTab.today;
@@ -479,14 +480,27 @@ export default function Library() {
                 onClose={backToModules}
               />
             ) : drawerView === "output" && moduleOutput ? (
-              <OutputView
-                moduleName={articleData.title}
-                output={moduleOutput}
-                onBack={backToModules}
-                moduleId={articleData.module_id}
-                navigate={navigate}
-                onClose={backToModules}
-              />
+              <div className="px-6 py-8">
+                <GuidanceModuleOutput
+                  module={{
+                    id: articleData.module_id,
+                    name: articleData.title,
+                    area: articleData.track_name,
+                    minutes: articleData.estimated_minutes,
+                    prereq: null,
+                    questions: [],
+                    description: articleData.description,
+                    track: articleData.track,
+                  }}
+                  output={moduleOutput}
+                  moduleAnswers={moduleAnswers}
+                  onRegenerated={(response) => {
+                    const newOutput = response?.output || response;
+                    setModuleOutput(newOutput as ModuleOutput);
+                  }}
+                  onBack={backToModules}
+                />
+              </div>
             ) : (
               <ArticleDrawer
                 data={articleData}
@@ -781,7 +795,7 @@ function ModulesTab({
  * scale doesn't fight the document outline.
  *
  * Stat pill (right-side) is optional and renders only when present —
- * "25 modules" on the Modules tab, article count on Browse, picks
+ * "32 modules" on the Modules tab, article count on Browse, picks
  * count on Today. Reads as a quiet fact, not a banner.
  */
 function LibraryPageHeader({
@@ -988,85 +1002,6 @@ function QuestionForm({
               "Get my guidance"
             )}
           </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Output View ── */
-function OutputView({
-  moduleName, output, onBack, moduleId, navigate, onClose,
-}: {
-  moduleName: string;
-  output: ModuleOutput;
-  onBack: () => void;
-  moduleId: number;
-  navigate: (path: string) => void;
-  onClose: () => void;
-}) {
-  return (
-    <div className="flex flex-col min-h-full">
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-[hsl(var(--surface-panel))] px-6 py-4">
-        <h2 className="text-base font-semibold text-foreground">{moduleName}</h2>
-        <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-
-      <div className="flex-1 px-6 py-8 space-y-6">
-        {output.key_insights && output.key_insights.length > 0 && (
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Key insights</h3>
-            <ul className="space-y-2">
-              {output.key_insights.map((item, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="h-px bg-border" />
-
-        {output.next_steps && output.next_steps.length > 0 && (
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Next steps</h3>
-            <ol className="space-y-2">
-              {output.next_steps.map((step, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <span className="mt-0.5 shrink-0 text-xs font-semibold text-primary">{i + 1}.</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-
-        <div className="h-px bg-border" />
-
-        {output.resources_or_prompts && output.resources_or_prompts.length > 0 && (
-          <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Prompts and resources</h3>
-            <ul className="space-y-2">
-              {output.resources_or_prompts.map((r, i) => (
-                <li key={i} className="text-sm text-muted-foreground">{r}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between pt-4">
-          <Button variant="outline" onClick={onBack}>Back to modules</Button>
-          <button
-            onClick={() => navigate("/ask-solo?context=" + moduleId)}
-            className="flex items-center gap-1.5 text-sm text-primary hover:text-primary/80 transition-colors"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Ask Solo about this
-          </button>
         </div>
       </div>
     </div>
