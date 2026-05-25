@@ -83,6 +83,24 @@ function isLegacyV25(output: any): boolean {
   );
 }
 
+// v28 (Option B reconciliation, 2026-05-25): generate-guidance v28 returns a
+// canonical ModuleOutputV3 shape — short_version + playbook[] +
+// reference_layer_ids[] + check_in_commitment + caveat. Detect by the presence
+// of an array `playbook` whose items are objects (vs. the V26Body shape which
+// has recommendation/artefact_summary). The fallback V26Body renderer treats
+// the playbook array generically and JSON.stringify's each item, which is the
+// raw-JSON output the smoke surfaced. V28Body renders each playbook step as
+// a structured card and lays out the check-in commitments.
+function isV28(output: any): boolean {
+  return (
+    isPlainObject(output) &&
+    Array.isArray(output.playbook) &&
+    output.playbook.length > 0 &&
+    isPlainObject(output.playbook[0]) &&
+    typeof output.playbook[0].title === "string"
+  );
+}
+
 export default function GuidanceModuleOutput({
   module,
   output,
@@ -167,6 +185,8 @@ export default function GuidanceModuleOutput({
 
       {legacy ? (
         <LegacyV25Body output={output} />
+      ) : isV28(output) ? (
+        <V28Body output={output} />
       ) : (
         <V26Body output={output} />
       )}
@@ -220,6 +240,113 @@ function V26Body({ output }: { output: any }) {
           </div>
         );
       })}
+    </>
+  );
+}
+
+// v28 ModuleOutputV3 renderer. Mirrors the canonical shape from
+// supabase/functions/generate-guidance/guidance-output-schemas.ts. Reference
+// layer items (reference_layer_ids) are deliberately not surfaced here yet —
+// the integer ids alone are not user-readable, and resolving them needs a
+// follow-up fetch against the module_reference_items table. Tracked as a
+// post-Option-B enrichment item.
+function V28Body({ output }: { output: any }) {
+  const shortVersion: string | undefined = output.short_version;
+  const playbook: any[] = Array.isArray(output.playbook) ? output.playbook : [];
+  const checkIn = output.check_in_commitment;
+
+  return (
+    <>
+      {shortVersion && (
+        <div className="mb-7">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+            Short version
+          </h3>
+          <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line">
+            {shortVersion}
+          </p>
+        </div>
+      )}
+
+      {playbook.length > 0 && (
+        <div className="mb-7">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            Playbook
+          </h3>
+          <div className="space-y-4">
+            {playbook.map((step, i) => (
+              <div
+                key={i}
+                className="rounded-lg border border-border bg-[hsl(var(--surface-panel))] px-5 py-4"
+              >
+                {step.title && (
+                  <h4 className="text-sm font-semibold text-foreground mb-2">
+                    {step.title}
+                  </h4>
+                )}
+                {step.personalised_lead && (
+                  <p className="text-sm text-foreground/80 leading-relaxed mb-3">
+                    {step.personalised_lead}
+                  </p>
+                )}
+                <dl className="grid grid-cols-1 gap-3">
+                  {([
+                    ["what_it_is", "What it is"],
+                    ["how", "How"],
+                    ["cost", "Cost"],
+                    ["pitfall", "Pitfall"],
+                    ["what_to_expect_next", "What to expect next"],
+                  ] as const).map(([key, label]) => {
+                    const val = step[key];
+                    if (!val || typeof val !== "string") return null;
+                    return (
+                      <div key={key}>
+                        <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 mb-0.5">
+                          {label}
+                        </dt>
+                        <dd className="text-sm text-foreground/70 leading-relaxed">
+                          {val}
+                        </dd>
+                      </div>
+                    );
+                  })}
+                </dl>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {checkIn && isPlainObject(checkIn) && (
+        <div className="mb-7">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+            How Solo will follow up
+          </h3>
+          {typeof checkIn.summary_prose === "string" && checkIn.summary_prose && (
+            <p className="text-sm text-foreground/80 leading-relaxed mb-3">
+              {checkIn.summary_prose}
+            </p>
+          )}
+          {Array.isArray(checkIn.commitments) && checkIn.commitments.length > 0 && (
+            <ul className="space-y-2">
+              {checkIn.commitments.map((c: any, i: number) => (
+                <li
+                  key={i}
+                  className="text-sm text-foreground/70 leading-relaxed flex items-start gap-2"
+                >
+                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary/50" />
+                  <span>
+                    <span className="font-medium text-foreground">
+                      Day {c?.target_day ?? "—"}:
+                    </span>{" "}
+                    {c?.verification_question || c?.action || ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </>
   );
 }
