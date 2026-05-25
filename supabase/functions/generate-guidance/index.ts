@@ -1,3 +1,27 @@
+// generate-guidance v28 — guidance enrichment workstream canonical bar — 2026-05-26
+//
+// Implements the canonical ModuleOutputV3 contract per the locked design at:
+//   - admin/guidance-enrichment-workstream-plan.md v1.0 (Bevan-approved 2026-05-25)
+//   - admin/canonical-guidance-prompt-v28-draft.md (Part A, the shared prompt body)
+//   - admin/canonical-guidance-module-1-addendum-and-schema-v28-draft.md (Part B + schema)
+//   - admin/canonical-guidance-v28-implementation-design.md (this file's change scope)
+//
+// Three-part prompt composition at request time:
+//   Part A: shared canonical prefix    (p8-system-prompt.ts P8_SYSTEM_PROMPT)
+//   Part B: per-module addendum        (MODULES_RICH[id].module_addendum)
+//   Part C: runtime user context       (assembleUserContext + fetchApplicableReferenceItems)
+//
+// Output: single ModuleOutputV3 shape across all 32 modules (Q1a Path A locked).
+// Validator extends v27 with banned-word, forbidden-pattern, word-count-range,
+// playbook-length, target_day-range, and reference-count checks.
+//
+// Caveat is concatenated in code post-generation (curated base + LLM tail) rather
+// than asked of the LLM, per §9 refinement. Removes verbatim-reproduction risk.
+//
+// Per-module rollout: any module without module_addendum returns 422. v28 unlocks
+// per-module as addenda are authored. Module 1 ships with v28; Modules 2-32 land
+// over the next ~7 weeks of content drafting.
+//
 // generate-guidance v27 — V-055 fix: replace getClaims with inline JWT decode — 2026-05-16
 //
 // Bug: V-055 — authClient.auth.getClaims(token) was silently failing on valid
@@ -62,20 +86,33 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import OpenAI from "https://esm.sh/openai@4.79.1";
 
-import { MODULES_RICH, type RichModule } from "../_shared/modules-library-rich.ts";
+import { MODULES_RICH } from "../_shared/modules-library-rich.ts";
 import { getApplicableTrackEModules } from "../_shared/track-e-mapping.ts";
 import { TRANCHE_1_MODULES } from "../_shared/constants.ts";
 
-import { P8_SYSTEM_PROMPT, buildP8UserMessage } from "./p8-system-prompt.ts";
-import { assembleUserContext, type UserContext } from "./user-context-assembler.ts";
-import { buildModuleOutputSchema } from "./guidance-output-schemas.ts";
 import {
-  validateGuidanceOutput,
-  buildGuidanceRetryMessage,
+  P8_SYSTEM_PROMPT,
+  buildP8UserMessage,
+  type ModuleAddendum,
+  type ReferenceItemMenuEntry,
+} from "./p8-system-prompt.ts";
+import {
+  assembleUserContext,
+  fetchApplicableReferenceItems,
+  type UserContext,
+} from "./user-context-assembler.ts";
+import {
+  MODULE_OUTPUT_V3_SCHEMA,
+  type ModuleOutputV3,
+  type PersistedModuleOutput,
+} from "./guidance-output-schemas.ts";
+import {
+  validateModuleOutputV3,
+  buildV3RetryMessage,
   type ValidationResult,
 } from "./guidance-output-validator.ts";
 
-const FUNCTION_VERSION = "v27-v055-getclaims-fix";
+const FUNCTION_VERSION = "v28-canonical-bar";
 const MODEL_TIER1 = "gpt-5.4";
 const MAX_VALIDATOR_RETRIES = 2;  // 3 total attempts, matching ADR-019 amended budget
 const TEMPERATURE = 0.3;
@@ -171,27 +208,47 @@ async function getUnlockedModuleIds(
 
 interface CallP8Args {
   openai: OpenAI;
-  module: RichModule;
   systemPrompt: string;
   userMessage: string;
+  referenceMenuSize: number;
 }
 
 interface CallP8Result {
-  output: Record<string, unknown>;
+  output: ModuleOutputV3;
   validation: ValidationResult;
   attempts: number;
   openaiModel: string;
   openaiUsage: Record<string, unknown> | null;
 }
 
+function emptyValidation(): ValidationResult {
+  return {
+    passed: false,
+    missing: [],
+    too_short: [],
+    empty: [],
+    banned_words: [],
+    forbidden_patterns: [],
+    word_count_violations: [],
+    step_count_violation: false,
+    target_day_violations: [],
+    reference_count_warning: false,
+  };
+}
+
 async function callP8WithRetry(args: CallP8Args): Promise<CallP8Result> {
-  const { openai, module, systemPrompt, userMessage: initialUserMessage } = args;
-  const schema = buildModuleOutputSchema(module);
+  const { openai, systemPrompt, userMessage: initialUserMessage, referenceMenuSize } = args;
   const totalAttempts = 1 + MAX_VALIDATOR_RETRIES;
 
   let userMessage = initialUserMessage;
-  let lastOutput: Record<string, unknown> = {};
-  let lastValidation: ValidationResult = { passed: false, missing: [], empty: [], too_short: [] };
+  let lastOutput: ModuleOutputV3 = {
+    short_version: "",
+    playbook: [],
+    reference_layer_ids: [],
+    check_in_commitment: { summary_prose: "", commitments: [] },
+    caveat_personalised_tail: "",
+  };
+  let lastValidation: ValidationResult = emptyValidation();
   let lastUsage: Record<string, unknown> | null = null;
 
   for (let attempt = 1; attempt <= totalAttempts; attempt++) {
@@ -199,10 +256,7 @@ async function callP8WithRetry(args: CallP8Args): Promise<CallP8Result> {
       model: MODEL_TIER1,
       temperature: TEMPERATURE,
       max_completion_tokens: MAX_COMPLETION_TOKENS,
-      response_format: {
-        type: "json_schema",
-        json_schema: schema,
-      },
+      response_format: MODULE_OUTPUT_V3_SCHEMA,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userMessage },
@@ -212,18 +266,18 @@ async function callP8WithRetry(args: CallP8Args): Promise<CallP8Result> {
     lastUsage = (completion.usage as unknown as Record<string, unknown>) ?? null;
     const raw = completion.choices[0]?.message?.content || "{}";
 
-    let parsed: Record<string, unknown>;
+    let parsed: ModuleOutputV3;
     try {
-      parsed = JSON.parse(raw);
+      parsed = JSON.parse(raw) as ModuleOutputV3;
     } catch (parseErr) {
       console.warn(`${FUNCTION_VERSION} attempt ${attempt}: JSON parse failed:`, raw.slice(0, 200), parseErr);
-      lastValidation = { passed: false, missing: ["<parse error>"], empty: [], too_short: [] };
-      userMessage = initialUserMessage + "\n\nYour previous response was not valid JSON. Return a single JSON object matching the output_structure exactly.";
+      lastValidation = { ...emptyValidation(), missing: ["<parse error>"] };
+      userMessage = initialUserMessage + "\n\nYour previous response was not valid JSON. Return a single JSON object matching the ModuleOutputV3 schema exactly.";
       continue;
     }
 
     lastOutput = parsed;
-    lastValidation = validateGuidanceOutput(parsed, module);
+    lastValidation = validateModuleOutputV3(parsed, { referenceMenuSize });
 
     if (lastValidation.passed) {
       return {
@@ -235,14 +289,12 @@ async function callP8WithRetry(args: CallP8Args): Promise<CallP8Result> {
       };
     }
 
-    // Build retry message with diff-style hints
     if (attempt < totalAttempts) {
       console.warn(`${FUNCTION_VERSION} attempt ${attempt} failed validation:`, JSON.stringify(lastValidation));
-      userMessage = initialUserMessage + "\n\n---\n\n" + buildGuidanceRetryMessage(lastValidation, module);
+      userMessage = initialUserMessage + "\n\n---\n\n" + buildV3RetryMessage(lastValidation);
     }
   }
 
-  // All attempts failed validation — return best-effort with validation_passed=false
   console.error(`${FUNCTION_VERSION} all ${totalAttempts} attempts failed validation:`, JSON.stringify(lastValidation));
   return {
     output: lastOutput,
@@ -297,9 +349,9 @@ Deno.serve(async (req: Request) => {
     console.warn(`${FUNCTION_VERSION} legacy user_profile field received — ignored. Frontend should send only { module_id, module_answers }.`);
   }
 
-  if (!Number.isInteger(moduleId) || moduleId < 1 || moduleId > 25) {
+  if (!Number.isInteger(moduleId) || moduleId < 1 || moduleId > 32) {
     return new Response(
-      JSON.stringify({ error: "Invalid module_id", response_text: "module_id must be an integer 1-25." }),
+      JSON.stringify({ error: "Invalid module_id", response_text: "module_id must be an integer 1-32." }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
@@ -309,6 +361,21 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({ error: "Module not found", response_text: `Module ${moduleId} not found in library.` }),
       { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  // v28 gate: this module must carry a module_addendum to use the canonical
+  // bar pipeline. Modules without an addendum are still on v27 content quality;
+  // returning 422 here prevents users seeing a half-built v28 experience while
+  // the workstream lands per-module content.
+  const moduleAddendum = (module as unknown as { module_addendum?: ModuleAddendum }).module_addendum;
+  if (!moduleAddendum) {
+    return new Response(
+      JSON.stringify({
+        error: "Module not yet on v28 canonical bar",
+        response_text: `Module ${moduleId} (${module.name}) is being upgraded to Solo's new guidance standard. Please try again soon.`,
+      }),
+      { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 
@@ -382,22 +449,36 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  // Build system prompt + user message
+  // Fetch curated reference items applicable to this module (v28 addition).
+  // Non-fatal: empty menu yields empty reference_layer_ids; the rest of the
+  // output is unaffected. The module's content quality bar doesn't depend on
+  // reference items being authored yet, though obviously the user experience
+  // is poorer without them. The workstream §5 sequencing fills these in.
+  const referenceItemMenu: ReferenceItemMenuEntry[] = await fetchApplicableReferenceItems(
+    supabase,
+    moduleId,
+  );
+
+  // Build user message: Part B addendum + reference menu + Part C user context
+  // + this module's gap-filling answers. Part A loads as the system message.
   const userMessage = buildP8UserMessage({
     moduleId,
-    moduleDefinition: module as unknown as Record<string, unknown>,
+    moduleName: module.name,
+    moduleQuestions: (module as unknown as { questions?: unknown }).questions ?? [],
+    moduleAddendum,
+    referenceItemMenu,
     userContext: userContext as unknown as Record<string, unknown>,
     moduleAnswers,
   });
 
-  // Call OpenAI with strict schema + validator + retry
+  // Call OpenAI with the canonical ModuleOutputV3 schema + validator + retry.
   let callResult: CallP8Result;
   try {
     callResult = await callP8WithRetry({
       openai,
-      module,
       systemPrompt: P8_SYSTEM_PROMPT,
       userMessage,
+      referenceMenuSize: referenceItemMenu.length,
     });
   } catch (openaiErr) {
     console.error(`${FUNCTION_VERSION} OpenAI call threw:`, openaiErr);
@@ -412,6 +493,29 @@ Deno.serve(async (req: Request) => {
   }
 
   const latencyMs = Date.now() - t0;
+
+  // Caveat concatenation post-generation (§9 refinement).
+  // The LLM produced caveat_personalised_tail only (one sentence). We
+  // concatenate the curated base (with [DATE] substituted) + the LLM tail in
+  // code, removing the verbatim-reproduction risk on the model. The persisted
+  // record has the full caveat in the `caveat` field; the LLM-only tail does
+  // not leak into the persisted shape.
+  const fullCaveat = (
+    moduleAddendum.curated_caveat_base.replace(
+      "[DATE]",
+      moduleAddendum.curated_caveat_verified_date,
+    ) +
+    " " +
+    (callResult.output.caveat_personalised_tail || "").trim()
+  ).trim();
+
+  const persistedOutput: PersistedModuleOutput = {
+    short_version: callResult.output.short_version,
+    playbook: callResult.output.playbook,
+    reference_layer_ids: callResult.output.reference_layer_ids,
+    check_in_commitment: callResult.output.check_in_commitment,
+    caveat: fullCaveat,
+  };
 
   // Log to guidance_generation_log (observability — non-fatal)
   try {
@@ -433,7 +537,7 @@ Deno.serve(async (req: Request) => {
     console.warn(`${FUNCTION_VERSION} generation log insert failed (non-fatal):`, logErr);
   }
 
-  // Upsert to guidance_module_completions
+  // Upsert to guidance_module_completions (with full caveat, not personalised tail)
   try {
     const { error: upsertErr } = await supabase
       .from("guidance_module_completions")
@@ -443,7 +547,7 @@ Deno.serve(async (req: Request) => {
           module_id: moduleId,
           module_name: module.name,
           module_answers: moduleAnswers,
-          output: callResult.output,
+          output: persistedOutput,
           track: module.track,
           access_tier: module.access_tier,
           validation_passed: callResult.validation.passed,
@@ -486,7 +590,7 @@ Deno.serve(async (req: Request) => {
       module_name: module.name,
       track: module.track,
       access_tier: module.access_tier,
-      output: callResult.output,
+      output: persistedOutput,
       validation_passed: callResult.validation.passed,
       attempts: callResult.attempts,
       function_version: FUNCTION_VERSION,

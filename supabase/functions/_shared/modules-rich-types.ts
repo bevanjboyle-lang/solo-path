@@ -30,4 +30,28 @@ export interface RichModule {
   decision_logic?: Record<string, string>;
   ico_logic?: Record<string, unknown>;
   output_structure: Record<string, string>;
+  // v28 (2026-05-26): module_addendum carries the per-module Part B knowledge
+  // block consumed by generate-guidance v28. Optional during workstream
+  // rollout, modules without an addendum return 422 from v28 (see
+  // admin/canonical-guidance-v28-implementation-design.md §2.5).
+  module_addendum?: ModuleAddendum;
+}
+
+// v28 module addendum. Part B of the three-part prompt composition
+// (Part A = shared canonical prefix, Part B = this addendum,
+// Part C = runtime user context). Authored per module as part of the
+// guidance enrichment workstream content phase.
+export interface ModuleAddendum {
+  module_decision_frame: string;
+  module_specific_knowledge: string;
+  curated_caveat_base: string;
+  curated_caveat_verified_date: string;
+  commitments_template: ModuleCommitmentTemplate[];
+  prerequisite_outputs: unknown;
+}
+
+export interface ModuleCommitmentTemplate {
+  action_hint: string;
+  target_day: number;
+  verification_question: string;
 }

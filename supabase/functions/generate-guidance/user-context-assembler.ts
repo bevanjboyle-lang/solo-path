@@ -357,3 +357,42 @@ export async function assembleUserContext(
     completed_modules: buildCompletedModulesBlock(completionsRaw),
   };
 }
+
+// ─── v28 addition: reference-items menu fetch ──────────────────────────────────
+
+export interface ReferenceItemMenuEntry {
+  id: number;
+  content_type: string;
+  title: string;
+  one_line_description: string;
+}
+
+/**
+ * Fetch the curated reference items applicable to this module from the
+ * module_reference_items table (created in schema v1 Phase A on 2026-05-25).
+ *
+ * The N:N relationship is encoded by the integer-array column
+ * applicable_module_ids, GIN-indexed. We query with the array-contains
+ * operator for fast filtering.
+ *
+ * Returns an empty array if the table is empty for this module or the query
+ * fails. The LLM gets an empty menu and returns an empty reference_layer_ids
+ * array; the rest of the output is unaffected.
+ */
+export async function fetchApplicableReferenceItems(
+  supabase: SupabaseClient,
+  moduleId: number,
+): Promise<ReferenceItemMenuEntry[]> {
+  const { data, error } = await supabase
+    .from("module_reference_items")
+    .select("id, content_type, title, one_line_description")
+    .contains("applicable_module_ids", [moduleId])
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error(`fetchApplicableReferenceItems failed for module ${moduleId}:`, error);
+    return [];
+  }
+
+  return (data as ReferenceItemMenuEntry[]) ?? [];
+}
