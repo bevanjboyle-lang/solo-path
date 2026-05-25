@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import GlassCard from "@/components/ui/GlassCard";
-import GuidanceModuleOutput from "@/components/guidance/GuidanceModuleOutput";
+import GuidanceModuleOutput, { V28Body, isV28 } from "@/components/guidance/GuidanceModuleOutput";
 
 /*
  * Library Pass 1 /library v1 (2026-05-18) second Phase 2 surface
@@ -1143,52 +1143,65 @@ function ArticleDrawer({
           </GlassCard>
         )}
 
-        {/* Completed state, show output */}
+        {/* Completed state, show output.
+            Option B / V28 reconciliation (2026-05-25): for v28 output shapes
+            (short_version + playbook + check_in_commitment), delegate to the
+            shared V28Body renderer used by the post-submit GuidanceModuleOutput
+            view, so the inline-detail view stays consistent with the
+            post-submit view. Legacy v25 shape (key_insights / next_steps /
+            resources_or_prompts) keeps the old inline list rendering for
+            backward compatibility on old completion rows. */}
         {data.is_completed && data.completion?.output && (
           <div className="space-y-5">
-            {data.completion.output.key_insights && data.completion.output.key_insights.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  Key insights
-                </h3>
-                <ul className="space-y-2">
-                  {data.completion.output.key_insights.map((insight, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                      {insight}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {isV28(data.completion.output) ? (
+              <V28Body output={data.completion.output} />
+            ) : (
+              <>
+                {data.completion.output.key_insights && data.completion.output.key_insights.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                      Key insights
+                    </h3>
+                    <ul className="space-y-2">
+                      {data.completion.output.key_insights.map((insight, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                          {insight}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-            {data.completion.output.next_steps && data.completion.output.next_steps.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  Next steps
-                </h3>
-                <ul className="space-y-2">
-                  {data.completion.output.next_steps.map((step, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/60" />
-                      {step}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+                {data.completion.output.next_steps && data.completion.output.next_steps.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                      Next steps
+                    </h3>
+                    <ul className="space-y-2">
+                      {data.completion.output.next_steps.map((step, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                          <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary/60" />
+                          {step}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
-            {data.completion.output.resources_or_prompts && data.completion.output.resources_or_prompts.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                  Resources
-                </h3>
-                <ul className="space-y-2">
-                  {data.completion.output.resources_or_prompts.map((r, i) => (
-                    <li key={i} className="text-sm text-muted-foreground">{r}</li>
-                  ))}
-                </ul>
-              </div>
+                {data.completion.output.resources_or_prompts && data.completion.output.resources_or_prompts.length > 0 && (
+                  <div>
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                      Resources
+                    </h3>
+                    <ul className="space-y-2">
+                      {data.completion.output.resources_or_prompts.map((r, i) => (
+                        <li key={i} className="text-sm text-muted-foreground">{r}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
             )}
 
             <Button variant="outline" size="sm" onClick={onStartModule}>

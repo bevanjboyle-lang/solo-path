@@ -91,7 +91,7 @@ function isLegacyV25(output: any): boolean {
 // the playbook array generically and JSON.stringify's each item, which is the
 // raw-JSON output the smoke surfaced. V28Body renders each playbook step as
 // a structured card and lays out the check-in commitments.
-function isV28(output: any): boolean {
+export function isV28(output: any): boolean {
   return (
     isPlainObject(output) &&
     Array.isArray(output.playbook) &&
@@ -250,7 +250,7 @@ function V26Body({ output }: { output: any }) {
 // the integer ids alone are not user-readable, and resolving them needs a
 // follow-up fetch against the module_reference_items table. Tracked as a
 // post-Option-B enrichment item.
-function V28Body({ output }: { output: any }) {
+export function V28Body({ output }: { output: any }) {
   const shortVersion: string | undefined = output.short_version;
   const playbook: any[] = Array.isArray(output.playbook) ? output.playbook : [];
   const checkIn = output.check_in_commitment;
