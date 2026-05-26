@@ -21,6 +21,16 @@ dist-ssr
 .env.development
 .env.production
 
+# Playwright test secrets — service role key, test user email. NEVER COMMIT.
+.env.test
+
+# Playwright auth state — contains live session cookies. Per-machine, not committed.
+tests/e2e/fixtures/auth-state.json
+
+# Playwright test artifacts
+test-results/
+playwright-report/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

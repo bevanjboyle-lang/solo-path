@@ -53,11 +53,10 @@ The smoke stops at the email-capture screen. It never clicks the final
 - It also sends a real magic-link email via Resend.
 - And it triggers `generate-report` which calls OpenAI.
 
-A future test variant (gated behind an opt-in env flag) can run the full path
-end-to-end once we have either a Mailtrap-style test inbox, a Resend test
-webhook, or a magic-link bypass for test users. Until then, the pre-auth
-smoke covers the largest read-only portion of the funnel with zero side
-effects on production data or vendor spend.
+Post-auth coverage was scaffolded once and reverted on 2026-05-26 as out of
+scope for the current W3 iteration. Until that decision is revisited, the
+pre-auth smoke covers the largest read-only portion of the funnel with zero
+side effects on production data or vendor spend.
 
 ## CI
 
