@@ -113,10 +113,10 @@ const STEPS = [
   },
   {
     num: "03",
-    title: "Start making moves",
+    title: "Start when you're ready",
     body:
-      "A 30-day activation plan starts immediately. Daily check-ins track your progress. Named contacts are ready when you are. Ask Solo anything at any point, it knows your situation.",
-    meta: "30 days · ~15 min / day",
+      "Your 30-day plan waits in your back pocket until you press fire. The clock only starts when you say so, weeks or months after you buy. When you do start, daily check-ins track your progress, named contacts are ready, and Ask Solo knows your situation.",
+    meta: "30 days · ~15 min / day · starts on your signal",
   },
 ] as const;
 
@@ -144,10 +144,10 @@ const PROPS = [
   },
   {
     num: "02",
-    eyebrow: "Adaptive plan",
-    title: "A plan that responds to real life",
+    eyebrow: "In your back pocket",
+    title: "Buy now. Start when you're ready.",
     body:
-      "The 30-day plan isn't a template. It's built from your profile and updated daily based on what actually happens. Fall behind in week two, the plan adjusts.",
+      "The 30-day clock only starts when you press fire, not when you pay. Your report and plan sit in your back pocket for as long as you need, weeks or months. When you do start, the plan adapts daily to what actually happens.",
     titleClass: "text-[17px] sm:text-[18px] lg:text-[19px] leading-[1.3]",
     bodyClass: "text-[13.5px] leading-[1.6]",
     span: "lg:col-span-4",
