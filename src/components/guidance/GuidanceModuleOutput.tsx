@@ -1,13 +1,28 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Check, AlertTriangle, Loader2 } from "lucide-react";
+import { ArrowLeft, Check, AlertTriangle, Loader2, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { GuidanceModule } from "@/data/guidanceModules";
 import { supabase } from "@/integrations/supabase/client";
+
+// v18 reference layer (2026-05-25): items shipped from get-library-content
+// alongside the article payload. V28Body looks up output.reference_layer_ids
+// against this list and renders content-type-aware cards.
+export interface ReferenceItem {
+  id: number;
+  content_type: "template" | "link" | "comparison" | "checklist" | "questions" | "calendar";
+  title: string;
+  one_line_description: string;
+  inline_content: string | null;
+  external_url: string | null;
+  verified_date: string;
+}
 
 interface Props {
   module: GuidanceModule;
   output: any;
+  referenceItems?: ReferenceItem[];
   validationPassed?: boolean;
   moduleAnswers?: Record<string, string>;
   onRegenerated?: (response: any) => void;
@@ -104,6 +119,7 @@ export function isV28(output: any): boolean {
 export default function GuidanceModuleOutput({
   module,
   output,
+  referenceItems,
   validationPassed,
   moduleAnswers,
   onRegenerated,
@@ -186,7 +202,7 @@ export default function GuidanceModuleOutput({
       {legacy ? (
         <LegacyV25Body output={output} />
       ) : isV28(output) ? (
-        <V28Body output={output} />
+        <V28Body output={output} referenceItems={referenceItems} />
       ) : (
         <V26Body output={output} />
       )}
@@ -245,15 +261,87 @@ function V26Body({ output }: { output: any }) {
 }
 
 // v28 ModuleOutputV3 renderer. Mirrors the canonical shape from
-// supabase/functions/generate-guidance/guidance-output-schemas.ts. Reference
-// layer items (reference_layer_ids) are deliberately not surfaced here yet —
-// the integer ids alone are not user-readable, and resolving them needs a
-// follow-up fetch against the module_reference_items table. Tracked as a
-// post-Option-B enrichment item.
-export function V28Body({ output }: { output: any }) {
+// supabase/functions/generate-guidance/guidance-output-schemas.ts.
+// Reference layer (v18, 2026-05-25): items are pre-fetched server-side and
+// passed in via referenceItems. We iterate output.reference_layer_ids in the
+// order chosen by v28's picker (a deliberate display sequence, not numeric),
+// resolve each id against referenceItems, and render a content-type-aware
+// card. type=link opens in a new tab; other types expand inline to show the
+// markdown body rendered via react-markdown.
+const CONTENT_TYPE_LABELS: Record<string, string> = {
+  comparison: "Comparison",
+  questions: "Questions",
+  link: "Link",
+  template: "Template",
+  checklist: "Checklist",
+  calendar: "Calendar",
+};
+
+function ReferenceCard({ item }: { item: ReferenceItem }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLink = item.content_type === "link";
+  const hasInline = !!item.inline_content && item.inline_content.length > 0;
+
+  return (
+    <div className="rounded-lg border border-border bg-[hsl(var(--surface-panel))] px-5 py-4">
+      <div className="flex items-start justify-between gap-3 mb-1.5">
+        <h4 className="text-sm font-semibold text-foreground leading-snug">{item.title}</h4>
+        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70 shrink-0 mt-0.5">
+          {CONTENT_TYPE_LABELS[item.content_type] || item.content_type}
+        </span>
+      </div>
+      <p className="text-sm text-foreground/70 leading-relaxed mb-3">{item.one_line_description}</p>
+      {isLink && item.external_url ? (
+        <a
+          href={item.external_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+        >
+          Open <ExternalLink className="h-3 w-3" />
+        </a>
+      ) : hasInline ? (
+        <>
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            {expanded ? (
+              <>Hide <ChevronUp className="h-3 w-3" /></>
+            ) : (
+              <>Read in full <ChevronDown className="h-3 w-3" /></>
+            )}
+          </button>
+          {expanded && (
+            <div className="mt-4 pt-4 border-t border-border prose prose-sm max-w-none text-sm text-foreground/80 leading-relaxed">
+              <ReactMarkdown>{item.inline_content || ""}</ReactMarkdown>
+              <p className="text-[10px] text-muted-foreground/60 mt-3 italic">
+                Verified {item.verified_date}
+              </p>
+            </div>
+          )}
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+export function V28Body({ output, referenceItems }: { output: any; referenceItems?: ReferenceItem[] }) {
   const shortVersion: string | undefined = output.short_version;
   const playbook: any[] = Array.isArray(output.playbook) ? output.playbook : [];
   const checkIn = output.check_in_commitment;
+  const referenceLayerIds: number[] = Array.isArray(output.reference_layer_ids) ? output.reference_layer_ids : [];
+
+  // Resolve picked ids against the available pool, preserving the LLM's
+  // chosen display order. Items missing from the pool (shouldn't happen in
+  // production but possible if the menu changed between generation and
+  // display) are silently skipped rather than crashing.
+  const resolvedReferences: ReferenceItem[] = referenceItems
+    ? referenceLayerIds
+        .map((id) => referenceItems.find((r) => r.id === id))
+        .filter((r): r is ReferenceItem => !!r)
+    : [];
 
   return (
     <>
@@ -312,6 +400,19 @@ export function V28Body({ output }: { output: any }) {
                   })}
                 </dl>
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {resolvedReferences.length > 0 && (
+        <div className="mb-7">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+            References
+          </h3>
+          <div className="space-y-3">
+            {resolvedReferences.map((item) => (
+              <ReferenceCard key={item.id} item={item} />
             ))}
           </div>
         </div>

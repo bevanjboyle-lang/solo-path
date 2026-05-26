@@ -1,3 +1,13 @@
+// get-library-content v18 — 2026-05-25 — reference layer pre-fetch
+//   Article responses now include `reference_items` — the full list of items
+//   from module_reference_items applicable to this module. Frontend uses this
+//   to render the reference layer in V28Body, looking up each id from
+//   generate-guidance v28's `reference_layer_ids` against this resolved list
+//   (ordering preserved from the LLM pick). Saves a separate fetch and keeps
+//   the article payload self-contained. Item content_type, title,
+//   one_line_description, inline_content, external_url, verified_date all
+//   ship. inline_content is markdown rendered client-side via react-markdown.
+//
 // get-library-content v17 — 2026-05-25 — Option B consolidation
 //   Single source of truth for module data is now _shared/modules-library-rich.ts.
 //   The browse-shape _shared/modules-library.ts duplicate is retired. Article
@@ -186,6 +196,26 @@ Deno.serve(async (req: Request) => {
           .single();
         completionOutput = comp || null;
       }
+
+      // v18 (reference layer pre-fetch): fetch all items applicable to this
+      // module from module_reference_items. The LLM picker in generate-guidance
+      // v28 selects a subset by id into output.reference_layer_ids; V28Body
+      // resolves those ids against this list when rendering. Shipping the full
+      // applicable set rather than just the picked ones means: (1) one round
+      // trip per article open; (2) the same payload covers the just-completed
+      // post-submit view AND the re-opened inline-completion view; (3) if v28
+      // picks nothing (empty menu fallback) the section just hides client-side.
+      // Same query pattern as generate-guidance fetchApplicableReferenceItems.
+      const { data: refData, error: refErr } = await supabase
+        .from("module_reference_items")
+        .select("id, content_type, title, one_line_description, inline_content, external_url, verified_date")
+        .contains("applicable_module_ids", [moduleId])
+        .order("id", { ascending: true });
+      if (refErr) {
+        console.error(`get-library-content reference items fetch failed for module ${moduleId}:`, refErr);
+      }
+      const referenceItems = refData ?? [];
+
       // v17 (Option B): return the rich `questions` array so Library.tsx can
       // render multi-choice / text inputs keyed by canonical question id.
       // Stripped to UI-relevant fields only (no decision_logic / output_structure /
@@ -209,6 +239,7 @@ Deno.serve(async (req: Request) => {
           access_tier: mod.access_tier,
           questions: uiQuestions,
           what_you_get: mod.what_you_get ?? null,
+          reference_items: referenceItems,
           is_unlocked: unlockedIds.includes(moduleId),
           is_completed: isCompleted,
           completion: completionOutput,

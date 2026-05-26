@@ -119,6 +119,19 @@ interface ArticleQuestion {
   placeholder: string | null;
 }
 
+// v18 (reference layer): full pre-fetched reference items applicable to this
+// module. V28Body renders the items in the order picked by v28's
+// reference_layer_ids, looking up each id against this list.
+export interface ArticleReferenceItem {
+  id: number;
+  content_type: "template" | "link" | "comparison" | "checklist" | "questions" | "calendar";
+  title: string;
+  one_line_description: string;
+  inline_content: string | null;
+  external_url: string | null;
+  verified_date: string;
+}
+
 interface ArticleData {
   module_id: number;
   title: string;
@@ -128,6 +141,7 @@ interface ArticleData {
   estimated_minutes: number;
   questions: ArticleQuestion[];
   what_you_get: string | null;
+  reference_items: ArticleReferenceItem[];
   is_unlocked: boolean;
   is_completed: boolean;
   completion: {
@@ -513,6 +527,7 @@ export default function Library() {
                     track: articleData.track,
                   }}
                   output={moduleOutput}
+                  referenceItems={articleData.reference_items}
                   moduleAnswers={moduleAnswers}
                   onRegenerated={(response) => {
                     const newOutput = response?.output || response;
@@ -1154,7 +1169,7 @@ function ArticleDrawer({
         {data.is_completed && data.completion?.output && (
           <div className="space-y-5">
             {isV28(data.completion.output) ? (
-              <V28Body output={data.completion.output} />
+              <V28Body output={data.completion.output} referenceItems={data.reference_items} />
             ) : (
               <>
                 {data.completion.output.key_insights && data.completion.output.key_insights.length > 0 && (
