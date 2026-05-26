@@ -453,6 +453,27 @@ export default function Landing() {
           </div>
         </section>
 
+        {/* ═══ VISUAL BREATH · single editorial image between hero and accordion.
+          *   Decorative, no caption, no text overlay — the image carries its own
+          *   meaning (sculptural ivory layered forms with the dove in flight,
+          *   evoking foundations + lift = the "professional independence and
+          *   optionality" positioning).
+          *   alt="" + aria-hidden because purely decorative. loading="lazy"
+          *   because it's below the fold and the file is ~1.7MB.
+          */}
+        <section className="pb-10 lg:pb-14" aria-hidden="true">
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="overflow-hidden rounded-2xl">
+              <img
+                src="/landing-flight.jpg"
+                alt=""
+                className="block h-auto w-full"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </section>
+
         {/* ═══ ACCORDION SECTIONS · post-hero collapse ═══ */}
         <section className="pb-10 lg:pb-14">
           <div className="mx-auto max-w-6xl px-6">
