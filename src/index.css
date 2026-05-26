@@ -92,8 +92,11 @@
     @apply text-foreground antialiased;
     background: transparent;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 15px;
-    line-height: 1.6;
+    /* LinkedIn-density pass (2026-05-26):
+     *   base body 15→14, line-height 1.6→1.45.
+     *   Ripples through every surface that doesn't override font-size. */
+    font-size: 14px;
+    line-height: 1.45;
     color: #1A1915;
   }
   html {
@@ -185,15 +188,19 @@
    */
   .title-h1 {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-weight: 800;
-    font-size: 34px;
-    line-height: 1.05;
-    letter-spacing: -0.028em;
+    font-weight: 700;
+    /* LinkedIn-density pass (2026-05-26):
+     *   was 34/40/44, now 22/26/30 (about 60% of previous).
+     *   line-height 1.05→1.2 (more reading-friendly at smaller size).
+     *   Affects every page-hero heading site-wide. */
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
     color: hsl(var(--foreground));
     text-wrap: balance;
   }
-  @media (min-width: 640px)  { .title-h1 { font-size: 40px; } }
-  @media (min-width: 1024px) { .title-h1 { font-size: 44px; } }
+  @media (min-width: 640px)  { .title-h1 { font-size: 26px; } }
+  @media (min-width: 1024px) { .title-h1 { font-size: 30px; } }
 }
 
 /* Nav link mint underline slide-in */
@@ -313,10 +320,11 @@
   }
   .prose-serif p {
     font-family: 'Source Serif 4', Georgia, serif;
-    font-size: 17px;
-    line-height: 1.65;
+    /* LinkedIn-density pass (2026-05-26): 17→15, line-height 1.65→1.45. */
+    font-size: 15px;
+    line-height: 1.45;
     color: hsl(var(--text-body));
-    margin-bottom: 1.1em;
+    margin-bottom: 0.9em;
   }
   .prose-serif p:last-child {
     margin-bottom: 0;
@@ -338,12 +346,13 @@
   }
   .prose-serif ul li {
     font-family: 'Source Serif 4', Georgia, serif;
-    font-size: 17px;
-    line-height: 1.65;
+    /* LinkedIn-density pass (2026-05-26): 17→15, line-height 1.65→1.45. */
+    font-size: 15px;
+    line-height: 1.45;
     color: hsl(var(--text-body));
     position: relative;
-    padding-left: 18px;
-    margin-bottom: 0.5em;
+    padding-left: 16px;
+    margin-bottom: 0.4em;
   }
   .prose-serif ul li::before {
     content: "";
@@ -381,10 +390,11 @@
   .prose-serif.has-dropcap > div p:first-of-type::first-letter,
   .prose-serif.has-dropcap > div > div p:first-of-type::first-letter {
     float: left;
-    font-size: 56px;
+    /* LinkedIn-density pass (2026-05-26): dropcap 56→40. */
+    font-size: 40px;
     font-weight: 700;
     line-height: 0.9;
-    margin: 4px 8px 0 0;
+    margin: 4px 6px 0 0;
     color: hsl(var(--text-heading));
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
