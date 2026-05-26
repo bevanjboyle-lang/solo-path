@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import SoloLogo from "@/components/SoloLogo";
+import TopBarAuthed from "@/components/TopBarAuthed";
 
 const anonLinks = [
   { label: "Pricing", to: "/pricing" },
@@ -14,6 +15,13 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  // A5+A6 (2026-05-26): authed users get the icon-led nav + Account dropdown
+  // from TopBarAuthed. The existing anon/minimal branch below is preserved
+  // unchanged. Sign out moves to /account per operational TODO §Item 6.
+  if (user) {
+    return <TopBarAuthed />;
+  }
 
   const handleStartTest = () => startTest(navigate);
   const handleSignOut = () => { signOut(); setOpen(false); };
