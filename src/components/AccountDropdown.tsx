@@ -55,7 +55,7 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
     : "border-b-[3px] border-transparent";
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       <button
         ref={triggerRef}
         type="button"
@@ -63,10 +63,10 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
         aria-haspopup="true"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className={`flex flex-col items-center gap-1 px-3 py-2 text-stone-700 hover:text-stone-900 ${accentClass}`}
+        className={`flex h-full flex-col items-center justify-center gap-0.5 px-3 text-stone-700 hover:text-stone-900 ${accentClass}`}
       >
-        <User className="h-5 w-5" aria-hidden="true" />
-        <span className="hidden text-[11px] font-medium tracking-wide md:inline">
+        <User className="h-[18px] w-[18px]" aria-hidden="true" />
+        <span className="hidden text-[10px] font-medium tracking-wide md:inline">
           Account
         </span>
       </button>
@@ -82,13 +82,20 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
             <div className="px-5 py-6 text-sm text-stone-500">Loading…</div>
           ) : (
             <div className="px-5 py-5">
+              {/* Identity */}
               <div>
                 <p className="text-base font-semibold text-stone-900">
                   {data.first_name ?? "Signed in"}
                 </p>
                 <p className="mt-0.5 text-sm text-stone-500">{data.email}</p>
+                {data.member_since_label && (
+                  <p className="mt-0.5 text-xs text-stone-400">
+                    Member since {data.member_since_label}
+                  </p>
+                )}
               </div>
 
+              {/* Plan state + progress */}
               <div className="mt-4 border-t border-stone-200 pt-4">
                 <p className="text-xs uppercase tracking-[0.12em] text-stone-500">
                   Plan
@@ -102,19 +109,39 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
                       {data.tracker.day_x_of_30_label}
                     </p>
                   )}
+                {(data.tracker.tasks_label || data.tracker.last_checkin_label) && (
+                  <p className="mt-2 text-xs text-stone-500">
+                    {[
+                      data.tracker.tasks_label,
+                      data.tracker.last_checkin_label,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                )}
+                {data.tracker.focus_strands_count > 0 && (
+                  <p className="mt-1 text-xs text-stone-500">
+                    {data.tracker.focus_strands_count} active{" "}
+                    {data.tracker.focus_strands_count === 1 ? "strand" : "strands"}
+                  </p>
+                )}
               </div>
 
+              {/* Profile (archetype + model) */}
               {(data.archetype.name || data.recommended_model?.name) && (
                 <div className="mt-4 border-t border-stone-200 pt-4">
+                  <p className="text-xs uppercase tracking-[0.12em] text-stone-500">
+                    Profile
+                  </p>
                   {data.archetype.name && (
-                    <p className="text-xs text-stone-500">
+                    <p className="mt-1 text-xs text-stone-500">
                       Archetype:{" "}
                       <span className="text-stone-700">{data.archetype.name}</span>
                     </p>
                   )}
                   {data.recommended_model?.name && (
                     <p className="mt-1 text-xs text-stone-500">
-                      Plan:{" "}
+                      Model:{" "}
                       <span className="text-stone-700">
                         {data.recommended_model.name}
                       </span>
@@ -123,6 +150,19 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
                 </div>
               )}
 
+              {/* Settings */}
+              {data.tracker.notification_label && (
+                <div className="mt-4 border-t border-stone-200 pt-4">
+                  <p className="text-xs uppercase tracking-[0.12em] text-stone-500">
+                    Settings
+                  </p>
+                  <p className="mt-1 text-xs text-stone-700">
+                    {data.tracker.notification_label}
+                  </p>
+                </div>
+              )}
+
+              {/* Manage link */}
               <div className="mt-5 border-t border-stone-200 pt-4">
                 <button
                   type="button"

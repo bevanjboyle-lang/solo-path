@@ -39,16 +39,20 @@ export default function TopBarAuthed() {
   const accountActive = path.startsWith("/account");
 
   return (
-    <header className="sticky top-0 z-40 border-b border-stone-200 bg-[#FAF9F7]/95 backdrop-blur supports-[backdrop-filter]:bg-[#FAF9F7]/80">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header
+      className="sticky z-40 border-b border-border"
+      style={{ top: 4, background: "#FAF9F7" }}
+    >
+      <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6 lg:px-10">
         {/* Brand — matches the anonymous TopBar so authed and anon users
           * see the same logo and the same "click logo to go home" behaviour. */}
         <Link to="/" className="flex items-center" aria-label="Solo home">
           <SoloLogo width={110} height={32} />
         </Link>
 
-        {/* Primary nav */}
-        <nav className="flex items-center gap-1 sm:gap-2" aria-label="Main">
+        {/* Primary nav — full height of the 56px bar; items center vertically
+          * via the parent flex's items-center, no per-item vertical padding. */}
+        <div className="flex h-full items-center gap-1 sm:gap-2" aria-label="Main">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
@@ -58,15 +62,15 @@ export default function TopBarAuthed() {
                 aria-label={item.ariaLabel}
                 className={({ isActive }) =>
                   [
-                    "flex flex-col items-center gap-1 px-3 py-2 text-stone-700 hover:text-stone-900",
+                    "flex h-full flex-col items-center justify-center gap-0.5 px-3 text-stone-700 hover:text-stone-900",
                     isActive
                       ? "border-b-[3px] border-[#2ECDB0]"
                       : "border-b-[3px] border-transparent",
                   ].join(" ")
                 }
               >
-                <Icon className="h-5 w-5" aria-hidden />
-                <span className="hidden text-[11px] font-medium tracking-wide md:inline">
+                <Icon className="h-[18px] w-[18px]" aria-hidden />
+                <span className="hidden text-[10px] font-medium tracking-wide md:inline">
                   {item.label}
                 </span>
               </NavLink>
@@ -75,8 +79,8 @@ export default function TopBarAuthed() {
 
           {/* Account dropdown trigger lives inside the nav strip */}
           <AccountDropdown isActive={accountActive} />
-        </nav>
-      </div>
+        </div>
+      </nav>
     </header>
   );
 }
