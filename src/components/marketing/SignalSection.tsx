@@ -44,8 +44,8 @@ export default function SignalSection() {
   if (error || !data?.edition) {
     return (
       <section id="signal" className="pb-10 lg:pb-14" aria-label="The Signal">
-        <div className="mx-auto max-w-2xl px-6">
-          <div className="panel-ivory p-5 text-center sm:p-6">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="panel-ivory p-8 text-center sm:p-12 lg:p-16">
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               The Signal
             </p>
@@ -67,35 +67,41 @@ export default function SignalSection() {
 
   return (
     <section id="signal" className="pb-10 lg:pb-14" aria-label="The Signal">
-      <div className="mx-auto max-w-2xl px-6">
-        <div className="panel-ivory p-5 sm:p-6 lg:p-8">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-            The Signal &middot; Week {edition.week_number} &middot;{" "}
-            {formatPublishDate(edition.publish_date)}
-          </p>
-
-          <h2 className="mt-3 text-xl font-semibold leading-snug tracking-tight text-foreground md:text-2xl">
-            {edition.lead_headline}
-          </h2>
-
-          <p className="mt-2 text-sm leading-snug text-muted-foreground">
-            {edition.lead_subheadline}
-          </p>
-
-          {firstTakeaway && (
-            <p className="mt-4 border-l-2 border-primary pl-3 text-[13px] italic leading-snug text-foreground/80">
-              {firstTakeaway}
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+          {/* Outer panel matches max-w-6xl + Landing's p-8/12/16 padding so
+            * the card visually equates with the hero / accordion / closing CTA
+            * panels. Inner reading column is constrained to max-w-2xl so the
+            * editorial copy holds a comfortable line length. */}
+          <div className="mx-auto max-w-2xl">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+              The Signal &middot; Week {edition.week_number} &middot;{" "}
+              {formatPublishDate(edition.publish_date)}
             </p>
-          )}
 
-          <p className="mt-4">
-            <Link
-              to="/signal"
-              className="text-sm font-medium text-primary underline decoration-1 underline-offset-4 hover:text-primary/80"
-            >
-              Read the full edition &rarr;
-            </Link>
-          </p>
+            <h2 className="mt-3 text-xl font-semibold leading-snug tracking-tight text-foreground md:text-2xl">
+              {edition.lead_headline}
+            </h2>
+
+            <p className="mt-2 text-sm leading-snug text-muted-foreground">
+              {edition.lead_subheadline}
+            </p>
+
+            {firstTakeaway && (
+              <p className="mt-4 border-l-2 border-primary pl-3 text-[13px] italic leading-snug text-foreground/80">
+                {firstTakeaway}
+              </p>
+            )}
+
+            <p className="mt-4">
+              <Link
+                to="/signal"
+                className="text-sm font-medium text-primary underline decoration-1 underline-offset-4 hover:text-primary/80"
+              >
+                Read the full edition &rarr;
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </section>
