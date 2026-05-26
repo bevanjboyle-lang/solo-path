@@ -115,8 +115,7 @@ export default function Signal() {
           {/* Lead piece */}
           <header>
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-              The Signal &middot; Week {edition.week_number} &middot;{" "}
-              {formatPublishDate(edition.publish_date)}
+              The Signal &middot; {formatPublishDate(edition.publish_date)}
             </p>
             <h1 className="mt-3 text-2xl font-semibold leading-snug tracking-tight text-foreground md:text-3xl">
               {edition.lead_headline}
