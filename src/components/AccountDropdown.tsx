@@ -76,41 +76,41 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
           ref={panelRef}
           role="dialog"
           aria-label="Account snapshot"
-          className="absolute right-0 top-full z-50 mt-2 w-80 rounded-md border border-stone-200 bg-[#FAF9F7] shadow-lg"
+          className="absolute right-0 top-full z-50 mt-2 w-72 rounded-md border border-stone-200 bg-[#FAF9F7] shadow-lg"
         >
           {loading || !data ? (
-            <div className="px-5 py-6 text-sm text-stone-500">Loading…</div>
+            <div className="px-4 py-4 text-xs text-stone-500">Loading…</div>
           ) : (
-            <div className="px-5 py-5">
+            <div className="px-4 py-4">
               {/* Identity */}
               <div>
-                <p className="text-base font-semibold text-stone-900">
+                <p className="text-sm font-semibold text-stone-900">
                   {data.first_name ?? "Signed in"}
                 </p>
-                <p className="mt-0.5 text-sm text-stone-500">{data.email}</p>
+                <p className="mt-0.5 text-xs text-stone-500">{data.email}</p>
                 {data.member_since_label && (
-                  <p className="mt-0.5 text-xs text-stone-400">
+                  <p className="mt-0.5 text-[11px] text-stone-400">
                     Member since {data.member_since_label}
                   </p>
                 )}
               </div>
 
               {/* Plan state + progress */}
-              <div className="mt-4 border-t border-stone-200 pt-4">
-                <p className="text-xs uppercase tracking-[0.12em] text-stone-500">
+              <div className="mt-3 border-t border-stone-200 pt-3">
+                <p className="text-[10px] uppercase tracking-[0.12em] text-stone-500">
                   Plan
                 </p>
-                <p className="mt-1 text-sm text-stone-800">
+                <p className="mt-0.5 text-xs text-stone-800">
                   {data.subscription.label}
                 </p>
                 {data.tracker.day_x_of_30_label &&
                   data.tracker.day_x_of_30_label !== data.subscription.label && (
-                    <p className="mt-1 text-sm text-stone-600">
+                    <p className="mt-0.5 text-xs text-stone-600">
                       {data.tracker.day_x_of_30_label}
                     </p>
                   )}
                 {(data.tracker.tasks_label || data.tracker.last_checkin_label) && (
-                  <p className="mt-2 text-xs text-stone-500">
+                  <p className="mt-1.5 text-[11px] text-stone-500">
                     {[
                       data.tracker.tasks_label,
                       data.tracker.last_checkin_label,
@@ -120,7 +120,7 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
                   </p>
                 )}
                 {data.tracker.focus_strands_count > 0 && (
-                  <p className="mt-1 text-xs text-stone-500">
+                  <p className="mt-0.5 text-[11px] text-stone-500">
                     {data.tracker.focus_strands_count} active{" "}
                     {data.tracker.focus_strands_count === 1 ? "strand" : "strands"}
                   </p>
@@ -129,18 +129,18 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
 
               {/* Profile (archetype + model) */}
               {(data.archetype.name || data.recommended_model?.name) && (
-                <div className="mt-4 border-t border-stone-200 pt-4">
-                  <p className="text-xs uppercase tracking-[0.12em] text-stone-500">
+                <div className="mt-3 border-t border-stone-200 pt-3">
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-stone-500">
                     Profile
                   </p>
                   {data.archetype.name && (
-                    <p className="mt-1 text-xs text-stone-500">
+                    <p className="mt-0.5 text-[11px] text-stone-500">
                       Archetype:{" "}
                       <span className="text-stone-700">{data.archetype.name}</span>
                     </p>
                   )}
                   {data.recommended_model?.name && (
-                    <p className="mt-1 text-xs text-stone-500">
+                    <p className="mt-0.5 text-[11px] text-stone-500">
                       Model:{" "}
                       <span className="text-stone-700">
                         {data.recommended_model.name}
@@ -152,22 +152,22 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
 
               {/* Settings */}
               {data.tracker.notification_label && (
-                <div className="mt-4 border-t border-stone-200 pt-4">
-                  <p className="text-xs uppercase tracking-[0.12em] text-stone-500">
+                <div className="mt-3 border-t border-stone-200 pt-3">
+                  <p className="text-[10px] uppercase tracking-[0.12em] text-stone-500">
                     Settings
                   </p>
-                  <p className="mt-1 text-xs text-stone-700">
+                  <p className="mt-0.5 text-[11px] text-stone-700">
                     {data.tracker.notification_label}
                   </p>
                 </div>
               )}
 
               {/* Manage link */}
-              <div className="mt-5 border-t border-stone-200 pt-4">
+              <div className="mt-4 border-t border-stone-200 pt-3">
                 <button
                   type="button"
                   onClick={handleManageAccount}
-                  className="text-sm font-medium text-[#2ECDB0] hover:text-[#22a98e]"
+                  className="text-xs font-medium text-[#2ECDB0] hover:text-[#22a98e]"
                 >
                   Manage account &rarr;
                 </button>

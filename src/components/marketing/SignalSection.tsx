@@ -44,12 +44,12 @@ export default function SignalSection() {
   if (error || !data?.edition) {
     return (
       <section id="signal" className="pb-10 lg:pb-14" aria-label="The Signal">
-        <div className="mx-auto max-w-3xl px-6">
-          <div className="panel-ivory p-8 text-center sm:p-12">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        <div className="mx-auto max-w-2xl px-6">
+          <div className="panel-ivory p-5 text-center sm:p-6">
+            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               The Signal
             </p>
-            <p className="mt-4 text-base text-foreground">
+            <p className="mt-3 text-sm text-foreground">
               A weekly intelligence digest for independent professionals.
               Launches soon.
             </p>
@@ -67,31 +67,31 @@ export default function SignalSection() {
 
   return (
     <section id="signal" className="pb-10 lg:pb-14" aria-label="The Signal">
-      <div className="mx-auto max-w-3xl px-6">
-        <div className="panel-ivory p-8 sm:p-12 lg:p-16">
-          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      <div className="mx-auto max-w-2xl px-6">
+        <div className="panel-ivory p-5 sm:p-6 lg:p-8">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
             The Signal &middot; Week {edition.week_number} &middot;{" "}
             {formatPublishDate(edition.publish_date)}
           </p>
 
-          <h2 className="title-h1 mt-5">
+          <h2 className="mt-3 text-xl font-semibold leading-snug tracking-tight text-foreground md:text-2xl">
             {edition.lead_headline}
           </h2>
 
-          <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-sm leading-snug text-muted-foreground">
             {edition.lead_subheadline}
           </p>
 
           {firstTakeaway && (
-            <p className="mt-6 border-l-2 border-primary pl-4 text-base italic leading-relaxed text-foreground/80">
+            <p className="mt-4 border-l-2 border-primary pl-3 text-[13px] italic leading-snug text-foreground/80">
               {firstTakeaway}
             </p>
           )}
 
-          <p className="mt-8">
+          <p className="mt-4">
             <Link
               to="/signal"
-              className="text-primary underline decoration-1 underline-offset-4 hover:text-primary/80"
+              className="text-sm font-medium text-primary underline decoration-1 underline-offset-4 hover:text-primary/80"
             >
               Read the full edition &rarr;
             </Link>
