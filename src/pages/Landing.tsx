@@ -363,7 +363,30 @@ export default function Landing() {
           */}
         <section className="pt-6 pb-10 lg:pb-14">
           <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+            <div className="panel-ivory relative overflow-hidden p-8 sm:p-12 lg:p-16">
+              {/* Decorative editorial visual tucked into the bottom-left of
+                * the hero panel. The image is feathered along its top + right
+                * edges via a linear-gradient mask so it blends into the ivory
+                * surface rather than presenting a hard rectangle.
+                * pointer-events-none so it never intercepts clicks/hovers on
+                * the actual hero content. aria-hidden because purely decorative.
+                * z-0 so the existing hero content sits naturally above. */}
+              <img
+                src="/landing-flight.jpg"
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                className="pointer-events-none absolute bottom-0 left-0 z-0 w-1/3 max-w-[320px] select-none opacity-90"
+                style={{
+                  maskImage:
+                    "linear-gradient(to top right, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 85%)",
+                  WebkitMaskImage:
+                    "linear-gradient(to top right, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 85%)",
+                }}
+              />
+              {/* Ensure all subsequent content is in a positioning context that
+                * sits above the absolutely-positioned image. */}
+              <div className="relative z-10">
               {/*
                * Visual-audit 2026-05-18 fixes:
                *   1. Hero SoloLogo SVG dropped, the TopBar already renders
@@ -449,27 +472,7 @@ export default function Landing() {
                   </div>
                 </aside>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ VISUAL BREATH · single editorial image between hero and accordion.
-          *   Decorative, no caption, no text overlay — the image carries its own
-          *   meaning (sculptural ivory layered forms with the dove in flight,
-          *   evoking foundations + lift = the "professional independence and
-          *   optionality" positioning).
-          *   alt="" + aria-hidden because purely decorative. loading="lazy"
-          *   because it's below the fold and the file is ~1.7MB.
-          */}
-        <section className="pb-10 lg:pb-14" aria-hidden="true">
-          <div className="mx-auto max-w-6xl px-6">
-            <div className="overflow-hidden rounded-2xl">
-              <img
-                src="/landing-flight.jpg"
-                alt=""
-                className="block h-auto w-full"
-                loading="lazy"
-              />
+              </div>{/* close .relative.z-10 hero content wrapper */}
             </div>
           </div>
         </section>
