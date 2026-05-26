@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
 import Banner from "@/components/Banner";
+import SignalSection from "@/components/marketing/SignalSection";
 // SoloLogo import dropped 2026-05-18, hero mark removed per visual-audit (TopBar carries the brand).
 import ScrollReveal from "@/components/ui/ScrollReveal";
 import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
@@ -551,6 +552,12 @@ export default function Landing() {
             </div>
           </div>
         </section>
+
+        {/* ═══ THE SIGNAL · weekly intelligence digest (post-guidance Track C C3) ═══ */}
+        {/* Editorial single-column moment between the accordion and the closing CTA.
+          * Quiet by design — eyebrow + headline + subheadline + read link to /signal.
+          * Component handles its own loading / fallback / data fetching. */}
+        <SignalSection />
 
         {/* ═══ FINAL CTA · DARK band, fixed closing (always present) ═══ */}
         <section className="pb-12 pt-8 lg:pb-20 lg:pt-12">
