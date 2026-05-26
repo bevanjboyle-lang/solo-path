@@ -385,7 +385,7 @@ export default function Landing() {
               {/* Asymmetric 8/4 split */}
               <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-12">
                 <div className="lg:col-span-8">
-                  <h1 className="title-h1">
+                  <h1 className="title-h1 title-h1--hero">
                     If you needed to earn an independent income fast, what would you do?
                   </h1>
                   <p className="mt-6 max-w-xl text-[17px] leading-[1.55] text-muted-foreground">

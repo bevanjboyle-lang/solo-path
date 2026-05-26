@@ -201,6 +201,25 @@
   }
   @media (min-width: 640px)  { .title-h1 { font-size: 26px; } }
   @media (min-width: 1024px) { .title-h1 { font-size: 30px; } }
+
+  /*
+   * .title-h1--hero — modifier for the Landing home-page hero only.
+   * The Landing question ("If you needed to earn an independent income
+   * fast, what would you do?") carries a heroic "this is yours" moment
+   * that warrants more visual presence than other page-heroes (Plan,
+   * Library, Account, etc.) get from the base .title-h1. Restores the
+   * pre-density-pass scale (34/40/44px / line-height 1.05) which was
+   * authored deliberately for this surface.
+   * Stack with the base class: <h1 className="title-h1 title-h1--hero">.
+   */
+  .title-h1--hero {
+    font-size: 34px;
+    line-height: 1.05;
+    letter-spacing: -0.028em;
+    font-weight: 800;
+  }
+  @media (min-width: 640px)  { .title-h1--hero { font-size: 40px; } }
+  @media (min-width: 1024px) { .title-h1--hero { font-size: 44px; } }
 }
 
 /* Nav link mint underline slide-in */
