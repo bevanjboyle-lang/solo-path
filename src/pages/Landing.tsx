@@ -363,30 +363,7 @@ export default function Landing() {
           */}
         <section className="pt-6 pb-10 lg:pb-14">
           <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory relative overflow-hidden p-8 sm:p-12 lg:p-16">
-              {/* Decorative editorial visual tucked into the bottom-left of
-                * the hero panel. The image is feathered along its top + right
-                * edges via a linear-gradient mask so it blends into the ivory
-                * surface rather than presenting a hard rectangle.
-                * pointer-events-none so it never intercepts clicks/hovers on
-                * the actual hero content. aria-hidden because purely decorative.
-                * z-0 so the existing hero content sits naturally above. */}
-              <img
-                src="/landing-flight.jpg"
-                alt=""
-                aria-hidden="true"
-                loading="lazy"
-                className="pointer-events-none absolute bottom-0 left-0 z-0 w-1/3 max-w-[320px] select-none opacity-90"
-                style={{
-                  maskImage:
-                    "linear-gradient(to top right, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 85%)",
-                  WebkitMaskImage:
-                    "linear-gradient(to top right, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 85%)",
-                }}
-              />
-              {/* Ensure all subsequent content is in a positioning context that
-                * sits above the absolutely-positioned image. */}
-              <div className="relative z-10">
+            <div className="panel-ivory p-8 sm:p-12 lg:p-16">
               {/*
                * Visual-audit 2026-05-18 fixes:
                *   1. Hero SoloLogo SVG dropped, the TopBar already renders
@@ -472,7 +449,6 @@ export default function Landing() {
                   </div>
                 </aside>
               </div>
-              </div>{/* close .relative.z-10 hero content wrapper */}
             </div>
           </div>
         </section>
