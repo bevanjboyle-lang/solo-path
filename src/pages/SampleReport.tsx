@@ -120,7 +120,7 @@ export default function SampleReport() {
           <span>Sample</span>
         </div>
         <div className="text-[12.5px] text-foreground leading-snug">
-          <strong>This is Sarah Okafor's report</strong>, not yours. A real example of what the £19.99 produces for a mid-career FP&amp;A director.
+          <strong>This is Sarah Okafor's report</strong>, not yours. The report is one piece of the £19.99 bundle, alongside her 30-day activation plan, daily check-ins, and the first three guidance modules.
         </div>
         <button
           onClick={handleStartTest}
@@ -150,12 +150,10 @@ export default function SampleReport() {
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 lg:gap-10 items-end">
                 <div>
                   <h1 className="title-h1">
-                    See what Sarah's £19.99 actually got her.
+                    This is the report part of Sarah's £19.99.
                   </h1>
                   <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[58ch]">
-                    A real example report, fractional FD path, 11 years in corporate finance, ten
-                    scored business paths with our top recommendations, archetype analysis,
-                    AI defensibility. Yours would look like this; the details would be yours.
+                    A real example, fractional FD path, 11 years in corporate finance. Ten scored business paths with our top recommendations, archetype analysis, AI defensibility. The same £19.99 also bought Sarah a 30-day activation plan built from this report, daily check-ins to track real progress, and the first three guidance modules from the library. Yours would map to your profile; the details would be yours.
                   </p>
                 </div>
                 <div className="lg:text-right flex lg:flex-col gap-6 lg:gap-3">
@@ -284,8 +282,7 @@ export default function SampleReport() {
                     Eight minutes for yours.
                   </h3>
                   <p className="font-display text-[15px] sm:text-[17px] text-muted-foreground max-w-[58ch] mx-auto mb-7">
-                    Your archetype, your paths, your income outlook, your AI defensibility, built
-                    from your answers, not Sarah's. £19.99 after the free preview.
+                    Your archetype, your paths, your income outlook, your AI defensibility, plus a 30-day activation plan, daily check-ins, and the first three guidance modules. Built from your answers, not Sarah's. £19.99 after the free preview.
                   </p>
                   <button
                     onClick={handleStartTest}
@@ -474,9 +471,8 @@ function MidContentConversion({ onTake }: { onTake: () => void }) {
         What you'd get
       </span>
       <p className="font-display text-[15.5px] text-foreground leading-[1.45]" style={{ letterSpacing: "-0.012em" }}>
-        <strong>This is real, and Sarah's is just one shape.</strong>{" "}
-        Yours would map to your archetype, your domains, your day-rate band. Eight minutes; pay only
-        after the preview.
+        <strong>This report is one piece of what £19.99 buys.</strong>{" "}
+        It comes with a 30-day activation plan, daily check-ins, and the first three guidance modules, all built around your archetype, your domains, your day-rate band. Eight minutes; pay only after the preview.
       </p>
       <button
         onClick={onTake}
