@@ -45,9 +45,11 @@ export default function TopBarAuthed() {
     >
       <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6 lg:px-10">
         {/* Brand — matches the anonymous TopBar so authed and anon users
-          * see the same logo and the same "click logo to go home" behaviour. */}
+          * see the same logo and the same "click logo to go home" behaviour.
+          * Sized at the SoloLogo component's design defaults (140×40) for
+          * proper masthead presence per editorial design direction. */}
         <Link to="/" className="flex items-center" aria-label="Solo home">
-          <SoloLogo width={110} height={32} />
+          <SoloLogo width={140} height={40} />
         </Link>
 
         {/* Primary nav — full height of the 56px bar; items center vertically

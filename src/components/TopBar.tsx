@@ -32,9 +32,10 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
       style={{ top: 4, background: "#FAF9F7" }}
     >
       <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6 lg:px-10">
-        {/* Logo */}
+        {/* Logo — sized at SoloLogo's design defaults (140×40) for proper
+          * masthead presence per editorial design direction. */}
         <Link to="/" className="flex items-center" aria-label="Solo home">
-          <SoloLogo width={110} height={32} />
+          <SoloLogo width={140} height={40} />
         </Link>
 
         {/* Desktop links — anon nav only renders for anon visitors. Authed
