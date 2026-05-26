@@ -1,0 +1,26 @@
+-- Coverage extension: cross-module sharing on existing items + 2 new resilience items.
+-- Applied via Supabase MCP apply_migration on 2026-05-25 during autonomous Track-A-to-F authoring sprint.
+--
+-- Extension lifts coverage on the thinner modules by extending applicable_module_ids on existing items:
+-- Module 1's accountant questions item now applies to modules 1, 2, 4, 5, 6, 7, 8, 13, 14.
+-- Module 1's tax-year calendar now applies to 1, 2, 4, 5, 10, 11, 13.
+-- Module 1's PI broker now applies to 1, 9, 6, 20.
+-- Module 1's sole-trader-vs-Ltd comparison now applies to 1, 9, 7, 8, 20, 23.
+-- UK 2026/27 tax reference now applies to 4, 5, 6, 13, 14.
+-- Payment on Account trap now applies to 4, 11, 13, 14.
+-- Essential contract clauses now applies to 7, 16, 17, 20, 22, 23, 24, 25.
+-- IR35 protections now applies to 6, 7, 20.
+-- Rate-setting calculator now applies to 12, 16, 19, 22, 24, 25.
+-- Weekly pipeline review now applies to 15, 18, 19, 26, 27.
+-- Proposal template now applies to 16, 17, 25.
+-- Kickoff agenda now applies to 17, 18.
+-- Client concentration now applies to 18, 19, 11.
+--
+-- Plus 2 new items: imposter-spike replacement thoughts (Module 28) and week-three smallest-version move (Module 29).
+--
+-- Result: all 32 modules now have at least 1 reference item; most have 3-7.
+--
+-- To re-export for a fresh DB rebuild, run:
+--   SELECT * FROM public.module_reference_items;
+
+SELECT count(*) AS total_items FROM public.module_reference_items;
