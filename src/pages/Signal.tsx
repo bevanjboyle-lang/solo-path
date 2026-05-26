@@ -78,22 +78,30 @@ export default function Signal() {
 
   if (loading) {
     return (
-      <main className="mx-auto max-w-3xl px-6 py-24 text-center text-stone-500">
-        <p>Loading the Signal…</p>
+      <main className="pb-12 pt-6 lg:pb-20">
+        <div className="mx-auto max-w-3xl px-6">
+          <div className="panel-ivory p-8 text-center text-muted-foreground sm:p-12">
+            <p>Loading the Signal…</p>
+          </div>
+        </div>
       </main>
     );
   }
 
   if (error || !data?.edition) {
     return (
-      <main className="mx-auto max-w-3xl px-6 py-24 text-center">
-        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
-          The Signal
-        </p>
-        <p className="mt-4 text-base text-stone-700">
-          A weekly intelligence digest for independent professionals. Launches
-          soon.
-        </p>
+      <main className="pb-12 pt-6 lg:pb-20">
+        <div className="mx-auto max-w-3xl px-6">
+          <div className="panel-ivory p-8 text-center sm:p-12">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              The Signal
+            </p>
+            <p className="mt-4 text-base text-foreground">
+              A weekly intelligence digest for independent professionals.
+              Launches soon.
+            </p>
+          </div>
+        </div>
       </main>
     );
   }
@@ -101,7 +109,9 @@ export default function Signal() {
   const { edition, market_signals, spotlight, ai_watch } = data;
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16 md:py-24">
+    <main className="pb-12 pt-6 lg:pb-20">
+      <div className="mx-auto max-w-3xl px-6">
+        <div className="panel-ivory p-8 sm:p-12 lg:p-16">
       {/* Lead piece */}
       <header>
         <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
@@ -235,6 +245,8 @@ export default function Signal() {
           </a>
         </p>
       </footer>
+        </div>
+      </div>
     </main>
   );
 }

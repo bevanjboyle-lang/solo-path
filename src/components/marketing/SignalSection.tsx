@@ -43,18 +43,18 @@ export default function SignalSection() {
 
   if (error || !data?.edition) {
     return (
-      <section
-        id="signal"
-        className="mx-auto max-w-3xl px-6 py-20 text-center"
-        aria-label="The Signal"
-      >
-        <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
-          The Signal
-        </p>
-        <p className="mt-4 text-base text-stone-700">
-          A weekly intelligence digest for independent professionals. Launches
-          soon.
-        </p>
+      <section id="signal" className="pb-10 lg:pb-14" aria-label="The Signal">
+        <div className="mx-auto max-w-3xl px-6">
+          <div className="panel-ivory p-8 text-center sm:p-12">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              The Signal
+            </p>
+            <p className="mt-4 text-base text-foreground">
+              A weekly intelligence digest for independent professionals.
+              Launches soon.
+            </p>
+          </div>
+        </div>
       </section>
     );
   }
@@ -66,38 +66,38 @@ export default function SignalSection() {
       : null;
 
   return (
-    <section
-      id="signal"
-      className="mx-auto max-w-3xl px-6 py-24"
-      aria-label="The Signal"
-    >
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">
-        The Signal &middot; Week {edition.week_number} &middot;{" "}
-        {formatPublishDate(edition.publish_date)}
-      </p>
+    <section id="signal" className="pb-10 lg:pb-14" aria-label="The Signal">
+      <div className="mx-auto max-w-3xl px-6">
+        <div className="panel-ivory p-8 sm:p-12 lg:p-16">
+          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            The Signal &middot; Week {edition.week_number} &middot;{" "}
+            {formatPublishDate(edition.publish_date)}
+          </p>
 
-      <h2 className="mt-5 font-serif text-3xl leading-tight text-stone-900 md:text-4xl">
-        {edition.lead_headline}
-      </h2>
+          <h2 className="title-h1 mt-5">
+            {edition.lead_headline}
+          </h2>
 
-      <p className="mt-4 text-lg leading-relaxed text-stone-700">
-        {edition.lead_subheadline}
-      </p>
+          <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+            {edition.lead_subheadline}
+          </p>
 
-      {firstTakeaway && (
-        <p className="mt-6 border-l-2 border-[#2ECDB0] pl-4 text-base italic leading-relaxed text-stone-600">
-          {firstTakeaway}
-        </p>
-      )}
+          {firstTakeaway && (
+            <p className="mt-6 border-l-2 border-primary pl-4 text-base italic leading-relaxed text-foreground/80">
+              {firstTakeaway}
+            </p>
+          )}
 
-      <p className="mt-8">
-        <Link
-          to="/signal"
-          className="text-[#2ECDB0] underline decoration-1 underline-offset-4 hover:text-[#22a98e]"
-        >
-          Read the full edition &rarr;
-        </Link>
-      </p>
+          <p className="mt-8">
+            <Link
+              to="/signal"
+              className="text-primary underline decoration-1 underline-offset-4 hover:text-primary/80"
+            >
+              Read the full edition &rarr;
+            </Link>
+          </p>
+        </div>
+      </div>
     </section>
   );
 }
