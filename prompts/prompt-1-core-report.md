@@ -1,3 +1,11 @@
+<!--
+prompt_version: 1.0.0
+prompt_name: prompt-1-core-report
+prompt_hash: faa8571bd6c0485f33f542970e3169841a3da7beb2cfae1cd1f7f5d51417a70c
+model: gpt-4o
+last_updated: 2026-05-27
+-->
+
 # Prompt 1 — Core Report Generator
 
 **Pipeline position:** Prompt 1 of 7

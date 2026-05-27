@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# .githooks/pre-commit
+#
+# WP1 sub-PR D pre-commit hook. Recomputes the prompt_hash field in every
+# prompts/**/*.md file and blocks the commit if any header drifts from the
+# computed hash. The block prevents prompt changes from sneaking into
+# production without a matching hash bump, which would otherwise let stale
+# baselines hide regressions on the eval harness.
+#
+# Activation (one-time, per clone):
+#   git config core.hooksPath .githooks
+#   chmod +x .githooks/pre-commit
+#
+# Pair with the GitHub Actions workflow at
+#   .github/workflows/eval-on-prompt-change.yml
+# which gates PRs on the full eval-harness run.
+#
+# Behaviour:
+#   - If no prompts/**/*.md files are staged, the hook exits 0 immediately.
+#   - Otherwise it runs evals/recompute_prompt_hash.sh.
+#     - Exit 0 = no drift, commit proceeds.
+#     - Exit 1 = drift detected, headers were updated. Hook fails the commit
+#       with a message asking the user to re-stage the updated headers.
+
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+HARNESS_SCRIPT="$REPO_ROOT/evals/recompute_prompt_hash.sh"
+
+# Only run if a prompt file is staged.
+if ! git diff --cached --name-only | grep -qE '^(prompts/.*\.md|evals/recompute_prompt_hash\.(sh|py))$'; then
+  exit 0
+fi
+
+if [[ ! -x "$HARNESS_SCRIPT" ]]; then
+  echo "pre-commit: $HARNESS_SCRIPT not found or not executable" >&2
+  exit 1
+fi
+
+cd "$REPO_ROOT"
+if "$HARNESS_SCRIPT" >/dev/null; then
+  # Exit 0 — no drift.
+  exit 0
+fi
+
+# Drift detected — the script has already rewritten the headers in place.
+echo "" >&2
+echo "pre-commit: prompt_hash header drift detected." >&2
+echo "  evals/recompute_prompt_hash.sh has updated one or more prompts/**/*.md files." >&2
+echo "  Run 'git add prompts/' to stage the updated headers, then commit again." >&2
+echo "" >&2
+exit 1

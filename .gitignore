@@ -41,3 +41,6 @@ playwright-report/
 *.njsproj
 *.sln
 *.sw?
+
+# WP1 eval harness run outputs (ephemeral)
+evals/runs/

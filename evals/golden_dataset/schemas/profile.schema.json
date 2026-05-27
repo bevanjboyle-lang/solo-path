@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://solo.local/evals/profile.schema.json",
+  "title": "Solo golden-dataset profile",
+  "description": "One hand-graded synthetic user profile for the WP1 eval harness. Each profile carries a full Q1-Q15 response set + optional cv_extract + expected_outputs that define the gold standard for archetype classification, hook insight, first move, and recommended option. See admin/wp1-eval-harness-design.md v1.1 for the design rationale.",
+  "type": "object",
+  "required": [
+    "profile_id",
+    "label",
+    "domain",
+    "archetype_hint",
+    "questionnaire",
+    "edge_case_flags",
+    "expected_outputs",
+    "drafted_by",
+    "graded_by"
+  ],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "pattern": "^GP_[0-9]{3}$",
+      "description": "Sequential profile id, GP_001 through GP_035."
+    },
+    "label": {
+      "type": "string",
+      "description": "One-line human label for the profile, e.g. 'Senior FP&A lead, FTSE 250 retail, 11 years, fractional CFO bound'."
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "Finance & Accounting",
+        "Risk & Governance",
+        "Strategy & Advisory",
+        "HR & People",
+        "Tech & Digital",
+        "Legal",
+        "Marketing & Communications",
+        "Sales & Commercial",
+        "Procurement & Supply Chain",
+        "Healthcare & Life Sciences",
+        "ESG & Sustainability",
+        "Property & Real Estate",
+        "Public Sector & Policy",
+        "Customer Experience & Service Design"
+      ],
+      "description": "Major domain per Solo Bible §17 domain coverage list. Used by the harness to stratify regression analysis."
+    },
+    "archetype_hint": {
+      "type": "string",
+      "pattern": "^ARCH_[A-Z_]+$",
+      "description": "The archetype id this profile is designed to classify as. Used as a target reference; the harness will compare the live pipeline's classification against expected_outputs.primary_archetype_id."
+    },
+    "questionnaire": {
+      "type": "object",
+      "required": ["Q1", "Q2", "Q3a", "Q3b", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q10", "Q11", "Q12", "Q13", "Q14", "Q15"],
+      "properties": {
+        "Q1":  { "type": "string", "description": "Current or most recent job title." },
+        "Q2":  { "type": "number", "description": "Total years of professional experience." },
+        "Q3a": { "type": "string", "enum": ["Financial Services", "Consulting & Professional Services", "Technology", "Public Sector & NHS", "Industry & Manufacturing", "Retail & Consumer", "Other"], "description": "Primary sector dropdown." },
+        "Q3b": { "type": "string", "description": "Employer or organisation type, free text." },
+        "Q4":  { "type": "string", "description": "Type of work." },
+        "Q5":  { "type": "string", "enum": ["manager", "senior manager", "director", "head of", "partner", "other"], "description": "Seniority level." },
+        "Q6":  { "type": "string", "description": "Specific achievement (situation/action/outcome)." },
+        "Q7":  { "type": "string", "description": "Informal advisory practice." },
+        "Q8":  { "type": "string", "description": "Peer perception, what colleagues say you're best at." },
+        "Q9":  { "type": "string", "enum": ["low", "medium", "high"], "description": "Income urgency." },
+        "Q10": { "type": "string", "enum": ["low", "medium", "high"], "description": "Independence confidence." },
+        "Q11": { "type": "string", "description": "Sector and client context, 2-3 most relevant client types + how they buy." },
+        "Q12": { "type": ["string", "null"], "description": "Existing independent experience, or null." },
+        "Q13": { "type": "string", "description": "Network size and quality, free text." },
+        "Q14": { "type": "string", "enum": ["full-time employed", "part-time employed", "contracting", "between roles", "self-employed"], "description": "Employment status." },
+        "Q15": { "type": "string", "description": "Geographic location." }
+      }
+    },
+    "cv_extract": {
+      "type": ["object", "null"],
+      "description": "Optional CV extract for profiles testing the CV-route. Schema mirrors P0 cv_extract."
+    },
+    "edge_case_flags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "partner_level_seniority",
+          "zero_independent_experience",
+          "high_income_urgency",
+          "cv_questionnaire_contradiction",
+          "niche_sector_thin_kb",
+          "senior_with_strong_network",
+          "mid_career_low_confidence"
+        ]
+      },
+      "description": "Edge-case flags per WP1 design v1.1 §Sub-PR A. Empty array for centre-of-domain profiles."
+    },
+    "expected_outputs": {
+      "type": "object",
+      "required": [
+        "primary_archetype_id",
+        "primary_archetype_label",
+        "secondary_archetype_acceptable_ids",
+        "hook_insight_must_reference",
+        "hook_insight_must_not_be",
+        "first_move_acceptable_types",
+        "recommended_option_must_be_in",
+        "commercially_distinctive_one_liner"
+      ],
+      "properties": {
+        "primary_archetype_id": { "type": "string", "pattern": "^ARCH_[A-Z_]+$" },
+        "primary_archetype_label": { "type": "string" },
+        "secondary_archetype_acceptable_ids": { "type": "array", "items": { "type": "string", "pattern": "^ARCH_[A-Z_]+$" } },
+        "hook_insight_must_reference": { "type": "array", "items": { "type": "string" }, "description": "Specific phrases / concepts the hook insight MUST mention to count as profile-specific. Driven by Q3b / Q6 / Q11." },
+        "hook_insight_must_not_be": { "type": "array", "items": { "type": "string" }, "description": "Generic framings the hook insight MUST NOT collapse into." },
+        "first_move_acceptable_types": { "type": "array", "items": { "type": "string", "enum": ["Direct", "Platform", "Visibility", "Community"] } },
+        "recommended_option_must_be_in": { "type": "array", "items": { "type": "string" }, "description": "Set of acceptable business model ids; the recommended option must be one of these." },
+        "commercially_distinctive_one_liner": { "type": "string", "description": "One sentence capturing what makes this user commercially distinct from a generalist version of their archetype." }
+      }
+    },
+    "drafted_by": { "type": "string", "enum": ["claude"] },
+    "drafted_at": { "type": "string", "format": "date" },
+    "graded_by": { "type": "string", "enum": ["pending", "bevan"], "description": "'pending' until Bevan reviews; 'bevan' once expected_outputs are locked." },
+    "graded_at": { "type": ["string", "null"], "format": "date" },
+    "grading_notes": { "type": "string", "description": "Free-text notes from Bevan during review. Captures judgement calls and edge case rationale." }
+  }
+}
