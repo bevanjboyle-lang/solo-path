@@ -916,7 +916,7 @@ function buildP0bUserMessage(qd: P0bQuestionnaireInput): string {
 // MAIN INDEX
 // =============================================================================
 
-const FUNCTION_VERSION = "v45.15-v096-second-report-gate";
+const FUNCTION_VERSION = "v45.16-wp2-hook-regen-kickoff";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
 const MAX_P1_VALIDATOR_RETRIES = 2;
@@ -1220,6 +1220,36 @@ async function generateReportInBackground(args: BgArgs) {
     if (userId) await logUpdate.eq("user_id", userId);
     else if (clientSessionId) await logUpdate.eq("client_session_id", clientSessionId);
     console.log(`bg ${reportId} done | total=${Date.now() - t0}ms | validation_passed=${validation.passed}`);
+
+    // WP2 sub-PR A: fire hook insight best-of-N regenerator as a chained
+    // background fetch. The regenerator's own WP2_HOOK_REGENERATION_ENABLED
+    // env flag gates whether it does anything — when OFF (default in prod),
+    // it returns {skipped: true} immediately. The teaser_ready row is already
+    // persisted above, so the user sees the monolith's draft hook on the
+    // teaser page. When the regenerator completes, it overwrites the
+    // canonical hook_insight column with the highest-scoring of 3 candidates
+    // and populates candidate_hook_insights + hook_insight_winner_index.
+    // Best-effort: any failure here logs but does not affect the report row.
+    try {
+      const regenResp = await fetch(`${Deno.env.get("SUPABASE_URL")!}/functions/v1/regenerate-hook-insight`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!}`,
+          apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        },
+        body: JSON.stringify({ reportId }),
+      });
+      if (regenResp.ok) {
+        const summary = await regenResp.json().catch(() => null);
+        console.log(`bg ${reportId} wp2 hook regen | ${JSON.stringify(summary).slice(0, 200)}`);
+      } else {
+        const errText = await regenResp.text().catch(() => "<unreadable>");
+        console.warn(`bg ${reportId} wp2 hook regen returned ${regenResp.status}: ${errText.slice(0, 300)}`);
+      }
+    } catch (regenErr) {
+      console.warn(`bg ${reportId} wp2 hook regen kickoff failed:`, regenErr instanceof Error ? regenErr.message : String(regenErr));
+    }
   } catch (err) {
     console.error(`bg ${reportId} error:`, err);
     await supabase.from("reports").update({ status: "failed", error: String((err as Error)?.message ?? err) }).eq("id", reportId);

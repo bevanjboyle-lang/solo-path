@@ -76,7 +76,7 @@ import {
 import { P3_SYSTEM_PROMPT_TEMPLATE, P3_USER_MESSAGE_TEMPLATE } from "./p3-system-prompt.ts";
 import { P4_SYSTEM_PROMPT_TEMPLATE, P4_USER_MESSAGE_TEMPLATE } from "./p4-system-prompt.ts";
 
-const FUNCTION_VERSION = "v36-vibe-review-fixes";
+const FUNCTION_VERSION = "v36-vibe-review-fixes-wp2-first-move-regen-kickoff";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -956,6 +956,45 @@ async function generatePlanInBackground(args: {
       console.error(`bg ${report_id} update error:`, JSON.stringify(updateError));
       await supabase.from("reports").update({ status: "failed", error: String(updateError.message ?? updateError) }).eq("id", report_id);
       return;
+    }
+
+    // WP2 sub-PR B — kick off best-of-N first move regeneration as a best-effort
+    // post-step. Gated by WP2_FIRST_MOVE_REGENERATION_ENABLED env flag inside
+    // the regenerator; if the flag is off, the call returns {skipped: true} and
+    // the monolith's draft first_move stays canonical. Mirrors sub-PR A's
+    // regenerate-hook-insight kickoff pattern on generate-report.
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
+      const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (supabaseUrl && serviceRoleKey) {
+        const regenUrl = `${supabaseUrl}/functions/v1/regenerate-first-move`;
+        const regenPromise = fetch(regenUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${serviceRoleKey}`,
+            apikey: serviceRoleKey,
+          },
+          body: JSON.stringify({ reportId: report_id }),
+        })
+          .then(async (r) => {
+            const text = await r.text();
+            console.log(`[generate-plan] regenerate-first-move kicked off for ${report_id}: status=${r.status} body=${text.slice(0, 200)}`);
+          })
+          .catch((err) => {
+            console.error(`[generate-plan] regenerate-first-move kickoff failed for ${report_id}:`, err);
+          });
+        // @ts-ignore EdgeRuntime is provided by the Supabase Edge runtime.
+        if (typeof EdgeRuntime !== "undefined" && (EdgeRuntime as { waitUntil?: (p: Promise<unknown>) => void }).waitUntil) {
+          // @ts-ignore as above
+          (EdgeRuntime as { waitUntil: (p: Promise<unknown>) => void }).waitUntil(regenPromise);
+        }
+      } else {
+        console.error(`[generate-plan] WP2 kickoff skipped for ${report_id}: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing`);
+      }
+    } catch (regenKickoffErr) {
+      console.error(`[generate-plan] regenerate-first-move kickoff threw for ${report_id}:`, regenKickoffErr);
+      // Swallow — kickoff failures must not affect the parent plan generation.
     }
 
     console.log(`bg ${report_id} done | ${selectedStrands.length} strands | apollo cold=${coldTaskCount}/${apolloQueryPopulated}`);
