@@ -15,13 +15,7 @@
 //     field descriptions for sector_primary, employer_org_type, type_of_work,
 //     seniority_level, career_highlights, qualifications, sectors_worked_in,
 //     skills_mentioned, independent_experience, confidence_score, parse_notes)
-//   - Confidence threshold for storing cv_extract: 30 → 50 per canonical. Per
-//     prompts/prompt-0-cv-parser.md: "If confidence_score >= 50: store in
-//     user_profiles.cv_extract, set cv_uploaded = true, return to frontend to
-//     pre-populate confirmation cards. If confidence_score < 50: store partial
-//     extract (for debugging), set cv_uploaded = false, proceed with full
-//     questionnaire and show note: 'We had trouble reading your CV clearly,
-//     please answer all questions below.'"
+//   - Confidence threshold for storing cv_extract: 30 → 50 per canonical.
 //   - Added FUNCTION_VERSION constant (v28 had none)
 //
 // Preserved unchanged from v28:
@@ -33,22 +27,14 @@
 //   - Fetch pattern (not OpenAI SDK), per v13 ADR-012 baseline
 //   - CORS allow-headers including x-client-session-id (F65 fix)
 //   - Upsert to user_profiles with cv_uploaded + cv_extract + cv_confidence_score + cv_raw_text
-//
-// Behaviour change to verify:
-//   The threshold raise (30 -> 50) means CVs that previously scored 30-49 will
-//   now flag as cv_uploaded:false and the user will go through the full
-//   questionnaire instead of seeing pre-populated confirmation cards. This is
-//   the canonical-intended behaviour: pre-population should only fire when the
-//   parse is reliable enough to trust. Watch the cv_confidence_score
-//   distribution in user_profiles after deploy to confirm the rate of
-//   pre-population is acceptable.
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 import { P0_SYSTEM_PROMPT, buildP0UserMessage } from "./p0-system-prompt.ts";
+import { complete } from "./llm_client.ts";
 
-const FUNCTION_VERSION = "v29-canonical-p0";
+const FUNCTION_VERSION = "v30-llm-client-wired";
 const MODEL_TIER2 = "gpt-5.4-mini";
 const TEMPERATURE = 0.1;
 const MAX_COMPLETION_TOKENS = 800;
@@ -142,31 +128,21 @@ Deno.serve(async (req: Request) => {
     const truncatedText = rawText.slice(0, TEXT_TRUNCATION_CHARS);
     const userMessage = buildP0UserMessage(truncatedText);
 
-    const openAIResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${openAIApiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: MODEL_TIER2,
-        temperature: TEMPERATURE,
-        max_completion_tokens: MAX_COMPLETION_TOKENS,
-        messages: [
-          { role: "system", content: P0_SYSTEM_PROMPT },
-          { role: "user", content: userMessage },
-        ],
-      }),
+    // WP5: route through the central LLM client (model routing -> gpt-5.4-mini
+    // via prompt_id, json_object for guaranteed-parseable output). MODEL_TIER2 is
+    // now selected inside the client by prompt_id. prompt_runs logging is a fast
+    // follow once this wire is proven.
+    const llmResult = await complete({
+      prompt_id: "P0-cv-parser",
+      system_prompt: P0_SYSTEM_PROMPT,
+      user_payload: userMessage,
+      api_key: openAIApiKey!,
+      temperature: TEMPERATURE,
+      max_tokens: MAX_COMPLETION_TOKENS,
     });
-
-    const openAIData = await openAIResponse.json();
-    const rawOutput = openAIData.choices?.[0]?.message?.content || "";
-
-    let cvExtract;
-    try {
-      const jsonMatch = rawOutput.match(/\{[\s\S]*\}/);
-      cvExtract = JSON.parse(jsonMatch ? jsonMatch[0] : rawOutput);
-    } catch {
+    const rawOutput = llmResult.raw;
+    const cvExtract = llmResult.parsed as Record<string, any> | null;
+    if (!cvExtract) {
       console.warn(`${FUNCTION_VERSION} JSON parse failed:`, rawOutput.slice(0, 200));
       return new Response(
         JSON.stringify({

@@ -3,7 +3,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const FUNCTION_VERSION = "wp2-hook-regen-v1.1-cv-fix";
+const FUNCTION_VERSION = "wp2-hook-regen-v1.4-gpt54";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -109,7 +109,7 @@ async function callOpenAI(args: {
     ],
     response_format: { type: "json_object" },
     temperature: args.temperature,
-    max_tokens: args.max_tokens ?? 1024,
+    max_completion_tokens: args.max_tokens ?? 1024,
   };
   const MAX_RETRIES = 3;
   let attempt = 0;
@@ -228,6 +228,36 @@ Deno.serve(async (req: Request) => {
     }
     const draftHook = stringifyHookInsight(report.core_report, report.hook_insight);
 
+    // WP2 regenerate-on-failure gate (v1.2): judge the monolith hook ONCE and
+    // skip the 3-candidate best-of-N if it is already strong. Saves ~6 OpenAI
+    // calls on reports whose hook does not need rescuing. Threshold overridable
+    // via WP2_HOOK_REGEN_THRESHOLD (default 4 -> regen only if monolith hook <= 3).
+    const REGEN_THRESHOLD = Number(Deno.env.get("WP2_HOOK_REGEN_THRESHOLD") ?? "4");
+    const gateJudge = await callOpenAI({
+      api_key: openaiKey,
+      model: "gpt-5.4",
+      system_prompt: JUDGE_4_SYSTEM_PROMPT,
+      user_payload: {
+        profile: mapProfileForJudge(profile),
+        cv_extract: cvExtract,
+        generated_hook_insight: draftHook,
+        gold_must_reference: (body.gold_must_reference as string[]) ?? [],
+        gold_must_not_be: (body.gold_must_not_be as string[]) ?? [],
+      },
+      temperature: 0,
+    });
+    const gateScore = typeof (gateJudge.parsed as { score?: number }).score === "number"
+      ? (gateJudge.parsed as { score: number }).score
+      : 0;
+    if (gateScore >= REGEN_THRESHOLD) {
+      // Sentinel so the eval harness's winner-index poll returns immediately on skip.
+      await supabase.from("reports").update({ hook_insight_winner_index: -1 }).eq("id", reportId);
+      return new Response(
+        JSON.stringify({ reportId, skipped_regen: true, monolith_hook_score: gateScore, version: FUNCTION_VERSION }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const regenInput = { profile, cv_extract: cvExtract, recommended_option: recommendedOption, draft_hook_insight: draftHook };
 
     const t0 = Date.now();
@@ -235,7 +265,7 @@ Deno.serve(async (req: Request) => {
       Array.from({ length: n }, () =>
         callOpenAI({
           api_key: openaiKey,
-          model: "gpt-4o-2024-08-06",
+          model: "gpt-5.4",
           system_prompt: HOOK_REGEN_SYSTEM_PROMPT,
           user_payload: regenInput,
           temperature: 0.7,
@@ -252,7 +282,7 @@ Deno.serve(async (req: Request) => {
         const flatHook = flattenHookForJudge(hook);
         return callOpenAI({
           api_key: openaiKey,
-          model: "gpt-4o-2024-08-06",
+          model: "gpt-5.4",
           system_prompt: JUDGE_4_SYSTEM_PROMPT,
           user_payload: {
             profile: mapProfileForJudge(profile),

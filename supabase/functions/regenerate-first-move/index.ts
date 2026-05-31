@@ -6,7 +6,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const FUNCTION_VERSION = "wp2-first-move-regen-v1.2-bg";
+const FUNCTION_VERSION = "wp2-first-move-regen-v1.4-gpt54";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -142,7 +142,7 @@ async function callOpenAI(args: {
     ],
     response_format: { type: "json_object" },
     temperature: args.temperature,
-    max_tokens: args.max_tokens ?? 2048,
+    max_completion_tokens: args.max_tokens ?? 2048,
   };
   const MAX_RETRIES = 3;
   let attempt = 0;
@@ -317,6 +317,38 @@ async function runRegeneration(
       ? draftStrandWarmth
       : inferWarmthType(profile, recommendedOption);
 
+    // WP2 regenerate-on-failure gate (v1.3): judge the monolith first_move ONCE
+    // and skip the 3-candidate best-of-N if it is already strong. Writes a
+    // sentinel (first_move_winner_index = -1) on skip so the eval harness's
+    // winner-index poll returns immediately. Threshold via
+    // WP2_FIRST_MOVE_REGEN_THRESHOLD (default 4 -> regen only if monolith <= 3).
+    const FM_REGEN_THRESHOLD = Number(Deno.env.get("WP2_FIRST_MOVE_REGEN_THRESHOLD") ?? "4");
+    const gateJudge = await callOpenAI({
+      api_key: openaiKey,
+      model: "gpt-5.4",
+      system_prompt: JUDGE_5_SYSTEM_PROMPT,
+      user_payload: {
+        profile: mapProfileForJudge(profile),
+        cv_extract: cvExtract,
+        recommended_option: recommendedOption,
+        warmth_type: warmthType,
+        generated_first_move: draftFirstMove,
+        gold_must_not_be: goldMustNotBe,
+      },
+      temperature: 0,
+      max_tokens: 1024,
+    });
+    const gateScore = typeof (gateJudge.parsed as { score?: number }).score === "number"
+      ? (gateJudge.parsed as { score: number }).score
+      : 0;
+    if (gateScore >= FM_REGEN_THRESHOLD) {
+      await supabase.from("reports").update({ first_move_winner_index: -1 }).eq("id", reportId);
+      return new Response(
+        JSON.stringify({ reportId, skipped_regen: true, monolith_first_move_score: gateScore, version: FUNCTION_VERSION }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const regenInput = {
       profile,
       cv_extract: cvExtract,
@@ -330,7 +362,7 @@ async function runRegeneration(
       Array.from({ length: n }, () =>
         callOpenAI({
           api_key: openaiKey,
-          model: "gpt-4o-2024-08-06",
+          model: "gpt-5.4",
           system_prompt: FIRST_MOVE_REGEN_SYSTEM_PROMPT,
           user_payload: regenInput,
           temperature: 0.7,
@@ -344,7 +376,7 @@ async function runRegeneration(
         const firstMove = (r.parsed as { first_move?: unknown }).first_move;
         return callOpenAI({
           api_key: openaiKey,
-          model: "gpt-4o-2024-08-06",
+          model: "gpt-5.4",
           system_prompt: JUDGE_5_SYSTEM_PROMPT,
           user_payload: {
             profile: mapProfileForJudge(profile),

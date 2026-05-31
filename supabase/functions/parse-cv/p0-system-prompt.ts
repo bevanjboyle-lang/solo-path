@@ -4,12 +4,6 @@
 // Source: prompts/prompt-0-cv-parser.md (the locked source of truth per ADR-019
 // pattern). This .ts file is a build-extract of that content for runtime
 // injection by parse-cv v29.
-//
-// If this file drifts from the canonical .md, the .md wins and this file must
-// be regenerated. Sync discipline applies (ADR-015).
-//
-// Substitutions at runtime:
-//   {{CV_TEXT}} — raw CV text after pdf-parse / mammoth extraction (truncated to 8000 chars)
 
 export const P0_SYSTEM_PROMPT = `You are a structured data extraction engine. Your only job is to read a CV and extract specific fields into a JSON object.
 
