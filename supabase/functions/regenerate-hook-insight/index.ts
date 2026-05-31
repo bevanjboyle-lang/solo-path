@@ -1,28 +1,5 @@
 // supabase/functions/regenerate-hook-insight/index.ts
-//
-// WP2 sub-PR A — Hook insight best-of-N.
-//
-// Called as a background task by `generate-report` immediately after the
-// monolithic report generation completes and the row is persisted with
-// `status: "teaser_ready"`. Generates N candidate hook insights via the
-// prompt-2-hook-regenerator prompt, scores each with Judge 4, promotes the
-// highest scorer to the canonical reports.hook_insight column.
-//
-// Contract:
-//   POST /functions/v1/regenerate-hook-insight
-//     headers: Authorization: Bearer <service-role-key>
-//              apikey: <service-role-key>
-//              Content-Type: application/json
-//     body:    { reportId: "<uuid>", n: 3 }  // n optional, default 3
-//   -> 200 { reportId, winner_index, winning_score, candidates_count }
-//   -> 4xx | 5xx { error, response_text }
-//
-// Feature flag: gated by env var WP2_HOOK_REGENERATION_ENABLED. Default OFF
-// in production until the harness shows ≥ 7/10 win-rate on the WP2
-// acceptance criterion (per design doc § 4 + Q5).
-//
-// The harness can call this directly via env override to validate the flow
-// before flipping the production flag.
+// WP2 sub-PR A — Hook insight best-of-N. v1.1: drops cv_extract from select (column doesn't exist on reports).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -34,21 +11,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// -----------------------------------------------------------------------------
-// Inlined hook regenerator prompt body (post-WP10 will read from file).
-//
-// For now, the prompt body is duplicated here as a string constant. The hash
-// MUST stay in sync with prompts/prompt-2-hook-regenerator.md — the
-// pre-commit hook (WP1 sub-PR D) maintains the .md hash; this constant is
-// updated by the same hand-edit cycle. See WP10 for the file-loaded modules
-// upgrade that retires this duplication.
-// -----------------------------------------------------------------------------
-
-const HOOK_REGEN_PROMPT_NAME = "prompt-2-hook-regenerator";
-const HOOK_REGEN_PROMPT_VERSION = "1.0.0";
-// Updated by hand when the .md changes. Cross-reference:
-//   bash evals/recompute_prompt_hash.sh
-//   grep prompt_hash prompts/prompt-2-hook-regenerator.md
 const HOOK_REGEN_PROMPT_HASH = "2fac5c5223de4e98be7e08887e7018d9eeb56828b2f9441e0130aa9bcdea7761";
 
 const HOOK_REGEN_SYSTEM_PROMPT = `You are the Solo hook-insight regenerator. You produce ONE hook insight per call.
@@ -90,13 +52,6 @@ Return ONLY this JSON object (no prose around it):
 
 anchors_referenced is a non-empty subset of ["Q3b", "Q6", "Q11", "Q12", "Q13"].`;
 
-// -----------------------------------------------------------------------------
-// Inlined Judge 4 prompt (loaded from prompts/judges/judge-4-hook-insight-quality.md).
-// Same hand-edit cycle as HOOK_REGEN_PROMPT_HASH above.
-// -----------------------------------------------------------------------------
-
-const JUDGE_4_PROMPT_NAME = "judge-4-hook-insight-quality";
-const JUDGE_4_PROMPT_VERSION = "1.0";
 const JUDGE_4_PROMPT_HASH = "bf3f3fff4b3036a2cc19f85c0a295f66fd2a54b27f79d4ae18a825d514388854";
 
 const JUDGE_4_SYSTEM_PROMPT = `You are Judge 4 — Hook insight quality. You score one generated hook against the Solo Bible §12 three-test rubric AND against profile-specific gold_must_reference / gold_must_not_be constraints.
@@ -132,19 +87,11 @@ Return ONLY this JSON object:
 
 If must_not_be_matched is non-null, score MUST be 1.`;
 
-// -----------------------------------------------------------------------------
-// OpenAI client
-// -----------------------------------------------------------------------------
-
 const OPENAI_GPT4O_INPUT_USD_PER_M = 2.5;
 const OPENAI_GPT4O_OUTPUT_USD_PER_M = 10.0;
 const USD_TO_GBP = 0.79;
 
-interface OpenAIResult {
-  parsed: unknown;
-  raw_response: string;
-  cost_estimate_gbp: number;
-}
+interface OpenAIResult { parsed: unknown; raw_response: string; cost_estimate_gbp: number; }
 
 async function callOpenAI(args: {
   api_key: string;
@@ -164,7 +111,6 @@ async function callOpenAI(args: {
     temperature: args.temperature,
     max_tokens: args.max_tokens ?? 1024,
   };
-
   const MAX_RETRIES = 3;
   let attempt = 0;
   while (true) {
@@ -193,10 +139,6 @@ async function callOpenAI(args: {
     attempt++;
   }
 }
-
-// -----------------------------------------------------------------------------
-// Main handler
-// -----------------------------------------------------------------------------
 
 interface Q {
   q1_job_title?: string;
@@ -233,15 +175,10 @@ interface BusinessOption {
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  // Feature flag gate.
   const FLAG = (Deno.env.get("WP2_HOOK_REGENERATION_ENABLED") ?? "false").toLowerCase();
   if (FLAG !== "true" && FLAG !== "1") {
     return new Response(
-      JSON.stringify({
-        skipped: true,
-        reason: "WP2_HOOK_REGENERATION_ENABLED is not enabled",
-        version: FUNCTION_VERSION,
-      }),
+      JSON.stringify({ skipped: true, reason: "WP2_HOOK_REGENERATION_ENABLED is not enabled", version: FUNCTION_VERSION }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
@@ -266,11 +203,8 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // 1. Load the report row.
-    // v1.1 FIX: dropped cv_extract from select — column does not exist on
-    // reports table. CV extract is a request-time parameter to generate-report
-    // and not persisted. Pass null to downstream prompts; the questionnaire
-    // (answers) is the load-bearing input anyway.
+    // v1.1 FIX: dropped cv_extract from select (column doesn't exist on reports).
+    // CV extract is request-time only, not persisted. Pass null to downstream prompts.
     const { data: report, error: loadErr } = await supabase
       .from("reports")
       .select("id, status, core_report, hook_insight, answers, client_session_id, user_id")
@@ -283,9 +217,8 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // 2. Build the regenerator input from the report row.
     const profile: Q = mapAnswersToProfile((report.answers as Record<string, string>) ?? {});
-    const cvExtract = null; // v1.1: not stored on reports row, see select comment above
+    const cvExtract = null; // v1.1: not stored on reports row
     const recommendedOption = pickRecommendedOption(report.core_report);
     if (!recommendedOption) {
       return new Response(
@@ -295,14 +228,8 @@ Deno.serve(async (req: Request) => {
     }
     const draftHook = stringifyHookInsight(report.core_report, report.hook_insight);
 
-    const regenInput = {
-      profile,
-      cv_extract: cvExtract,
-      recommended_option: recommendedOption,
-      draft_hook_insight: draftHook,
-    };
+    const regenInput = { profile, cv_extract: cvExtract, recommended_option: recommendedOption, draft_hook_insight: draftHook };
 
-    // 3. Run the regenerator N times in parallel.
     const t0 = Date.now();
     const regenResults = await Promise.all(
       Array.from({ length: n }, () =>
@@ -316,11 +243,6 @@ Deno.serve(async (req: Request) => {
       ),
     );
 
-    // 4. Score each candidate with Judge 4.
-    // gold_must_reference / gold_must_not_be aren't available in production
-    // (they live in the golden dataset for eval-only). Pass empty arrays so
-    // Judge 4's must_not_be override is inert here. The eval harness, when
-    // it calls this function directly, can populate them via a separate flow.
     const goldMustReference: string[] = (body.gold_must_reference as string[]) ?? [];
     const goldMustNotBe: string[] = (body.gold_must_not_be as string[]) ?? [];
 
@@ -347,7 +269,6 @@ Deno.serve(async (req: Request) => {
     const totalRegenCost = regenResults.reduce((a, r) => a + r.cost_estimate_gbp, 0);
     const totalJudgeCost = judgeResults.reduce((a, r) => a + r.cost_estimate_gbp, 0);
 
-    // 5. Assemble candidates array.
     const generatedAt = new Date().toISOString();
     const candidates = regenResults.map((r, i) => {
       const judge = judgeResults[i].parsed as {
@@ -367,13 +288,9 @@ Deno.serve(async (req: Request) => {
       };
     });
 
-    // 6. Pick the winner — highest judge_4_score. Ties broken by sub_score
-    // sum then lowest index (deterministic).
     const winnerIndex = pickWinner(candidates);
     const winnerHook = candidates[winnerIndex].hook_insight;
 
-    // 7. Persist back to the row. Update hook_insight (flattened) +
-    //    candidate_hook_insights JSONB + hook_insight_winner_index.
     const winnerHookFlat = flattenHookForJudge(winnerHook);
     const { error: writeErr } = await supabase
       .from("reports")
@@ -404,18 +321,11 @@ Deno.serve(async (req: Request) => {
     );
   } catch (e) {
     return new Response(
-      JSON.stringify({
-        error: String((e as Error)?.message ?? e),
-        version: FUNCTION_VERSION,
-      }),
+      JSON.stringify({ error: String((e as Error)?.message ?? e), version: FUNCTION_VERSION }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 });
-
-// -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
 
 function mapAnswersToProfile(answers: Record<string, string>): Q {
   const cap = (s: string | undefined) => (s ? String(s).slice(0, 2000) : "");
@@ -441,22 +351,11 @@ function mapAnswersToProfile(answers: Record<string, string>): Q {
 
 function mapProfileForJudge(p: Q): Record<string, unknown> {
   return {
-    Q1: p.q1_job_title,
-    Q2: p.q2_years_experience,
-    Q3a: p.q3a_sector,
-    Q3b: p.q3b_employer_org_type,
-    Q4: p.q4_work_type,
-    Q5: p.q5_seniority,
-    Q6: p.q6_specific_achievement,
-    Q7: p.q7_informal_advisory,
-    Q8: p.q8_peer_perception,
-    Q9: p.q9_income_urgency,
-    Q10: p.q10_independence_confidence,
-    Q11: p.q11_sector_client_context,
-    Q12: p.q12_independent_experience,
-    Q13: p.q13_network,
-    Q14: p.q14_employment_status,
-    Q15: p.q15_location,
+    Q1: p.q1_job_title, Q2: p.q2_years_experience, Q3a: p.q3a_sector, Q3b: p.q3b_employer_org_type,
+    Q4: p.q4_work_type, Q5: p.q5_seniority, Q6: p.q6_specific_achievement, Q7: p.q7_informal_advisory,
+    Q8: p.q8_peer_perception, Q9: p.q9_income_urgency, Q10: p.q10_independence_confidence,
+    Q11: p.q11_sector_client_context, Q12: p.q12_independent_experience, Q13: p.q13_network,
+    Q14: p.q14_employment_status, Q15: p.q15_location,
   };
 }
 
@@ -471,8 +370,6 @@ function pickRecommendedOption(coreReport: unknown): BusinessOption | null {
 }
 
 function stringifyHookInsight(coreReport: unknown, hookInsightCol: unknown): string {
-  // Prefer the core_report's structured hook_insight (object with headline +
-  // paragraph). Fall back to the flattened reports.hook_insight column.
   if (coreReport && typeof coreReport === "object") {
     const hook = (coreReport as Record<string, unknown>).hook_insight as Record<string, unknown> | undefined;
     if (hook && typeof hook === "object") {

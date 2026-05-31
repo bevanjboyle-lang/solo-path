@@ -44,3 +44,4 @@ playwright-report/
 
 # WP1 eval harness run outputs (ephemeral)
 evals/runs/
+*.pre-*.bak

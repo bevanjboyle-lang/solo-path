@@ -1,6 +1,8 @@
 // supabase/functions/regenerate-first-move/index.ts
-// WP2 sub-PR B — First move best-of-N. v1.0.
-// Mirrors regenerate-hook-insight v1.1's pattern. See admin/wp2-best-of-n-design.md §3.
+// WP2 sub-PR B — First move best-of-N. v1.2-bg.
+// v1.2-bg: EdgeRuntime.waitUntil background pattern. Returns 202 immediately;
+// the heavy work runs as a background task. Caller polls reports.candidate_first_moves
+// for completion. v1.0/v1.1 ran sync and hit the 150s gateway idle timeout.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -12,9 +14,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// Hashes pinned at deploy. Recomputed by evals/recompute_prompt_hash.py.
-// If either prompt file changes, recompute hashes and update both this constant
-// and the corresponding prompt file's header in lockstep.
 const FIRST_MOVE_REGEN_PROMPT_HASH = "28204d271495c79644360518e3f624bb9cab41fd692fe1c7b6dcc1d7c04a3a5a";
 
 const FIRST_MOVE_REGEN_SYSTEM_PROMPT = `You are Solo's first-move regenerator. You produce ONE first_move per call.
@@ -246,12 +245,8 @@ Deno.serve(async (req: Request) => {
   const goldMustNotBe: string[] = Array.isArray(body.gold_must_not_be) ? (body.gold_must_not_be as string[]) : [];
 
   // v1.2-bg: kick off the heavy work in a background task and return 202 immediately.
-  // The function instance keeps running (via EdgeRuntime.waitUntil) until the background
-  // task completes — typically 30-90s. The caller polls reports.candidate_first_moves
-  // for completion. Avoids the Supabase gateway's 150s idle timeout that v1.0/v1.1 hit.
   // @ts-ignore EdgeRuntime is provided by Supabase Edge runtime.
   if (typeof EdgeRuntime === "undefined" || !(EdgeRuntime as { waitUntil?: (p: Promise<unknown>) => void }).waitUntil) {
-    // Fallback: run synchronously (will hit the 150s gateway cap on slow runs).
     console.warn(`[regenerate-first-move] EdgeRuntime.waitUntil unavailable; running synchronously`);
     return await runRegeneration(reportId, n, goldMustNotBe, openaiKey);
   }
@@ -308,7 +303,7 @@ async function runRegeneration(
     }
 
     const profile: Q = mapAnswersToProfile((report.answers as Record<string, string>) ?? {});
-    const cvExtract = null; // CV extract is request-time only, not persisted on reports.
+    const cvExtract = null;
     const recommendedOption = pickRecommendedOption(report.core_report);
     if (!recommendedOption) {
       return new Response(
