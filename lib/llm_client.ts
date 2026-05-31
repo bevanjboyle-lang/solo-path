@@ -26,6 +26,7 @@ export type Tier = 1 | 2 | 3;
 // API id against platform.openai.com (could be e.g. "gpt-5.4" or a dated variant).
 export const FRONTIER_MODEL = "gpt-5.4";
 export const MINI_MODEL = "gpt-5.4-mini";
+export const EMBED_MODEL = "text-embedding-3-small"; // 1536 dims (WP4 salience)
 
 /** prompt_id -> tier. Tier 3 = no LLM (handled by callers; never reaches here). */
 export const TIER_MAP: Record<string, Tier> = {
@@ -225,4 +226,45 @@ export async function complete(args: CompleteArgs): Promise<CompleteResult> {
     latency_ms,
     duration_retries: attempt,
   };
+}
+
+// -----------------------------------------------------------------------------
+// Embeddings (WP4 salience). Centralised here so model + retry live in one place.
+// -----------------------------------------------------------------------------
+
+/**
+ * Embed a single text with text-embedding-3-small (1536 dims). Retries on 429/5xx.
+ * Returns the embedding vector. Input is truncated to ~8k chars (well within the
+ * model's token limit) since we embed short check-ins / summaries / questions.
+ */
+export async function embed(args: { api_key: string; text: string }): Promise<number[]> {
+  const input = (args.text ?? "").slice(0, 8000);
+  let attempt = 0;
+  while (true) {
+    const resp = await fetch("https://api.openai.com/v1/embeddings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${args.api_key}` },
+      body: JSON.stringify({ model: EMBED_MODEL, input }),
+    });
+    if (resp.ok) {
+      const json = await resp.json();
+      const vec = json?.data?.[0]?.embedding;
+      if (!Array.isArray(vec)) throw new Error("embed: no embedding in response");
+      return vec as number[];
+    }
+    const errText = await resp.text();
+    const retryable = resp.status === 429 || (resp.status >= 500 && resp.status < 600);
+    if (!retryable || attempt >= MAX_RETRIES) {
+      throw new Error(`embed OpenAI ${resp.status}: ${errText.slice(0, 300)}`);
+    }
+    const m = errText.match(/try again in ([\d.]+)s/i);
+    const sleepMs = resp.status === 429 ? Math.ceil((m && m[1] ? parseFloat(m[1]) : 30) * 1000) + 500 : 2000 * (attempt + 1);
+    await new Promise((r) => setTimeout(r, sleepMs));
+    attempt++;
+  }
+}
+
+/** Format a 1536-d vector as a pgvector literal string: "[0.1,0.2,...]". */
+export function toPgVector(vec: number[]): string {
+  return `[${vec.join(",")}]`;
 }

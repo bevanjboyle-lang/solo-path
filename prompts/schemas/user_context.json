@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Solo UserContext (WP4)",
+  "description": "Versioned context block assembled by lib/context_assembler.ts and consumed by P8 (guidance) and P9 (Ask Solo). HARD INVARIANT: total assembled context <= 8000 tokens for any user at any subscription month. Section budgets sum to 7500 (< 8000) and each section is clipped/packed to its own budget, so the cap holds structurally; a belt-and-suspenders compression pass enforces it if estimates drift. Design: admin/wp4-context-assembly-design-2026-05-31.md.",
+  "version": "wp4-user-context-v1",
+  "last_updated": "2026-05-31",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile_summary",
+    "archetype_block",
+    "selected_model_block",
+    "plan_state",
+    "running_narrative",
+    "recent_checkins",
+    "prior_advisory_sessions",
+    "open_questions",
+    "topic_relevant_history"
+  ],
+  "properties": {
+    "profile_summary":        { "type": "string", "x_source": "reports.user_context_profile | reports.answers (Q1-Q15) + user_profiles.cv_extract", "x_token_budget": 700,  "x_stability": "stable" },
+    "archetype_block":        { "type": "string", "x_source": "reports.core_report.archetype + reports.ai_impact_section", "x_token_budget": 700,  "x_stability": "stable" },
+    "selected_model_block":   { "type": "string", "x_source": "reports.recommended_selection | selected_strands | core_report.options[recommended]", "x_token_budget": 700,  "x_stability": "stable" },
+    "plan_state":             { "type": "string", "x_source": "tracker_sessions.working_plan + current_day + tasks_* + strand_status", "x_token_budget": 1100, "x_stability": "current-only" },
+    "running_narrative":      { "type": "string", "x_source": "tracker_sessions.running_narrative", "x_token_budget": 900,  "x_stability": "rolling, mutable" },
+    "recent_checkins":        { "type": "string", "x_source": "checkin_history (last N by day_number; narrative_addition / exchanges)", "x_token_budget": 1400, "x_stability": "time-growing -> packed newest-first, oldest dropped" },
+    "prior_advisory_sessions":{ "type": "string", "x_source": "advisory_conversation_summaries (rolling, last 6)", "x_token_budget": 700,  "x_stability": "time-growing -> packed" },
+    "open_questions":         { "type": "string", "x_source": "derived (previously-asked, unresolved) — reserved, currently empty", "x_token_budget": 300,  "x_stability": "derived" },
+    "topic_relevant_history": { "type": "string", "x_source": "pgvector top-5 over context_embeddings via match_context_embeddings RPC (Ask Solo only, keyed on the question)", "x_token_budget": 1000, "x_stability": "salience-retrieved per question" }
+  },
+  "x_hard_cap_tokens": 8000,
+  "x_budget_sum_tokens": 7500,
+  "x_consumers": ["P9 ask-solo", "P8 generate-guidance"],
+  "x_observability": "lib/context_assembler.ts writes an events row (event_type='context_assembled', payload={total_tokens, within_cap, sections:[{section,tokens,budget,compressed}]}) on every assembly."
+}
