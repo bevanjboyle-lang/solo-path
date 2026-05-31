@@ -1,40 +1,32 @@
-// parse-cv v29 — canonical P0 prompt extracted to sibling — 2026-05-15
+// parse-cv v33 — WP7 two-pass extraction (Pass 1 extract + Pass 2 confidence/evidence)
 //
-// Replaces v28's slim inline P0_SYSTEM (one paragraph) and slim inline schema
-// in the user message with the canonical Prompt 0 content extracted into
-// p0-system-prompt.ts. Same pattern as generate-report v45.6 (p1-system-prompt.ts),
-// generate-guidance v26 (p8-system-prompt.ts), and process-checkin v38
-// (p5-checkin-prompt.ts).
+// v33 (wp7-cv-confidence-v1): adds Pass 2 — a second LLM call (strict json_schema,
+// temperature 0) that re-reads the raw CV text alongside Pass 1's extraction and
+// returns per_field_confidence (0-100) + parse_evidence (verbatim substring) for
+// the 7 cv_extract fields that pre-fill a Q1-Q15 questionnaire answer. Merged into
+// cv_extract before storage/return. Non-fatal: if Pass 2 errors, Pass 1's extract
+// is still returned (graceful degradation — frontend treats absent confidence
+// conservatively). The hard <70 pre-fill gate lives at the frontend pre-fill
+// boundary (WP10), NOT here — this function only emits the data.
+// Design: admin/wp7-cv-parsing-confidence-design-2026-05-31.md.
 //
-// Canonical sources:
-//   - prompts/prompt-0-cv-parser.md → p0-system-prompt.ts (sibling extract)
+// v30 (wp5): Pass 1 routed through llm_client.complete() (model routing by
+// prompt_id -> gpt-5.4-mini, json_object). v29: canonical P0 prompt extracted to
+// sibling p0-system-prompt.ts.
 //
-// Changes from v28:
-//   - Inline P0_SYSTEM (one paragraph) → canonical P0_SYSTEM_PROMPT (full Rules section)
-//   - Inline schema in user message → canonical P0_USER_MESSAGE_TEMPLATE (richer
-//     field descriptions for sector_primary, employer_org_type, type_of_work,
-//     seniority_level, career_highlights, qualifications, sectors_worked_in,
-//     skills_mentioned, independent_experience, confidence_score, parse_notes)
-//   - Confidence threshold for storing cv_extract: 30 → 50 per canonical.
-//   - Added FUNCTION_VERSION constant (v28 had none)
-//
-// Preserved unchanged from v28:
-//   - verify_jwt: false (parse-cv runs pre-questionnaire, anon-tolerant per ADR-013)
-//   - File size cap 10MB (matches CVUploadZone client cap, F51 fix)
-//   - PDF / DOCX text extraction via pdf-parse + mammoth
-//   - 8000-char text truncation
-//   - MODEL_TIER2 (gpt-5.4-mini), temperature 0.1, max_completion_tokens 800
-//   - Fetch pattern (not OpenAI SDK), per v13 ADR-012 baseline
-//   - CORS allow-headers including x-client-session-id (F65 fix)
-//   - Upsert to user_profiles with cv_uploaded + cv_extract + cv_confidence_score + cv_raw_text
+// Preserved unchanged: verify_jwt:false (pre-questionnaire, anon-tolerant per
+// ADR-013); 10MB file cap; PDF/DOCX text extraction; 8000-char truncation;
+// upsert to user_profiles with cv_uploaded + cv_extract + cv_confidence_score +
+// cv_raw_text; CORS incl x-client-session-id.
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 import { P0_SYSTEM_PROMPT, buildP0UserMessage } from "./p0-system-prompt.ts";
+import { P0B_SCORER_SYSTEM_PROMPT, buildP0bUserMessage, P0B_CONFIDENCE_SCHEMA } from "./p0b-confidence-scorer.ts";
 import { complete } from "./llm_client.ts";
 
-const FUNCTION_VERSION = "v30-llm-client-wired";
+const FUNCTION_VERSION = "wp7-cv-confidence-v1";
 const MODEL_TIER2 = "gpt-5.4-mini";
 const TEMPERATURE = 0.1;
 const MAX_COMPLETION_TOKENS = 800;
@@ -128,10 +120,8 @@ Deno.serve(async (req: Request) => {
     const truncatedText = rawText.slice(0, TEXT_TRUNCATION_CHARS);
     const userMessage = buildP0UserMessage(truncatedText);
 
-    // WP5: route through the central LLM client (model routing -> gpt-5.4-mini
-    // via prompt_id, json_object for guaranteed-parseable output). MODEL_TIER2 is
-    // now selected inside the client by prompt_id. prompt_runs logging is a fast
-    // follow once this wire is proven.
+    // PASS 1 (WP5): extract via the central LLM client (model routing -> gpt-5.4-mini
+    // by prompt_id, json_object for guaranteed-parseable output).
     const llmResult = await complete({
       prompt_id: "P0-cv-parser",
       system_prompt: P0_SYSTEM_PROMPT,
@@ -152,6 +142,30 @@ Deno.serve(async (req: Request) => {
         }),
         { status: 422, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
+    }
+
+    // PASS 2 (WP7): per-field confidence + verbatim evidence. Separate call so the
+    // scorer must justify each field against the literal CV text, not echo Pass 1.
+    // Non-fatal: a Pass 2 failure leaves cv_extract without per-field confidence and
+    // the request still succeeds (frontend treats absent confidence conservatively).
+    try {
+      const scoreResult = await complete({
+        prompt_id: "P0b-cv-confidence-scorer",
+        system_prompt: P0B_SCORER_SYSTEM_PROMPT,
+        user_payload: buildP0bUserMessage(truncatedText, cvExtract),
+        api_key: openAIApiKey!,
+        response_schema: { name: "cv_confidence", strict: true, schema: P0B_CONFIDENCE_SCHEMA },
+        temperature: 0,
+        max_tokens: 700,
+      });
+      const scored = scoreResult.parsed as {
+        per_field_confidence?: Record<string, number>;
+        parse_evidence?: Record<string, string>;
+      } | null;
+      if (scored?.per_field_confidence) cvExtract.per_field_confidence = scored.per_field_confidence;
+      if (scored?.parse_evidence) cvExtract.parse_evidence = scored.parse_evidence;
+    } catch (e) {
+      console.warn(`${FUNCTION_VERSION} Pass 2 confidence scoring failed (non-fatal):`, (e as Error)?.message ?? e);
     }
 
     const confidenceScore = cvExtract.confidence_score || 0;
