@@ -110,7 +110,47 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   const [reportId, setReportId] = useState<string>("");
   const [reportStatus, setReportStatus] = useState<ReportRow["status"] | null>(null);
+  // F44 #25: download the full report + plan as a PDF from /plan (same
+  // export-pdf function /report uses; the PDF now covers the whole deliverable).
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   const [coreReport, setCoreReport] = useState<SoloCoreReport | null>(null);
+  const exportPdf = useCallback(async () => {
+    if (!reportId || reportId === "dev-bypass-sample" || exportingPdf) return;
+    setExportingPdf(true);
+    setPdfError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("No auth session");
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/export-pdf`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+        },
+        body: JSON.stringify({ report_id: reportId }),
+      });
+      if (!res.ok) throw new Error(`Export failed: ${res.status}`);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `Solo-Plan-${reportId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error("Plan exportPdf error", err);
+      setPdfError("Couldn't generate PDF. Please try again.");
+      setTimeout(() => setPdfError(null), 5000);
+    } finally {
+      setExportingPdf(false);
+    }
+  }, [reportId, exportingPdf]);
   const [activationPlan, setActivationPlan] = useState<ActivationPlanOutput | null>(null);
   const [, setMarketSnapshots] = useState<ReportRow["market_snapshots"]>(null);
 
@@ -881,6 +921,30 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                               <div className="mt-1 text-[14px] font-medium text-foreground">{startedDate}</div>
                             </div>
                           )}
+                          <div className="pt-1">
+                            <button
+                              type="button"
+                              onClick={exportPdf}
+                              disabled={exportingPdf}
+                              className={`rounded-md px-4 py-2 text-[12.5px] font-semibold transition-colors border ${
+                                exportingPdf
+                                  ? "bg-[#E5E2DC] text-muted-foreground/70 border-[#D8D4CC] cursor-not-allowed"
+                                  : "bg-[#F3F0EA] text-foreground border-[#D8D4CC] hover:bg-[#E8E4DC]"
+                              }`}
+                            >
+                              {exportingPdf ? (
+                                <span className="inline-flex items-center gap-1.5">
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  Preparing…
+                                </span>
+                              ) : (
+                                "Download full PDF"
+                              )}
+                            </button>
+                            {pdfError && (
+                              <p className="mt-2 text-[12px] text-red-600">{pdfError}</p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </section>

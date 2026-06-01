@@ -423,7 +423,7 @@ export default function Report() {
                               Preparing…
                             </span>
                           ) : (
-                            "Download as PDF"
+                            "Download full PDF"
                           )}
                         </button>
                         <button

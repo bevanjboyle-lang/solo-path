@@ -145,16 +145,24 @@ export default function AuthCallback() {
                   <span className="text-foreground">Sign-in link expired</span>
                 </div>
                 <h1 className="title-h1">
-                  This sign-in link has expired.
+                  This link's no longer active.
                 </h1>
-                <p className="mt-4 font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[40ch] mx-auto">
-                  Request a new one on the home page.
+                <p className="mt-4 font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[42ch] mx-auto">
+                  Sign-in links are single-use, and only the most recent one works — if you
+                  requested a few, the newest email is the one to open. Or just grab a fresh
+                  link below; it takes a few seconds.
                 </p>
-                <div className="mt-8 pt-6 border-t border-[#E5E2DC]">
+                <div className="mt-8 pt-6 border-t border-[#E5E2DC] flex flex-col items-center gap-3">
                   <a
-                    href="/"
+                    href="/auth"
                     className="inline-flex items-center justify-center rounded-md px-6 py-3 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
                     style={{ background: "#2ECDB0" }}
+                  >
+                    Send me a fresh link →
+                  </a>
+                  <a
+                    href="/"
+                    className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
                   >
                     Back to home
                   </a>

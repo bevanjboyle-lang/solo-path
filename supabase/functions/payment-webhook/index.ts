@@ -1,3 +1,12 @@
+// payment-webhook v32 — F44 #27 copy fix — 2026-06-01
+//
+// F44 #27: the welcome email fired at payment time but claimed "Your plan is
+//          ready / has been built" — premature. At checkout.session.completed the
+//          report advances to pending_selection; the user must still pick paths on
+//          /plan to generate the 30-day plan. Copy corrected to: payment confirmed,
+//          report unlocked, next step is to choose paths. Magic link still lands on
+//          /plan. No logic change.
+//
 // payment-webhook v30 — vibe code review fixes — 2026-05-14
 //
 // V-028: refund revokes product access. When charge.refunded fires, in addition to
@@ -22,60 +31,13 @@
 // V-026: findUserIdByEmail now queries auth.users directly via service-role rather
 //        than paginating admin.listUsers (had a hard 1000-user ceiling).
 // V-027: magic-link redirectTo now reads from APP_BASE_URL env var.
-//
-// payment-webhook v26 — canonical-aligned (ADR-019). 2026-05-05.
-//
-// Change-log (v25 → v26):
-//   - Header comment refreshed. v25 inherited a stale changelog from v24 that listed
-//     "Background generate-plan kick" under Unchanged — but the F60 auto-fire of
-//     generate-plan was removed in v25 in favour of advancing reports.status to
-//     'pending_selection' and letting the frontend StrandSelector fire generate-plan
-//     with explicit selected_ranks (the canonical 10/5 product rule). This v26
-//     comment is the corrected source of truth.
-//   - charge.refunded handler bug fix: the previous SELECT/UPDATE chain at line ~459
-//     filtered only on `status='completed'`, with no payment_intent or session_id
-//     constraint — meaning a single refund event would mark every completed payment
-//     in the table as refunded. v26 narrows the filter to the specific
-//     stripe_payment_intent (or, if not in the event, the session_id) of the refunded
-//     charge. Real bug, surfaced during the Phase 2 step 3 ground-truth pass.
-//   - Status-advance query (lines ~363) gains an order+limit safety so a user with
-//     multiple teaser_ready rows (edge case — should not happen but defensive) only
-//     advances the most recent one.
-//
-// Status flow this function participates in:
-//   teaser_ready → (paid £19.99 one-time)  → pending_selection
-//                                                  ↓ user picks up to 5 ranks on /plan
-//                                            generating_plan (set by generate-plan)
-//                                                  ↓
-//                                            complete
-//
-// Per ADR-019 + project memory `project_canonical_10_options_5_selected.md`:
-// payment-webhook does NOT auto-fire generate-plan. It only advances the row status
-// to 'pending_selection' and sends the welcome email + magic link. The user must
-// actively select up to 5 ranks (Phase 4 frontend StrandSelector) to trigger plan
-// generation.
-//
-// Preserved unchanged from v25:
-//   - Stripe signature verification (HMAC-SHA256 against STRIPE_WEBHOOK_SECRET).
-//   - payments.status='completed' update by stripe_session_id.
-//   - user_profiles.stripe_customer_id attach.
-//   - Tranche 1 guidance module unlock (modules 1, 2, 3).
-//   - Welcome email with magic-link (Resend + supabase.auth.admin.generateLink).
-//   - second_report branch (non-subscriber £9.99 second-report purchase).
-//   - linkAnonRows (anon → authed user_id backfill across reports /
-//     questionnaire_responses / payments) per ADR-013.
-//   - resolveUserForCheckout (legacy authed via metadata.userId + ADR-013 anon-by-email
-//     resolution).
-//
-// CORS allow-headers includes stripe-signature (server-side webhook only;
-// x-client-session-id is irrelevant here — Stripe doesn't send it).
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 // V-036 (vibe code review 2026-05-14): TRANCHE_1_MODULES sourced from shared module.
 import { TRANCHE_1_MODULES } from "../_shared/constants.ts";
 
-const FUNCTION_VERSION = "v31-vibe-review-fixes";
+const FUNCTION_VERSION = "v32-f44-copy-fix";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -94,18 +56,18 @@ async function sendWelcomeEmail(
       <div style="margin-bottom: 32px;">
         <span style="color: #2ECDB0; font-weight: 700; font-size: 20px;">Solo</span>
       </div>
-      <h1 style="color: #1a1a1a; font-size: 22px; font-weight: 700; margin: 0 0 16px;">Your plan is ready.</h1>
+      <h1 style="color: #1a1a1a; font-size: 22px; font-weight: 700; margin: 0 0 16px;">You're in.</h1>
       <p style="color: #4a4a4a; font-size: 15px; line-height: 1.7; margin-bottom: 16px;">
-        Your 30-day activation plan has been built. Click below to open it on any device — phone, tablet, or laptop.
+        Your payment's confirmed and your full report is unlocked. Open it below to read your options and choose the paths you want to build your 30-day plan around — on any device, phone, tablet, or laptop.
       </p>
       <p style="color: #4a4a4a; font-size: 15px; line-height: 1.7; margin-bottom: 28px;">
         This link signs you straight in. No password required.
       </p>
       <a href="${magicLink}" style="display: inline-block; background: #2ECDB0; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 15px; margin-bottom: 32px;">
-        Open my plan &rarr;
+        Open Solo &rarr;
       </a>
       <p style="color: #999; font-size: 13px; line-height: 1.6; margin-top: 32px;">
-        This link expires in 24 hours. If it has expired, sign in at solo-plan.com and your plan will be waiting for you.
+        This link expires in 24 hours. If it has expired, sign in at solo-plan.com and your report will be waiting for you.
       </p>
       <p style="color: #999; font-size: 13px; line-height: 1.6;">
         Questions? Reply to this email or contact support@solo-plan.com.
@@ -122,7 +84,7 @@ async function sendWelcomeEmail(
     body: JSON.stringify({
       from: "Solo <hello@solo-plan.com>",
       to: [toEmail],
-      subject: "Your plan is ready — open it on any device",
+      subject: "You're in — open Solo on any device",
       html: htmlBody,
     }),
   });
@@ -133,7 +95,7 @@ async function sendWelcomeEmail(
   }
 }
 
-// ── ADR-013: user resolution helpers ────────────────────────────────────────
+// ── ADR-013: user resolution helpers ────────────────────────────────────────────
 
 // V-026 (vibe code review 2026-05-14): direct auth.users query via service-role.
 // Previous implementation paginated admin.listUsers at perPage:1000 — would
@@ -303,7 +265,7 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  // ───── checkout.session.completed ────────────────────────────────────────
+  // ───── checkout.session.completed ────────────────────────────────────────────
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const rawMetadata = (session.metadata ?? {}) as Record<string, string | undefined>;
@@ -365,7 +327,7 @@ Deno.serve(async (req: Request) => {
         console.error("Error updating user_profiles with customer ID:", profileError);
     }
 
-    // ── BRANCH: second-report £9.99 (unchanged) ────────────────────────────
+    // ── BRANCH: second-report £9.99 (unchanged) ──────────────────────────────────────────
     if (paymentType === "second_report") {
       const nowIso = new Date().toISOString();
       const { error: flagErr } = await supabase
@@ -398,7 +360,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // ── DEFAULT BRANCH: initial £19.99 report purchase ──────────
+    // ── DEFAULT BRANCH: initial £19.99 report purchase ──────
     // V-023 (vibe code review 2026-05-14): switched from SELECT-then-INSERT-or-UPDATE
     // to a single upsert keyed on the new unique(user_id) constraint (migration
     // v023_subscription_sessions_unique_user_id applied 2026-05-14). Race-safe under
