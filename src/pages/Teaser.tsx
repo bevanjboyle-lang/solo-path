@@ -457,7 +457,7 @@ export default function Teaser() {
             {payLoading && (
               <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
             )}
-            {payLoading ? "Redirecting…" : "Get my full report, £19.99"}
+            {payLoading ? "Redirecting…" : "Get my 30-day plan, £19.99"}
           </button>
           <div className="mt-1.5 text-center text-[11px] text-muted-foreground">
             One-time · No subscription · Stripe checkout
@@ -633,7 +633,7 @@ function UnlockCallout({ onUnlock, payLoading }: { onUnlock: () => void; payLoad
             {payLoading && (
               <span className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
             )}
-            {payLoading ? "Redirecting…" : "Get my full report, £19.99"}
+            {payLoading ? "Redirecting…" : "Get my 30-day plan, £19.99"}
           </button>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
             <span className="uppercase tracking-[0.18em]">Pay with</span>
@@ -772,7 +772,7 @@ function BottomCTA({
           {payLoading && (
             <span className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
           )}
-          {payLoading ? "Redirecting…" : "Get my full report, £19.99"}
+          {payLoading ? "Redirecting…" : "Get my 30-day plan, £19.99"}
         </button>
         <div className="text-[11px] text-muted-foreground uppercase tracking-[0.14em]">
           One-time payment · No subscription · No auto-renewal
