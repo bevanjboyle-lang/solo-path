@@ -1,11 +1,11 @@
-// subscribe-signal v1 (2026-06-01) — capture readers into the Signal list.
-// Public (verify_jwt:false). Service-role write into signal_subscribers; dedupes
-// on lower(email). Returns ok for both new and existing emails (no enumeration).
+// subscribe-signal v2 (2026-06-01) — capture readers into the Signal list.
+// v2: CORS allow x-client-session-id (Solo's client sends it; without it the
+// browser blocks the POST). Public; service-role write; dedupes on lower(email).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 function json(o: unknown, status = 200) {
@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
     }
     const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { error } = await sb.from("signal_subscribers").insert({ email, source });
-    if (error && error.code !== "23505") { // 23505 = already subscribed; treat as success
+    if (error && error.code !== "23505") {
       console.error("subscribe-signal insert error:", error.message);
       return json({ error: "insert_failed", response_text: "Something went wrong. Please try again." }, 500);
     }

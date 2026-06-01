@@ -107,6 +107,22 @@ function getUserIdFromJwt(authHeader: string | null): string | null {
   }
 }
 
+// Eval-harness bypass (2026-06-01): the harness authenticates with the
+// service-role key, which has role "service_role" and no user "sub". Detect it
+// so the eval can drive the plan stage. Real users still get scoped to their
+// own report (the report fetch only drops the user_id filter for service-role).
+function getJwtRole(authHeader: string | null): string | null {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
+  try {
+    const payload = JSON.parse(
+      atob(authHeader.slice(7).split(".")[1].replace(/-/g, "+").replace(/_/g, "/"))
+    );
+    return payload.role || null;
+  } catch {
+    return null;
+  }
+}
+
 const parseJ = (t: string) => {
   try {
     return JSON.parse(t.replace(/```json\n?|```/g, "").trim());
@@ -429,8 +445,10 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const userId = getUserIdFromJwt(req.headers.get("authorization"));
-    if (!userId) {
+    const authHeader = req.headers.get("authorization");
+    const isServiceRole = getJwtRole(authHeader) === "service_role";
+    const userId = getUserIdFromJwt(authHeader);
+    if (!userId && !isServiceRole) {
       return new Response(
         JSON.stringify({ error: "Unauthorized", response_text: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -475,12 +493,14 @@ Deno.serve(async (req: Request) => {
     const openai = new OpenAI({ apiKey: openaiApiKey });
 
     // ── Fetch the report ──
-    const { data: report, error: fetchError } = await supabase
+    const reportQuery = supabase
       .from("reports")
       .select("*")
-      .eq("id", report_id)
-      .eq("user_id", userId)
-      .single();
+      .eq("id", report_id);
+    // Real users are scoped to their own report; the service-role eval caller
+    // (userId null) fetches by report_id alone.
+    if (!isServiceRole && userId) reportQuery.eq("user_id", userId);
+    const { data: report, error: fetchError } = await reportQuery.single();
 
     if (fetchError || !report) {
       return new Response(
