@@ -1,0 +1,194 @@
+[
+  {
+    "profile_id": "EDGE_001",
+    "label": "Compliance manager, FS, 9y, NO warm network (graceful-failure test)",
+    "domain": "Risk & Governance",
+    "archetype_hint": "ARCH_COMPLIANCE",
+    "questionnaire": {
+      "Q1": "Compliance Manager",
+      "Q2": 9,
+      "Q3a": "Financial Services",
+      "Q3b": "Mid-size UK retail bank, second-line compliance monitoring team.",
+      "Q4": "Governance and compliance; monitoring, regulatory change implementation, and control testing.",
+      "Q5": "manager",
+      "Q6": "Rebuilt the consumer-duty monitoring framework from scratch after the 2023 FCA rules landed — mapped 40+ controls to outcomes, built the testing calendar, and got it through internal audit with no findings.",
+      "Q7": "Occasionally junior colleagues ask me how to read a new regulation, but it stays inside my team. I have never advised anyone outside my employer.",
+      "Q8": "Thorough, calm with regulators, good at turning vague rules into concrete controls.",
+      "Q9": "high",
+      "Q10": "low",
+      "Q11": "I have only ever worked inside one bank. I know retail-banking compliance well but I genuinely don't know how firms buy external compliance help, or who decides.",
+      "Q12": null,
+      "Q13": "Weak. Maybe 12 LinkedIn connections, almost all current colleagues. I have no contacts who own budgets and no one I could call about independent work without it feeling cold and odd.",
+      "Q14": "full-time employed",
+      "Q15": "Leeds, UK."
+    },
+    "cv_extract": null,
+    "edge_case_flags": ["thin_network", "low_independence_confidence"],
+    "expected_outputs": {
+      "primary_archetype_id": "ARCH_COMPLIANCE",
+      "primary_archetype_label": "Compliance / Regulatory Specialist",
+      "secondary_archetype_acceptable_ids": ["ARCH_RISK", "ARCH_GOV"],
+      "hook_insight_must_reference": [
+        "a structural / platform / professional-body access route to first clients (because the user has no warm network to lean on)",
+        "the consumer-duty monitoring depth from Q6, not generic 'compliance experience'"
+      ],
+      "hook_insight_must_not_be": [
+        "anything that assumes a warm network of budget-holders the user can contact (Q13 is empty and Q12 is null — this is the failure mode being tested)",
+        "'reach out to your network' framing in any form",
+        "generic 'experienced compliance professional ready to go independent' framing"
+      ],
+      "first_move_acceptable_types": ["Platform", "Visibility", "Community"],
+      "first_move_must_not_be_type": ["Direct"],
+      "recommended_option_must_be_in": ["BM_COMPLIANCE_ASSURE", "BM_REG_CHANGE", "BM_OUTSOURCED_MLRO"],
+      "graceful_failure_expectations": "The plan must NOT depend on the user contacting a warm network. First moves should be structural (register on a compliance-contractor platform / marketplace), visibility (a focused LinkedIn point of view), or community (join a named compliance practitioner community and contribute) — never 'message 15 people you know'. Income outlook and pacing must reflect a cold start with no network and low independence confidence.",
+      "commercially_distinctive_one_liner": "Consumer-duty monitoring specialist who must reach a cold market through platforms and visibility, not a warm referral network."
+    },
+    "drafted_by": "claude",
+    "drafted_at": "2026-06-01",
+    "graded_by": "pending",
+    "graded_at": null,
+    "grading_notes": "EDGE COHORT (Battery 1, 2026-06-01). Tests D9 graceful failure for the networkless user — the biggest substance risk in the AI pre-pass. Bevan: review expected_outputs, especially first_move_must_not_be_type and graceful_failure_expectations, before locking."
+  },
+  {
+    "profile_id": "EDGE_002",
+    "label": "Transformation/PMO manager, 10y, based in Toronto (non-UK leakage test)",
+    "domain": "Strategy & Advisory",
+    "archetype_hint": "ARCH_TRANSFORMATION",
+    "questionnaire": {
+      "Q1": "Senior Transformation Manager",
+      "Q2": 10,
+      "Q3a": "Consulting & Professional Services",
+      "Q3b": "Canadian arm of a global management consultancy; large-scale operating-model and systems transformations for financial-services and public-sector clients.",
+      "Q4": "Project delivery and consulting; programme leadership and operating-model design.",
+      "Q5": "senior manager",
+      "Q6": "Led a 14-month core-banking migration PMO for a Canadian credit union — 60-person programme, brought it in on time after a troubled start by rebuilding the delivery governance and stage-gating.",
+      "Q7": "Yes — peers across Toronto consulting ask me to sanity-check troubled-programme recovery plans, maybe monthly.",
+      "Q8": "Calm in delivery crises, strong at programme governance, trusted to take over when a programme is going sideways.",
+      "Q9": "medium",
+      "Q10": "high",
+      "Q11": "Canadian financial-services and public-sector organisations running large change programmes. They buy recovery and assurance help from the big consultancies, but increasingly want independent senior operators who cost less and embed faster.",
+      "Q12": "One independent programme-assurance review for a former colleague's firm last year, paid, three weeks.",
+      "Q13": "Strong across Toronto and Canadian FS consulting.",
+      "Q14": "full-time employed",
+      "Q15": "Toronto, Canada."
+    },
+    "cv_extract": null,
+    "edge_case_flags": ["non_uk"],
+    "expected_outputs": {
+      "primary_archetype_id": "ARCH_TRANSFORMATION",
+      "primary_archetype_label": "Transformation / Programme Lead",
+      "secondary_archetype_acceptable_ids": ["ARCH_PMO", "ARCH_STRAT_PARTNER"],
+      "hook_insight_must_reference": [
+        "the troubled-programme recovery / assurance angle from Q6 (the distinctive wedge)",
+        "the Canadian / Toronto market the user named in Q11 and Q15"
+      ],
+      "hook_insight_must_not_be": [
+        "anything UK-specific (IR35, Companies House, HMRC, 'sole trader vs Ltd', GBP pricing) applied to a Canadian-based user",
+        "generic 'transformation consultant' framing"
+      ],
+      "first_move_acceptable_types": ["Direct", "Visibility"],
+      "recommended_option_must_be_in": ["BM_PROG_ASSURANCE", "BM_TRANSFORM_ADVISORY", "BM_PMO_FRACTIONAL"],
+      "graceful_failure_expectations": "The product is UK-first by default (bible §23). For a non-UK user it must EITHER localise (Canadian market framing, CAD pricing, no UK-only tax/legal references) OR clearly flag that guidance is UK-centred and may not apply. The failure mode is silently applying UK pricing benchmarks, IR35, and Companies House steps to a Toronto user as if they were facts.",
+      "commercially_distinctive_one_liner": "Toronto-based troubled-programme recovery specialist — must be served in a Canadian market frame, not a silently-UK one."
+    },
+    "drafted_by": "claude",
+    "drafted_at": "2026-06-01",
+    "graded_by": "pending",
+    "graded_at": null,
+    "grading_notes": "EDGE COHORT (Battery 1). Tests whether UK-first assumptions leak into a non-UK user's market snapshot, pricing, and guidance. Bevan: decide the intended behaviour (localise vs honestly flag) and encode it in graceful_failure_expectations before locking."
+  },
+  {
+    "profile_id": "EDGE_003",
+    "label": "Data analyst, 3y, below the ICP experience floor (over-promise test)",
+    "domain": "Tech & Digital",
+    "archetype_hint": "ARCH_DATA_ANALYST",
+    "questionnaire": {
+      "Q1": "Data Analyst",
+      "Q2": 3,
+      "Q3a": "Technology",
+      "Q3b": "Series-B SaaS scale-up, central data team.",
+      "Q4": "Analysis and reporting; dashboards, SQL, some experimentation analysis.",
+      "Q5": "other",
+      "Q6": "Built the self-serve revenue dashboard the whole commercial team now uses; cut ad-hoc data requests to the team by about half.",
+      "Q7": "Not really — I'm usually the one asking for advice.",
+      "Q8": "Fast with SQL, good at turning a vague question into a clean dashboard.",
+      "Q9": "high",
+      "Q10": "low",
+      "Q11": "I've only worked at this one start-up. I don't really know how companies buy external data help.",
+      "Q12": null,
+      "Q13": "Weak — mostly other junior analysts.",
+      "Q14": "full-time employed",
+      "Q15": "Manchester, UK."
+    },
+    "cv_extract": null,
+    "edge_case_flags": ["below_icp_experience_floor", "thin_network"],
+    "expected_outputs": {
+      "primary_archetype_id": "ARCH_DATA_ANALYST",
+      "primary_archetype_label": "Data Analyst / BI Specialist",
+      "secondary_archetype_acceptable_ids": ["ARCH_DATA_ENG", "ARCH_ANALYTICS"],
+      "hook_insight_must_reference": [
+        "an honest, achievable entry point given only 3 years' experience and no network"
+      ],
+      "hook_insight_must_not_be": [
+        "senior / fractional-leadership pricing or positioning the user cannot credibly command at 3 years",
+        "any implication that an independent income could realistically replace their salary soon"
+      ],
+      "first_move_acceptable_types": ["Platform", "Visibility"],
+      "recommended_option_must_be_in": ["BM_DATA_PROJECT", "BM_DASHBOARD_BUILD", "BM_ANALYTICS_FREELANCE"],
+      "graceful_failure_expectations": "The ICP is 5-12 years (bible §5). At 3 years the product should be HONEST about limited track record and weak commercial readiness — temper pricing, lengthen time-to-revenue, and avoid senior framing. The failure mode is selling this user the same confident senior-independent story as a 12-year manager. Acceptable to recommend a modest project-based entry; not acceptable to over-promise.",
+      "commercially_distinctive_one_liner": "Early-career analyst who should be told the honest, modest version — not sold a senior-independent fantasy."
+    },
+    "drafted_by": "claude",
+    "drafted_at": "2026-06-01",
+    "graded_by": "pending",
+    "graded_at": null,
+    "grading_notes": "EDGE COHORT (Battery 1). Below-ICP boundary case. Tests honesty / over-promise control (D2). Open question for Bevan: should the funnel even take this user's money, or fit-gate them? Encode the decision before locking."
+  },
+  {
+    "profile_id": "EDGE_004",
+    "label": "Blended ops/data/product lead, 12y, no clean archetype (rationale-reasoning test)",
+    "domain": "Customer Experience & Service Design",
+    "archetype_hint": "ARCH_SERVICE_DESIGN",
+    "questionnaire": {
+      "Q1": "Head of Service Operations (also owns the data and product-ops functions)",
+      "Q2": 12,
+      "Q3a": "Technology",
+      "Q3b": "UK healthtech scale-up; I run service operations, the ops-analytics team, and product-operations — the role was stitched together over three reorgs.",
+      "Q4": "Operations and process, plus analytics, plus some product delivery — genuinely split across all three.",
+      "Q5": "head of",
+      "Q6": "Designed and stood up the patient-onboarding operating model end-to-end: the service blueprint, the ops-analytics that monitor it, and the product backlog that automates it. Cut onboarding time from 9 days to under 2.",
+      "Q7": "Constantly — founders and heads of ops at other healthtechs ask me how to join up service design, ops data, and product. It is the thing people think I'm unusually good at.",
+      "Q8": "Joining up the bits nobody else connects: service, data, and product as one system.",
+      "Q9": "low",
+      "Q10": "high",
+      "Q11": "UK healthtech and regulated-service scale-ups. They struggle because service design, data, and product sit in separate silos and nobody owns the join. They buy point specialists and end up with a disconnected mess.",
+      "Q12": "Two paid advisory days for a former colleague's healthtech, helping them design their onboarding ops model.",
+      "Q13": "Strong across UK healthtech founders and ops leaders.",
+      "Q14": "full-time employed",
+      "Q15": "London, UK."
+    },
+    "cv_extract": null,
+    "edge_case_flags": ["ambiguous_archetype", "blended_role"],
+    "expected_outputs": {
+      "primary_archetype_id": "ARCH_SERVICE_DESIGN",
+      "primary_archetype_label": "any defensible closest match (Service Design / Ops / Analytics)",
+      "secondary_archetype_acceptable_ids": ["ARCH_OPS", "ARCH_DATA_ANALYST", "ARCH_PRODUCT_OPS"],
+      "hook_insight_must_reference": [
+        "the cross-silo join (service + data + product) that is the user's genuine distinctive edge from Q6/Q8/Q11"
+      ],
+      "hook_insight_must_not_be": [
+        "a flattening of the blended profile into one generic single-discipline label (e.g. plain 'operations consultant') that loses the join"
+      ],
+      "first_move_acceptable_types": ["Direct", "Visibility"],
+      "recommended_option_must_be_in": ["BM_SERVICE_BLUEPRINT", "BM_OPS_ADVISORY", "BM_PROCESS_AUTOMATION"],
+      "rationale_must_reason_not_restate": "The recommendation rationale must EXPLAIN why the chosen path fits this blended profile — naming the cross-silo wedge as the differentiator and why a single-discipline option would be weaker. It must not simply restate the user's selection or list the strands. This is the exact own-goal the AI pre-pass caught on report 773a2230.",
+      "graceful_failure_expectations": "An ambiguous profile must be handled per bible §13 ('most don't fit cleanly; returns closest match plus two nearest alternatives; report reflects the blend'). The failure mode is forcing the user into one ill-fitting archetype and producing a recommendation that ignores their actual cross-functional edge.",
+      "commercially_distinctive_one_liner": "Cross-silo service+data+product operator whose value IS the join — the recommendation must reason about the blend, not flatten it."
+    },
+    "drafted_by": "claude",
+    "drafted_at": "2026-06-01",
+    "graded_by": "pending",
+    "graded_at": null,
+    "grading_notes": "EDGE COHORT (Battery 1). Tests classifier behaviour on a genuinely blended role AND recommendation-rationale quality (judge-6). Directly targets the restate-not-reason own-goal from the pre-pass."
+  }
+]

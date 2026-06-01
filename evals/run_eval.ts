@@ -73,7 +73,7 @@ function parseCliArgs(): RunEvalArgs {
   const supabase_url = Deno.env.get("SUPABASE_URL") ?? "https://dnnxmjazillhktwttkux.supabase.co";
   const supabase_service_role_key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const openai_api_key = Deno.env.get("OPENAI_API_KEY") ?? "";
-  const openai_judge_model = Deno.env.get("OPENAI_JUDGE_MODEL") ?? "gpt-4o-2024-08-06";
+  const openai_judge_model = Deno.env.get("OPENAI_JUDGE_MODEL") ?? "gpt-5.4";  // modernised 2026-05-31 — re-baselines the eval (scores not comparable to pre-5.4 runs)
   const golden_dataset_path = Deno.env.get("GOLDEN_DATASET_PATH") ?? "evals/golden_dataset/profiles.json";
   const judges_dir = Deno.env.get("JUDGES_DIR") ?? "prompts/judges";
 
@@ -110,6 +110,22 @@ function parseCliArgs(): RunEvalArgs {
 async function loadProfiles(path: string, subset?: string[]): Promise<Profile[]> {
   const text = await Deno.readTextFile(path);
   const all = JSON.parse(text) as Profile[];
+  // Battery-1 (2026-06-01): also load the edge cohort (edge_profiles.json,
+  // sibling of profiles.json) if present, so networkless / non-UK / junior /
+  // ambiguous-archetype profiles run against the existing judges. Non-fatal if
+  // the file is absent. Judge-8 (graceful failure) is wired in a later pass;
+  // until then the edge profiles are scored by judges 1–5.
+  try {
+    const edgePath = Deno.env.get("EDGE_PROFILES_PATH") ?? path.replace(/profiles\.json$/, "edge_profiles.json");
+    if (edgePath !== path) {
+      const edgeText = await Deno.readTextFile(edgePath);
+      const edge = JSON.parse(edgeText) as Profile[];
+      all.push(...edge);
+      console.log(`Loaded ${edge.length} edge profile(s) from ${edgePath}`);
+    }
+  } catch (_e) {
+    // No edge cohort present (or unreadable); continue with the gold set only.
+  }
   if (subset && subset.length > 0) {
     const set = new Set(subset);
     const matched = all.filter((p) => set.has(p.profile_id));
@@ -323,11 +339,11 @@ function buildWinnerVsMeanSummary(
   const per_profile: WinnerVsMeanSummary["per_profile"] = {};
 
   for (const r of results) {
-    const candidates = (r.pipeline_output as Record<string, unknown>)[candidatesKey] as
+    const candidates = (r.pipeline_output as unknown as Record<string, unknown>)[candidatesKey] as
       | Array<Record<string, unknown>>
       | null
       | undefined;
-    const winnerIdx = (r.pipeline_output as Record<string, unknown>)[winnerIndexKey] as
+    const winnerIdx = (r.pipeline_output as unknown as Record<string, unknown>)[winnerIndexKey] as
       | number
       | null
       | undefined;
