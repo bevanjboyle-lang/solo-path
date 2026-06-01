@@ -22,7 +22,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { complete } from "./llm_client.ts";
 
-const FUNCTION_VERSION = "wp8-p3b-reviewer-v1";
+const FUNCTION_VERSION = "wp8-p3b-reviewer-v2-prompt-runs-logging";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -171,6 +171,10 @@ Deno.serve(async (req: Request) => {
       temperature: 0,
       max_tokens: 1500,
       prompt_version_hash: P3B_PROMPT_HASH,
+      // WP5: route cost/usage logging to public.prompt_runs.
+      supabase,
+      function_name: "review-plan",
+      report_id: reportId,
     });
 
     const parsed = (result.parsed as {
