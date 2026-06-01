@@ -64,6 +64,9 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import OpenAI from "https://esm.sh/openai@4.79.1";
+// WP6 guardrail wiring (2026-06-01): strip em dashes (banned AI tell) from every
+// user-facing string before persist.
+import { sanitiseReportTree } from "../_shared/guardrails.ts";
 
 import {
   ACTIVATION_PLAN_SCHEMA,
@@ -1019,10 +1022,10 @@ async function generatePlanInBackground(args: {
     const { error: updateError } = await supabase
       .from("reports")
       .update({
-        core_report: updatedCoreReport,
-        activation_plan: activationPlan,
-        market_snapshot: legacyMarketSnapshotText,
-        market_snapshots: marketSnapshots,
+        core_report: sanitiseReportTree(updatedCoreReport),
+        activation_plan: sanitiseReportTree(activationPlan),
+        market_snapshot: sanitiseReportTree(legacyMarketSnapshotText),
+        market_snapshots: sanitiseReportTree(marketSnapshots),
         selected_strands: selectedStrands.map(s => ({
           strand_id: s.strand_id,
           rank: s.rank,

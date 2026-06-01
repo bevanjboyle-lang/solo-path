@@ -51,6 +51,9 @@
 //
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import OpenAI from "https://esm.sh/openai@4.79.1";
+// WP6 guardrail wiring (2026-06-01): strip em dashes (banned AI tell, tone-of-voice.md)
+// from every user-facing string before persist, so no surface renders them.
+import { sanitiseReportTree } from "../_shared/guardrails.ts";
 
 // =============================================================================
 // INLINED FROM report-schema.ts
@@ -1210,7 +1213,7 @@ async function generateReportInBackground(args: BgArgs) {
       derived_flags: flags,
       ironclad: { function_version: FUNCTION_VERSION, attempts: p1Result.attempts, validation_passed: validation.passed, overall_score: validation.overall_score, hard_failures: validation.hard_failures, soft_warnings: validation.soft_warnings, card_scores: validation.card_scores, total_word_count: validation.total_word_count, never_list_hits: validation.never_list_hits, raw_content_lengths: p1Result.rawContentLengths, parsed_top_keys: finalReport ? Object.keys(finalReport) : [] },
     };
-    const { error: updateError } = await supabase.from("reports").update({ core_report: finalReport, hook_insight: hookInsightText, ai_impact_section: aiImpactSection, user_context_profile: userContextProfile, recommended_selection: recommendedSelection, provisional_first_move: provisionalFirstMove, status: "teaser_ready" }).eq("id", reportId);
+    const { error: updateError } = await supabase.from("reports").update({ core_report: sanitiseReportTree(finalReport), hook_insight: sanitiseReportTree(hookInsightText), ai_impact_section: sanitiseReportTree(aiImpactSection), user_context_profile: userContextProfile, recommended_selection: recommendedSelection, provisional_first_move: sanitiseReportTree(provisionalFirstMove), status: "teaser_ready" }).eq("id", reportId);
     if (updateError) {
       console.error(`bg ${reportId} update error:`, updateError);
       await supabase.from("reports").update({ status: "failed", error: String(updateError.message ?? updateError) }).eq("id", reportId);
