@@ -844,7 +844,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                     if (isSubscriber) return { label: "TRACKER", value: "Rolling" };
                     if (planState === "day31_nosub") return { label: "DAY", value: "Past day 30" };
                     if (dayNumber > 0) return { label: "DAY", value: `${dayNumber} of 30` };
-                    return { label: "DAY", value: "Starts tomorrow" };
+                    return { label: "DAY", value: "Starts when you're ready" };
                   })();
                   const startedDate = activatedAt
                     ? new Date(activatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
@@ -978,7 +978,9 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                         weekNumber={weekNumber}
                         sessionId={sessionId}
                         onScrollToReport={() => {
-                          /* Report is its own route at /report; sidebar handles the nav. */
+                          /* "Read it first" — take the user to read their full report
+                             (its own route at /report) before they start the plan. */
+                          navigate("/report");
                         }}
                         onOpenCheckin={openCheckin}
                         onOpenActivation={() => setActivationOpen(true)}
@@ -989,7 +991,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
                 {/* ─── Tracker (Day 0 = dormant block; Day 1+ = grid) ─── */}
                 {planState === "day0" ? (
-                  <PanelSection num="02" label="Your tracker" meta="starts tomorrow">
+                  <PanelSection num="02" label="Your tracker" meta="starts when you're ready">
                     <DormantTrackerBlock />
                   </PanelSection>
                 ) : (
@@ -1257,10 +1259,10 @@ function DormantTrackerBlock() {
   return (
     <div className="bg-[#F3F0EA] border border-[#E5E2DC] rounded-lg px-8 sm:px-12 py-10 sm:py-12 text-center">
       <div className="text-[22px] sm:text-[26px] font-extrabold tracking-tight text-foreground">
-        Your tracker starts tomorrow.
+        Your tracker starts when you're ready.
       </div>
       <p className="mt-3 text-[14px] text-muted-foreground leading-relaxed max-w-md mx-auto">
-        Today's job is to read your report. Tomorrow we'll start the 30-day plan with your first move.
+        Read your report first. Whenever you're ready to act, starting your plan kicks off Day 1 with your first move — no rush, it'll wait for you.
       </p>
     </div>
   );

@@ -119,14 +119,39 @@ export default function AskSolo() {
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
 
   const { isActive: isSubscriber } = useSubscriptionStatus();
-  const questionsUsed = 3;
-  const questionsLeft = QUOTA_TOTAL - questionsUsed;
+  // F44 fix: questionsUsed was hardcoded to 3 (every buyer saw 7/10 on question one).
+  // Now derived from the real count of user-role messages across the user's Ask Solo
+  // conversations. 0 for a brand-new buyer → shows the full 10.
+  const [questionsUsed, setQuestionsUsed] = useState(0);
+  const questionsLeft = Math.max(0, QUOTA_TOTAL - questionsUsed);
   const quotaExhausted = !isSubscriber && questionsUsed >= QUOTA_TOTAL;
   const quotaWarning = !isSubscriber && questionsLeft <= 3 && !quotaExhausted;
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const sessionStartedRef = useRef(false);
+
+  /* ── F44: real quota usage = count of user questions across all conversations ── */
+  useEffect(() => {
+    if (!user?.id || isSubscriber) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("advisory_conversations")
+        .select("messages")
+        .eq("user_id", user.id);
+      if (cancelled || !data) return;
+      let used = 0;
+      for (const row of data) {
+        const msgs = Array.isArray((row as { messages?: unknown }).messages)
+          ? ((row as { messages: Array<{ role?: string }> }).messages)
+          : [];
+        used += msgs.filter((m) => m?.role === "user").length;
+      }
+      if (!cancelled) setQuestionsUsed(used);
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, isSubscriber, messages.length]);
 
   /* ── Start session on mount ── */
   useEffect(() => {
