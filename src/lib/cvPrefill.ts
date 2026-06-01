@@ -25,9 +25,22 @@ export interface CvPrefill {
   answers: Record<number, string | string[]>;
   /** Pre-extracted first name (separate state in Questionnaire). */
   firstName: string;
+  /**
+   * WP7: verbatim CV evidence for pre-filled answers in the 70–89 confidence band,
+   * keyed by question id. The questionnaire can surface this as a "we read this
+   * from your CV: …" confirmation under the field. Empty for high-confidence (90+)
+   * fields and for CVs parsed before per-field confidence existed.
+   */
+  evidence: Record<number, string>;
 }
 
-const EMPTY: CvPrefill = { answers: {}, firstName: "" };
+const EMPTY: CvPrefill = { answers: {}, firstName: "", evidence: {} };
+
+// WP7 confidence gate (parse-cv v33 emits per_field_confidence + parse_evidence).
+// HARD INVARIANT: a field scored < 70 NEVER pre-fills a questionnaire answer.
+// Enforced here in code, not in the prompt.
+const PREFILL_CONFIDENCE_FLOOR = 70;
+const EVIDENCE_BAND_CEILING = 90; // 70–89 → show evidence; 90+ → silent (existing flow)
 
 /**
  * Read the persisted cv_extract for the current client session and map it
@@ -55,47 +68,92 @@ export function readCvPrefill(): CvPrefill {
  */
 export function mapCvToAnswers(cv: Record<string, unknown>): CvPrefill {
   const answers: Record<number, string | string[]> = {};
+  const evidence: Record<number, string> = {};
+
+  const confidences = (cv.per_field_confidence && typeof cv.per_field_confidence === "object"
+    ? cv.per_field_confidence
+    : {}) as Record<string, unknown>;
+  const evidences = (cv.parse_evidence && typeof cv.parse_evidence === "object"
+    ? cv.parse_evidence
+    : {}) as Record<string, unknown>;
+
+  /**
+   * Confidence gate for one parse-cv field. Returns true if the field is allowed
+   * to pre-fill. Backward-compatible: if no confidence is present for the field
+   * (CV parsed before per-field confidence existed), it passes — we don't
+   * suddenly stop pre-filling legacy extracts. For v33+ extracts the < 70 floor
+   * is enforced, satisfying the WP7 hard invariant.
+   */
+  const allowed = (field: string): boolean => {
+    const c = confidences[field];
+    if (typeof c !== "number") return true; // legacy extract — no score to gate on
+    return c >= PREFILL_CONFIDENCE_FLOOR;
+  };
+
+  /** Record verbatim evidence for a pre-filled field that sits in the 70–89 band. */
+  const noteEvidence = (qid: number, field: string) => {
+    const c = confidences[field];
+    if (typeof c !== "number") return; // legacy / no score → no evidence card
+    if (c >= PREFILL_CONFIDENCE_FLOOR && c < EVIDENCE_BAND_CEILING) {
+      const ev = evidences[field];
+      if (typeof ev === "string" && ev.trim()) evidence[qid] = ev.trim();
+    }
+  };
 
   // Q1: current_job_title (text, verbatim)
-  if (typeof cv.current_job_title === "string" && cv.current_job_title.trim()) {
+  if (allowed("current_job_title") && typeof cv.current_job_title === "string" && cv.current_job_title.trim()) {
     answers[1] = cv.current_job_title.trim();
+    noteEvidence(1, "current_job_title");
   }
 
   // Q2: years_experience (integer → band string).
   // The parse-cv schema returns an integer; questionnaire wants one of five
   // bands. Rounding rule below mirrors what a reasonable user would tick.
-  if (typeof cv.years_experience === "number") {
+  if (allowed("years_experience") && typeof cv.years_experience === "number") {
     const band = mapYearsToBand(cv.years_experience);
-    if (band) answers[2] = band;
+    if (band) {
+      answers[2] = band;
+      noteEvidence(2, "years_experience");
+    }
   }
 
   // Q3: sector_primary (parse-cv string → questionnaire dropdown).
-  if (typeof cv.sector_primary === "string") {
+  if (allowed("sector_primary") && typeof cv.sector_primary === "string") {
     const sector = mapSector(cv.sector_primary);
-    if (sector) answers[3] = sector;
+    if (sector) {
+      answers[3] = sector;
+      noteEvidence(3, "sector_primary");
+    }
   }
 
   // Q30 (employer) — verbatim, optional question.
-  if (typeof cv.employer_org_type === "string" && cv.employer_org_type.trim()) {
+  if (allowed("employer_org_type") && typeof cv.employer_org_type === "string" && cv.employer_org_type.trim()) {
     answers[30] = cv.employer_org_type.trim();
+    noteEvidence(30, "employer_org_type");
   }
 
   // Q4: type_of_work (lowercase string in parse-cv → title-case option in questionnaire).
-  if (typeof cv.type_of_work === "string") {
+  if (allowed("type_of_work") && typeof cv.type_of_work === "string") {
     const work = mapTypeOfWork(cv.type_of_work);
-    if (work) answers[4] = work;
+    if (work) {
+      answers[4] = work;
+      noteEvidence(4, "type_of_work");
+    }
   }
 
   // Q5: seniority_level (lowercase string → questionnaire single-select).
-  if (typeof cv.seniority_level === "string") {
+  if (allowed("seniority_level") && typeof cv.seniority_level === "string") {
     const seniority = mapSeniority(cv.seniority_level);
-    if (seniority) answers[5] = seniority;
+    if (seniority) {
+      answers[5] = seniority;
+      noteEvidence(5, "seniority_level");
+    }
   }
 
   const firstName =
     typeof cv.extracted_name === "string" ? cv.extracted_name.trim() : "";
 
-  return { answers, firstName };
+  return { answers, firstName, evidence };
 }
 
 /** Years-of-experience integer → band label that exactly matches Q2's options. */
