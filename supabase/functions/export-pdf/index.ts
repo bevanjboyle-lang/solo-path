@@ -170,6 +170,23 @@ async function generatePdf(reportData: ReportData): Promise<Uint8Array> {
     for (let i = 1; i < lines.length; i++) { ensure(14); page.drawText(lines[i], { x: M + indent + 12, y, size: 10, font: reg, color: bodyC }); y -= 14; }
   }
 
+  // Full-page section divider so the two halves of the deliverable read as
+  // distinct parts (Part One: report, Part Two: the 30-day plan). Starts a
+  // clean page, draws the part title centred, then drops y so the next
+  // sectionHeader begins on a fresh page.
+  function partDivider(kicker: string, title: string, subtitle: string) {
+    newPage();
+    y = PH * 0.58;
+    page.drawText(sanitise(kicker.toUpperCase()), { x: M, y, size: 12, font: bold, color: mint });
+    y -= 30;
+    page.drawText(sanitise(title), { x: M, y, size: 30, font: bold, color: ink });
+    y -= 16;
+    page.drawRectangle({ x: M, y, width: 70, height: 3, color: mint });
+    y -= 26;
+    if (subtitle) text(subtitle, { size: 13, color: muted, lh: 19, width: CW - 80 });
+    y = M + 20; // force the following section onto a new page
+  }
+
   const core = (reportData.core_report ?? {}) as Record<string, any>;
   const arch = (core.archetype ?? {}) as Record<string, any>;
 
@@ -186,6 +203,9 @@ async function generatePdf(reportData: ReportData): Promise<Uint8Array> {
   const genDate = new Date().toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
   page.drawText(sanitise(`Prepared ${genDate}`), { x: M, y, size: 10, font: reg, color: muted });
   y -= 60;
+
+  // \u2500\u2500 PART ONE \u2500\u2500
+  partDivider("Part One", "Your Report", "Who you are, the paths open to you, and an honest read on each.");
 
   // \u2500\u2500 PROFILE \u2500\u2500
   sectionHeader("Your Profile");
@@ -264,6 +284,7 @@ async function generatePdf(reportData: ReportData): Promise<Uint8Array> {
   const ap = (apOuter.activation_plan ?? {}) as Record<string, any>;
   const phases = Array.isArray(ap.phases) ? ap.phases as Array<Record<string, any>> : [];
   if (phases.length || ap.summary) {
+    partDivider("Part Two", "Your 30-Day Plan", "Exactly what to do, day by day - with the messages to send and the market read behind each move.");
     sectionHeader("Your 30-Day Activation Plan", { newPageBefore: true });
     if (ap.summary) text(asStr(ap.summary));
     if (ap.success_metric) { gap(4); label("Success metric", asStr(ap.success_metric)); }
@@ -281,10 +302,11 @@ async function generatePdf(reportData: ReportData): Promise<Uint8Array> {
       for (const d of days) {
         ensure(26);
         gap(3);
-        const dayNum = asStr(d.day ?? "");
+        const dayRaw = asStr(d.day ?? "").trim();
+        const dayHead = /^day\b/i.test(dayRaw) ? dayRaw : `Day ${dayRaw}`;
         const dayLabel = d.label ? ` - ${asStr(d.label)}` : "";
         const t = d.time_required ? `   (${asStr(d.time_required)})` : "";
-        text(`Day ${dayNum}${dayLabel}${t}`, { size: 10.5, font: bold, color: ink, lh: 14, indent: 6 });
+        text(`${dayHead}${dayLabel}${t}`, { size: 10.5, font: bold, color: ink, lh: 14, indent: 6 });
         const tasks = Array.isArray(d.tasks) ? d.tasks as Array<Record<string, any>> : [];
         for (const tk of tasks) {
           const desc = asStr(tk.description ?? tk.move ?? tk.task_type ?? "");
