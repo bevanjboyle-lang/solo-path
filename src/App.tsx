@@ -41,6 +41,7 @@ import ServerError from "./pages/ServerError";
 import DevScreens from "./pages/DevScreens";
 import SampleReport from "./pages/SampleReport";
 import Signal from "./pages/Signal";
+import SignalEdition from "./pages/SignalEdition";
 import HowItWorks from "./pages/HowItWorks";
 import Footer from "@/components/Footer";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
@@ -120,6 +121,7 @@ function AnimatedRoutes() {
 						<Route path="/sample-report" element={<SampleReport />} />
 						<Route path="/how-it-works" element={<HowItWorks />} />
 						<Route path="/signal" element={<Signal />} />
+						<Route path="/signal/:slug" element={<SignalEdition />} />
 						<Route path="/privacy" element={<PrivacyPolicy />} />
 						<Route path="/terms" element={<TermsOfService />} />
 						<Route path="/auth" element={<Auth />} />
