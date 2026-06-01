@@ -76,7 +76,7 @@ import {
 import { P3_SYSTEM_PROMPT_TEMPLATE, P3_USER_MESSAGE_TEMPLATE } from "./p3-system-prompt.ts";
 import { P4_SYSTEM_PROMPT_TEMPLATE, P4_USER_MESSAGE_TEMPLATE } from "./p4-system-prompt.ts";
 
-const FUNCTION_VERSION = "v36-vibe-review-fixes-wp2-first-move-regen-kickoff";
+const FUNCTION_VERSION = "v37-wp8-p3b-plan-review-loop";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -761,7 +761,9 @@ async function generatePlanInBackground(args: {
     console.log(`Activation plan parsed. Top-level keys: ${Object.keys(parsedPlan || {}).join(", ")}`);
 
     // ── Adapt time_allocation array → legacy object form ──
-    const activationPlan = adaptParsedPlan(parsedPlan);
+    // `let` (was const): the WP8 P3b review loop below may reassign this with a
+    // regenerated plan before the final persist.
+    let activationPlan = adaptParsedPlan(parsedPlan);
 
     // ── Log apollo_query coverage for observability (mirrored from v28) ──
     let coldTaskCount = 0;
@@ -927,6 +929,90 @@ async function generatePlanInBackground(args: {
         tasks_completed: 0,
         tasks_total: 0,
       };
+    }
+
+    // ── WP8 P3b: plan consistency review + bounded regeneration ──
+    // Gated by WP8_PLAN_REVIEW_ENABLED (default off → no behaviour change).
+    // The reviewer (review-plan, verify_jwt:false) reads reports.activation_plan,
+    // so we persist the candidate plan with status STILL "generating_plan" (the
+    // user keeps polling and never sees an unreviewed plan). On a blocking fail we
+    // regenerate ONLY P3 (P4 snapshots + recalibration are independent of plan
+    // text) with the reviewer's instruction, capped at 2 regens (max 3 plans
+    // reviewed). On exhaustion we log a quality_failure event and deliver the last
+    // plan as a fallback. Any reviewer/regeneration error breaks the loop and
+    // delivers the current plan — review must never block plan delivery.
+    if (Deno.env.get("WP8_PLAN_REVIEW_ENABLED") === "true") {
+      const REVIEW_MAX_REGENS = 2;
+      const reviewBaseUrl = Deno.env.get("SUPABASE_URL");
+      const reviewKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      let reviewAttempt = 0;
+      try {
+        if (!reviewBaseUrl || !reviewKey) {
+          console.error(`bg ${report_id} P3b skipped: SUPABASE_URL or SERVICE_ROLE_KEY missing`);
+        } else {
+          while (reviewAttempt <= REVIEW_MAX_REGENS) {
+            // Persist current candidate so the reviewer can read it (status unchanged).
+            await supabase.from("reports").update({ activation_plan: activationPlan }).eq("id", report_id);
+
+            const reviewRes = await fetch(`${reviewBaseUrl}/functions/v1/review-plan`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${reviewKey}`, apikey: reviewKey },
+              body: JSON.stringify({ reportId: report_id }),
+            });
+            // deno-lint-ignore no-explicit-any
+            const review: any = await reviewRes.json().catch(() => null);
+            if (!reviewRes.ok || !review || (review.verdict !== "pass" && review.verdict !== "fail")) {
+              console.error(`bg ${report_id} P3b review unusable (status ${reviewRes.status}) — delivering current plan`);
+              break;
+            }
+            console.log(`bg ${report_id} P3b attempt ${reviewAttempt}: verdict=${review.verdict} blocking=${review.blocking_count ?? 0} days=${review.computed_day_count}`);
+            if (review.verdict === "pass") break;
+
+            if (reviewAttempt >= REVIEW_MAX_REGENS) {
+              try {
+                await supabase.from("events").insert({
+                  event_type: "quality_failure",
+                  report_id,
+                  payload: { stage: "P3b", attempts: reviewAttempt + 1, problems: review.problems ?? [], regeneration_instruction: review.regeneration_instruction ?? null },
+                });
+              } catch (evErr) {
+                console.error(`bg ${report_id} P3b quality_failure event log failed:`, (evErr as Error)?.message ?? evErr);
+              }
+              console.error(`bg ${report_id} P3b exhausted ${reviewAttempt + 1} attempts — delivering last plan as fallback`);
+              break;
+            }
+
+            // Regenerate P3 only, targeting the reviewer's specific problems.
+            reviewAttempt++;
+            const regenInstruction = String(review.regeneration_instruction ?? "");
+            const problemsText = JSON.stringify(review.problems ?? []);
+            const regenUserMessage = `${prompt3UserMessage}\n\n---\nREGENERATION PASS ${reviewAttempt} of ${REVIEW_MAX_REGENS}. Your previous plan FAILED an automated internal-consistency review. Return a corrected full plan in the same schema, fixing exactly the problems below and leaving everything that was already correct unchanged.\n\nReviewer instruction: ${regenInstruction}\n\nSpecific problems: ${problemsText}`;
+            const regenRes = await openai.chat.completions.create({
+              model: MODEL_TIER1,
+              temperature: 0.5,
+              max_completion_tokens: 24000,
+              messages: [
+                { role: "system", content: P3_SYSTEM_PROMPT_TEMPLATE },
+                { role: "user", content: regenUserMessage },
+              ],
+              response_format: { type: "json_schema", json_schema: ACTIVATION_PLAN_SCHEMA },
+            });
+            const regenChoice = regenRes.choices[0];
+            if (regenChoice.finish_reason === "length") {
+              console.error(`bg ${report_id} P3b regen ${reviewAttempt} truncated — keeping prior plan`);
+              break;
+            }
+            const regenAdapted = adaptParsedPlan(parseJ(regenChoice.message.content || "{}") as ActivationPlanOutput);
+            if (!regenAdapted.activation_plan || !regenAdapted.first_move) {
+              console.error(`bg ${report_id} P3b regen ${reviewAttempt} missing required fields — keeping prior plan`);
+              break;
+            }
+            activationPlan = regenAdapted;
+          }
+        }
+      } catch (reviewErr) {
+        console.error(`bg ${report_id} P3b review loop threw — delivering current plan:`, (reviewErr as Error)?.message ?? reviewErr);
+      }
     }
 
     // ── Update the report row ──
