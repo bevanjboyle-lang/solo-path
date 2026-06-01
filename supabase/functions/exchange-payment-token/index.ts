@@ -1,33 +1,32 @@
 /**
- * exchange-payment-token v6 — vibe code review fixes — 2026-05-14
+ * exchange-payment-token v8 — F44 fix (2026-06-01)
  *
- * V-034 + V-035: single-use token guard via payment_token_exchanges table.
- *   The Stripe checkout session ID was effectively a bearer token — anyone who
- *   captured the post-payment URL (browser history, screenshot, referer leak)
- *   could replay it to take over the session. v6 records each exchanged token
- *   in payment_token_exchanges (PK on token); a re-exchange attempt returns
- *   410 GONE with a message pointing the user to the magic link in their email.
- * V-037: subscription_sessions race fix — switches the SELECT-then-INSERT-or-
- *   UPDATE block to a single upsert(onConflict:'user_id'). Now safe under the
- *   V-023 unique constraint applied 2026-05-14.
+ * v8 (F44): mint the post-payment session for the RESOLVED OWNER's email
+ *   (userId, from the payments row / metadata), NOT stripeSession.customer_details.email.
+ *   F44 surfaced that when the Stripe checkout email differs from the account's
+ *   signup email (e.g. a Gmail base address vs a +alias), the function logged the
+ *   user into the WRONG account; the payment-success page then polled the buyer's
+ *   report under the wrong session, never saw it, and stuck at 60s ("webhook_pending").
+ *   Real users with matching emails were unaffected, but this is the correct,
+ *   robust behaviour: the session must always match the report/payment owner.
+ *   customer_details.email is now only a last-resort fallback when userId can't
+ *   resolve an email.
  *
- * exchange-payment-token v5 — use supabase-js verifyOtp(token_hash).
+ * v6/v7 history: V-034/035 single-use token guard via payment_token_exchanges;
+ *   V-037 subscription_sessions upsert race fix; v5 supabase-js verifyOtp(token_hash).
  * Frontend contract unchanged: returns { session: { access_token, refresh_token } }.
  */
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-// V-036 (vibe code review 2026-05-14): TRANCHE_1_MODULES sourced from shared module.
 import { TRANCHE_1_MODULES } from "../_shared/constants.ts";
 
-const FUNCTION_VERSION = "v7-vibe-review-fixes";
+const FUNCTION_VERSION = "v8-session-email-from-owner";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-client-session-id",
 };
-
-// V-036: TRANCHE_1_MODULES imported above from _shared/constants.ts
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -43,7 +42,6 @@ Deno.serve(async (req: Request) => {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  // Anon client for verifyOtp — must NOT use service role key.
   const anonClient = createClient(supabaseUrl, anonKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
@@ -78,10 +76,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // V-034 + V-035 (vibe code review 2026-05-14): single-use guard.
-    // Tries to atomically claim the token. If a row with this token already exists,
-    // the upsert returns empty (ignoreDuplicates) and we reject with 410 GONE.
-    // The user's magic-link email remains the canonical sign-in path.
+    // V-034 + V-035: single-use guard.
     {
       const { data: claimRow, error: claimError } = await supabase
         .from("payment_token_exchanges")
@@ -91,7 +86,6 @@ Deno.serve(async (req: Request) => {
         )
         .select("token");
       if (claimError) {
-        // Defense-in-depth: proceed if we can't read the table (the worst case is at-least-once exchange).
         console.error(`${FUNCTION_VERSION} V-034 claim error (proceeding):`, claimError.message);
       } else if (!claimRow || claimRow.length === 0) {
         console.log(`${FUNCTION_VERSION} V-034 reject: token ${token.slice(0, 16)}… already exchanged`);
@@ -127,10 +121,15 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    let userEmail = stripeSession.customer_details?.email || null;
+    // v8 (F44): resolve the session email from the OWNER (userId) first, so the
+    // minted session always matches the account that owns the report/payment.
+    // The Stripe checkout email is only a last-resort fallback — using it first
+    // logged users into the wrong account when it differed from their signup email.
+    let userEmail: string | null = null;
+    const { data: userData } = await supabase.auth.admin.getUserById(userId);
+    userEmail = userData?.user?.email ?? null;
     if (!userEmail) {
-      const { data: userData } = await supabase.auth.admin.getUserById(userId);
-      userEmail = userData?.user?.email ?? null;
+      userEmail = stripeSession.customer_details?.email || null;
     }
     if (!userEmail) {
       console.error(`${FUNCTION_VERSION} no email for user ${userId}`);
@@ -149,10 +148,7 @@ Deno.serve(async (req: Request) => {
         .update({ status: "completed" })
         .eq("id", paymentRow.id);
 
-      // V-037 (vibe code review 2026-05-14): race fix via single upsert. Replaces
-      // the SELECT-then-INSERT-or-UPDATE pattern that could produce duplicate rows
-      // under concurrent invocations. Safe under the V-023 unique(user_id)
-      // constraint applied 2026-05-14.
+      // V-037: race-safe module unlock via single upsert.
       try {
         const { data: existingSubSession } = await supabase
           .from("subscription_sessions")
@@ -180,7 +176,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Mint a fresh magic-link OTP for this user.
+    // Mint a fresh magic-link OTP for the OWNER's email.
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email: userEmail,
@@ -210,7 +206,6 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // v5: use supabase-js verifyOtp with token_hash. This is the supported path.
     const { data: verifyData, error: verifyError } = await anonClient.auth.verifyOtp({
       type: "magiclink",
       token_hash: hashedToken,
