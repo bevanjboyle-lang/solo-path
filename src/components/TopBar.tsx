@@ -7,6 +7,7 @@ import SoloLogo from "@/components/SoloLogo";
 import TopBarAuthed from "@/components/TopBarAuthed";
 
 const anonLinks = [
+  { label: "How it works", to: "/how-it-works" },
   { label: "Pricing", to: "/pricing" },
   { label: "FAQ", to: "/faq" },
 ];

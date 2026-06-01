@@ -234,6 +234,10 @@ export default function CVUpload() {
                     Optional. Skipping is fine. We'll ask about your experience in the next step
                     either way.
                   </p>
+                  <p className="mt-3 text-[12px] text-muted-foreground/80 leading-relaxed lg:text-right">
+                    Read once, then discarded. We use your CV only to fill in your answers, never
+                    store it after that, never share it, and never link it to your employer.
+                  </p>
                 </div>
               </div>
 
