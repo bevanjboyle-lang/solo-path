@@ -27,7 +27,11 @@ function SkillBar({ skill }: { skill: Skill }) {
           <span className="text-sm font-bold text-primary">{skill.strength}/100</span>
         </div>
       </div>
-      <Progress value={skill.strength} className="h-2 bg-muted [&>div]:bg-primary" />
+      <Progress
+        value={skill.strength}
+        aria-label={`${skill.skill_name}: strength ${skill.strength} out of 100`}
+        className="h-2 bg-muted [&>div]:bg-primary"
+      />
       <p className="mt-2 text-xs text-muted-foreground">{skill.evidence}</p>
     </div>
   );

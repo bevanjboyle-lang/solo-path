@@ -1,0 +1,29 @@
+name: e2e-smoke
+
+# Pre-auth funnel smoke (W3). Runs the anonymous critical path render checks.
+# Targets production by default; set PLAYWRIGHT_BASE_URL to a preview URL to
+# gate PRs against their own preview deploy.
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * *" # daily 07:00 UTC canary against production
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+        env:
+          CI: "true"
+          # Defaults to production in playwright.config.ts when unset.
+          PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL }}
