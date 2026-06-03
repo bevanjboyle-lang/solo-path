@@ -21,6 +21,10 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      # @playwright/test isn't a repo dependency yet; install it at runtime so the
+      # smoke runs without anyone needing Node/npm locally. (If it's later added to
+      # devDependencies, npm ci will cover it and this line becomes a no-op.)
+      - run: npm install --no-save @playwright/test
       - run: npx playwright install --with-deps chromium
       - run: npx playwright test
         env:
