@@ -79,7 +79,7 @@ import {
 import { P3_SYSTEM_PROMPT_TEMPLATE, P3_USER_MESSAGE_TEMPLATE } from "./p3-system-prompt.ts";
 import { P4_SYSTEM_PROMPT_TEMPLATE, P4_USER_MESSAGE_TEMPLATE } from "./p4-system-prompt.ts";
 
-const FUNCTION_VERSION = "v37-wp8-p3b-plan-review-loop";
+const FUNCTION_VERSION = "v38-p3-cap32k-largeportfolio-bound";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -719,6 +719,21 @@ async function generatePlanInBackground(args: {
       cvExtract,
     });
 
+    // ── Large-portfolio plan-size bound (2026-06-02) ──
+    // A 3+ strand portfolio across 30 days produces a very large activation_plan
+    // that can overflow the model's output budget — the V-013 truncation failures
+    // in the 2026-06-01 full-pipeline eval (GP_009/018/021/031). For big portfolios
+    // we instruct tighter per-day prose. The STRUCTURE is unchanged (every selected
+    // strand, all 30 days, the same schema); only verbosity drops, which both keeps
+    // the JSON under the cap and shortens generation latency (the same root cause
+    // behind the timeout failures). Small portfolios keep full prose.
+    const strandCount = Array.isArray(selectedStrands) ? selectedStrands.length : 0;
+    const P3_OUTPUT_DISCIPLINE =
+      "\n\nOUTPUT SIZE DISCIPLINE (large multi-strand portfolio): keep each day's task description to one tight sentence of at most 25 words. Do not restate strand or archetype context inside each day. Keep every rationale/notes/why field to a single sentence. Preserve ALL selected strands and ALL 30 days — economise on prose, never on coverage. Return valid, complete JSON.";
+    const prompt3UserMessageBounded = strandCount >= 3
+      ? prompt3UserMessage + P3_OUTPUT_DISCIPLINE
+      : prompt3UserMessage;
+
     // ── Build P4 user messages (one per strand) — from canonical user-message template ──
     const prompt4Messages = selectedStrands.map((s) => ({
       strand_id: s.strand_id,
@@ -735,10 +750,14 @@ async function generatePlanInBackground(args: {
       openai.chat.completions.create({
         model: MODEL_TIER1,
         temperature: 0.5,
-        max_completion_tokens: 24000,
+        // 2026-06-02: 24000 → 32000. Large portfolios were truncating at 24k
+        // (eval V-013 failures). Paired with the P3 output-size discipline above
+        // so typical plans get SHORTER, not longer — the higher ceiling only
+        // catches the genuinely-large tail, without inflating the common case.
+        max_completion_tokens: 32000,
         messages: [
           { role: "system", content: P3_SYSTEM_PROMPT_TEMPLATE },
-          { role: "user", content: prompt3UserMessage },
+          { role: "user", content: prompt3UserMessageBounded },
         ],
         response_format: { type: "json_schema", json_schema: ACTIVATION_PLAN_SCHEMA },
       }),
@@ -1009,11 +1028,12 @@ async function generatePlanInBackground(args: {
             reviewAttempt++;
             const regenInstruction = String(review.regeneration_instruction ?? "");
             const problemsText = JSON.stringify(review.problems ?? []);
-            const regenUserMessage = `${prompt3UserMessage}\n\n---\nREGENERATION PASS ${reviewAttempt} of ${REVIEW_MAX_REGENS}. Your previous plan FAILED an automated internal-consistency review. Return a corrected full plan in the same schema, fixing exactly the problems below and leaving everything that was already correct unchanged.\n\nReviewer instruction: ${regenInstruction}\n\nSpecific problems: ${problemsText}`;
+            const regenUserMessage = `${prompt3UserMessageBounded}\n\n---\nREGENERATION PASS ${reviewAttempt} of ${REVIEW_MAX_REGENS}. Your previous plan FAILED an automated internal-consistency review. Return a corrected full plan in the same schema, fixing exactly the problems below and leaving everything that was already correct unchanged.\n\nReviewer instruction: ${regenInstruction}\n\nSpecific problems: ${problemsText}`;
             const regenRes = await openai.chat.completions.create({
               model: MODEL_TIER1,
               temperature: 0.5,
-              max_completion_tokens: 24000,
+              // 2026-06-02: 24000 → 32000, matching the main P3 call.
+              max_completion_tokens: 32000,
               messages: [
                 { role: "system", content: P3_SYSTEM_PROMPT_TEMPLATE },
                 { role: "user", content: regenUserMessage },

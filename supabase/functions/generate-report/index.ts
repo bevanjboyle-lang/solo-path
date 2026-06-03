@@ -529,8 +529,8 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 - income_outlook.sensitivity_factors: 40 words, identifies 2-3 specific variables with impact
 - income_outlook.income_floor_analysis: 30 words, honest worst case
 - income_outlook.income_notes: 40 words, references at least one Q-field
-- hook_insight.headline: 8-18 words, MUST contain a reframe signal: a contrast word (isn't / not / actually / beyond / despite / under) or noun reversal (your X isn't X, it's Y)
-- hook_insight.paragraph: 120 words
+- hook_insight.headline: 8-18 words. MUST contain a reframe signal: a contrast word (isn't / not / actually / beyond / despite / under) or a noun reversal (your X isn't X, it's Y). The reframe must land on something NON-OBVIOUS: an edge the user could not name themselves in five minutes of thinking. Generic "ex-[role]" framing, "your experience is valuable", or anything a capable peer at this seniority could author = fail.
+- hook_insight.paragraph: 120-160 words. This is the single highest-stakes passage in the report - it is what makes the user feel genuinely SEEN, and it is what they remember. It MUST satisfy all THREE tests at once: (1) NON-OBVIOUS - names a specific framework, intermediary, buyer, or counter-intuitive move the user could not have written themselves; (2) EXECUTION-CRITICAL - implies a clear "if you accept this, do X differently next week" change, not just a pleasant reframe; (3) PROFILE-SPECIFIC - anchors on at least one concrete detail from Q3b / Q6 / Q11 / Q12 (a named achievement, the specific sector/client context, or a real relationship), so the paragraph could NOT be reused for a different user at the same job title by swapping one or two nouns. Avoid these failure modes: motivational reframing that changes no action; "networking is the fastest route to clients"; "the market for X is growing"; "build a personal brand on LinkedIn"; "consider registering as a sole trader"; generic encouragement.
 - ai_impact.part_1.content: 150 words
 - ai_impact.part_1.displacement_risk: one of low/medium/high - never omitted
 - ai_impact.part_1.risk_horizon: e.g. 3-5 years - never omitted
@@ -919,7 +919,7 @@ function buildP0bUserMessage(qd: P0bQuestionnaireInput): string {
 // MAIN INDEX
 // =============================================================================
 
-const FUNCTION_VERSION = "v45.16-wp2-hook-regen-kickoff";
+const FUNCTION_VERSION = "v45.17-pr7-hook-prompt-strengthened";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
 const MAX_P1_VALIDATOR_RETRIES = 2;
