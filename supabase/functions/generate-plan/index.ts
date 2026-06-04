@@ -79,7 +79,7 @@ import {
 import { P3_SYSTEM_PROMPT_TEMPLATE, P3_USER_MESSAGE_TEMPLATE } from "./p3-system-prompt.ts";
 import { P4_SYSTEM_PROMPT_TEMPLATE, P4_USER_MESSAGE_TEMPLATE } from "./p4-system-prompt.ts";
 
-const FUNCTION_VERSION = "v38-p3-cap32k-largeportfolio-bound";
+const FUNCTION_VERSION = "v39-p3-cap32k-bound-marketsnapshot-guard";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -213,26 +213,33 @@ function synthesiseLegacyMarketSnapshotText(envelope: {
   location: string;
   sections: MarketSnapshotOutput["sections"];
 }): string {
-  const s = envelope.sections;
+  // 2026-06-02 (GP_017 fix): guard against a malformed/empty market-snapshot
+  // envelope. If a P4 call returns without `sections`, `s` is undefined and
+  // accessing s.demand_signal threw "Cannot read properties of undefined",
+  // which killed the whole background plan task before persist. Default to {}
+  // and fall back per field so the plan still builds (the structured
+  // market_snapshots column is unaffected; this is only the legacy text).
+  const s = envelope.sections ?? ({} as MarketSnapshotOutput["sections"]);
+  const na = "Not available for this market (snapshot could not be generated).";
   const parts = [
     "LOCAL MARKET FEASIBILITY SNAPSHOT",
     `${envelope.model_name} | ${envelope.location}`,
     "Prepared as indicative research — not primary market data",
     "",
     "DEMAND SIGNAL",
-    s.demand_signal,
+    s.demand_signal ?? na,
     "",
     "PRICING BENCHMARK",
-    s.pricing_benchmark,
+    s.pricing_benchmark ?? na,
     "",
     "COMPETITOR LANDSCAPE",
-    s.competitor_landscape,
+    s.competitor_landscape ?? na,
     "",
     "MARKET ENTRY INSIGHT",
-    s.market_entry_insight,
+    s.market_entry_insight ?? na,
     "",
     "HONEST ASSESSMENT",
-    s.honest_assessment,
+    s.honest_assessment ?? na,
     "",
     "Disclaimer: This snapshot is based on general market knowledge and reasoning, not primary research or live data.",
   ];
