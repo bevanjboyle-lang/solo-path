@@ -460,10 +460,7 @@ export default function Teaser() {
             {payLoading ? "Redirecting…" : "Get my 30-day plan, £19.99"}
           </button>
           <div className="mt-1.5 text-center text-[11px] text-muted-foreground">
-            One-time · No subscription · Secure Stripe checkout, we never see your card
-          </div>
-          <div className="mt-1 text-center text-[11px] text-muted-foreground">
-            Your report and data are yours, deletable anytime from your account.
+            One-time · No subscription · Stripe checkout
           </div>
         </div>
       )}
