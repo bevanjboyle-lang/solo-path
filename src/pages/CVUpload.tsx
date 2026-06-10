@@ -204,7 +204,7 @@ export default function CVUpload() {
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>Back</span>
                 </button>
-                <SoloLogo width={96} height={28} />
+                {/* duplicate Solo logo removed 2026-06-10: the TopBar above already carries the mark (vision diagnosis T5) */}
               </div>
 
               {/* ─── Page content ─── */}

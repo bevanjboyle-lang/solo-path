@@ -10,11 +10,10 @@
     
     
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7b7d8504-bf43-4ad6-a045-8f4aa061247e/id-preview-7daac924--3fdf2935-9b13-4903-8e4f-fae66f056e60.lovable.app-1776531338409.png">
+    <meta property="og:image" content="https://www.solo-plan.com/og-image.png">
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/7b7d8504-bf43-4ad6-a045-8f4aa061247e/id-preview-7daac924--3fdf2935-9b13-4903-8e4f-fae66f056e60.lovable.app-1776531338409.png">
+    <meta name="twitter:image" content="https://www.solo-plan.com/og-image.png">
 
     <link rel="icon" type="image/svg+xml" href="/solo-favicon.svg">
 
@@ -27,15 +26,12 @@
       Plus Jakarta Sans weights:
         600 = semibold (body H3/H4)
         700 = bold     (eyebrow + body H2)
-      Weight 800 was briefly added 2026-05-18 when .title-h1 was
-      mistakenly set to use PJS as primary font. Reverted same day:
-      .title-h1 now uses the system sans-serif (the original /plan
-      title render path via Tailwind's font-display utility), so
-      PJS 800 isn't needed. Body / eyebrow / non-hero headings
-      still use PJS 600/700.
+      Weight 800 added 2026-06-10: .title-h1 is now PJS-first
+      (design-direction v1.7), so the hero weight 800 must load.
+      Body / eyebrow / non-hero headings still use PJS 600/700.
     -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap"
       rel="stylesheet"
     />
 

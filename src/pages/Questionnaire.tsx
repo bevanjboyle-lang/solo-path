@@ -313,7 +313,7 @@ export default function Questionnaire() {
                       <span>Auto-saved</span>
                     </div>
                   )}
-                  <SoloLogo width={96} height={28} />
+                  {/* duplicate Solo logo removed 2026-06-10: the TopBar above already carries the mark (vision diagnosis T5) */}
                 </div>
               </div>
 

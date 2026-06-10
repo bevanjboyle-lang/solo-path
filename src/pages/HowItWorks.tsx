@@ -6,6 +6,7 @@
 // Tone-of-voice compliant: specific, calm, no em dashes, no banned words.
 
 import { useEffect } from "react";
+import TopBar from "@/components/TopBar";
 import { Link } from "react-router-dom";
 
 function Section({ eyebrow, title, children }: { eyebrow?: string; title: string; children: React.ReactNode }) {
@@ -30,12 +31,14 @@ export default function HowItWorks() {
   }, []);
 
   return (
-    <main className="pb-12 pt-6 lg:pb-16">
+    <div className="relative min-h-screen text-foreground">
+      <TopBar />
+      <main className="pb-12 pt-6 lg:pb-16">
       <div className="mx-auto max-w-2xl px-6">
         <div className="panel-ivory p-5 sm:p-6 lg:p-8">
           <header>
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">How Solo works</p>
-            <h1 className="mt-3 text-2xl font-semibold leading-snug tracking-tight text-foreground md:text-3xl">
+            <h1 className="title-h1 mt-3">
               Solo doesn't guess. It decides.
             </h1>
             <p className="mt-3 text-base leading-snug text-muted-foreground">
@@ -115,5 +118,6 @@ export default function HowItWorks() {
         </div>
       </div>
     </main>
+    </div>
   );
 }

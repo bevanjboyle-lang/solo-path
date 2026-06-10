@@ -6,6 +6,7 @@
 // Editorial single-column panel per admin/design-direction.md.
 
 import { useEffect } from "react";
+import TopBar from "@/components/TopBar";
 import { Link } from "react-router-dom";
 import { useSignalArchive } from "@/hooks/useSignal";
 import SignalSubscribe from "@/components/marketing/SignalSubscribe";
@@ -26,12 +27,14 @@ export default function Signal() {
   }, []);
 
   return (
-    <main className="pb-12 pt-6 lg:pb-16">
+    <div className="relative min-h-screen text-foreground">
+      <TopBar />
+      <main className="pb-12 pt-6 lg:pb-16">
       <div className="mx-auto max-w-2xl px-6">
         <div className="panel-ivory p-5 sm:p-6 lg:p-8">
           <header>
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">The Signal</p>
-            <h1 className="mt-3 text-2xl font-semibold leading-snug tracking-tight text-foreground md:text-3xl">
+            <h1 className="title-h1 mt-3">
               Where independent work is opening up.
             </h1>
             <p className="mt-3 text-base leading-snug text-muted-foreground">
@@ -78,5 +81,6 @@ export default function Signal() {
         </div>
       </div>
     </main>
+    </div>
   );
 }

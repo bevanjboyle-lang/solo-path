@@ -5,6 +5,7 @@
 // useSignalEdition(slug). This is the SEO moat: every edition is a stable page.
 
 import { useEffect } from "react";
+import TopBar from "@/components/TopBar";
 import { Link, useParams } from "react-router-dom";
 import { useSignalEdition, type SignalMarketSignal } from "@/hooks/useSignal";
 import SignalSubscribe from "@/components/marketing/SignalSubscribe";
@@ -57,14 +58,19 @@ export default function SignalEdition() {
 
   if (loading) {
     return (
+      <div className="relative min-h-screen text-foreground">
+      <TopBar />
       <main className="pb-12 pt-6 lg:pb-16"><div className="mx-auto max-w-2xl px-6">
         <div className="panel-ivory p-5 text-center text-sm text-muted-foreground sm:p-6"><p>Loading the edition…</p></div>
       </div></main>
+    </div>
     );
   }
 
   if (error || !data?.edition) {
     return (
+      <div className="relative min-h-screen text-foreground">
+      <TopBar />
       <main className="pb-12 pt-6 lg:pb-16"><div className="mx-auto max-w-2xl px-6">
         <div className="panel-ivory p-5 text-center sm:p-6">
           <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">The Signal</p>
@@ -72,13 +78,16 @@ export default function SignalEdition() {
           <p className="mt-4"><Link to="/signal" className="text-sm font-medium text-primary underline decoration-1 underline-offset-4 hover:text-primary/80">Back to the archive</Link></p>
         </div>
       </div></main>
+    </div>
     );
   }
 
   const { edition, market_signals, spotlight, ai_watch } = data;
 
   return (
-    <main className="pb-12 pt-6 lg:pb-16">
+    <div className="relative min-h-screen text-foreground">
+      <TopBar />
+      <main className="pb-12 pt-6 lg:pb-16">
       <div className="mx-auto max-w-2xl px-6">
         <div className="panel-ivory p-5 sm:p-6 lg:p-8">
           <p className="mb-4">
@@ -88,7 +97,7 @@ export default function SignalEdition() {
             <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
               The Signal &middot; {formatPublishDate(edition.publish_date)}
             </p>
-            <h1 className="mt-3 text-2xl font-semibold leading-snug tracking-tight text-foreground md:text-3xl">{edition.lead_headline}</h1>
+            <h1 className="title-h1 mt-3">{edition.lead_headline}</h1>
             <p className="mt-3 text-base leading-snug text-muted-foreground">{edition.lead_subheadline}</p>
           </header>
 
@@ -148,5 +157,6 @@ export default function SignalEdition() {
         </div>
       </div>
     </main>
+    </div>
   );
 }

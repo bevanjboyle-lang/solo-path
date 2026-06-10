@@ -257,7 +257,7 @@ const PRICING = [
     features: [
       "Everything in one-time",
       "Weekly check-ins past day 30",
-      "All 25 guidance modules",
+      "All 32 guidance modules",
       "Unlimited Ask Solo",
     ],
     primary: false,
@@ -333,8 +333,8 @@ export default function Landing() {
   const { handleStartTest, handleOpenPlan, handleSampleReport, isAuthed } = useHomeHandlers();
   const renderRegression = useMainContentSelfCheck();
 
-  /* Accordion state, all collapsed by default per locked decision */
-  const [openSection, setOpenSection] = useState<string | null>(null);
+  /* Accordion state. Section 01 opens by default (PR-6 conversion fix, 2026-06-10); the rest stay collapsed per the 2026-05-18 decision */
+  const [openSection, setOpenSection] = useState<string | null>("what-solo-is");
   const toggle = (id: string) => setOpenSection((p) => (p === id ? null : id));
 
   // report_id recovery redirect, never renders the page
@@ -574,7 +574,7 @@ export default function Landing() {
                     {isAuthed ? "Pick up where you left off" : "Ready when you are"}
                   </div>
                   <h2
-                    className="mt-6 font-display text-[30px] font-semibold leading-[1.15] tracking-tight sm:text-[36px] lg:text-[44px]"
+                    className="mt-6 font-display text-[30px] font-extrabold leading-[1.15] tracking-tight sm:text-[36px] lg:text-[44px]"
                     style={{ letterSpacing: "-0.025em", color: "#FAF9F7" }}
                   >
                     {isAuthed ? "Your plan is waiting." : "Your Plan B should already exist."}
@@ -896,7 +896,7 @@ function PricingBody() {
           One-time. Or monthly, if you want the check-in loop.
         </h3>
         <p className="mt-4 text-[14.5px] leading-[1.65] text-muted-foreground">
-          Most buy the one-time. The subscription is for people who want their plan to keep going after the first 30 days, with weekly check-ins, all 25 guidance modules, and unlimited Ask Solo.
+          Most buy the one-time. The subscription is for people who want their plan to keep going after the first 30 days, with weekly check-ins, all 32 guidance modules, and unlimited Ask Solo.
         </p>
         <a
           href="/pricing"

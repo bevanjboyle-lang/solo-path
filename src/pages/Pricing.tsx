@@ -21,7 +21,7 @@ import TopBar from "@/components/TopBar";
  *     cards + closing band). Same handler. Per spec §10 + home precedent.
  *   F4 Subscription card secondary microcopy: "Subscribe after the test
  *     only if you decide to" (calmer than CD's original "or never").
- *   25/3/22 module canonical applied throughout (subhead, cards, comparison).
+ *   32/3/29 module canonical (updated 2026-06-10; was 25/3/22 pre-Track-F) (subhead, cards, comparison).
  *
  * Cadence: single dark moment, the commercial honesty strip between the
  * comparison row and FAQ teaser. Frames the terms ("no auto-renewal · cancel
@@ -62,7 +62,7 @@ const reportCard: PricingCardData = {
     <>Your full report, <strong>10 scored business paths</strong> with our top 2–5 recommended, archetype, income outlook, AI defensibility.</>,
     <>A <strong>30-day activation plan</strong> built around your warmest strand.</>,
     <>Daily tracker for the 30 days.</>,
-    <>3 of the 25 guidance modules.</>,
+    <>3 of the 32 guidance modules.</>,
     <>Permanent access to your report.</>,
   ],
   ctaLabel: "Find what fits",
@@ -78,7 +78,7 @@ const subscriptionCard: PricingCardData = {
   annualLine: "or £149 / year · two months free",
   bullets: [
     <>Everything in the one-time, <strong>continued past day 30</strong>.</>,
-    <><strong>All 25 guidance modules</strong>, 22 more than the report includes.</>,
+    <><strong>All 32 guidance modules</strong>, 29 more than the report includes.</>,
     <>Weekly check-ins after your first 30 days.</>,
     <>Unlimited Ask Solo, context-aware to your plan.</>,
     <>Plan regenerates when your moves don't land. Cancel any time.</>,
@@ -101,8 +101,8 @@ const comparisonRows: { feat: string; oneTime: ReactNode; sub: ReactNode; faint?
   },
   {
     feat: "Guidance modules",
-    oneTime: <><strong>3 of 25</strong></>,
-    sub: <><strong>All 25</strong>, 22 more than the report</>,
+    oneTime: <><strong>3 of 32</strong></>,
+    sub: <><strong>All 32</strong>, 29 more than the report</>,
   },
   {
     feat: "Ask Solo",
@@ -180,7 +180,7 @@ export default function Pricing() {
               One fit-check. Two ways to keep going.
             </h1>
             <p className="mt-4 font-display text-[17px] sm:text-[19px] text-muted-foreground leading-[1.4] max-w-[52ch]">
-              £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling, with the 22
+              £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling, with the 29
               modules and the library that doesn't expire.
             </p>
           </section>
@@ -313,7 +313,7 @@ export default function Pricing() {
             )}
             <button
               onClick={isAuthedBuyer ? handleOpenPlan : handleStartTest}
-              className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
+              className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[15px] font-semibold text-[#1A1915] transition-opacity hover:opacity-90"
               style={{ background: "#2ECDB0" }}
             >
               {isAuthedBuyer ? "Open my plan" : "Find what fits"}
@@ -338,7 +338,7 @@ export default function Pricing() {
           <div className="px-4 py-3">
             <button
               onClick={handleStartTest}
-              className="w-full rounded-md px-6 py-3 text-[14px] font-semibold text-white"
+              className="w-full rounded-md px-6 py-3 text-[14px] font-semibold text-[#1A1915]"
               style={{ background: "#2ECDB0" }}
             >
               Find what fits
@@ -394,7 +394,7 @@ function PricingCard({
           <span className="text-[14px] text-muted-foreground">{data.priceQual}</span>
         </div>
         {data.annualLine && (
-          <div className="mt-1.5 text-[13px] font-medium" style={{ color: "#1A8A72" }}>
+          <div className="mt-1.5 text-[13px] font-medium" style={{ color: "#15735F" }}>
             {data.annualLine}
           </div>
         )}
@@ -427,7 +427,7 @@ function PricingCard({
           style={
             isAuthedBuyer && authedBuyerVariant === "owned"
               ? { background: "#F3F1ED", color: "#1D2025", border: "1px solid #D5D0C8" }
-              : { background: "#2ECDB0", color: "#FFFFFF" }
+              : { background: "#2ECDB0", color: "#1A1915" }
           }
         >
           {isAuthedBuyer && authedBuyerCtaLabel ? authedBuyerCtaLabel : data.ctaLabel}
