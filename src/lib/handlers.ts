@@ -288,9 +288,13 @@ export async function triggerStripeCheckout(
 			"create-subscription",
 			{ body: { plan_type: planType, ...metadata } }
 		);
-		if (error) throw error;
+		if (error) throw new Error(data?.response_text || data?.error || error.message);
 		const redirectUrl = data?.sessionUrl || data?.url;
-		if (redirectUrl) window.location.href = redirectUrl;
+		// P1-f (full-e2e-review-2026-06-10): a 2xx with no redirect URL previously
+		// resolved silently, leaving the CTA spinner stuck on "Redirecting…" forever.
+		// Treat a missing URL as an error so the caller can surface it.
+		if (!redirectUrl) throw new Error(data?.response_text || "We couldn't open the checkout. Please try again.");
+		window.location.href = redirectUrl;
 		return;
 	}
 
@@ -299,10 +303,12 @@ export async function triggerStripeCheckout(
 		body: { price_id: priceId, ...metadata },
 	});
 
-	if (error) throw error;
+	if (error) throw new Error(data?.response_text || data?.error || error.message);
 
 	const redirectUrl = data?.sessionUrl || data?.url;
-	if (redirectUrl) window.location.href = redirectUrl;
+	// P1-f: see note above — fail loudly instead of hanging the spinner.
+	if (!redirectUrl) throw new Error(data?.response_text || "We couldn't open the checkout. Please try again.");
+	window.location.href = redirectUrl;
 }
 
 /**

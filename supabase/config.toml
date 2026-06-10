@@ -1,16 +1,35 @@
 project_id = "dnnxmjazillhktwttkux"
 
+# ──────────────────────────────────────────────────────────────────────────
+# verify_jwt policy — full-e2e-review-2026-06-10.
+# verify_jwt:false means the gateway does NOT validate the JWT signature, so
+# any function that trusts the `sub` claim from an inline base64 decode is
+# forgeable. Only the genuinely anonymous funnel entry points may stay false.
+# ──────────────────────────────────────────────────────────────────────────
+
+# Anonymous funnel — MUST stay false (called before the user has an account).
 [functions.generate-report]
 verify_jwt = false
 
+# Authed-only — flipped true 2026-06-10 (was false; forgeable identity).
 [functions.generate-guidance]
-verify_jwt = false
+verify_jwt = true
 
 [functions.ask-solo]
-verify_jwt = false
+verify_jwt = true
 
 [functions.draft-outreach]
-verify_jwt = false
+verify_jwt = true
+
+# Destructive / PII — pinned true (live-fixed via Supabase 2026-06-10, P0).
+[functions.delete-account]
+verify_jwt = true
+
+[functions.export-user-data]
+verify_jwt = true
+
+[functions.delete-user-cv]
+verify_jwt = true
 
 # get-library-content: verify_jwt explicitly true. The function reads a user-
 # specific library (subscription state, completions, unlocked modules) and

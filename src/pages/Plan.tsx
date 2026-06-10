@@ -161,6 +161,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   const [loadError, setLoadError] = useState(false);
   const [strandSubmitting, setStrandSubmitting] = useState(false);
+  // P1-g (full-e2e-review-2026-06-10): true when the plan-build poll times out or
+  // the report comes back failed, so the user gets a real stuck state instead of
+  // an indefinite "Building your plan…" spinner.
+  const [planStuck, setPlanStuck] = useState(false);
 
   // Coaching layer Phase 1 (admin/coaching-layer-design.md v1.2, 2026-05-18).
   // Tracks which task is currently being marked sent so per-task buttons can
@@ -328,13 +332,21 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     if (reportStatus !== "pending_selection" && reportStatus !== "generating_plan") return;
 
     let cancelled = false;
+    setPlanStuck(false);
     const startedAt = Date.now();
     const POLL_INTERVAL_MS = 3000;
-    const POLL_TIMEOUT_MS = 5 * 60 * 1000;
+    // P1-g: bumped 5→8 min. A live report alone takes ~3.7 min and large-portfolio
+    // plans run longer; 5 min was timing out real paying users.
+    const POLL_TIMEOUT_MS = 8 * 60 * 1000;
 
     const tick = async () => {
       if (cancelled) return;
-      if (Date.now() - startedAt > POLL_TIMEOUT_MS) return;
+      if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
+        // P1-g: surface a stuck state instead of returning silently.
+        setStrandSubmitting(false);
+        setPlanStuck(true);
+        return;
+      }
 
       const { data: latest } = await (supabase as any)
         .from("reports")
@@ -350,6 +362,14 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
       if (latest.status !== "pending_selection") {
         setStrandSubmitting(false);
+      }
+
+      // P1-g: the backend writes status:"failed" on a generation error — handle it
+      // rather than polling forever.
+      if (latest.status === "failed") {
+        setStrandSubmitting(false);
+        setPlanStuck(true);
+        return;
       }
 
       if (latest.status === "complete") {
@@ -978,10 +998,28 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                 )}
 
                 {/* ─── Plan-building hold ─── */}
-                {planBuilding && !awaitingSelection && (
+                {planBuilding && !awaitingSelection && !planStuck && (
                   <div className="mb-8 panel-ivory px-6 sm:px-10 py-5 flex items-center gap-3 text-[13.5px] text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     <span>Building your plan… this usually takes a minute or two.</span>
+                  </div>
+                )}
+
+                {/* ─── Plan-building stuck state (P1-g) ─── */}
+                {planStuck && (
+                  <div className="mb-8">
+                    <Banner variant="error">
+                      Your plan is taking longer than expected to build. Your payment is safe and
+                      nothing is lost. Refresh this page in a minute to pick it up — if it still
+                      hasn't appeared, email hello@solo-plan.com and we'll sort it straight away.
+                    </Banner>
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="mt-3 rounded-md bg-primary px-5 py-2.5 text-[13.5px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90"
+                    >
+                      Refresh
+                    </button>
                   </div>
                 )}
 

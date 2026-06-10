@@ -59,11 +59,71 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 const QUESTIONNAIRE_TIME_CHIP = "≈ 8 min";
 const FINAL_STEP_TIME_CHIP = "≈ 1 min remaining";
 
+/*
+ * P1-h (full-e2e-review-2026-06-10): the panel shows an "Auto-saved" chip, but
+ * answers previously lived only in React state — a refresh or accidental
+ * back-swipe mid-questionnaire wiped all ~16 steps. These helpers persist the
+ * in-progress answers to localStorage (same pattern as solo.cv_extract.*),
+ * keyed by client session, so the promise is true. All access is wrapped in
+ * try/catch: on any failure the behaviour degrades to the previous in-memory
+ * behaviour, never worse. The draft is cleared on successful submit.
+ */
+function questionnaireDraftKey(): string | null {
+  try {
+    return `solo.qdraft.${getClientSessionId()}`;
+  } catch {
+    return null;
+  }
+}
+
+function loadDraftAnswers(
+  base: Record<number, string | string[]>
+): Record<number, string | string[]> {
+  try {
+    const key = questionnaireDraftKey();
+    if (!key) return base;
+    const raw = localStorage.getItem(key);
+    if (!raw) return base;
+    const parsed = JSON.parse(raw) as Record<string, string | string[]>;
+    const restored: Record<number, string | string[]> = { ...base };
+    // JSON keys come back as strings; coerce to the numeric question ids.
+    for (const [k, v] of Object.entries(parsed)) {
+      const id = Number(k);
+      if (Number.isFinite(id)) restored[id] = v;
+    }
+    return restored;
+  } catch {
+    return base;
+  }
+}
+
+function saveDraftAnswers(answers: Record<number, string | string[]>): void {
+  try {
+    const key = questionnaireDraftKey();
+    if (key) localStorage.setItem(key, JSON.stringify(answers));
+  } catch {
+    /* no-op — persistence is best-effort */
+  }
+}
+
+function clearDraftAnswers(): void {
+  try {
+    const key = questionnaireDraftKey();
+    if (key) localStorage.removeItem(key);
+  } catch {
+    /* no-op */
+  }
+}
+
 export default function Questionnaire() {
   const navigate = useNavigate();
   const cvPrefill = useMemo(() => readCvPrefill(), []);
   const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string | string[]>>(cvPrefill.answers);
+  // P1-h: restore any in-progress draft (merged over CV pre-fill) so a refresh
+  // mid-questionnaire doesn't wipe answers.
+  const [answers, setAnswers] = useState<Record<number, string | string[]>>(() =>
+    loadDraftAnswers(cvPrefill.answers)
+  );
   const [firstName, setFirstName] = useState(cvPrefill.firstName);
   const [email, setEmail] = useState("");
   const [emailRefused, setEmailRefused] = useState(false);
@@ -158,6 +218,14 @@ export default function Questionnaire() {
     [currentQuestion, hasInteracted]
   );
 
+  // P1-h: persist answers as they change so the "Auto-saved" chip is truthful.
+  // Also light up the chip on resume when a draft restored real answers.
+  useEffect(() => {
+    if (Object.keys(answers).length === 0) return;
+    saveDraftAnswers(answers);
+    if (!hasInteracted) setHasInteracted(true);
+  }, [answers, hasInteracted]);
+
   const goBack = () => {
     if (current === 0) {
       navigate("/cv-upload");
@@ -201,6 +269,7 @@ export default function Questionnaire() {
         setGenError(result.error || "Something went wrong. Please try again.");
         return;
       }
+      clearDraftAnswers(); // P1-h: submitted successfully, draft no longer needed
       navigate(`/processing?report_id=${result.report_id}`);
       return;
     }

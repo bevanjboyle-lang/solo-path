@@ -99,6 +99,7 @@ export default function Teaser() {
 
   const [loading, setLoading] = useState(!!reportId);
   const [payLoading, setPayLoading] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
   const [firstName, setFirstName] = useState<string | null>(null);
   const [coreReport, setCoreReport] = useState<SoloCoreReport | null>(null);
   const [reportStatus, setReportStatus] = useState<ReportRow["status"] | null>(null);
@@ -208,12 +209,21 @@ export default function Teaser() {
 
   const handleUnlock = useCallback(async () => {
     setPayLoading(true);
+    setPayError(null);
     try {
       await triggerStripeCheckout("price_report_oneoff", {
         report_id: reportId ?? undefined,
       });
     } catch (err) {
+      // P1-f (full-e2e-review-2026-06-10): surface the failure instead of
+      // silently resetting the spinner. response_text is carried through by
+      // triggerStripeCheckout. This is the single conversion point.
       console.error("Checkout error:", err);
+      setPayError(
+        err instanceof Error && err.message
+          ? err.message
+          : "Something went wrong starting checkout. Please try again, or email hello@solo-plan.com if it keeps happening."
+      );
       setPayLoading(false);
     }
   }, [reportId]);
@@ -424,6 +434,13 @@ export default function Teaser() {
 
               {/* ─── Stone locked area, wraps the 3 existing Teaser composites ─── */}
               <LockedArea />
+
+              {/* ─── Checkout error (P1-f) — surfaced at the conversion point ─── */}
+              {payError && (
+                <div className="mt-6">
+                  <Banner variant="error">{payError}</Banner>
+                </div>
+              )}
 
               {/* ─── Unlock callout ─── */}
               <UnlockCallout onUnlock={handleUnlock} payLoading={payLoading} />

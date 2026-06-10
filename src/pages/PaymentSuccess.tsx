@@ -246,7 +246,19 @@ export default function PaymentSuccess() {
 
         if (!mountedRef.current) return;
 
-        if (error || !data?.session) {
+        // P1-i (full-e2e-review-2026-06-10): supabase-js returns a transient
+        // network failure as a FunctionsFetchError on `error` — not an HTTP 4xx.
+        // Routing that to "token_error" tells a user who just paid £19.99 their
+        // link is dead when a retry would succeed. Treat fetch failures as the
+        // retryable network_error; only a genuine response with no session is a
+        // real token error.
+        if (error) {
+          const isNetwork =
+            (error as { name?: string }).name === "FunctionsFetchError";
+          setState(isNetwork ? "network_error" : "token_error");
+          return;
+        }
+        if (!data?.session) {
           setState("token_error");
           return;
         }
