@@ -16,7 +16,7 @@
 // authed branch, keep the existing TopBar.anonymous in the anon branch.
 
 import { NavLink, Link, useLocation } from "react-router-dom";
-import { Compass, Library, MessageSquare } from "lucide-react";
+import { Compass, Library, MessageSquare, Radar } from "lucide-react";
 import SoloLogo from "@/components/SoloLogo";
 import AccountDropdown from "./AccountDropdown";
 
@@ -30,6 +30,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { to: "/plan", label: "Plan", icon: Compass, ariaLabel: "Plan" },
   { to: "/library", label: "Library", icon: Library, ariaLabel: "Library" },
+{ to: "/radar", label: "Radar", icon: Radar, ariaLabel: "Opportunity Radar" },
   { to: "/ask-solo", label: "Ask Solo", icon: MessageSquare, ariaLabel: "Ask Solo" },
 ];
 

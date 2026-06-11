@@ -41,6 +41,7 @@ import ServerError from "./pages/ServerError";
 import DevScreens from "./pages/DevScreens";
 import SampleReport from "./pages/SampleReport";
 import Signal from "./pages/Signal";
+import Radar from "./pages/Radar";
 import SignalEdition from "./pages/SignalEdition";
 import HowItWorks from "./pages/HowItWorks";
 import Footer from "@/components/Footer";
@@ -147,6 +148,7 @@ function AnimatedRoutes() {
 						<Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
 						<Route path="/library/modules/:id" element={<ProtectedRoute><Library /></ProtectedRoute>} />
 						<Route path="/ask-solo" element={<ProtectedRoute><AskSolo /></ProtectedRoute>} />
+            <Route path="/radar" element={<ProtectedRoute><Radar /></ProtectedRoute>} />
 						<Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
 						<Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
 						{/* F47 (2026-04-19): /results route removed — not in route map v1.2. */}
