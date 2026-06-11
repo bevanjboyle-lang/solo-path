@@ -43,8 +43,8 @@ import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
  *
  * Locked decisions from admin/pass-1-teaser-decisions.md:
  *   Canonical correction, 10 options (not 5), user picks up to 5 for the plan
- *   Canonical correction, 25 guidance modules total, 3 included with £19.99,
- *     22 more with £19/month subscription
+ *   Canonical correction, 32 guidance modules total, 3 included with £19.99,
+ *     29 more with £19/month subscription
  *   F1, Single continuous ivory panel with internal zone changes (ivory →
  *     dark gate band → stone locked area → ivory)
  *   F2 Mint first name in hero ("Your plan, Jane.") one-off precedent
@@ -562,7 +562,7 @@ function GateBand({ optionsCount }: { optionsCount: number }) {
               { l: "Strands", v: `Top ${Math.min(optionsCount, 3)} read · ${optionsCount} total` },
               { l: "Plan days", v: "0 / 30 read" },
               { l: "Guidance", v: "3 / 25 included" },
-              { l: "Subscription", v: "+ 22 more modules" },
+              { l: "Subscription", v: "+ 29 more modules" },
             ].map((item) => (
               <div key={item.l}>
                 <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[rgba(250,249,247,0.55)]">

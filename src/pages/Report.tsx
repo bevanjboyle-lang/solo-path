@@ -322,7 +322,7 @@ export default function Report() {
                 No report yet.
               </h1>
               <p className="standfirst mt-4">
-                Complete the fit-check to generate yours. About eight minutes; you'll see your warmest path inside the first read.
+                Complete the test to generate yours. About eight minutes; you'll see your warmest path inside the first read.
               </p>
               <div className="mt-7 flex flex-col items-start gap-3 border-t border-border pt-7">
                 <button

@@ -33,7 +33,7 @@ import GuidanceModuleOutput, { V28Body, isV28 } from "@/components/guidance/Guid
  *     internal TodayTab/BrowseTab/ModulesTab card render is preserved
  *     as-is for Pass 1, with shell + chrome restyled).
  *   F2, Read-history meta retained on Today rows.
- *   F3 Gate-row body: 'Same authors, same depth 22 more on the
+ *   F3 Gate-row body: 'Same authors, same depth 29 more on the
  *     harder things.'
  *   F4, Drop cap in drawer but not in module lessons.
  *   F5, Browse: topic chips inline + More filters drawer (deferred).
@@ -875,7 +875,7 @@ function LibraryPageHeader({
  * the panel. Mint dot + white small-caps label + short body sentence
  * + inline mint Subscribe CTA. Per pass-1-library-decisions.md F3:
  * "Modules 04 to 25 are in the subscription. Same authors, same
- * depth, 22 more on the harder things."
+ * depth, 29 more on the harder things."
  *
  * Subscribers don't see this row (showGateRow is false). 22 dark walls
  * would be punitive; a single contained gate row marks the boundary
@@ -893,7 +893,7 @@ function DarkGateRow({ onSubscribe }: { onSubscribe: () => void }) {
         style={{ color: "rgba(250,249,247,0.85)" }}
       >
         Modules 04 to 25 are in the subscription.{" "}
-        <span style={{ color: "#FAF9F7" }}>Same authors, same depth, 22 more on the harder things.</span>
+        <span style={{ color: "#FAF9F7" }}>Same authors, same depth, 29 more on the harder things.</span>
       </p>
       <button
         type="button"

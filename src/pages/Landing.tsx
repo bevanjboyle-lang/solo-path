@@ -235,7 +235,7 @@ export default function Landing() {
               </div>
               <div className="mt-7 flex gap-5 border-t border-border pt-3.5 text-[11.5px] text-muted-foreground">
                 <span><b className="font-semibold text-foreground">£19.99</b> one-time</span>
-                <span><b className="font-semibold text-foreground">8 min</b> fit-check</span>
+                <span><b className="font-semibold text-foreground">8 min</b> test</span>
                 <span><b className="font-semibold text-foreground">No</b> subscription required</span>
               </div>
             </div>
@@ -355,7 +355,7 @@ export default function Landing() {
               </p>
             </div>
             <p className="mx-auto mt-8 max-w-3xl text-[14.5px] font-medium leading-[1.6]" style={{ color: "#FAF9F7" }}>
-              You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually contact. Or take the Solo fit-check, and walk away with a real plan and a real list of people to contact.
+              You can spend ten hours prompting ChatGPT, still not have a plan, and still not know who to actually contact. Or take the Solo test, and walk away with a real plan and a real list of people to contact.
             </p>
             <div className="mt-7">
               <PrimaryButton onClick={isAuthed ? handleOpenPlan : handleStartTest}>
@@ -495,7 +495,7 @@ export default function Landing() {
             <p className="standfirst mx-auto mt-3 max-w-[54ch]" style={{ color: "rgba(250,249,247,.8)" }}>
               {isAuthed
                 ? "Your report, your 30-day plan, and your check-in history are right where you left them."
-                : "The fit-check takes 8 minutes. You'll see your archetype, your top income paths, and your first recommended move before you pay anything."}
+                : "The test takes 8 minutes. You'll see your archetype, your top income paths, and your first recommended move before you pay anything."}
             </p>
             <div className="mt-7">
               {isAuthed ? (

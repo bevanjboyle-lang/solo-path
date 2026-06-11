@@ -22,7 +22,7 @@ export default function TermsOfService() {
     <LegalPage
       title="Terms of service"
       eyebrow="Terms"
-      subhead="The rules of the deal when you take the fit-check, pay for a report, or run a subscription. Plain language; no surprises."
+      subhead="The rules of the deal when you take the test, pay for a report, or run a subscription. Plain language; no surprises."
       lastUpdated="April 2026"
       sections={sections}
       isTBC

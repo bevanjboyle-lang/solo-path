@@ -77,7 +77,7 @@ const subscriptionCard: PricingCardData = {
     <>Plan regenerates when your moves don't land. Cancel any time.</>,
   ],
   ctaLabel: "Find what works",
-  secondaryMicrocopy: "Subscribe after the fit-check, only if you decide to",
+  secondaryMicrocopy: "Subscribe after the test, only if you decide to",
 };
 
 /* ── Comparison rows, editorial sentences per cell, not binary ── */
@@ -85,7 +85,7 @@ const comparisonRows: { feat: string; oneTime: ReactNode; sub: ReactNode; faint?
   {
     feat: "Report",
     oneTime: <>Yours forever</>,
-    sub: <>Yours forever, plus a fresh fit-check when you need one</>,
+    sub: <>Yours forever, plus a fresh test when you need one</>,
   },
   {
     feat: "30-day plan",
@@ -128,7 +128,7 @@ const faqs: { q: string; a: ReactNode }[] = [
         The report is a one-shot diagnostic, your archetype, your ten scored paths (we recommend
         two to five), your 30-day plan. You
         can use it forever. The subscription keeps the loop running past day 30: weekly check-ins,
-        the rest of the modules, unlimited Ask Solo, fresh fit-checks when your situation changes.
+        the rest of the modules, unlimited Ask Solo, fresh tests when your situation changes.
       </>
     ),
   },
@@ -136,7 +136,7 @@ const faqs: { q: string; a: ReactNode }[] = [
     q: 'Why "Find what works" and not "Buy now"?',
     a: (
       <>
-        Because buying without your report is buying generic content. The fit-check takes 8 minutes
+        Because buying without your report is buying generic content. The test takes 8 minutes
         and gives you a preview before you pay, so you know what you're paying for.
       </>
     ),
@@ -163,8 +163,8 @@ export default function Pricing() {
         {/* ── Page header ── */}
         <section className="mx-auto max-w-6xl px-6 pt-8 pb-9">
           <div className="eyebrow">Pricing</div>
-          <h1 aria-label="One fit-check. Two ways to keep going." className="title-h1 mt-3.5">
-            One fit-check. Two ways to keep going.
+          <h1 aria-label="One test. Two ways to keep going." className="title-h1 mt-3.5">
+            One test. Two ways to keep going.
           </h1>
           <p className="standfirst mt-4 max-w-[52ch]">
             £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling, with the 29
@@ -282,7 +282,7 @@ export default function Pricing() {
               className="mt-4 font-display text-[28px] sm:text-[34px] lg:text-[36px] font-extrabold tracking-tight leading-[1.1] max-w-[22ch] mx-auto"
               style={{ color: "#FAF9F7", letterSpacing: "-0.03em", textWrap: "balance" } as React.CSSProperties}
             >
-              {isAuthedBuyer ? "Your plan is waiting." : "See what fits."}
+              {isAuthedBuyer ? "Your plan is waiting." : "See what works."}
             </h3>
             {!isAuthedBuyer && (
               <p className="standfirst mx-auto mt-3 max-w-[56ch]" style={{ color: "rgba(250,249,247,.8)" }}>
