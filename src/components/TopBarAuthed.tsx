@@ -1,87 +1,45 @@
-// src/components/TopBarAuthed.tsx
+// TopBarAuthed — editorial masthead + authed section nav (ADR-026 v2.0, 2026-06-10).
 //
-// A5 — Icon-led top nav for signed-in users. Four primary items + brand logo
-// + Account dropdown (the rightmost item is the dropdown trigger from A6).
-//
-// Active state: mint 3px bottom underline on the current route's item.
-// Single mechanism, no stacking.
-//
-// Breakpoints:
-//   >= 1024px (desktop): icon + small label below
-//   640-1023px (tablet): icon only
-//   < 640px (mobile): brand + hamburger only; full nav in a MobileNav drawer
-//                     (assumes your existing MobileNav handles authed items)
-//
-// Plug into the existing TopBar dispatch: render <TopBarAuthed /> in the
-// authed branch, keep the existing TopBar.anonymous in the anon branch.
+// Replaces the A5 icon-led bar: signed-in users get the same centred masthead
+// as anonymous visitors, over a sticky small-caps nav row (Plan / Report /
+// Library / Radar / Ask Solo) with the ink active-underline. The A6 Account
+// dropdown keeps its place at the right edge of the masthead. Route guards
+// continue to gate the destinations; this is chrome only.
 
-import { NavLink, Link, useLocation } from "react-router-dom";
-import { Compass, Library, MessageSquare, Radar } from "lucide-react";
-import SoloLogo from "@/components/SoloLogo";
+import { NavLink, useLocation } from "react-router-dom";
+import Masthead from "@/components/Masthead";
 import AccountDropdown from "./AccountDropdown";
 
-interface NavItem {
-  to: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
-  ariaLabel: string;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { to: "/plan", label: "Plan", icon: Compass, ariaLabel: "Plan" },
-  { to: "/library", label: "Library", icon: Library, ariaLabel: "Library" },
-{ to: "/radar", label: "Radar", icon: Radar, ariaLabel: "Opportunity Radar" },
-  { to: "/ask-solo", label: "Ask Solo", icon: MessageSquare, ariaLabel: "Ask Solo" },
+const AUTHED_SECTIONS = [
+  { label: "Plan", to: "/plan" },
+  { label: "Report", to: "/report" },
+  { label: "Library", to: "/library" },
+  { label: "Radar", to: "/radar" },
+  { label: "Ask Solo", to: "/ask-solo" },
 ];
 
 export default function TopBarAuthed() {
   const location = useLocation();
-  const path = location.pathname;
-  const accountActive = path.startsWith("/account");
+  const accountActive = location.pathname.startsWith("/account");
 
   return (
-    <header
-      className="sticky z-40 border-b border-border"
-      style={{ top: 4, background: "#FAF9F7" }}
-    >
-      <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6 lg:px-10">
-        {/* Brand — matches the anonymous TopBar so authed and anon users
-          * see the same logo and the same "click logo to go home" behaviour.
-          * Sized at the SoloLogo component's design defaults (140×40) for
-          * proper masthead presence per editorial design direction. */}
-        <Link to="/" className="flex items-center" aria-label="Solo home">
-          <SoloLogo width={140} height={40} />
-        </Link>
-
-        {/* Primary nav — full height of the 56px bar; items center vertically
-          * via the parent flex's items-center, no per-item vertical padding. */}
-        <div className="flex h-full items-center gap-1 sm:gap-2" aria-label="Main">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon;
-            return (
+    <header>
+      <Masthead right={<AccountDropdown isActive={accountActive} />} />
+      <nav className="section-nav sticky z-40" style={{ top: 4 }} aria-label="Main">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="section-nav-row">
+            {AUTHED_SECTIONS.map((s) => (
               <NavLink
-                key={item.to}
-                to={item.to}
-                aria-label={item.ariaLabel}
+                key={s.to}
+                to={s.to}
                 className={({ isActive }) =>
-                  [
-                    "flex h-full flex-col items-center justify-center gap-0.5 px-3 text-stone-700 hover:text-stone-900",
-                    isActive
-                      ? "border-b-[3px] border-[#2ECDB0]"
-                      : "border-b-[3px] border-transparent",
-                  ].join(" ")
+                  `section-nav-link ${isActive ? "is-active" : ""}`
                 }
               >
-                <Icon className="h-[18px] w-[18px]" aria-hidden />
-                <span className="hidden text-[10px] font-medium tracking-wide md:inline">
-                  {item.label}
-                </span>
+                {s.label}
               </NavLink>
-            );
-          })}
-
-          {/* Account dropdown trigger lives inside the nav strip */}
-          <AccountDropdown isActive={accountActive} />
+            ))}
+          </div>
         </div>
       </nav>
     </header>

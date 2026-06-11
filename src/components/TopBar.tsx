@@ -1,221 +1,73 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
+// TopBar — editorial masthead + section nav (ADR-026 v2.0, 2026-06-10).
+//
+// Anonymous chrome: centred brand masthead (mark + wordmark) with Sign in +
+// the mint CTA at the right edge, over a sticky small-caps section nav with
+// an ink active-underline (FT register). `minimal` keeps funnel surfaces
+// quiet: masthead only, no nav row, no CTA. Authed users dispatch to
+// TopBarAuthed (same masthead, authed nav row).
+
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { startTest, navigateAuthed } from "@/lib/handlers";
-import SoloLogo from "@/components/SoloLogo";
+import { startTest } from "@/lib/handlers";
+import Masthead from "@/components/Masthead";
 import TopBarAuthed from "@/components/TopBarAuthed";
 
-const anonLinks = [
+const SECTIONS = [
+  { label: "Home", to: "/" },
   { label: "How it works", to: "/how-it-works" },
   { label: "Pricing", to: "/pricing" },
+  { label: "The Signal", to: "/signal" },
+  { label: "Sample report", to: "/sample-report" },
   { label: "FAQ", to: "/faq" },
 ];
 
 export default function TopBar({ minimal = false }: { minimal?: boolean }) {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const location = useLocation();
 
-  // A5+A6 (2026-05-26): authed users get the icon-led nav + Account dropdown
-  // from TopBarAuthed. The existing anon/minimal branch below is preserved
-  // unchanged. Sign out moves to /account per operational TODO §Item 6.
+  // A5 (2026-05-26): authed users get the authed chrome.
   if (user) {
     return <TopBarAuthed />;
   }
 
-  const handleStartTest = () => startTest(navigate);
-  const handleSignOut = () => { signOut(); setOpen(false); };
+  if (minimal) {
+    // Funnel surfaces: quiet masthead, no nav, no competing CTA.
+    return <Masthead />;
+  }
+
+  const isActive = (to: string) =>
+    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
   return (
-    <header
-      className="sticky z-40 border-b border-border"
-      style={{ top: 4, background: "#FAF9F7" }}
-    >
-      <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6 lg:px-10">
-        {/* Logo — sized at SoloLogo's design defaults (140×40) for proper
-          * masthead presence per editorial design direction. */}
-        <Link to="/" className="flex items-center" aria-label="Solo home">
-          <SoloLogo width={140} height={40} />
-        </Link>
-
-        {/* Desktop links — anon nav only renders for anon visitors. Authed
-          * users get the authed nav block on the right; showing Pricing/FAQ
-          * to a paid user is clutter (Drift A fix, 2026-05-18). The minimal
-          * prop still suppresses anon links on funnel surfaces for anon
-          * visitors too. */}
-        {!minimal && !user && (
-          <div className="hidden items-center gap-8 md:flex">
-            {anonLinks.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
-        )}
-
-        {/*
-         * Desktop right —
-         * Authed nav block (Plan / Report / Library / Account / Sign out)
-         * always renders when user is signed in, even in `minimal` mode.
-         * This ensures returning authed users on funnel surfaces (e.g.
-         * /teaser when unpaid) can still reach Account + Sign out. Route
-         * guards handle gating Plan/Report/Library to paid users.
-         *
-         * Anon chrome (Sign in link + Take the test button) only renders
-         * when `!minimal` — keeps funnel surfaces quiet for anon visitors.
-         */}
-        <div className="hidden items-center gap-5 md:flex">
-          {user ? (
-            <>
-              <button
-                onClick={() => navigateAuthed(navigate, "/plan")}
-                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Plan
-              </button>
-              <button
-                onClick={() => navigateAuthed(navigate, "/report")}
-                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Report
-              </button>
-              <button
-                onClick={() => navigateAuthed(navigate, "/library")}
-                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Library
-              </button>
-              <button
-                onClick={() => navigateAuthed(navigate, "/account")}
-                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Account
-              </button>
-              <button
-                onClick={handleSignOut}
-                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Sign out
-              </button>
-            </>
-          ) : !minimal ? (
-            <Link
-              to="/auth"
-              className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
+    <header>
+      <Masthead
+        right={
+          <>
+            <Link to="/auth" className="text-[12.5px] font-medium text-muted-foreground hover:text-foreground">
               Sign in
             </Link>
-          ) : null}
-          {/* Drift A fix (2026-05-18): "Take the test" only renders for anon
-            * visitors. Authed users with an existing report use Account →
-            * TakeAnotherTestCard for second-report flow; the prominent mint
-            * "Take the test" pitch is conceptually wrong for someone who's
-            * already paid. */}
-          {!minimal && !user && (
-            <button
-              onClick={handleStartTest}
-              className="rounded-lg bg-primary px-5 py-2 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
+            <button onClick={() => startTest(navigate)} className="cta-block">
               Find what fits
             </button>
-          )}
-        </div>
-
-        {/*
-         * Mobile hamburger — same logic. Renders when not minimal, OR
-         * when minimal but the user is signed in (so authed users on
-         * funnel surfaces always have a menu to reach Account + Sign out).
-         */}
-        {(!minimal || user) && (
-          <button
-            className="md:hidden"
-            onClick={() => setOpen(!open)}
-            aria-label={open ? "Close menu" : "Open menu"}
-          >
-            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
-        )}
-      </nav>
-
-      {/*
-       * Mobile menu — opens whenever the hamburger is available. In
-       * minimal mode, only the authed nav block renders (no Pricing/FAQ,
-       * no Sign in, no Take the test). In full mode, everything renders.
-       */}
-      {open && (
-        <div className="border-t border-border bg-[hsl(var(--surface-panel))] px-6 py-4 md:hidden">
-          <div className="flex flex-col gap-3">
-            {/* Drift A fix (2026-05-18): mobile anon links hidden for authed users. */}
-            {!minimal && !user && anonLinks.map((l) => (
+          </>
+        }
+      />
+      <nav className="section-nav sticky z-40" style={{ top: 4 }} aria-label="Sections">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="section-nav-row">
+            {SECTIONS.map((s) => (
               <Link
-                key={l.to}
-                to={l.to}
-                onClick={() => setOpen(false)}
-                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
+                key={s.to}
+                to={s.to}
+                className={`section-nav-link ${isActive(s.to) ? "is-active" : ""}`}
               >
-                {l.label}
+                {s.label}
               </Link>
             ))}
-            {!minimal && !user && <hr className="border-border" />}
-            {user ? (
-              <>
-                <button
-                  onClick={() => { navigateAuthed(navigate, "/plan"); setOpen(false); }}
-                  className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Plan
-                </button>
-                <button
-                  onClick={() => { navigateAuthed(navigate, "/report"); setOpen(false); }}
-                  className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Report
-                </button>
-                <button
-                  onClick={() => { navigateAuthed(navigate, "/library"); setOpen(false); }}
-                  className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Library
-                </button>
-                <button
-                  onClick={() => { navigateAuthed(navigate, "/account"); setOpen(false); }}
-                  className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Account
-                </button>
-                <button
-                  onClick={handleSignOut}
-                  className="text-left text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : !minimal ? (
-              <Link
-                to="/auth"
-                onClick={() => setOpen(false)}
-                className="text-[13px] font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                Sign in
-              </Link>
-            ) : null}
-            {/* Drift A fix (2026-05-18): mobile "Take the test" hidden for authed users. */}
-            {!minimal && !user && (
-              <button
-                onClick={() => { handleStartTest(); setOpen(false); }}
-                className="w-full rounded-lg bg-primary px-5 py-2.5 text-[13px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Find what fits
-              </button>
-            )}
           </div>
         </div>
-      )}
+      </nav>
     </header>
   );
 }

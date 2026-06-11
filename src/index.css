@@ -2,417 +2,393 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * ── Solo editorial system v2.0 (ADR-026, 2026-06-10) ──
+ *
+ * The FT-register overhaul. One flat ivory surface; no cards, no shadows,
+ * no radii. Structure comes from hairline rules, 3px ink rules under section
+ * heads, and typography. The office-photo layer is gone (App.tsx). The
+ * legacy .panel-ivory / .panel-dark / .card-stone classes are kept as
+ * COMPATIBILITY classes so every existing page keeps working: panel-ivory
+ * now renders transparent-on-ivory (content flows on the page), panel-dark
+ * renders as a flat ink band, card-stone as a flat hairline-ruled block.
+ * Per-page FT passes (ADR-026 Phases 2-4) will progressively replace them
+ * with the explicit editorial vocabulary at the bottom of this file.
+ */
+
 @layer base {
-  :root {
-    /* ── Solo Brand Kit v2 ── */
+:root {
+/* ── Solo Brand Kit v2 ── */
 
-    /* Brand & accent */
-    --mint: 166 63% 49%;              /* #2ECDB0 */
-    --mint-hover: 166 62% 44%;        /* #26B89D */
-    --mint-light: 160 56% 95%;        /* #e8faf6 */
-    --mint-mid: 162 52% 85%;          /* #c5f0e8 */
-    --mint-text: 167 69% 27%; /* #15735F, darkened 2026-06-10 for 4.5:1 AA on ivory (was #1A8A72 at ~4.0:1) */
+/* Brand & accent */
+--mint: 166 63% 49%; /* #2ECDB0 */
+--mint-hover: 166 62% 44%; /* #26B89D */
+--mint-light: 160 56% 95%; /* #e8faf6 */
+--mint-mid: 162 52% 85%; /* #c5f0e8 */
+--mint-text: 167 69% 27%; /* #15735F, darkened 2026-06-10 for 4.5:1 AA on ivory (was #1A8A72 at ~4.0:1) */
 
-    /* Surfaces */
-    --surface-page: 30 8% 88%;        /* #E5E2DC (desk) */
-    --surface-panel: 40 14% 97%;      /* #FAF9F7 (ivory) */
-    --surface-card: 30 8% 94%;        /* #F3F1ED (stone) */
-    --surface-inset: 35 8% 91%;       /* #ECEAE4 */
-    --surface-mint-tint: 160 56% 95%; /* #e8faf6 (mint-light) */
+/* Surfaces — v2.0: the page IS ivory; panel === page */
+--surface-page: 40 14% 97%; /* #FAF9F7 (ivory, was the desk grey) */
+--surface-panel: 40 14% 97%; /* #FAF9F7 */
+--surface-card: 30 8% 94%; /* #F3F1ED (stone) */
+--surface-inset: 35 8% 91%; /* #ECEAE4 */
+--surface-mint-tint: 160 56% 95%; /* #e8faf6 (mint-light) */
 
-    /* Borders — single token, #D1CEC7 */
-    --border-default: 30 5% 79%;      /* #D1CEC7 */
-    --border-strong: 30 5% 79%;       /* #D1CEC7 */
-    --border-subtle: 30 5% 79%;       /* #D1CEC7 */
+/* Borders — single token, #D1CEC7 */
+--border-default: 30 5% 79%; /* #D1CEC7 */
+--border-strong: 30 5% 79%; /* #D1CEC7 */
+--border-subtle: 30 5% 79%; /* #D1CEC7 */
 
-    /* Text */
-    --text-heading: 225 9% 13%;       /* #1D2025 */
-    --text-body: 228 5% 26%;          /* #3D4048 */
-    --text-muted: 220 5% 46%;         /* #6B7280 */
-    --text-faint: 220 5% 46%;         /* #6B7280 */
+/* Text */
+--text-heading: 225 9% 13%; /* #1D2025 */
+--text-body: 228 5% 26%; /* #3D4048 */
+--text-muted: 220 5% 46%; /* #6B7280 */
+--text-faint: 220 5% 46%; /* #6B7280 */
 
-    /* Semantic */
-    --error: 0 84% 60%;               /* #EF4444 */
-    --error-bg: 0 100% 94%;           /* #FEE2E2 */
-    --success: 166 63% 49%;           /* #2ECDB0 */
-    --success-bg: 160 56% 95%;        /* #e8faf6 */
-    --warning: 38 92% 50%;            /* #F59E0B */
-    --warning-bg: 48 96% 89%;         /* #FEF3C7 */
-    --green: 142 71% 45%;             /* #22C55E */
-    --green-light: 142 77% 93%;       /* #DCFCE7 */
-    --amber: 38 92% 50%;              /* #F59E0B */
-    --amber-light: 48 96% 89%;        /* #FEF3C7 */
+/* Ink — the editorial dark band colour */
+--ink: 48 11% 9%; /* #1A1915 */
 
-    /* NO shadows — depth through layering only */
-    --shadow-panel: none;
-    --shadow-card: none;
-    --shadow-card-hover: none;
+/* Semantic */
+--error: 0 84% 60%; /* #EF4444 */
+--error-bg: 0 100% 94%; /* #FEE2E2 */
+--success: 166 63% 49%; /* #2ECDB0 */
+--success-bg: 160 56% 95%; /* #e8faf6 */
+--warning: 38 92% 50%; /* #F59E0B */
+--warning-bg: 48 96% 89%; /* #FEF3C7 */
+--green: 142 71% 45%; /* #22C55E */
+--green-light: 142 77% 93%; /* #DCFCE7 */
+--amber: 38 92% 50%; /* #F59E0B */
+--amber-light: 48 96% 89%; /* #FEF3C7 */
 
-    /* Radii */
-    --radius: 0.625rem;
+/* NO shadows — flat editorial surface (v2.0) */
+--shadow-panel: none;
+--shadow-card: none;
+--shadow-card-hover: none;
 
-    /* ── Mapped to shadcn token system ── */
-    --background: var(--surface-page);
-    --foreground: var(--text-heading);
-    --card: var(--surface-card);
-    --card-foreground: var(--text-heading);
-    --popover: var(--surface-panel);
-    --popover-foreground: var(--text-heading);
-    --primary: var(--mint);
-    --primary-foreground: 48 11% 9%; /* ink #1A1915 on mint; was white at 2.03:1 (a11y fix 2026-06-10) */
-    --secondary: var(--surface-card);
-    --secondary-foreground: var(--text-body);
-    --muted: var(--surface-inset);
-    --muted-foreground: var(--text-muted);
-    --accent: var(--surface-mint-tint);
-    --accent-foreground: var(--mint-text);
-    --destructive: var(--error);
-    --destructive-foreground: 0 0% 100%;
-    --border: var(--border-default);
-    --input: var(--border-default);
-    --ring: var(--mint);
+/* Radii — v2.0: square everything (FT register) */
+--radius: 0rem;
 
-    --sidebar-background: var(--surface-panel);
-    --sidebar-foreground: var(--text-body);
-    --sidebar-primary: var(--mint);
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: var(--surface-card);
-    --sidebar-accent-foreground: var(--text-heading);
-    --sidebar-border: var(--border-default);
-    --sidebar-ring: var(--mint);
-  }
+/* ── Mapped to shadcn token system ── */
+--background: var(--surface-page);
+--foreground: var(--text-heading);
+--card: var(--surface-card);
+--card-foreground: var(--text-heading);
+--popover: var(--surface-panel);
+--popover-foreground: var(--text-heading);
+--primary: var(--mint);
+--primary-foreground: 48 11% 9%; /* ink #1A1915 on mint; was white at 2.03:1 (a11y fix 2026-06-10) */
+--secondary: var(--surface-card);
+--secondary-foreground: var(--text-body);
+--muted: var(--surface-inset);
+--muted-foreground: var(--text-muted);
+--accent: var(--surface-mint-tint);
+--accent-foreground: var(--mint-text);
+--destructive: var(--error);
+--destructive-foreground: 0 0% 100%;
+--border: var(--border-default);
+--input: var(--border-default);
+--ring: var(--mint);
+
+--sidebar-background: var(--surface-panel);
+--sidebar-foreground: var(--text-body);
+--sidebar-primary: var(--mint);
+--sidebar-primary-foreground: 48 11% 9%;
+--sidebar-accent: var(--surface-card);
+--sidebar-accent-foreground: var(--text-heading);
+--sidebar-border: var(--border-default);
+--sidebar-ring: var(--mint);
+}
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  /* Body is transparent — global fixed photo layer in App.tsx provides the page background. */
-  body {
-    @apply text-foreground antialiased;
-    background: transparent;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    /* LinkedIn-density pass (2026-05-26):
-     *   base body 15→14, line-height 1.6→1.45.
-     *   Ripples through every surface that doesn't override font-size. */
-    font-size: 14px;
-    line-height: 1.45;
-    color: #1A1915;
-  }
-  html {
-    background: transparent;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  h1, h2, h3, h4, h5, h6, .font-display {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
+* {
+@apply border-border;
+}
+/* v2.0: the body IS the ivory editorial surface. No photo layer. */
+body {
+@apply text-foreground antialiased;
+background: #FAF9F7;
+font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+/* LinkedIn-density pass (2026-05-26): base body 14px / 1.45. */
+font-size: 14px;
+line-height: 1.45;
+color: #1A1915;
+}
+html {
+background: #FAF9F7;
+font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+}
+h1, h2, h3, h4, h5, h6, .font-display {
+font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
 }
 
-/* ── Brand Kit v2 panel/card surfaces (used to lift content above the photo background) ── */
+/* ── v2.0 compatibility layer: legacy panel/card classes, flattened ──
+ * Every pre-overhaul surface keeps its layout; it just stops being a card.
+ */
 @layer components {
-  .panel-ivory {
-    background: #FAF9F7;
-    border: 1px solid #E5E2DC;
-    border-radius: 16px;
-    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18), 0 1px 6px rgba(0, 0, 0, 0.10);
-  }
-  /*
-   * panel-dark — companion to panel-ivory.
-   * Used at ~25% cadence across each surface for visual rhythm variety,
-   * per design-direction.md v1.3 §"Dark-card cadence." Body content
-   * inside a panel-dark must use light text overrides: color: #FAF9F7
-   * for headings, rgba(250,249,247,0.85) for body, mint #2ECDB0 for
-   * accents (stays mint, still readable on dark). Heavier shadow than
-   * panel-ivory to compensate for the dark fill. Optional mint top
-   * stripe (4px solid #2ECDB0) is reserved for the polemic-interrupt
-   * variant (currently only the ChatGPT differentiator section).
-   */
-  .panel-dark {
-    background: #1A1915;
-    border: 1px solid #2A2924;
-    border-radius: 16px;
-    box-shadow: 0 4px 32px rgba(0, 0, 0, 0.22), 0 1px 6px rgba(0, 0, 0, 0.12);
-  }
-  .card-stone {
-    background: #F3F1ED;
-    border: 1px solid #E5E2DC;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05);
-  }
-  .surface-inset-well {
-    background: #ECEAE4;
-    border: 1px solid #E5E2DC;
-    border-radius: 10px;
-  }
-
-  /*
-   * .title-h1 — canonical page-hero heading.
-   *
-   * Locked 2026-05-18 after the /plan title card rolled out and read as
-   * substantially more confident than the inconsistent H1 sizes/weights
-   * across the rest of the site. Every page hero (the main visible title
-   * at the top of a route, typically inside a panel-ivory title card)
-   * MUST use this class. Inline typographic overrides on page H1/H2 hero
-   * elements are forbidden — they are what fragmented the system in the
-   * first place. Positional classes (mt-X, mb-X, max-w-[N]) are fine on
-   * top of .title-h1; typographic ones (font-*, text-*, leading-*,
-   * tracking-*, letter-spacing) are not.
-   *
-   * FONT FAMILY: Plus Jakarta Sans first (v1.7, 2026-06-10).
-*
-* v1.5b locked system sans because PJS 800 was not in the font
-* link, so a PJS hero rendered at 700 and looked wrong. The
-* 2026-06-10 live audit measured a three-way display-face split
-* (system 800 heroes, system 700 subheads, PJS 600 elsewhere).
-* PJS 800 is now loaded in index.html, dissolving the original
-* objection; heroes render true PJS 800, matching the 2026-06-06
-* brand typography decision (PJS for display, Inter supporting).
-   *
-   * Spec:
-   *   font-family   system sans-serif (San Francisco / Segoe UI / etc.)
-   *   weight        800 (extrabold — system fonts have real 800 weight)
-   *   size          34px → 40px (≥ sm) → 44px (≥ lg)
-   *   line-height   1.05
-   *   letter-spacing -0.028em
-   *   color         text-foreground
-   *   wrap          balanced (avoids stray short last lines)
-   *
-   * If a surface genuinely needs a heroic over-scale (e.g. Teaser's
-   * "this is yours" moment), add a follow-up `.title-h1--hero` modifier
-   * — do NOT inline a new font-size. Keeping the variants in one place
-   * is the whole point of this class.
-   */
-  .title-h1 {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; /* v1.7: PJS-first; 800 now loaded */
-    font-weight: 700;
-    /* LinkedIn-density pass (2026-05-26):
-     *   was 34/40/44, now 22/26/30 (about 60% of previous).
-     *   line-height 1.05→1.2 (more reading-friendly at smaller size).
-     *   Affects every page-hero heading site-wide. */
-    font-size: 22px;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    color: hsl(var(--foreground));
-    text-wrap: balance;
-  }
-  @media (min-width: 640px)  { .title-h1 { font-size: 26px; } }
-  @media (min-width: 1024px) { .title-h1 { font-size: 30px; } }
-
-  /*
-   * .title-h1--hero — modifier for the Landing home-page hero only.
-   * The Landing question ("If you needed to earn an independent income
-   * fast, what would you do?") carries a heroic "this is yours" moment
-   * that warrants more visual presence than other page-heroes (Plan,
-   * Library, Account, etc.) get from the base .title-h1. Restores the
-   * pre-density-pass scale (34/40/44px / line-height 1.05) which was
-   * authored deliberately for this surface.
-   * Stack with the base class: <h1 className="title-h1 title-h1--hero">.
-   */
-  .title-h1--hero {
-    font-size: 34px;
-    line-height: 1.05;
-    letter-spacing: -0.028em;
-    font-weight: 800;
-  }
-  @media (min-width: 640px)  { .title-h1--hero { font-size: 40px; } }
-  @media (min-width: 1024px) { .title-h1--hero { font-size: 44px; } }
+.panel-ivory {
+background: transparent;
+border: none;
+border-radius: 0;
+box-shadow: none;
+}
+/*
+ * panel-dark — now a flat ink band (no radius, no shadow). The dark-band
+ * cadence rules from design-direction §8 carry over unchanged.
+ */
+.panel-dark {
+background: #1A1915;
+border: none;
+border-radius: 0;
+box-shadow: none;
+}
+.card-stone {
+background: #F3F1ED;
+border: 1px solid #D1CEC7;
+border-radius: 0;
+box-shadow: none;
+}
+.surface-inset-well {
+background: #ECEAE4;
+border: 1px solid #D1CEC7;
+border-radius: 0;
 }
 
-/* Nav link mint underline slide-in */
-.nav-link-mint {
-  position: relative;
-  display: inline-block;
+/*
+ * .title-h1 — canonical page-hero heading.
+ * v1.7: PJS-first, weight 800 loaded. v2.0 keeps it unchanged.
+ * Positional classes allowed on top; typographic overrides forbidden.
+ */
+.title-h1 {
+font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-weight: 700;
+font-size: 22px;
+line-height: 1.2;
+letter-spacing: -0.02em;
+color: hsl(var(--foreground));
+text-wrap: balance;
 }
+@media (min-width: 640px) { .title-h1 { font-size: 26px; } }
+@media (min-width: 1024px) { .title-h1 { font-size: 30px; } }
+
+.title-h1--hero {
+font-size: 34px;
+line-height: 1.05;
+letter-spacing: -0.028em;
+font-weight: 800;
+}
+@media (min-width: 640px) { .title-h1--hero { font-size: 40px; } }
+@media (min-width: 1024px) { .title-h1--hero { font-size: 44px; } }
+
+/* ── v2.0 editorial vocabulary (ADR-026) ── */
+
+/* Serif standfirst — the FT body-serif moment under a headline. */
+.standfirst {
+font-family: 'Source Serif 4', Georgia, serif;
+font-size: 16px;
+line-height: 1.5;
+color: hsl(var(--text-body));
+}
+@media (min-width: 640px) { .standfirst { font-size: 17px; } }
+
+/* Small-caps eyebrow / section label. */
+.eyebrow {
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.16em;
+text-transform: uppercase;
+color: #15735F;
+}
+.eyebrow--muted { color: hsl(var(--text-muted)); }
+
+/* Section head with the heavy ink rule beneath (FT editor's-picks treatment). */
+.rule-head {
+font-size: 11px;
+font-weight: 700;
+letter-spacing: 0.16em;
+text-transform: uppercase;
+color: #1A1915;
+padding-bottom: 10px;
+border-bottom: 3px solid #1A1915;
+}
+
+/* Hairline list row. */
+.rule-row { border-top: 1px solid #D1CEC7; }
+
+/* Square editorial CTA (ink on mint). */
+.cta-block {
+display: inline-block;
+background: #2ECDB0;
+color: #1A1915;
+font-weight: 600;
+font-size: 13px;
+padding: 9px 18px;
+transition: opacity 0.15s ease;
+}
+.cta-block:hover { opacity: 0.92; }
+
+/* Text link with mint underline. */
+.link-edit {
+font-size: 13px;
+font-weight: 600;
+color: #1A1915;
+border-bottom: 2px solid #2ECDB0;
+padding-bottom: 2px;
+}
+
+/* ── The Radar ticker (TickerBar.tsx) ── */
+.ticker {
+background: #1A1915;
+color: #FAF9F7;
+font-size: 12px;
+overflow: hidden;
+white-space: nowrap;
+}
+.ticker-row { display: flex; align-items: center; height: 34px; }
+.ticker-label {
+flex: none; display: flex; align-items: center; gap: 8px;
+padding: 0 18px; height: 100%; background: #11100D;
+font-weight: 600; letter-spacing: 0.18em; font-size: 10px; text-transform: uppercase;
+color: #FAF9F7;
+}
+.ticker-dot {
+width: 6px; height: 6px; border-radius: 50%; background: #2ECDB0;
+animation: ticker-pulse 2.8s ease-in-out infinite;
+}
+@keyframes ticker-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.ticker-window { overflow: hidden; flex: 1; }
+.ticker-track {
+display: inline-flex; gap: 42px; padding-left: 12px;
+animation: ticker-scroll 55s linear infinite;
+}
+.ticker:hover .ticker-track { animation-play-state: paused; }
+@keyframes ticker-scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+@media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+.ticker-item { display: inline-flex; align-items: baseline; gap: 8px; }
+.ticker-cat {
+color: rgba(250,249,247,0.55); font-size: 10px;
+letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600;
+}
+.ticker-val { color: #2ECDB0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ticker-due { color: rgba(250,249,247,0.55); font-size: 11px; }
+
+/* ── Masthead + section nav (TopBar v2) ── */
+.masthead { border-bottom: 1px solid #D1CEC7; background: #FAF9F7; }
+.masthead-grid {
+display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+height: 72px;
+}
+@media (min-width: 1024px) { .masthead-grid { height: 84px; } }
+.masthead-word {
+font-family: 'Plus Jakarta Sans';
+font-weight: 600; font-size: 36px; letter-spacing: -0.045em; line-height: 1;
+color: #1A1915;
+}
+@media (min-width: 1024px) { .masthead-word { font-size: 42px; } }
+.section-nav { border-bottom: 1px solid #D1CEC7; background: #FAF9F7; }
+.section-nav-row {
+display: flex; gap: 26px; height: 42px; align-items: stretch;
+overflow-x: auto; scrollbar-width: none;
+}
+.section-nav-row::-webkit-scrollbar { display: none; }
+.section-nav-link {
+display: flex; align-items: center; flex: none;
+font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+color: hsl(var(--text-body));
+border-bottom: 3px solid transparent; margin-bottom: -1px;
+}
+.section-nav-link:hover { border-bottom-color: #2ECDB0; }
+.section-nav-link.is-active { color: #1A1915; border-bottom-color: #1A1915; }
+}
+
+/* Nav link mint underline slide-in (legacy, kept for components that use it) */
+.nav-link-mint { position: relative; display: inline-block; }
 .nav-link-mint::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -2px;
-  width: 100%;
-  height: 2px;
-  background: #2ECDB0;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.25s ease;
+content: ""; position: absolute; left: 0; bottom: -2px; width: 100%; height: 2px;
+background: #2ECDB0; transform: scaleX(0); transform-origin: left; transition: transform 0.25s ease;
 }
-.nav-link-mint:hover::after {
-  transform: scaleX(1);
-}
+.nav-link-mint:hover::after { transform: scaleX(1); }
 
 /* Mint button hover */
-.mint-btn {
-  transition: opacity 0.2s ease;
-}
-.mint-btn:hover {
-  opacity: 0.92;
-}
+.mint-btn { transition: opacity 0.2s ease; }
+.mint-btn:hover { opacity: 0.92; }
 
 /* Page transition wrapper */
-.page-transition-enter {
-  opacity: 0;
-}
-.page-transition-enter-active {
-  opacity: 1;
-  transition: opacity 0.3s ease;
-}
+.page-transition-enter { opacity: 0; }
+.page-transition-enter-active { opacity: 1; transition: opacity 0.3s ease; }
 
 /* Savings badge pulsing glow */
 @keyframes savings-glow {
-  0%, 100% { box-shadow: 0 0 15px rgba(46,205,176,0.3); }
-  50% { box-shadow: 0 0 25px rgba(46,205,176,0.15); }
+0%, 100% { box-shadow: 0 0 15px rgba(46,205,176,0.3); }
+50% { box-shadow: 0 0 25px rgba(46,205,176,0.15); }
 }
-.animate-savings-glow {
-  animation: savings-glow 2s ease-in-out infinite;
-}
+.animate-savings-glow { animation: savings-glow 2s ease-in-out infinite; }
 
 /* Check-in CTA pulsing glow */
 @keyframes checkin-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(46,205,176,0.4); }
-  70% { box-shadow: 0 0 0 12px rgba(46,205,176,0); }
-  100% { box-shadow: 0 0 0 0 rgba(46,205,176,0); }
+0% { box-shadow: 0 0 0 0 rgba(46,205,176,0.4); }
+70% { box-shadow: 0 0 0 12px rgba(46,205,176,0); }
+100% { box-shadow: 0 0 0 0 rgba(46,205,176,0); }
 }
-.animate-checkin-pulse {
-  animation: checkin-pulse 2s ease-in-out infinite;
-}
+.animate-checkin-pulse { animation: checkin-pulse 2s ease-in-out infinite; }
 
 /* Typing indicator dots */
 @keyframes typing-dot {
-  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
-  40% { opacity: 1; transform: scale(1); }
+0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+40% { opacity: 1; transform: scale(1); }
 }
-.animate-typing-dot {
-  animation: typing-dot 1.4s ease-in-out infinite;
-}
+.animate-typing-dot { animation: typing-dot 1.4s ease-in-out infinite; }
 
-/*
- * Heartbeat — the slowly-pulsing mint dot on /processing.
- * Per Pass 1 /processing F1 resolution 2026-05-17. Opacity 100% → 40% +
- * small scale change on a 2.8s ease-in-out cycle. Reads as breathing,
- * not as computation. The cycle deliberately matches the cycling-message
- * interval so the dot and the messages feel like one rhythm.
- *
- * Reduced-motion: the .animate-heartbeat class is conditionally applied
- * in Processing.tsx — when prefers-reduced-motion is set, the dot stays
- * static (no class, no animation, same shape/colour).
- */
+/* Heartbeat — the slowly-pulsing mint dot on /processing. */
 @keyframes heartbeat {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+0%, 100% { opacity: 1; transform: scale(1); }
+50% { opacity: 0.4; transform: scale(0.85); }
 }
-.animate-heartbeat {
-  animation: heartbeat 2.8s ease-in-out infinite;
-}
+.animate-heartbeat { animation: heartbeat 2.8s ease-in-out infinite; }
 
 /*
- * .prose-serif — long-form editorial prose face. The system's
- * "if-the-user-is-reading-content-not-scanning-UI" font.
- *
- * Used on six surfaces as of 2026-05-18:
- *   1. /report body sections (Pass 1 /report F5)
- *   2. /library reading drawer + module lessons
- *   3. /checkin-history excerpts + drawer body
- *   4. /ask-solo assistant responses
- *   5. /privacy body prose (Pass 1 legal+FAQ — locked 2026-05-18)
- *   6. /terms body prose (Pass 1 legal+FAQ — locked 2026-05-18)
- *
- * Real exception to the two-typeface rule. Justified for long-form
- * reading because Inter at the same scale reads as institutional UI;
- * Source Serif 4 reads as a document — the right register for prose
- * the user is reading for content (their own report, a guidance
- * lesson, an Ask Solo response, a privacy clause).
- *
- * Scoped to common content elements inside the .prose-serif container.
- * UI chrome (h2s, eyebrows, buttons, sidebar items) outside the
- * container stays in the locked Plus Jakarta Sans + Inter system.
- *
- * design-direction.md v1.4 needs bumping (probably to v1.6 to roll up
- * both /report and legal additions) with the exception clause +
- * "if-content-not-UI" rule; pending propagation work.
+ * v2.0 Phase-1 compatibility shim: pre-overhaul pages padded their <main>
+ * by 68px to clear the old sticky TopBar. The new masthead+nav are in-flow,
+ * so that padding becomes a stray gap. Normalised to the 24px gap rule here;
+ * removed properly per page in ADR-026 Phases 2-4.
+ */
+.pt-\[68px\] { padding-top: 24px !important; }
+
+/*
+ * .prose-serif — long-form editorial prose face (Source Serif 4).
+ * v2.0: unchanged; the serif register now also powers .standfirst above.
  */
 @layer components {
-  .prose-serif {
-    font-family: 'Source Serif 4', Georgia, serif;
-  }
-  .prose-serif p {
-    font-family: 'Source Serif 4', Georgia, serif;
-    /* LinkedIn-density pass (2026-05-26): 17→15, line-height 1.65→1.45. */
-    font-size: 15px;
-    line-height: 1.45;
-    color: hsl(var(--text-body));
-    margin-bottom: 0.9em;
-  }
-  .prose-serif p:last-child {
-    margin-bottom: 0;
-  }
-  .prose-serif strong {
-    font-weight: 600;
-    color: hsl(var(--text-heading));
-  }
-  /*
-   * List support — legal pages use <ul> for clause enumeration. Serif
-   * keeps the inline reading register; mint-rule prefix replaces the
-   * default disc bullet to match the editorial vocabulary used on
-   * /report's bullet lists.
-   */
-  .prose-serif ul {
-    list-style: none;
-    padding-left: 0;
-    margin-bottom: 1.1em;
-  }
-  .prose-serif ul li {
-    font-family: 'Source Serif 4', Georgia, serif;
-    /* LinkedIn-density pass (2026-05-26): 17→15, line-height 1.65→1.45. */
-    font-size: 15px;
-    line-height: 1.45;
-    color: hsl(var(--text-body));
-    position: relative;
-    padding-left: 16px;
-    margin-bottom: 0.4em;
-  }
-  .prose-serif ul li::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0.7em;
-    width: 8px;
-    height: 1.5px;
-    background: #2ECDB0;
-  }
-  /*
-   * Inline links — heading colour + mint underline. Same vocabulary
-   * as the link treatment used elsewhere in the editorial system.
-   */
-  .prose-serif a {
-    color: hsl(var(--text-heading));
-    text-decoration: underline;
-    text-decoration-color: #2ECDB0;
-    text-underline-offset: 3px;
-    text-decoration-thickness: 1.5px;
-  }
-  .prose-serif a:hover {
-    text-decoration-thickness: 2px;
-  }
-  /*
-   * .has-dropcap — applied alongside .prose-serif on the FIRST
-   * substantive section's wrapper (#edge on /report). Drops a cap on
-   * the first letter of the first <p> the wrapper contains, regardless
-   * of how deep the rendered section component nests its content. The
-   * descendant selector covers both direct-child <p> and nested
-   * structures like .prose-serif.has-dropcap > div > div > p.
-   * Per Pass 1 /report F6.
-   */
-  .prose-serif.has-dropcap p:first-of-type::first-letter,
-  .prose-serif.has-dropcap > div p:first-of-type::first-letter,
-  .prose-serif.has-dropcap > div > div p:first-of-type::first-letter {
-    float: left;
-    /* LinkedIn-density pass (2026-05-26): dropcap 56→40. */
-    font-size: 40px;
-    font-weight: 700;
-    line-height: 0.9;
-    margin: 4px 6px 0 0;
-    color: hsl(var(--text-heading));
-    font-family: 'Plus Jakarta Sans', sans-serif;
-  }
+.prose-serif { font-family: 'Source Serif 4', Georgia, serif; }
+.prose-serif p {
+font-family: 'Source Serif 4', Georgia, serif;
+font-size: 15px; line-height: 1.45; color: hsl(var(--text-body)); margin-bottom: 0.9em;
+}
+.prose-serif p:last-child { margin-bottom: 0; }
+.prose-serif strong { font-weight: 600; color: hsl(var(--text-heading)); }
+.prose-serif ul { list-style: none; padding-left: 0; margin-bottom: 1.1em; }
+.prose-serif ul li {
+font-family: 'Source Serif 4', Georgia, serif;
+font-size: 15px; line-height: 1.45; color: hsl(var(--text-body));
+position: relative; padding-left: 16px; margin-bottom: 0.4em;
+}
+.prose-serif ul li::before {
+content: ""; position: absolute; left: 0; top: 0.7em; width: 8px; height: 1.5px; background: #2ECDB0;
+}
+.prose-serif a {
+color: hsl(var(--text-heading));
+text-decoration: underline; text-decoration-color: #2ECDB0;
+text-underline-offset: 3px; text-decoration-thickness: 1.5px;
+}
+.prose-serif a:hover { text-decoration-thickness: 2px; }
+.prose-serif.has-dropcap p:first-of-type::first-letter,
+.prose-serif.has-dropcap > div p:first-of-type::first-letter,
+.prose-serif.has-dropcap > div > div p:first-of-type::first-letter {
+float: left; font-size: 40px; font-weight: 700; line-height: 0.9;
+margin: 4px 6px 0 0; color: hsl(var(--text-heading));
+font-family: 'Plus Jakarta Sans', sans-serif;
+}
 }
