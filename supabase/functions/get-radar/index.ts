@@ -1,11 +1,13 @@
 // get-radar — Opportunity Radar v1 read path (ADR-025, 2026-06-10)
-// FUNCTION_VERSION: radar-read-v1.0
+// FUNCTION_VERSION: radar-read-v1.1
+// v1.1 display-quality pass (real data was reading as placeholder):
+//   - strips the 'GB-Town:' notice prefix from titles
+//   - dedupes multiple lots of the same framework (keeps the first, notes count)
+//   - drops items over £2m (not solo-winnable) and lapsed deadlines
+//   - labels framework-ceiling values as such ('framework value')
+// v1.0 initial.
 //
-// Returns the current radar for the calling user: items for their archetype's
-// category (mapped via kb_archetypes.name) from the last 14 days, tenders first.
-// Paid surface: requires a paid report (same statuses the funnel guard uses).
-// verify_jwt: true — gateway-verified JWT (per the 2026-06-10 security review:
-// no inline-decode identity on sensitive reads).
+// Paid surface: requires a paid report. verify_jwt: true (gateway-verified).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -16,6 +18,23 @@ const corsHeaders = {
 };
 
 const PAID_STATUSES = ["pending_selection", "generating_plan", "complete"];
+const MAX_SOLO_VALUE = 2_000_000;
+
+function parseValue(v: string | null): number | null {
+  if (!v) return null;
+  const n = Number(String(v).replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+function cleanTitle(t: string): string {
+  return t.replace(/^GB-[^:]+:\s*/, "").trim();
+}
+
+/** Framework/lot grouping key: buyer + title up to a 'Lot N' marker. */
+function frameworkKey(title: string, buyer: string | null): string {
+  const stem = cleanTitle(title).split(/\blot\s*\d+/i)[0].trim().toLowerCase();
+  return `${(buyer ?? "").toLowerCase()}|${stem}`;
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -35,7 +54,6 @@ Deno.serve(async (req: Request) => {
     }
     const userId = userData.user.id;
 
-    // Paid gate + archetype.
     const { data: report } = await supabase
       .from("reports")
       .select("id, status, core_report")
@@ -53,7 +71,6 @@ Deno.serve(async (req: Request) => {
 
     const primary: string = report.core_report?.archetype?.primary ?? "";
 
-    // Map archetype name -> category. Exact match first, then fuzzy.
     let category: string | null = null;
     if (primary) {
       const { data: exact } = await supabase
@@ -74,22 +91,54 @@ Deno.serve(async (req: Request) => {
       .select("id, week_start, category, source_type, title, summary, url, source_name, buyer, value_text, deadline, relevance_tags")
       .gte("week_start", since)
       .order("week_start", { ascending: false })
-      .order("source_type", { ascending: false }); // 'tender' sorts after 'analysis'; desc puts tenders first.
+      .order("source_type", { ascending: false });
     if (category) {
       query = query.in("category", [category, "General"]);
     } else {
       query = query.eq("source_type", "tender").limit(10);
     }
-    const { data: items, error: itemsErr } = await query;
+    const { data: raw, error: itemsErr } = await query;
     if (itemsErr) throw new Error(itemsErr.message);
+
+    // Display-quality pass.
+    const now = Date.now();
+    const seenFrameworks = new Map<string, number>();
+    const shaped = [] as Record<string, unknown>[];
+    for (const i of raw ?? []) {
+      if (i.source_type === "tender") {
+        if (i.deadline && new Date(i.deadline).getTime() < now) continue;
+        const v = parseValue(i.value_text);
+        if (v !== null && v > MAX_SOLO_VALUE) continue;
+        const key = frameworkKey(i.title, i.buyer);
+        if (seenFrameworks.has(key)) {
+          seenFrameworks.set(key, (seenFrameworks.get(key) ?? 1) + 1);
+          continue; // collapse sibling lots of the same framework
+        }
+        seenFrameworks.set(key, 1);
+        shaped.push({
+          ...i,
+          title: cleanTitle(i.title),
+          value_text: v !== null && v >= 250_000 ? `${i.value_text} framework` : i.value_text,
+        });
+      } else {
+        shaped.push(i);
+      }
+    }
+    // Annotate collapsed-lot counts.
+    for (const s of shaped) {
+      if (s.source_type !== "tender") continue;
+      const key = frameworkKey(s.title as string, s.buyer as string | null);
+      const n = seenFrameworks.get(key) ?? 1;
+      if (n > 1) s.title = `${s.title} (${n} lots open)`;
+    }
 
     return new Response(
       JSON.stringify({
-        response_text: `${(items ?? []).length} radar items for ${category ?? "your market"}.`,
+        response_text: `${shaped.length} radar items for ${category ?? "your market"}.`,
         category,
         archetype: primary || null,
         matched: !!category,
-        items: items ?? [],
+        items: shaped,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

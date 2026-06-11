@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import TopBar from "@/components/TopBar";
+import CohortPulse from "@/components/CohortPulse";
 import { supabase } from "@/integrations/supabase/client";
 
 interface RadarItem {
@@ -204,6 +205,8 @@ export default function Radar() {
                     Ask Solo knows your plan and your pipeline.
                   </p>
                 </footer>
+                {/* Cohort Pulse + Asked this week (ADR-025 Peers layer, 2026-06-11). */}
+                <CohortPulse archetype={data.archetype} />
               </>
             )}
           </div>

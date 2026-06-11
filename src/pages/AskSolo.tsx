@@ -7,6 +7,7 @@ import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { navigateAuthed } from "@/lib/handlers";
 import { supabase } from "@/integrations/supabase/client";
 import AskSoloInfoPopover from "@/components/AskSoloInfoPopover";
+import RehearsalRoom from "@/components/RehearsalRoom";
 import TopBar from "@/components/TopBar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -117,6 +118,7 @@ export default function AskSolo() {
   const [loading, setLoading] = useState(true);
   const [threadDrawerOpen, setThreadDrawerOpen] = useState(false);
   const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  const [rehearsalOpen, setRehearsalOpen] = useState(false); // Rehearsal Room (ADR-025)
 
   const { isActive: isSubscriber } = useSubscriptionStatus();
   // F44 fix: questionsUsed was hardcoded to 3 (every buyer saw 7/10 on question one).
@@ -452,6 +454,10 @@ export default function AskSolo() {
                   <h2 className="font-display text-[16px] sm:text-[18px] font-bold text-foreground truncate" style={{ letterSpacing: "-0.018em" }}>
                     {threads.find((t) => t.id === activeThreadId)?.title || "Ask anything about your plan."}
                   </h2>
+                  {/* Rehearsal Room affordance (ADR-025, 2026-06-11) */}
+                  <button type="button" onClick={() => setRehearsalOpen((v) => !v)} className="link-edit mt-1.5 text-[12px]">
+                    {rehearsalOpen ? "Close the Rehearsal Room" : "Rehearse a conversation"}
+                  </button>
                 </div>
 
                 <QuotaPill
@@ -461,6 +467,9 @@ export default function AskSolo() {
                   warning={quotaWarning}
                 />
               </div>
+
+              {/* Rehearsal Room inline section (ADR-025); own transcript, never touches quota */}
+              {rehearsalOpen && <RehearsalRoom onClose={() => setRehearsalOpen(false)} />}
 
               {/* Context-note strip (deep-link state) */}
               {contextId && messages.length <= 1 && (

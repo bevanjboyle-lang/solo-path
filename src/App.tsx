@@ -45,6 +45,8 @@ import Signal from "./pages/Signal";
 import SignalEdition from "./pages/SignalEdition";
 import HowItWorks from "./pages/HowItWorks";
 import Radar from "./pages/Radar";
+import Pipeline from "./pages/Pipeline";
+import Forge from "./pages/Forge";
 import Footer from "@/components/Footer";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -137,6 +139,8 @@ function AnimatedRoutes() {
             <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
             <Route path="/library/modules/:id" element={<ProtectedRoute><Library /></ProtectedRoute>} />
             <Route path="/radar" element={<ProtectedRoute><Radar /></ProtectedRoute>} />
+            <Route path="/pipeline" element={<ProtectedRoute><Pipeline /></ProtectedRoute>} />
+            <Route path="/forge" element={<ProtectedRoute><Forge /></ProtectedRoute>} />
             <Route path="/ask-solo" element={<ProtectedRoute><AskSolo /></ProtectedRoute>} />
             <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
             <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />

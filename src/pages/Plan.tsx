@@ -16,6 +16,7 @@ import WeeklyFrictionReviewCard from "@/components/plan/WeeklyFrictionReviewCard
 import NonResponseCatcherBanner from "@/components/plan/NonResponseCatcherBanner";
 import PreSendBrief from "@/components/plan/PreSendBrief";
 import StrandSelector from "@/components/plan/StrandSelector";
+import ProgressLedger from "@/components/plan/ProgressLedger";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { useMainContentSelfCheck } from "@/hooks/useMainContentSelfCheck";
@@ -1232,6 +1233,13 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                     </div>
                     </PanelSection>
                   </div>
+                )}
+
+                {/* ─── Progress Ledger (ADR-025, 2026-06-11) ───
+                  * Quiet editorial milestone record at the foot of the main
+                  * column. Hidden during pre-activation transient states. */}
+                {!awaitingSelection && !planBuilding && planState !== "loading" && (
+                  <ProgressLedger />
                 )}
               </div>
             </div>

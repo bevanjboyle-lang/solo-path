@@ -14,6 +14,7 @@ import {
   submitForm,
 } from "@/lib/handlers";
 import TakeAnotherTestCard from "@/components/account/TakeAnotherTestCard";
+import TripwireCard from "@/components/account/TripwireCard";
 import TopBar from "@/components/TopBar";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { Input } from "@/components/ui/input";
@@ -333,6 +334,9 @@ export default function Account() {
                       />
                       <div className="mt-6 pt-6 border-t border-border">
                         <TakeAnotherTestCard />
+                      </div>
+                      <div className="mt-6 pt-6 border-t border-border">
+                        <TripwireCard />
                       </div>
                     </>
                   )}

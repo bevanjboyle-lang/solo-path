@@ -15,6 +15,8 @@ const AUTHED_SECTIONS = [
   { label: "Report", to: "/report" },
   { label: "Library", to: "/library" },
   { label: "Radar", to: "/radar" },
+  { label: "Pipeline", to: "/pipeline" },
+  { label: "Forge", to: "/forge" },
   { label: "Ask Solo", to: "/ask-solo" },
 ];
 

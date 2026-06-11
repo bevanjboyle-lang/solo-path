@@ -1,13 +1,32 @@
-// generate-radar — Opportunity Radar v1 (ADR-025, 2026-06-10)
-// FUNCTION_VERSION: radar-v1.2 (idempotent analysis fallback: categories already
-// covered this week are skipped, so cron re-runs never duplicate; v1.1 added
-// User-Agent after the gov.uk API rejected UA-less fetches; v1.0 initial)
+// generate-radar — Opportunity Radar v2 (ADR-025; v2 sprint 2026-06-11)
+// FUNCTION_VERSION: radar-v2.1
+// v2.1 dead-item fixes (found in the v2.0 smoke: a category can be 'covered'
+//   entirely by items get-radar will never show, leaving that user an empty
+//   radar and an empty digest):
+//   - lapsed-deadline notices skipped at fetch (CF republished old notices
+//     under stages=tender)
+//   - weekly-coverage check now only counts items that survive the display
+//     pass (live deadline, <=£2m); dead-only categories get fresh matches or
+//     the analysis fallback again
+// v2.0 second source + matcher quality:
+//   - adds Find a Tender (FTS) OCDS releases as a second source
+//     (endpoint verified 2026-06-11: /api/1.0/ocdsReleasePackages?updatedFrom=..&updatedTo=..
+//     datetime params, cursor pagination via links.next, releases filtered to
+//     tag 'tender' + status 'active'; notice URL from documents[documentType=
+//     'tenderNotice'] with /Notice/{release.id} fallback)
+//   - source_name now reflects the actual source per item
+//   - pre-drops notices over £2m at fetch (get-radar hides them anyway, so
+//     matching them was wasted LLM tokens)
+//   - matcher prompt: at most ONE lot per framework, prefer under £2m,
+//     prefer SME-suitable
+// v1.2 idempotent analysis fallback; v1.1 User-Agent fix; v1.0 initial.
 //
-// Weekly generator. Pulls the last 7 days of UK Contracts Finder tender notices
-// (OCDS public API), uses one LLM pass to match genuinely-winnable notices to
-// Solo's archetype categories with a one-line 'why this matters' in Solo voice,
-// and writes radar_items. Categories with no item this week get ONE clearly-
-// labelled 'analysis' item (Solo's read) so no user sees an empty radar.
+// Weekly generator. Pulls the last 7 days of UK tender notices (Contracts
+// Finder + Find a Tender public OCDS APIs), uses one LLM pass to match
+// genuinely-winnable notices to Solo's archetype categories with a one-line
+// 'why this matters' in Solo voice, and writes radar_items. Categories with
+// no item this week get ONE clearly-labelled 'analysis' item (Solo's read)
+// so no user sees an empty radar.
 //
 // verify_jwt: false — cron-called via pg_net (same posture as generate-signal-edition).
 // Writes via service role only (radar_items has no authenticated write policies).
@@ -21,8 +40,10 @@ const corsHeaders = {
 };
 
 const OPENAI_MODEL = "gpt-5.4-mini";
-const MAX_NOTICES = 350;
+const MAX_NOTICES_CF = 250;
+const MAX_NOTICES_FTS = 100;
 const MAX_PER_CATEGORY = 4;
+const MAX_SOLO_VALUE = 2_000_000; // mirrors get-radar's display cap
 const UA = "SoloRadar/1.0 (+https://www.solo-plan.com; market radar for independent professionals)";
 
 type Notice = {
@@ -34,6 +55,7 @@ type Notice = {
   deadline: string | null;
   valueText: string | null;
   sme: boolean | null;
+  source: string; // 'Contracts Finder' | 'Find a Tender'
 };
 
 function fmtValue(v: { amount?: number; currency?: string } | null | undefined): string | null {
@@ -42,15 +64,23 @@ function fmtValue(v: { amount?: number; currency?: string } | null | undefined):
   return cur + Math.round(v.amount).toLocaleString("en-GB");
 }
 
-async function fetchContractsFinder(daysBack: number, diag: string[]): Promise<Notice[]> {
+function valueAmount(v: { amount?: number } | null | undefined): number | null {
+  return v && typeof v.amount === "number" && v.amount > 0 ? v.amount : null;
+}
+
+async function fetchContractsFinder(
+  daysBack: number,
+  notices: Notice[],
+  seen: Set<string>,
+  diag: string[],
+): Promise<void> {
   const from = new Date(Date.now() - daysBack * 86400000).toISOString().slice(0, 10);
   const to = new Date().toISOString().slice(0, 10);
   let url: string | null =
     `https://www.contractsfinder.service.gov.uk/Published/Notices/OCDS/Search?stages=tender&publishedFrom=${from}&publishedTo=${to}`;
-  const notices: Notice[] = [];
-  const seen = new Set<string>();
   let pages = 0;
-  while (url && pages < 5 && notices.length < MAX_NOTICES) {
+  let added = 0;
+  while (url && pages < 5 && added < MAX_NOTICES_CF) {
     pages++;
     try {
       const res = await fetch(url, {
@@ -69,6 +99,10 @@ async function fetchContractsFinder(daysBack: number, diag: string[]): Promise<N
         if (t.status && t.status !== "active") continue;
         const title = (t.title ?? "").trim();
         if (!title || seen.has(title.toLowerCase())) continue;
+        const amount = valueAmount(t.value) ?? valueAmount(t.minValue);
+        if (amount !== null && amount > MAX_SOLO_VALUE) continue; // not solo-winnable
+        const dl = t.tenderPeriod?.endDate ?? null;
+        if (dl && new Date(dl).getTime() < Date.now()) continue; // already closed
         seen.add(title.toLowerCase());
         const doc = (t.documents ?? []).find(
           (d: { documentType?: string; url?: string }) =>
@@ -80,11 +114,13 @@ async function fetchContractsFinder(daysBack: number, diag: string[]): Promise<N
           desc: (t.description ?? "").replace(/\s+/g, " ").trim().slice(0, 220),
           buyer: (rel.buyer?.name ?? "").slice(0, 100),
           url: doc?.url ?? null,
-          deadline: t.tenderPeriod?.endDate ?? null,
+          deadline: dl,
           valueText: fmtValue(t.value) ?? fmtValue(t.minValue),
           sme: typeof t.suitability?.sme === "boolean" ? t.suitability.sme : null,
+          source: "Contracts Finder",
         });
-        if (notices.length >= MAX_NOTICES) break;
+        added++;
+        if (added >= MAX_NOTICES_CF) break;
       }
       url = j.links?.next ?? null;
     } catch (e) {
@@ -92,7 +128,72 @@ async function fetchContractsFinder(daysBack: number, diag: string[]): Promise<N
       break;
     }
   }
-  return notices;
+}
+
+async function fetchFindATender(
+  daysBack: number,
+  notices: Notice[],
+  seen: Set<string>,
+  diag: string[],
+): Promise<void> {
+  // FTS wants datetime params (no ms, no zone): 2026-06-04T00:00:00
+  const fromDT = new Date(Date.now() - daysBack * 86400000).toISOString().slice(0, 19);
+  const toDT = new Date().toISOString().slice(0, 19);
+  let url: string | null =
+    `https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages?updatedFrom=${fromDT}&updatedTo=${toDT}`;
+  let pages = 0;
+  let added = 0;
+  while (url && pages < 10 && added < MAX_NOTICES_FTS) {
+    pages++;
+    try {
+      const res = await fetch(url, {
+        headers: { Accept: "application/json", "User-Agent": UA },
+        redirect: "follow",
+      });
+      if (!res.ok) {
+        diag.push(`FTS page ${pages}: HTTP ${res.status} ${(await res.text()).slice(0, 120)}`);
+        break;
+      }
+      const j = await res.json();
+      const releases = j.releases ?? [];
+      diag.push(`FTS page ${pages}: ${releases.length} releases`);
+      for (const rel of releases) {
+        // FTS packages mix all release types; keep live tender notices only.
+        const tags: string[] = Array.isArray(rel.tag) ? rel.tag : [];
+        if (!tags.includes("tender")) continue;
+        const t = rel.tender ?? {};
+        if (t.status && t.status !== "active") continue;
+        const title = (t.title ?? "").trim();
+        if (!title || seen.has(title.toLowerCase())) continue;
+        const amount = valueAmount(t.value) ?? valueAmount(t.minValue);
+        if (amount !== null && amount > MAX_SOLO_VALUE) continue; // FTS skews large; most drop here
+        const dl = t.tenderPeriod?.endDate ?? null;
+        if (dl && new Date(dl).getTime() < Date.now()) continue; // already closed
+        seen.add(title.toLowerCase());
+        const doc = (t.documents ?? []).find(
+          (d: { documentType?: string; url?: string }) =>
+            d.documentType === "tenderNotice" && !!d.url,
+        );
+        notices.push({
+          idx: notices.length,
+          title: title.slice(0, 200),
+          desc: (t.description ?? "").replace(/\s+/g, " ").trim().slice(0, 220),
+          buyer: (rel.buyer?.name ?? "").slice(0, 100),
+          url: doc?.url ?? (rel.id ? `https://www.find-tender.service.gov.uk/Notice/${rel.id}` : null),
+          deadline: dl,
+          valueText: fmtValue(t.value) ?? fmtValue(t.minValue),
+          sme: typeof t.suitability?.sme === "boolean" ? t.suitability.sme : null,
+          source: "Find a Tender",
+        });
+        added++;
+        if (added >= MAX_NOTICES_FTS) break;
+      }
+      url = j.links?.next ?? null;
+    } catch (e) {
+      diag.push(`FTS page ${pages}: fetch threw ${(e as Error).message}`);
+      break;
+    }
+  }
 }
 
 async function openaiJson(system: string, user: string, maxTokens: number): Promise<Record<string, unknown>> {
@@ -143,31 +244,53 @@ Deno.serve(async (req: Request) => {
 
     // Idempotency: categories already covered this week never get fresh analysis
     // fallback (tender inserts are deduped by the unique index regardless).
+    // v2.1: only items that survive get-radar's display pass count as coverage,
+    // so a category whose only items have lapsed or are over £2m gets refilled.
     const { data: existing } = await supabase
       .from("radar_items")
-      .select("category")
+      .select("category, source_type, deadline, value_text")
       .eq("week_start", weekStart);
-    const alreadyCovered = new Set((existing ?? []).map((r: { category: string }) => r.category));
+    const nowMs = Date.now();
+    const alreadyCovered = new Set(
+      (existing ?? [])
+        .filter((r: { source_type: string; deadline: string | null; value_text: string | null }) => {
+          if (r.source_type !== "tender") return true; // analysis items always display
+          if (r.deadline && new Date(r.deadline).getTime() < nowMs) return false;
+          const v = Number(String(r.value_text ?? "").replace(/[^0-9.]/g, ""));
+          if (Number.isFinite(v) && v > MAX_SOLO_VALUE) return false;
+          return true;
+        })
+        .map((r: { category: string }) => r.category),
+    );
 
-    // 2. Real notices from Contracts Finder (last 7 days).
-    const notices = await fetchContractsFinder(7, diag);
-    console.log(`radar: fetched ${notices.length} CF notices; ${diag.join(" | ")}`);
+    // 2. Real notices: Contracts Finder + Find a Tender (last 7 days),
+    //    deduped by title across both sources.
+    const notices: Notice[] = [];
+    const seen = new Set<string>();
+    await fetchContractsFinder(7, notices, seen, diag);
+    const cfCount = notices.length;
+    await fetchFindATender(7, notices, seen, diag);
+    const ftsCount = notices.length - cfCount;
+    console.log(`radar: ${cfCount} CF + ${ftsCount} FTS notices; ${diag.join(" | ")}`);
 
     // 3. LLM matching pass — strict on winnability for a solo independent.
     const rows: Record<string, unknown>[] = [];
     const matchedCategories = new Set<string>();
     if (notices.length > 0) {
       const compact = notices.map((n) =>
-        `${n.idx}|${n.title}|${n.buyer}|${n.valueText ?? ""}|${n.desc.slice(0, 120)}`
+        `${n.idx}|${n.title}|${n.buyer}|${n.valueText ?? ""}|${n.sme === true ? "SME" : ""}|${n.desc.slice(0, 120)}`
       ).join("\n");
       const sys =
         `You match UK public-sector tender notices to categories of senior independent professionals. ` +
         `Be strict: only match a notice if a SOLO independent consultant of that category could credibly bid and win it ` +
         `(advisory, professional services, review, programme, comms, audit-adjacent work; NOT construction, transport, catering, ` +
         `equipment supply, or anything needing a firm's scale). At most ${MAX_PER_CATEGORY} per category; fewer is better than weak matches. ` +
+        `Where several notices are lots of the same framework or DPS (same buyer, near-identical titles with 'Lot N' markers), ` +
+        `match at most ONE of them: the single most winnable lot. ` +
+        `Prefer notices under £2m, and prefer those marked SME over those not. Large framework ceilings are rarely solo-winnable. ` +
         `For each match write "why": ONE sentence, direct and commercially grounded, telling the reader why this is worth a look ` +
         `(no hype, no exclamation marks, plain UK English). Respond JSON: {"assignments":[{"idx":<int>,"category":"<exact category>","why":"..."}]}`;
-      const user = `Categories:\n${categories.join("\n")}\n\nNotices (idx|title|buyer|value|description):\n${compact}`;
+      const user = `Categories:\n${categories.join("\n")}\n\nNotices (idx|title|buyer|value|sme|description):\n${compact}`;
       const out = await openaiJson(sys, user, 4000);
       const assignments = Array.isArray(out.assignments) ? out.assignments : [];
       const perCat: Record<string, number> = {};
@@ -185,7 +308,7 @@ Deno.serve(async (req: Request) => {
           title: n.title,
           summary: String(a.why ?? "").slice(0, 400),
           url: n.url,
-          source_name: "Contracts Finder",
+          source_name: n.source,
           buyer: n.buyer || null,
           value_text: n.valueText,
           deadline: n.deadline,
@@ -233,11 +356,13 @@ Deno.serve(async (req: Request) => {
     }
 
     const summary = {
-      response_text: `Radar generated for week ${weekStart}: ${rows.length} items (${matchedCategories.size} categories with real tenders, ${empty.length} analysis fallback), ${inserted} written, ${notices.length} notices scanned, ${Math.round((Date.now() - started) / 1000)}s.`,
+      response_text: `Radar generated for week ${weekStart}: ${rows.length} items (${matchedCategories.size} categories with real tenders, ${empty.length} analysis fallback), ${inserted} written, ${notices.length} notices scanned (${cfCount} Contracts Finder, ${ftsCount} Find a Tender), ${Math.round((Date.now() - started) / 1000)}s.`,
       week_start: weekStart,
       items: rows.length,
       inserted,
       notices_scanned: notices.length,
+      notices_cf: cfCount,
+      notices_fts: ftsCount,
       tender_categories: [...matchedCategories],
       diag,
     };
