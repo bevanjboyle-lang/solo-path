@@ -161,19 +161,64 @@ function PrimaryButton({ onClick, children }: { onClick: () => void; children: R
 }
 
 function EngineArt() {
+  // Option A (2026-06-10): the taxonomy, orbital. Solo's archetype categories
+  // as a slow two-ring orbital system around the engine core; counter-rotating
+  // node rings (CSS, disabled for reduced-motion), static category labels.
+  const labels = [
+    { x: 124, y: 5, anchor: "start", t: "Finance" },
+    { x: 78, y: -86, anchor: "start", t: "Legal" },
+    { x: 0, y: -162, anchor: "middle", t: "Risk & Governance" },
+    { x: -124, y: 5, anchor: "end", t: "Tech & Digital" },
+    { x: -78, y: 100, anchor: "end", t: "HR & People" },
+    { x: 78, y: 100, anchor: "start", t: "Marketing" },
+  ];
   return (
-    <svg width="280" height="190" viewBox="0 0 280 190" aria-hidden>
-      <g opacity=".9">
-        <circle cx="140" cy="95" r="9" fill="#2ECDB0" />
-        <circle cx="98" cy="60" r="4.5" fill="#2ECDB0" opacity=".55" /><circle cx="182" cy="60" r="4.5" fill="#2ECDB0" opacity=".55" />
-        <circle cx="76" cy="110" r="4.5" fill="#2ECDB0" opacity=".55" /><circle cx="204" cy="110" r="4.5" fill="#2ECDB0" opacity=".55" />
-        <circle cx="118" cy="148" r="4.5" fill="#2ECDB0" opacity=".55" /><circle cx="162" cy="148" r="4.5" fill="#2ECDB0" opacity=".55" />
-        <circle cx="52" cy="50" r="2.6" fill="#FAF9F7" opacity=".4" /><circle cx="228" cy="50" r="2.6" fill="#FAF9F7" opacity=".4" />
-        <circle cx="34" cy="120" r="2.6" fill="#FAF9F7" opacity=".3" /><circle cx="246" cy="120" r="2.6" fill="#FAF9F7" opacity=".3" />
-        <circle cx="92" cy="22" r="2.6" fill="#FAF9F7" opacity=".3" /><circle cx="188" cy="22" r="2.6" fill="#FAF9F7" opacity=".3" />
-        <circle cx="140" cy="170" r="2.6" fill="#FAF9F7" opacity=".35" />
-        {[[98, 60], [182, 60], [76, 110], [204, 110], [118, 148], [162, 148]].map(([x, y], i) => (
-          <line key={i} x1="140" y1="95" x2={x} y2={y} stroke="#2ECDB0" opacity=".25" />
+    <svg width="440" height="360" viewBox="0 0 460 380" aria-hidden>
+      <g transform="translate(230,190)">
+        <circle r="56" fill="none" stroke="rgba(250,249,247,.12)" />
+        <circle r="102" fill="none" stroke="rgba(250,249,247,.08)" />
+        <circle r="146" fill="none" stroke="rgba(250,249,247,.05)" />
+        <circle r="8" fill="#2ECDB0" />
+        <g className="orbit-cw">
+          <circle cx="56" cy="0" r="4.5" fill="#2ECDB0" opacity=".8" />
+          <circle cx="-28" cy="48.5" r="4.5" fill="#2ECDB0" opacity=".55" />
+          <circle cx="-28" cy="-48.5" r="4.5" fill="#2ECDB0" opacity=".65" />
+          <circle cx="39.6" cy="39.6" r="3.2" fill="#FAF9F7" opacity=".5" />
+          <circle cx="-39.6" cy="-39.6" r="3.2" fill="#FAF9F7" opacity=".4" />
+        </g>
+        <g className="orbit-ccw">
+          <circle cx="102" cy="0" r="3.6" fill="#2ECDB0" opacity=".5" />
+          <circle cx="51" cy="88.3" r="3.6" fill="#FAF9F7" opacity=".4" />
+          <circle cx="-51" cy="88.3" r="3.6" fill="#2ECDB0" opacity=".4" />
+          <circle cx="-102" cy="0" r="3.6" fill="#FAF9F7" opacity=".35" />
+          <circle cx="-51" cy="-88.3" r="3.6" fill="#2ECDB0" opacity=".45" />
+          <circle cx="51" cy="-88.3" r="3.6" fill="#FAF9F7" opacity=".45" />
+        </g>
+        <g>
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => {
+            const rad = (deg * Math.PI) / 180;
+            return (
+              <circle
+                key={deg}
+                cx={(146 * Math.cos(rad)).toFixed(1)}
+                cy={(146 * Math.sin(rad)).toFixed(1)}
+                r="2.4"
+                fill={i % 3 === 0 ? "#2ECDB0" : "#FAF9F7"}
+                opacity={i % 3 === 0 ? ".3" : ".25"}
+              />
+            );
+          })}
+        </g>
+        {labels.map((l) => (
+          <text
+            key={l.t}
+            x={l.x}
+            y={l.y}
+            textAnchor={l.anchor as "start" | "middle" | "end"}
+            style={{ font: "600 9px Inter", letterSpacing: ".1em", fill: "rgba(250,249,247,.55)", textTransform: "uppercase" }}
+          >
+            {l.t.toUpperCase()}
+          </text>
         ))}
       </g>
     </svg>

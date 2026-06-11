@@ -267,6 +267,13 @@ animation: ticker-scroll 55s linear infinite;
 .ticker:hover .ticker-track { animation-play-state: paused; }
 @keyframes ticker-scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
 @media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
+
+/* ── Orbital taxonomy (landing engine panel, ADR-026) ── */
+@keyframes orbit-cw { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes orbit-ccw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+.orbit-cw { animation: orbit-cw 90s linear infinite; transform-origin: center; transform-box: fill-box; }
+.orbit-ccw { animation: orbit-ccw 140s linear infinite; transform-origin: center; transform-box: fill-box; }
+@media (prefers-reduced-motion: reduce) { .orbit-cw, .orbit-ccw { animation: none; } }
 .ticker-item { display: inline-flex; align-items: baseline; gap: 8px; }
 .ticker-cat {
 color: rgba(250,249,247,0.55); font-size: 10px;
