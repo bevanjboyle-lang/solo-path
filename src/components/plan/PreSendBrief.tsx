@@ -70,10 +70,10 @@ export default function PreSendBrief({ moveType }: Props) {
   if (!brief) return null;
 
   return (
-    <div className="mt-4 rounded-md border border-[#E5E2DC] bg-white/60 px-4 py-4">
+    <div className="mt-4 border border-border bg-transparent px-4 py-4">
       {/* Eyebrow */}
       <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-3">
-        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+        <span className="inline-block w-1.5 h-1.5 bg-primary" />
         <span>Before you send</span>
       </div>
 
@@ -103,7 +103,7 @@ export default function PreSendBrief({ moveType }: Props) {
           If they say…
         </div>
         <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[13px] leading-[1.5] text-foreground/85 max-w-[60ch]">
-          <dt className="font-semibold text-primary/90">Yes</dt>
+          <dt className="font-semibold text-[#15735F]">Yes</dt>
           <dd>{brief.pre_flight.yes}</dd>
           <dt className="font-semibold text-foreground/70">No</dt>
           <dd>{brief.pre_flight.no}</dd>
@@ -114,7 +114,7 @@ export default function PreSendBrief({ moveType }: Props) {
 
       {/* Honest footnote — synthetic data at launch.
           Voice rule: no em-dashes, calm and factual. */}
-      <p className="mt-3 pt-3 border-t border-[#EDEBE6] text-[10.5px] leading-[1.5] text-muted-foreground/70 max-w-[58ch]">
+      <p className="mt-3 pt-3 border-t border-border text-[10.5px] leading-[1.5] text-muted-foreground/70 max-w-[58ch]">
         These figures are the typical pattern at launch. As Solo accumulates real
         cohort data, this brief will become specific to your archetype.
       </p>

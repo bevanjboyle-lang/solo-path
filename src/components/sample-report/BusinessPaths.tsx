@@ -29,7 +29,7 @@ function FullOptionCard({
 }) {
   return (
     <div
-      className="mb-4 rounded-md border border-border bg-surface-card p-6"
+      className="mb-4 border border-border bg-surface-card p-6"
       style={
         isRecommended ? { borderTop: "3px solid hsl(var(--mint))" } : undefined
       }
@@ -38,15 +38,15 @@ function FullOptionCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             {isRecommended && (
-              <span className="rounded-md bg-surface-mint-tint px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--mint-text))]">
+              <span className="bg-surface-mint-tint px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--mint-text))]">
                 Recommended
               </span>
             )}
-            <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <span className="bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               Rank {option.rank}
             </span>
             {option.primary_move_type && (
-              <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+              <span className="bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                 {option.primary_move_type}
               </span>
             )}
@@ -60,7 +60,7 @@ function FullOptionCard({
           {option.fit_tags.map((tag, i) => (
             <span
               key={i}
-              className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary"
+              className="border border-border px-2.5 py-0.5 text-[11px] font-medium text-[#15735F]"
             >
               {tag}
             </span>
@@ -69,11 +69,11 @@ function FullOptionCard({
       )}
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <div className="rounded-md bg-surface-panel p-3">
+        <div className="bg-surface-panel p-3">
           <span className="text-[10px] text-muted-foreground">Target buyer</span>
           <p className="mt-0.5 text-sm text-foreground">{option.target_buyer}</p>
         </div>
-        <div className="rounded-md bg-surface-panel p-3">
+        <div className="bg-surface-panel p-3">
           <span className="text-[10px] text-muted-foreground">
             {option.pricing.cadence}
             {option.pricing.model && (
@@ -82,11 +82,11 @@ function FullOptionCard({
           </span>
           <p className="mt-0.5 text-sm font-medium text-primary">{formatPriceRange(option)}</p>
         </div>
-        <div className="rounded-md bg-surface-panel p-3">
+        <div className="bg-surface-panel p-3">
           <span className="text-[10px] text-muted-foreground">Time to first revenue</span>
           <p className="mt-0.5 text-sm text-foreground">{option.time_to_first_revenue}</p>
         </div>
-        <div className="rounded-md bg-surface-panel p-3">
+        <div className="bg-surface-panel p-3">
           <span className="text-[10px] text-muted-foreground">Difficulty</span>
           <p className="mt-0.5 flex items-center gap-1.5 text-sm font-medium text-primary">
             <span className="h-2 w-2 rounded-full bg-primary" />
@@ -95,7 +95,7 @@ function FullOptionCard({
         </div>
       </div>
 
-      <div className="mt-5 rounded-md bg-surface-panel p-4">
+      <div className="mt-5 bg-surface-panel p-4">
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
           Why it fits
         </p>
@@ -104,7 +104,7 @@ function FullOptionCard({
         </p>
       </div>
 
-      <div className="mt-3 rounded-md bg-surface-panel p-4">
+      <div className="mt-3 bg-surface-panel p-4">
         <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
           Positioning
         </p>
@@ -112,7 +112,7 @@ function FullOptionCard({
       </div>
 
       {option.what_they_are_buying && (
-        <div className="mt-3 rounded-md bg-surface-panel p-4">
+        <div className="mt-3 bg-surface-panel p-4">
           <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
             What they're buying
           </p>
@@ -123,7 +123,7 @@ function FullOptionCard({
       )}
 
       {option.caution_note && (
-        <div className="mt-3 flex items-start gap-2 rounded-md border border-amber-300/40 bg-amber-50/50 p-4">
+        <div className="mt-3 flex items-start gap-2 border-l-[3px] border-amber-500 bg-amber-50/50 p-4">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
           <div>
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-800">
@@ -188,17 +188,17 @@ export default function BusinessPaths({
       {/* Path 1 — full */}
       {featured && (
         <div
-          className="mb-4 rounded-md border border-border bg-surface-card p-6"
+          className="mb-4 border border-border bg-surface-card p-6"
           style={{ borderTop: "3px solid hsl(var(--mint))" }}
         >
           <div className="mb-3 flex items-center gap-2 flex-wrap">
             {(selectedRanks.has(featured.rank) || featured.rank === 1) && (
-              <span className="inline-block rounded-md bg-surface-mint-tint px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--mint-text))]">
+              <span className="inline-block bg-surface-mint-tint px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--mint-text))]">
                 Best Fit
               </span>
             )}
             {featured.primary_move_type && (
-              <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+              <span className="bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                 {featured.primary_move_type}
               </span>
             )}
@@ -208,11 +208,11 @@ export default function BusinessPaths({
           </h3>
 
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <div className="rounded-md bg-surface-panel p-3">
+            <div className="bg-surface-panel p-3">
               <span className="text-[10px] text-muted-foreground">Target buyer</span>
               <p className="mt-0.5 text-sm text-foreground">{featured.target_buyer}</p>
             </div>
-            <div className="rounded-md bg-surface-panel p-3">
+            <div className="bg-surface-panel p-3">
               <span className="text-[10px] text-muted-foreground">
                 {featured.pricing.cadence}
                 {featured.pricing.model && (
@@ -223,11 +223,11 @@ export default function BusinessPaths({
                 {formatPriceRange(featured)}
               </p>
             </div>
-            <div className="rounded-md bg-surface-panel p-3">
+            <div className="bg-surface-panel p-3">
               <span className="text-[10px] text-muted-foreground">Time to first revenue</span>
               <p className="mt-0.5 text-sm text-foreground">{featured.time_to_first_revenue}</p>
             </div>
-            <div className="rounded-md bg-surface-panel p-3">
+            <div className="bg-surface-panel p-3">
               <span className="text-[10px] text-muted-foreground">Difficulty</span>
               <p className="mt-0.5 flex items-center gap-1.5 text-sm font-medium text-primary">
                 <span className="h-2 w-2 rounded-full bg-primary" />
@@ -236,7 +236,7 @@ export default function BusinessPaths({
             </div>
           </div>
 
-          <div className="mt-5 rounded-md bg-surface-panel p-4">
+          <div className="mt-5 bg-surface-panel p-4">
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
               Why it fits
             </p>
@@ -245,7 +245,7 @@ export default function BusinessPaths({
             </p>
           </div>
 
-          <div className="mt-5 rounded-md bg-surface-panel p-4">
+          <div className="mt-5 bg-surface-panel p-4">
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
               Positioning
             </p>
@@ -263,16 +263,16 @@ export default function BusinessPaths({
         return (
           <div
             key={opt.rank}
-            className="relative mb-4 overflow-hidden rounded-md border border-border bg-surface-card p-6"
+            className="relative mb-4 overflow-hidden border border-border bg-surface-card p-6"
           >
             {opt.primary_move_type && (
-              <span className="mb-2 inline-block rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+              <span className="mb-2 inline-block bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                 {opt.primary_move_type}
               </span>
             )}
             <h3 className="text-base font-semibold text-foreground">{opt.model_name}</h3>
             <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-md bg-surface-panel p-3">
+              <div className="bg-surface-panel p-3">
                 <span className="text-[10px] text-muted-foreground">
                   {opt.pricing.cadence}
                   {opt.pricing.model && (
@@ -281,7 +281,7 @@ export default function BusinessPaths({
                 </span>
                 <p className="mt-0.5 text-sm text-foreground">{formatPriceRange(opt)}</p>
               </div>
-              <div className="rounded-md bg-surface-panel p-3">
+              <div className="bg-surface-panel p-3">
                 <span className="text-[10px] text-muted-foreground">Time to first revenue</span>
                 <p className="mt-0.5 text-sm text-foreground">{opt.time_to_first_revenue}</p>
               </div>
@@ -301,7 +301,7 @@ export default function BusinessPaths({
           {stubs.map((p) => (
             <div
               key={p.rank}
-              className="flex items-center gap-3 rounded-md border border-border/60 bg-surface-card/50 px-4 py-3 opacity-50"
+              className="flex items-center gap-3 border border-border/60 bg-surface-card/50 px-4 py-3 opacity-50"
             >
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
                 {p.rank}

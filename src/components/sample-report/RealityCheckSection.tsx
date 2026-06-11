@@ -18,7 +18,7 @@ export default function RealityCheckSection({ reality_check }: Props) {
       <h2 className="text-[1.8rem] font-bold text-foreground mb-6">The Real Talk</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {cards.map((c) => (
-          <div key={c.key} className={`rounded-md bg-card p-5 border-l-4 ${c.borderColor}`}>
+          <div key={c.key} className={`bg-card p-5 border-l-[3px] ${c.borderColor}`}>
             <div className="flex items-center gap-2 mb-3">
               {c.icon}
               <h4 className="text-[1.1rem] font-bold text-foreground">{c.title}</h4>

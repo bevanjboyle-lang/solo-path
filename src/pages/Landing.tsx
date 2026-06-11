@@ -227,7 +227,7 @@ export default function Landing() {
                 {isAuthed ? (
                   <PrimaryButton onClick={handleOpenPlan}>Open my plan</PrimaryButton>
                 ) : (
-                  <PrimaryButton onClick={handleStartTest}>Find what fits</PrimaryButton>
+                  <PrimaryButton onClick={handleStartTest}>Find what works</PrimaryButton>
                 )}
                 <button onClick={handleSampleReport} className="link-edit">
                   See a sample report
@@ -359,7 +359,7 @@ export default function Landing() {
             </p>
             <div className="mt-7">
               <PrimaryButton onClick={isAuthed ? handleOpenPlan : handleStartTest}>
-                {isAuthed ? "Open my plan" : "Find what fits"}
+                {isAuthed ? "Open my plan" : "Find what works"}
               </PrimaryButton>
             </div>
           </div>
@@ -501,7 +501,7 @@ export default function Landing() {
               {isAuthed ? (
                 <PrimaryButton onClick={handleOpenPlan}>Open my plan</PrimaryButton>
               ) : (
-                <PrimaryButton onClick={handleStartTest}>Find what fits</PrimaryButton>
+                <PrimaryButton onClick={handleStartTest}>Find what works</PrimaryButton>
               )}
             </div>
             {!isAuthed && (

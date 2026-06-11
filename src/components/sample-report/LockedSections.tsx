@@ -10,7 +10,7 @@ import ScrollReveal from "@/components/ui/ScrollReveal";
 
 function LockedCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="relative overflow-hidden rounded-md border border-border bg-surface-card p-6">
+    <div className="relative overflow-hidden border border-border bg-surface-card p-6">
       <h2 className="mb-3 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>{title}</h2>
       {children}
       <LockedOverlay />
@@ -37,7 +37,7 @@ export function IncomeOutlookTeaser() {
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-md border border-border bg-surface-card p-6">
+    <div className="relative overflow-hidden border border-border bg-surface-card p-6">
       <h2 className="mb-3 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>Reality Check &amp; Income Outlook</h2>
       <div style={{ filter: "blur(1.5px)" }}>
         <ResponsiveContainer width="100%" height={220}>
@@ -65,7 +65,7 @@ export function IncomeOutlookTeaser() {
             />
             <Bar dataKey="month3" name="3 months" fill="#2ECDB0" radius={[4, 4, 0, 0]} />
             <Bar dataKey="month6" name="6 months" fill="#6EE7D3" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="month12" name="12 months" fill="#1A8A72" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="month12" name="12 months" fill="#15735F" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -89,7 +89,7 @@ export function ActivationPlanTeaser() {
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-md border border-border bg-surface-card p-6">
+    <div className="relative overflow-hidden border border-border bg-surface-card p-6">
       <h2 className="mb-4 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>30-Day Activation Plan</h2>
 
       {/* Horizontal timeline */}
@@ -140,7 +140,7 @@ export function ActivationPlanTeaser() {
 
 export function FirstMoveTeaser() {
   return (
-    <div className="relative overflow-hidden rounded-md border border-border bg-surface-mint-tint p-6">
+    <div className="relative overflow-hidden border border-border bg-surface-mint-tint p-6">
       <h2 className="mb-2 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>Your First Move - Do This Within 24 Hours</h2>
       <p className="text-sm text-muted-foreground">Send this exact message to a former Big Four colleague now at a FinTech...</p>
       <p className="mt-1 text-sm text-muted-foreground" style={{ filter: "blur(1px)" }}>
@@ -174,7 +174,7 @@ export function AIImpactTeaser() {
   ];
 
   return (
-    <div className="relative overflow-hidden rounded-md border border-border bg-surface-card p-6">
+    <div className="relative overflow-hidden border border-border bg-surface-card p-6">
       <h2 className="mb-3 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>AI Impact &amp; Adaptation Path</h2>
       <div className="flex flex-col gap-3">
         {["1. AI risk to your current role", "2. AI resilience of your Plan B", "3. Your adaptation path"].map((h) => (
@@ -231,7 +231,7 @@ export function FullReportGrid() {
       <h2 className="mb-5 text-base font-semibold text-foreground" style={{ letterSpacing: "-0.01em" }}>Everything in your £19.99 report</h2>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {items.map((item) => (
-          <div key={item} className="flex items-start gap-2 rounded-md border border-border bg-surface-card p-3">
+          <div key={item} className="flex items-start gap-2 border border-border bg-surface-card p-3">
             <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" strokeWidth={2.5} />
             <span className="text-xs text-muted-foreground">{item}</span>
           </div>
@@ -244,7 +244,7 @@ export function FullReportGrid() {
 export function BottomCTA() {
   const navigate = useNavigate();
   return (
-    <section className="rounded-md bg-primary py-16">
+    <section className="bg-primary py-16">
       <div className="mx-auto max-w-xl px-6 text-center">
         <h2 className="text-2xl font-bold tracking-tight text-primary-foreground sm:text-3xl" style={{ letterSpacing: "-0.02em" }}>
           Ready for your own report?
@@ -254,10 +254,10 @@ export function BottomCTA() {
         </p>
         <Button
           size="lg"
-          className="mt-6 rounded-md bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
+          className="mt-6 bg-primary-foreground px-8 py-4 text-base font-medium text-primary hover:bg-primary-foreground/90"
           onClick={() => navigate("/auth")}
         >
-          Find what fits →
+          Find what works →
         </Button>
         <p className="mt-3 text-xs text-primary-foreground/50">15-question questionnaire. No credit card required to start.</p>
       </div>

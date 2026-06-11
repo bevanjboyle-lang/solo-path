@@ -1,18 +1,23 @@
 import { useNavigate } from "react-router-dom";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { startTest, navigateAuthed } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
 // Footer import dropped 2026-05-18, App.tsx renders the Footer for this route.
 
 /*
- * Pricing Pass 1 /pricing v1 (2026-05-18) fourth Phase 2 cycle (paired)
+ * Pricing — FT-register editorial pass (ADR-026 Phase 2, 2026-06-10).
  *
- * Editorial reskin of the anonymous objection-handling pricing surface.
- * Inherits anonymous chrome (TopBar.anonymous + Footer), dense FT register,
- * editorial section vocabulary from /plan + /report + /library + /account.
+ * Recomposed from the card-era stacked panel sections to full-width
+ * editorial sections separated by hairline rules. The two PricingCards
+ * are now two columns divided by a hairline vertical rule, each opening
+ * on a 3px ink rule (the Landing pricing-band pattern). The dark "terms"
+ * strip stays as a full-bleed panel-dark band; the FAQ teaser renders
+ * its three answers open (no toggles); the closing CTA is the flat ink
+ * band pattern. All handlers, state variants, and copy unchanged.
  *
- * Locked decisions from admin/pass-1-subscribe-pricing-decisions.md:
+ * Original Pass 1 decisions (admin/pass-1-subscribe-pricing-decisions.md)
+ * carried over:
  *   F1, Same PricingCard composite carries peer/peer here, peer/preferred
  *     on /subscribe. Here both render unelevated.
  *   F2, Comparison row uses editorial sentences (3 cells per row), NOT
@@ -22,18 +27,6 @@ import TopBar from "@/components/TopBar";
  *   F4 Subscription card secondary microcopy: "Subscribe after the test
  *     only if you decide to" (calmer than CD's original "or never").
  *   32/3/29 module canonical (updated 2026-06-10; was 25/3/22 pre-Track-F) (subhead, cards, comparison).
- *
- * Cadence: single dark moment, the commercial honesty strip between the
- * comparison row and FAQ teaser. Frames the terms ("no auto-renewal · cancel
- * anytime") as the page's pivot from explanation to decision. Per v1.4 §8.
- *
- * Pass 1 scope: shell + chrome + sections + dark honesty strip + per-state
- * variant logic (authed buyer, subscriber). PricingCard rebuilt as local
- * editorial component with optional elevation + topTag props (shared
- * vocabulary with /subscribe even though instantiated separately).
- *
- * Drops framer-motion + ScrollReveal + GlassCard + lucide Check + the
- * old ComparisonTable. Replaces the per-card highlighted styling.
  */
 
 /* ── PricingCard data shape ── */
@@ -65,7 +58,7 @@ const reportCard: PricingCardData = {
     <>3 of the 32 guidance modules.</>,
     <>Permanent access to your report.</>,
   ],
-  ctaLabel: "Find what fits",
+  ctaLabel: "Find what works",
   secondaryMicrocopy: "8 minutes · pay after you see the preview",
 };
 
@@ -83,7 +76,7 @@ const subscriptionCard: PricingCardData = {
     <>Unlimited Ask Solo, context-aware to your plan.</>,
     <>Plan regenerates when your moves don't land. Cancel any time.</>,
   ],
-  ctaLabel: "Find what fits",
+  ctaLabel: "Find what works",
   secondaryMicrocopy: "Subscribe after the fit-check, only if you decide to",
 };
 
@@ -140,7 +133,7 @@ const faqs: { q: string; a: ReactNode }[] = [
     ),
   },
   {
-    q: 'Why "Find what fits" and not "Buy now"?',
+    q: 'Why "Find what works" and not "Buy now"?',
     a: (
       <>
         Because buying without your report is buying generic content. The fit-check takes 8 minutes
@@ -153,7 +146,6 @@ const faqs: { q: string; a: ReactNode }[] = [
 export default function Pricing() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [openFaqIdx, setOpenFaqIdx] = useState<number>(0);
 
   // TODO: derive isSubscriber from useSubscriptionStatus once wired here; for
   // Pass 1 the buyer-state variant is shown when user is authed.
@@ -167,50 +159,54 @@ export default function Pricing() {
     <div className="relative min-h-screen text-foreground">
       <TopBar />
 
-      <main className="pt-[68px]">
-        <div className="mx-auto max-w-screen-lg px-6 pt-6 pb-10 lg:pb-14">
+      <main>
+        {/* ── Page header ── */}
+        <section className="mx-auto max-w-6xl px-6 pt-8 pb-9">
+          <div className="eyebrow">Pricing</div>
+          <h1 aria-label="One fit-check. Two ways to keep going." className="title-h1 mt-3.5">
+            One fit-check. Two ways to keep going.
+          </h1>
+          <p className="standfirst mt-4 max-w-[52ch]">
+            £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling, with the 29
+            modules and the library that doesn't expire.
+          </p>
+        </section>
 
-          {/* ── Page header ── */}
-          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-10 sm:py-12 mb-6">
-            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-              <span className="text-foreground">Pricing</span>
+        {/* ── Two pricing columns, hairline divide, 3px ink rule atop each ── */}
+        <section className="border-t border-border">
+          <div className="mx-auto max-w-6xl px-6 py-8">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-0">
+              <div className="lg:pr-10">
+                <PricingCard
+                  data={reportCard}
+                  isAuthedBuyer={isAuthedBuyer}
+                  onPrimary={isAuthedBuyer ? handleOpenPlan : handleStartTest}
+                  authedBuyerCtaLabel="Open my plan"
+                  authedBuyerVariant={isAuthedBuyer ? "owned" : undefined}
+                />
+              </div>
+              <div className="lg:border-l lg:border-border lg:pl-10">
+                <PricingCard
+                  data={subscriptionCard}
+                  isAuthedBuyer={isAuthedBuyer}
+                  onPrimary={isAuthedBuyer ? handleSubscribe : handleStartTest}
+                  authedBuyerCtaLabel="Upgrade now"
+                  authedBuyerVariant={isAuthedBuyer ? "upgrade" : undefined}
+                />
+              </div>
             </div>
-            <h1 aria-label="One fit-check. Two ways to keep going." className="title-h1">
-              One fit-check. Two ways to keep going.
-            </h1>
-            <p className="mt-4 font-display text-[17px] sm:text-[19px] text-muted-foreground leading-[1.4] max-w-[52ch]">
-              £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling, with the 29
-              modules and the library that doesn't expire.
-            </p>
-          </section>
+          </div>
+        </section>
 
-          {/* ── Two PricingCards (peer/peer) ── */}
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-            <PricingCard
-              data={reportCard}
-              isAuthedBuyer={isAuthedBuyer}
-              onPrimary={isAuthedBuyer ? handleOpenPlan : handleStartTest}
-              authedBuyerCtaLabel="Open my plan"
-              authedBuyerVariant={isAuthedBuyer ? "owned" : undefined}
-            />
-            <PricingCard
-              data={subscriptionCard}
-              isAuthedBuyer={isAuthedBuyer}
-              onPrimary={isAuthedBuyer ? handleSubscribe : handleStartTest}
-              authedBuyerCtaLabel="Upgrade now"
-              authedBuyerVariant={isAuthedBuyer ? "upgrade" : undefined}
-            />
-          </section>
-
-          {/* ── Editorial comparison row (F2) ── */}
-          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
-            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-5">
-              <span className="text-primary tabular-nums">03</span>
+        {/* ── Editorial comparison row (F2), FT table on rules ── */}
+        <section className="border-t border-border">
+          <div className="mx-auto max-w-6xl px-6 py-8">
+            <h4 className="rule-head mb-0">
+              <span className="mr-3 text-[#15735F] tabular-nums">03</span>
               <span>What you actually get</span>
-            </div>
+            </h4>
 
-            <div className="grid grid-cols-3 gap-x-4 sm:gap-x-6 pb-3 border-b border-[#D5D0C8]">
+            <div className="grid grid-cols-3 gap-x-4 sm:gap-x-6 py-3 border-b border-border">
               <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Feature</div>
               <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80">One-time · £19.99</div>
               <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80">Subscription · £19/mo</div>
@@ -220,7 +216,7 @@ export default function Pricing() {
               <div
                 key={row.feat}
                 className={`grid grid-cols-3 gap-x-4 sm:gap-x-6 py-3 text-[13px] leading-[1.5] ${
-                  i > 0 ? "border-t border-[#EDEBE6]" : ""
+                  i > 0 ? "border-t border-border" : ""
                 }`}
               >
                 <div className="font-display font-semibold text-foreground tracking-tight">{row.feat}</div>
@@ -230,16 +226,17 @@ export default function Pricing() {
                 <div className="text-foreground/85">{row.sub}</div>
               </div>
             ))}
-          </section>
+          </div>
+        </section>
 
-          {/* ── Dark commercial-honesty strip (the cadence moment) ── */}
-          <section className="panel-dark px-6 sm:px-10 lg:px-12 py-7 mb-6 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4 sm:gap-8 items-center">
+        {/* ── Dark commercial-honesty strip (the cadence moment), full bleed ── */}
+        <section className="panel-dark">
+          <div className="mx-auto max-w-6xl px-6 py-7 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4 sm:gap-8 items-center">
             <div
-              className="flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.2em]"
-              style={{ color: "rgba(250,249,247,0.65)" }}
+              className="text-[11px] font-bold uppercase tracking-[0.2em]"
+              style={{ color: "#FAF9F7" }}
             >
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-              <span style={{ color: "#FAF9F7" }}>The terms</span>
+              The terms
             </div>
             <p
               className="font-display text-[17px] sm:text-[18px] leading-[1.45]"
@@ -248,84 +245,63 @@ export default function Pricing() {
               <strong>One-time payment.</strong> No auto-renewal on the report.{" "}
               <strong>Cancel subscription anytime.</strong> Your report stays yours either way.
             </p>
-          </section>
+          </div>
+        </section>
 
-          {/* ── FAQ teaser ── */}
-          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
-            <div className="flex items-baseline justify-between pb-4 mb-2 border-b border-[#E5E2DC]">
+        {/* ── FAQ teaser, open Q + serif answer rows ── */}
+        <section className="border-t border-border">
+          <div className="mx-auto max-w-6xl px-6 py-8">
+            <div className="flex items-baseline justify-between pb-4 mb-1 border-b border-border">
               <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                <span className="text-primary tabular-nums mr-3">04</span>
+                <span className="text-[#15735F] tabular-nums mr-3">04</span>
                 <span>Three things people ask before paying</span>
               </div>
-              <button
-                onClick={() => navigate("/faq")}
-                className="text-[12px] text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC]"
-              >
+              <button onClick={() => navigate("/faq")} className="link-edit">
                 See all on /faq →
               </button>
             </div>
 
-            {faqs.map((faq, i) => {
-              const open = openFaqIdx === i;
-              return (
-                <div key={faq.q} className={`py-5 ${i > 0 ? "border-t border-[#EDEBE6]" : ""}`}>
-                  <button
-                    onClick={() => setOpenFaqIdx(open ? -1 : i)}
-                    aria-expanded={open}
-                    className="w-full grid grid-cols-[1fr_auto] gap-6 items-start text-left"
-                  >
-                    <span className="font-display text-[16px] sm:text-[17px] font-semibold text-foreground leading-[1.35]" style={{ letterSpacing: "-0.018em" }}>
-                      {faq.q}
-                    </span>
-                    <span className="text-[22px] text-muted-foreground font-light leading-none pt-0.5">
-                      {open ? "–" : "+"}
-                    </span>
-                  </button>
-                  {open && (
-                    <p className="mt-2 text-[13.5px] text-foreground/80 leading-[1.6] max-w-[72ch]">
-                      {faq.a}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </section>
+            {faqs.map((faq, i) => (
+              <div key={faq.q} className={`py-5 ${i > 0 ? "border-t border-border" : ""}`}>
+                <h5 className="font-display text-[16px] sm:text-[17px] font-bold leading-[1.35] tracking-tight">
+                  {faq.q}
+                </h5>
+                <p className="standfirst mt-2 text-[14px] max-w-[72ch]">{faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-          {/* ── Closing CTA band ──
-            * Fix 2026-05-18: wrapped in panel-ivory to match the page's
-            * other sections. Previously sat directly on the office photo
-            * background, making the body copy and microcopy unreadable. */}
-          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-14 sm:py-16 text-center">
-            <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
+        {/* ── Closing CTA, flat ink band ── */}
+        <section className="panel-dark">
+          <div className="mx-auto max-w-6xl px-6 py-14 text-center sm:py-16">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: "rgba(250,249,247,.6)" }}>
               {isAuthedBuyer ? "Pick up where you left off" : "Decide when you're ready"}
             </div>
             <h3
-              className="font-display text-[28px] sm:text-[34px] lg:text-[36px] font-extrabold tracking-tight leading-[1.1] text-foreground max-w-[22ch] mx-auto mb-4"
-              style={{ letterSpacing: "-0.03em", textWrap: "balance" } as React.CSSProperties}
+              className="mt-4 font-display text-[28px] sm:text-[34px] lg:text-[36px] font-extrabold tracking-tight leading-[1.1] max-w-[22ch] mx-auto"
+              style={{ color: "#FAF9F7", letterSpacing: "-0.03em", textWrap: "balance" } as React.CSSProperties}
             >
               {isAuthedBuyer ? "Your plan is waiting." : "See what fits."}
             </h3>
             {!isAuthedBuyer && (
-              <p className="font-display text-[16px] sm:text-[17px] text-muted-foreground max-w-[56ch] mx-auto mb-7">
+              <p className="standfirst mx-auto mt-3 max-w-[56ch]" style={{ color: "rgba(250,249,247,.8)" }}>
                 You'll see your warmest strand for free before you decide between the one-time report
                 and the subscription.
               </p>
             )}
-            <button
-              onClick={isAuthedBuyer ? handleOpenPlan : handleStartTest}
-              className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[15px] font-semibold text-[#1A1915] transition-opacity hover:opacity-90"
-              style={{ background: "#2ECDB0" }}
-            >
-              {isAuthedBuyer ? "Open my plan" : "Find what fits"}
-            </button>
+            <div className="mt-7">
+              <button onClick={isAuthedBuyer ? handleOpenPlan : handleStartTest} className="cta-block">
+                {isAuthedBuyer ? "Open my plan" : "Find what works"}
+              </button>
+            </div>
             {!isAuthedBuyer && (
-              <div className="mt-4 text-[11px] text-muted-foreground/70 tracking-[0.04em]">
+              <div className="mt-4 text-[11px] uppercase tracking-[0.12em]" style={{ color: "rgba(250,249,247,.65)" }}>
                 £19.99 one-time · or £19/mo with cancel any time
               </div>
             )}
-          </section>
-
-        </div>
+          </div>
+        </section>
       </main>
 
       {/* Footer removed from page render 2026-05-18: App.tsx already
@@ -334,14 +310,10 @@ export default function Pricing() {
 
       {/* Mobile sticky bottom CTA, anon visitors only, hidden when authed (they have plan access via top bar). */}
       {!isAuthedBuyer && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#D8D4CC] sm:hidden" style={{ background: "rgba(250,249,247,0.97)", backdropFilter: "blur(8px)" }}>
+        <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-border sm:hidden" style={{ background: "rgba(250,249,247,0.97)", backdropFilter: "blur(8px)" }}>
           <div className="px-4 py-3">
-            <button
-              onClick={handleStartTest}
-              className="w-full rounded-md px-6 py-3 text-[14px] font-semibold text-[#1A1915]"
-              style={{ background: "#2ECDB0" }}
-            >
-              Find what fits
+            <button onClick={handleStartTest} className="cta-block w-full text-center">
+              Find what works
             </button>
           </div>
         </div>
@@ -354,9 +326,8 @@ export default function Pricing() {
 
 /* ── PricingCard ──
  *
- * Local editorial composite per F1. Optional `elevated` prop (border-strong
- * outline) + `topTag` prop (hairline-bordered mint pill half-overlapping
- * the top border). Pass 1 /pricing renders both cards unelevated (peer/peer).
+ * Local editorial composite per F1. ADR-026 Phase 2: no longer a card,
+ * a column opening on a 3px ink rule (Landing pricing-band pattern).
  *
  * For authed-buyer state: `authedBuyerVariant` flips the card content:
  *   - "owned", one-time card reframes to "Already yours", CTA flips to
@@ -373,15 +344,13 @@ function PricingCard({
   authedBuyerCtaLabel?: string;
   authedBuyerVariant?: "owned" | "upgrade";
 }) {
+  const isOwned = isAuthedBuyer && authedBuyerVariant === "owned";
   return (
-    <div className="relative panel-ivory p-8 sm:p-9 flex flex-col">
-      {/* Card head */}
-      <div className="pb-5 mb-5 border-b border-[#E5E2DC]">
-        <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-          <span>{data.pre}</span>
-        </div>
-        <h3 className="font-display text-[20px] sm:text-[22px] font-bold tracking-tight text-foreground leading-[1.2] mb-2" style={{ letterSpacing: "-0.02em" }}>
+    <div className="flex h-full flex-col border-t-[3px] border-foreground pt-5">
+      {/* Column head */}
+      <div className="pb-5 mb-5 border-b border-border">
+        <div className="eyebrow">{data.pre}</div>
+        <h3 className="mt-3 mb-2 font-display text-[20px] sm:text-[22px] font-bold tracking-tight text-foreground leading-[1.2]">
           {data.title}
         </h3>
         <p className="text-[14px] text-muted-foreground leading-[1.5] max-w-[42ch]">
@@ -394,7 +363,7 @@ function PricingCard({
           <span className="text-[14px] text-muted-foreground">{data.priceQual}</span>
         </div>
         {data.annualLine && (
-          <div className="mt-1.5 text-[13px] font-medium" style={{ color: "#15735F" }}>
+          <div className="mt-1.5 text-[13px] font-medium text-[#15735F]">
             {data.annualLine}
           </div>
         )}
@@ -406,7 +375,7 @@ function PricingCard({
           <li
             key={i}
             className={`relative pl-4 py-2 text-[14px] text-foreground/85 leading-[1.5] ${
-              i > 0 ? "border-t border-[#EDEBE6]" : ""
+              i > 0 ? "border-t border-border" : ""
             }`}
           >
             <span className="absolute left-0 top-[18px] w-2 h-[1.5px] bg-primary" />
@@ -417,23 +386,20 @@ function PricingCard({
 
       {/* Actions */}
       <div className="mt-6 pt-1">
-        <button
-          onClick={onPrimary}
-          className={`w-full inline-flex items-center justify-center rounded-md px-5 py-3.5 text-[14px] font-semibold transition-opacity hover:opacity-90 ${
-            isAuthedBuyer && authedBuyerVariant === "owned"
-              ? ""
-              : ""
-          }`}
-          style={
-            isAuthedBuyer && authedBuyerVariant === "owned"
-              ? { background: "#F3F1ED", color: "#1D2025", border: "1px solid #D5D0C8" }
-              : { background: "#2ECDB0", color: "#1A1915" }
-          }
-        >
-          {isAuthedBuyer && authedBuyerCtaLabel ? authedBuyerCtaLabel : data.ctaLabel}
-        </button>
+        {isOwned ? (
+          <button
+            onClick={onPrimary}
+            className="w-full px-5 py-[9px] text-[13px] font-semibold text-foreground bg-[#F3F1ED] border border-border transition-opacity hover:opacity-90"
+          >
+            {isAuthedBuyer && authedBuyerCtaLabel ? authedBuyerCtaLabel : data.ctaLabel}
+          </button>
+        ) : (
+          <button onClick={onPrimary} className="cta-block w-full text-center">
+            {isAuthedBuyer && authedBuyerCtaLabel ? authedBuyerCtaLabel : data.ctaLabel}
+          </button>
+        )}
         {data.secondaryMicrocopy && !isAuthedBuyer && (
-          <div className="mt-2.5 text-center text-[12px] text-muted-foreground underline underline-offset-[3px] decoration-[#D8D4CC]">
+          <div className="mt-2.5 text-center text-[12px] text-muted-foreground">
             {data.secondaryMicrocopy}
           </div>
         )}

@@ -262,17 +262,15 @@ export default function Teaser() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar minimal />
-        <main className="pt-[68px]">
-          <section className="py-10 lg:py-14">
+        <main className="pt-6">
+          <section className="py-6 lg:py-8">
             <div className="mx-auto max-w-6xl px-6">
-              <div className="panel-ivory">
-                <div className="px-8 sm:px-12 lg:px-16 py-12 space-y-8">
-                  <Skeleton className="h-12 w-3/4" />
-                  <Skeleton className="h-5 w-full" />
-                  <Skeleton className="h-40 w-full rounded-lg" />
-                  <Skeleton className="h-24 w-full rounded-lg" />
-                  <Skeleton className="h-24 w-full rounded-lg" />
-                </div>
+              <div className="py-12 space-y-8">
+                <Skeleton className="h-12 w-3/4" />
+                <Skeleton className="h-5 w-full" />
+                <Skeleton className="h-40 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
               </div>
             </div>
           </section>
@@ -285,15 +283,15 @@ export default function Teaser() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar minimal />
-        <main className="pt-[68px]">
-          <section className="py-10 lg:py-14">
+        <main className="pt-6">
+          <section className="py-6 lg:py-8">
             <div className="mx-auto max-w-6xl px-6">
-              <div className="panel-ivory">
-                <div className="px-8 sm:px-12 lg:px-16 py-12">
+              <div>
+                <div className="py-12">
                   <Banner variant="error">
                     We couldn't load your plan right now. Please refresh.
                   </Banner>
-                  <h1 className="mt-8 text-[34px] sm:text-[40px] font-extrabold tracking-tight text-foreground">
+                  <h1 className="title-h1 title-h1--hero mt-8">
                     Your plan
                   </h1>
                   <div className="mt-6 flex gap-3">
@@ -328,8 +326,8 @@ export default function Teaser() {
     <div className="relative min-h-screen text-foreground">
       <TopBar minimal />
 
-      <main className="pt-[68px]">
-        <section className="py-10 lg:py-14">
+      <main className="pt-6">
+        <section className="py-6 lg:py-8">
           <div className="mx-auto max-w-6xl px-6">
             {/* Banners sit above the panel so they don't disrupt the internal rhythm */}
             {cancelReturn && (
@@ -357,11 +355,11 @@ export default function Teaser() {
               <PlanSidebar items={sidebarItems} activeId={activeSectionId} variant="mobile" />
             )}
 
-            <div className="panel-ivory">
-              {/* ─── Panel top row: section label + small Solo logo ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+            <div>
+              {/* ─── Top row: section label + small Solo logo (flat page, ADR-026 Phase 3) ─── */}
+              <div className="flex items-center justify-between gap-6">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  <span className="text-primary mr-3 tabular-nums">04</span>
+                  <span className="text-[#15735F] mr-3 tabular-nums">04</span>
                   Your report
                 </div>
                 <SoloLogo width={96} height={28} />
@@ -371,7 +369,7 @@ export default function Teaser() {
               <HeroStrip firstName={firstName} optionsCount={coreReport?.options?.length ?? 10} />
 
               {/* ─── Body: sidebar (desktop) + visible report sections ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pb-10">
+              <div className="pb-10">
                 <div className="flex gap-10">
                   {sidebarItems.length > 0 && (
                     <aside className="hidden lg:block w-48 shrink-0 pt-2">
@@ -417,10 +415,10 @@ export default function Teaser() {
                       </>
                     ) : (
                       <div>
-                        <h1 className="text-[28px] sm:text-[32px] font-semibold tracking-tight text-foreground">
+                        <h1 className="title-h1">
                           We've drafted your report.
                         </h1>
-                        <p className="mt-3 text-[15.5px] text-muted-foreground">
+                        <p className="standfirst mt-3">
                           Get the full version below.
                         </p>
                       </div>
@@ -460,15 +458,15 @@ export default function Teaser() {
 
       {/* Mobile sticky CTA */}
       {showSticky && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#D8D4CC] bg-[#FAF9F7] p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] md:hidden">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-[#FAF9F7] p-4 md:hidden">
           <button
             type="button"
             onClick={handleUnlock}
             disabled={payLoading}
-            className={`w-full rounded-md px-6 py-3 text-[14px] font-semibold transition-colors flex items-center justify-center gap-2 ${
+            className={`w-full px-6 py-3 text-[14px] font-semibold transition-colors flex items-center justify-center gap-2 ${
               payLoading
                 ? "bg-[#E5E2DC] text-muted-foreground/70"
-                : "bg-primary text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90"
+                : "cta-block"
             }`}
           >
             {payLoading && (
@@ -489,7 +487,7 @@ export default function Teaser() {
 
 function HeroStrip({ firstName, optionsCount }: { firstName: string | null; optionsCount: number }) {
   return (
-    <div className="px-8 sm:px-12 lg:px-16 pt-6 pb-10">
+    <div className="pt-6 pb-10">
       <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-5">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary align-middle mr-3" />
         <span className="align-middle">Your report</span>
@@ -500,15 +498,15 @@ function HeroStrip({ firstName, optionsCount }: { firstName: string | null; opti
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-end">
         <div className="lg:col-span-7">
-          <h1 className="text-[40px] sm:text-[52px] lg:text-[60px] font-extrabold tracking-tight leading-[1.05] text-foreground">
+          <h1 className="title-h1 title-h1--hero">
             Your plan,{" "}
             {firstName ? (
-              <span className="text-primary">{firstName}.</span>
+              <span className="text-[#15735F]">{firstName}.</span>
             ) : (
               <span>·</span>
             )}
           </h1>
-          <p className="mt-4 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed max-w-2xl">
+          <p className="standfirst mt-4 max-w-2xl">
             We've drafted {optionsCount} options based on your answers. Here's
             the opening of your report, and then the gate. Below the gate
             sits the rest of the analysis, your 30-day plan, and your 3 starter
@@ -588,7 +586,7 @@ function LockedArea() {
   return (
     <div className="px-8 sm:px-12 lg:px-16 py-10 bg-[#F3F0EA]">
       <div className="flex items-center gap-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-6">
-        <span className="text-primary tabular-nums">05</span>
+        <span className="text-[#15735F] tabular-nums">05</span>
         <span className="text-foreground">Behind the gate</span>
         <span className="flex-1 h-px bg-[#D8D4CC]" />
         <span>locked</span>
@@ -611,7 +609,7 @@ function LockedArea() {
 
 function UnlockCallout({ onUnlock, payLoading }: { onUnlock: () => void; payLoading: boolean }) {
   return (
-    <div className="px-8 sm:px-12 lg:px-16 py-12">
+    <div className="py-12">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         <div className="lg:col-span-5">
           <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground mb-4">
@@ -641,10 +639,10 @@ function UnlockCallout({ onUnlock, payLoading }: { onUnlock: () => void; payLoad
             type="button"
             onClick={onUnlock}
             disabled={payLoading}
-            className={`w-full rounded-md px-7 py-4 text-[16px] font-semibold transition-colors flex items-center justify-center gap-2 ${
+            className={`w-full px-7 py-4 text-[16px] font-semibold transition-colors flex items-center justify-center gap-2 ${
               payLoading
                 ? "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
-                : "bg-primary text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90"
+                : "cta-block"
             }`}
           >
             {payLoading && (
@@ -696,9 +694,9 @@ const WHAT_YOU_GET = [
 
 function WhatYouGet() {
   return (
-    <div className="px-8 sm:px-12 lg:px-16 py-12 border-t border-[#E5E2DC]">
+    <div className="py-12 border-t border-border">
       <div className="flex items-baseline gap-4 mb-8">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary tabular-nums">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#15735F] tabular-nums">
           06
         </span>
         <span className="text-[20px] sm:text-[22px] font-semibold tracking-tight text-foreground">
@@ -708,7 +706,7 @@ function WhatYouGet() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
         {WHAT_YOU_GET.map((item) => (
           <div key={item.n} className="flex gap-4">
-            <span className="shrink-0 text-primary text-[10px] font-semibold tabular-nums tracking-[0.1em] pt-1">
+            <span className="shrink-0 text-[#15735F] text-[10px] font-semibold tabular-nums tracking-[0.1em] pt-1">
               {item.n}
             </span>
             <div className="flex-1 min-w-0">
@@ -730,7 +728,7 @@ function WhatYouGet() {
 
 function TrustStrip() {
   return (
-    <div className="px-8 sm:px-12 lg:px-16 py-5 bg-[#F3F0EA] border-t border-[#E5E2DC]">
+    <div className="px-8 sm:px-12 lg:px-16 py-5 bg-[#F3F0EA] border-t border-border">
       <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] text-muted-foreground">
         {[
           { l: "Checkout", v: "Stripe hosted" },
@@ -763,7 +761,7 @@ function BottomCTA({
   optionsCount: number;
 }) {
   return (
-    <div className="px-8 sm:px-12 lg:px-16 py-14 text-center border-t border-[#E5E2DC]">
+    <div className="py-14 text-center border-t border-border">
       <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
         Decide when you're ready
       </div>
@@ -780,10 +778,10 @@ function BottomCTA({
           type="button"
           onClick={onUnlock}
           disabled={payLoading}
-          className={`rounded-md px-8 py-4 text-[16px] font-semibold transition-colors flex items-center justify-center gap-2 ${
+          className={`px-8 py-4 text-[16px] font-semibold transition-colors flex items-center justify-center gap-2 ${
             payLoading
               ? "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
-              : "bg-primary text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90"
+              : "cta-block"
           }`}
         >
           {payLoading && (

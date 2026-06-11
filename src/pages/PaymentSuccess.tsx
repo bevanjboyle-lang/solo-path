@@ -304,22 +304,22 @@ export default function PaymentSuccess() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main>
           <section className="py-12 lg:py-20">
             <div className="mx-auto max-w-2xl px-6">
-              <div className="panel-ivory">
-                <div className="px-8 sm:px-12 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+              <div>
+                <div className="pt-8 sm:pt-10 flex items-center justify-between gap-6">
                   <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em]">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                    <span className="text-primary">Payment confirmed</span>
+                    <span className="text-[#15735F]">Payment confirmed</span>
                   </div>
                   <SoloLogo width={88} height={26} />
                 </div>
-                <div className="px-8 sm:px-12 pt-6 pb-12">
-                  <h1 className="text-[36px] sm:text-[44px] font-extrabold tracking-tight leading-tight text-foreground">
+                <div className="pt-6 pb-12">
+                  <h1 className="title-h1">
                     Setting up your second report.
                   </h1>
-                  <p className="mt-3 text-[16px] text-muted-foreground leading-relaxed">
+                  <p className="standfirst mt-3">
                     This takes a few seconds.
                   </p>
                   <div className="mt-8 flex items-center gap-4 min-h-[48px]" aria-live="polite">
@@ -342,11 +342,11 @@ export default function PaymentSuccess() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar minimal />
-        <main className="pt-[68px]">
+        <main>
           <section className="py-12 lg:py-20">
             <div className="mx-auto max-w-2xl px-6">
-              <div className="panel-ivory">
-                <div className="px-8 sm:px-12 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+              <div>
+                <div className="pt-8 sm:pt-10 flex items-center justify-between gap-6">
                   <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600" />
                     <span className="text-red-700">Link no longer valid</span>
@@ -357,19 +357,19 @@ export default function PaymentSuccess() {
                   </div>
                   <SoloLogo width={88} height={26} />
                 </div>
-                <div className="px-8 sm:px-12 pt-6 pb-12">
-                  <h1 className="text-[36px] sm:text-[44px] font-extrabold tracking-tight leading-tight text-foreground">
+                <div className="pt-6 pb-12">
+                  <h1 className="title-h1">
                     This link is no longer valid.
                   </h1>
-                  <p className="mt-4 text-[15.5px] text-muted-foreground leading-relaxed max-w-2xl">
+                  <p className="standfirst mt-4 max-w-2xl">
                     Single-use links expire shortly after you've used them. Sign in
                     with the magic link we emailed you to reach your plan.
                   </p>
-                  <div className="mt-8 flex flex-col items-start gap-3 border-t border-[#E5E2DC] pt-8">
+                  <div className="mt-8 flex flex-col items-start gap-3 border-t border-border pt-8">
                     <button
                       type="button"
                       onClick={() => navigate("/auth")}
-                      className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors"
+                      className="cta-block"
                     >
                       Go to sign-in →
                     </button>
@@ -394,11 +394,11 @@ export default function PaymentSuccess() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar minimal={!hasSession} />
-        <main className="pt-[68px]">
+        <main>
           <section className="py-12 lg:py-20">
             <div className="mx-auto max-w-2xl px-6">
-              <div className="panel-ivory">
-                <div className="px-8 sm:px-12 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+              <div>
+                <div className="pt-8 sm:pt-10 flex items-center justify-between gap-6">
                   <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-600" />
                     <span className="text-amber-700">Catching up</span>
@@ -409,11 +409,11 @@ export default function PaymentSuccess() {
                   </div>
                   <SoloLogo width={88} height={26} />
                 </div>
-                <div className="px-8 sm:px-12 pt-6 pb-12">
-                  <h1 className="text-[32px] sm:text-[40px] font-extrabold tracking-tight leading-tight text-foreground">
+                <div className="pt-6 pb-12">
+                  <h1 className="title-h1">
                     Your payment worked, but we're catching up.
                   </h1>
-                  <p className="mt-4 text-[16px] text-muted-foreground leading-relaxed">
+                  <p className="standfirst mt-4">
                     Your report is safe. We're having trouble completing the handover.
                   </p>
                   <div className="mt-6 border-l-2 border-amber-600 bg-amber-50/60 px-5 py-4">
@@ -425,10 +425,10 @@ export default function PaymentSuccess() {
                     </p>
                   </div>
                   <ReferenceRow startedAt={startedAt} stage="webhook_pending" />
-                  <div className="mt-8 flex flex-col sm:flex-row items-start gap-3 border-t border-[#E5E2DC] pt-8">
+                  <div className="mt-8 flex flex-col sm:flex-row items-start gap-3 border-t border-border pt-8">
                     <a
                       href="mailto:support@solo-plan.com"
-                      className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors inline-flex items-center"
+                      className="cta-block inline-flex items-center"
                     >
                       Email support →
                     </a>
@@ -459,10 +459,10 @@ export default function PaymentSuccess() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar minimal={!hasSession} />
-        <main className="pt-[68px]">
+        <main>
           <section className="py-12 lg:py-20">
             <div className="mx-auto max-w-2xl px-6">
-              <div className="panel-ivory">
+              <div>
                 <div className="border-l-2 border-red-600 bg-red-50/60 px-6 py-3 flex items-start gap-3">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600 mt-1.5 shrink-0" />
                   <div className="text-[13px] leading-relaxed">
@@ -474,10 +474,10 @@ export default function PaymentSuccess() {
                     </span>
                   </div>
                 </div>
-                <div className="px-8 sm:px-12 pt-8 flex items-center justify-between gap-6">
+                <div className="pt-8 flex items-center justify-between gap-6">
                   <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                    <span className="text-primary">Payment received</span>
+                    <span className="text-[#15735F]">Payment received</span>
                     <span className="text-muted-foreground/40">·</span>
                     <span className="text-muted-foreground normal-case tracking-normal text-[12px] font-normal">
                       retry to continue
@@ -485,18 +485,18 @@ export default function PaymentSuccess() {
                   </div>
                   <SoloLogo width={88} height={26} />
                 </div>
-                <div className="px-8 sm:px-12 pt-6 pb-12">
-                  <h1 className="text-[36px] sm:text-[44px] font-extrabold tracking-tight leading-tight text-foreground">
+                <div className="pt-6 pb-12">
+                  <h1 className="title-h1">
                     Connection issue.
                   </h1>
-                  <p className="mt-3 text-[16px] text-muted-foreground leading-relaxed">
+                  <p className="standfirst mt-3">
                     We can't reach our servers right now.
                   </p>
-                  <div className="mt-8 flex flex-col items-start gap-3 border-t border-[#E5E2DC] pt-8">
+                  <div className="mt-8 flex flex-col items-start gap-3 border-t border-border pt-8">
                     <button
                       type="button"
                       onClick={handleRetry}
-                      className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors"
+                      className="cta-block"
                     >
                       Retry
                     </button>
@@ -521,15 +521,15 @@ export default function PaymentSuccess() {
     <div className="relative min-h-screen text-foreground">
       <TopBar minimal={!hasSession} />
 
-      <main className="pt-[68px]">
+      <main>
         <section className="py-12 lg:py-20">
           <div className="mx-auto max-w-2xl px-6">
-            <div className="panel-ivory">
+            <div>
               {/* Panel top: eyebrow + small Solo logo */}
-              <div className="px-8 sm:px-12 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+              <div className="pt-8 sm:pt-10 flex items-center justify-between gap-6">
                 <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                  <span className="text-primary">Payment received</span>
+                  <span className="text-[#15735F]">Payment received</span>
                   <span className="text-muted-foreground/40">·</span>
                   <span className="text-muted-foreground normal-case tracking-normal text-[12px] font-normal">
                     {state === "delayed" ? "taking longer than usual" : "setting up your account"}
@@ -538,21 +538,21 @@ export default function PaymentSuccess() {
                 <SoloLogo width={88} height={26} />
               </div>
 
-              <div className="px-8 sm:px-12 pt-6 pb-12">
+              <div className="pt-6 pb-12">
                 {state === "delayed" ? (
                   <>
-                    <h1 className="text-[36px] sm:text-[44px] font-extrabold tracking-tight leading-tight text-foreground">
+                    <h1 className="title-h1">
                       Almost there.
                     </h1>
-                    <p className="mt-3 text-[16px] text-muted-foreground leading-relaxed">
+                    <p className="standfirst mt-3">
                       Our system is catching up. This usually clears in a few seconds.
                     </p>
                     <ReferenceRow startedAt={startedAt} />
-                    <div className="mt-8 border-t border-[#E5E2DC] pt-8 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+                    <div className="mt-8 border-t border-border pt-8 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
                       <button
                         type="button"
                         onClick={handleRetry}
-                        className="rounded-md bg-[#E5E2DC] hover:bg-[#D8D4CC] text-foreground px-6 py-2.5 text-[13.5px] font-semibold border border-[#D8D4CC] transition-colors"
+                        className="bg-[#E5E2DC] hover:bg-[#D8D4CC] text-foreground px-6 py-2.5 text-[13.5px] font-semibold border border-border transition-colors"
                       >
                         Try now
                       </button>
@@ -570,15 +570,15 @@ export default function PaymentSuccess() {
                   </>
                 ) : (
                   <>
-                    <h1 className="text-[36px] sm:text-[44px] font-extrabold tracking-tight leading-tight text-foreground">
+                    <h1 className="title-h1">
                       Setting up your account.
                     </h1>
-                    <p className="mt-3 text-[16px] text-muted-foreground leading-relaxed">
+                    <p className="standfirst mt-3">
                       This takes a few seconds.
                     </p>
 
                     {/* Hairline + heartbeat row */}
-                    <div className="h-px bg-[#E5E2DC] my-8" />
+                    <div className="h-px bg-border my-8" />
                     <div className="flex items-center gap-4 min-h-[48px]" aria-live="polite" aria-atomic="true">
                       <span
                         className={`shrink-0 inline-block w-[9px] h-[9px] rounded-full ${
@@ -589,13 +589,13 @@ export default function PaymentSuccess() {
                       />
                       <span
                         className={`text-[18px] sm:text-[22px] font-semibold leading-snug ${
-                          statusTone === "ready" ? "text-primary" : "text-foreground"
+                          statusTone === "ready" ? "text-[#15735F]" : "text-foreground"
                         }`}
                       >
                         {statusText}
                       </span>
                     </div>
-                    <div className="h-px bg-[#E5E2DC] my-8" />
+                    <div className="h-px bg-border my-8" />
 
                     {/* Estimate row */}
                     <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
@@ -643,7 +643,7 @@ function ReferenceRow({
   const sessionPrefix = `cs_${startedAt.getTime().toString(36).slice(-6)}`;
   const ts = formatTimestamp(startedAt);
   return (
-    <div className="mt-8 bg-[#F3F0EA] border border-[#E5E2DC] rounded-lg px-5 py-3 flex items-center gap-4 flex-wrap">
+    <div className="mt-8 border-t border-border pt-3 flex items-center gap-4 flex-wrap">
       <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground shrink-0">
         Reference
       </span>

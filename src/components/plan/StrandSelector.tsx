@@ -83,12 +83,12 @@ function OptionRow({
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       className={[
-        "mb-3 w-full rounded-md border p-5 text-left transition-colors",
+        "mb-3 w-full border p-5 text-left transition-colors",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         "disabled:cursor-not-allowed disabled:opacity-60",
         checked
           ? "border-primary bg-surface-mint-tint/40"
-          : "border-border bg-surface-card hover:border-primary/40 hover:bg-surface-panel",
+          : "border-border bg-transparent hover:border-primary/40",
       ].join(" ")}
       style={
         checked
@@ -101,7 +101,7 @@ function OptionRow({
         <span
           aria-hidden="true"
           className={[
-            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-sm border transition-colors",
+            "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center border transition-colors",
             checked
               ? "border-primary bg-primary text-primary-foreground"
               : "border-border bg-background",
@@ -124,16 +124,16 @@ function OptionRow({
 
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <span className="bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               Rank {option.rank}
             </span>
             {isRecommended && (
-              <span className="rounded-md bg-surface-mint-tint px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--mint-text))]">
+              <span className="bg-surface-mint-tint px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(var(--mint-text))]">
                 Recommended
               </span>
             )}
             {option.primary_move_type && (
-              <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+              <span className="bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
                 {option.primary_move_type}
               </span>
             )}
@@ -144,15 +144,15 @@ function OptionRow({
           </h3>
 
           <div className="mt-3 grid grid-cols-2 gap-3">
-            <div className="rounded-md bg-surface-panel p-2.5">
+            <div className="border-l-2 border-border pl-3 py-1">
               <span className="text-[10px] text-muted-foreground">Target buyer</span>
               <p className="mt-0.5 text-sm text-foreground">{option.target_buyer}</p>
             </div>
-            <div className="rounded-md bg-surface-panel p-2.5">
+            <div className="border-l-2 border-border pl-3 py-1">
               <span className="text-[10px] text-muted-foreground">
                 {option.pricing.cadence}
               </span>
-              <p className="mt-0.5 text-sm font-medium text-primary">
+              <p className="mt-0.5 text-sm font-medium text-[#15735F]">
                 {formatPriceRange(option)}
               </p>
             </div>
@@ -169,7 +169,7 @@ function OptionRow({
               {option.fit_tags.map((tag, i) => (
                 <span
                   key={i}
-                  className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
+                  className="border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-[#15735F]"
                 >
                   {tag}
                 </span>
@@ -268,7 +268,7 @@ export default function StrandSelector({
   return (
     <motion.section
       aria-labelledby="strand-selector-heading"
-      className="rounded-xl border border-border bg-[hsl(var(--surface-panel))] p-6 sm:p-8"
+      className=""
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -310,7 +310,7 @@ export default function StrandSelector({
                 )}
               </button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3 rounded-md bg-surface-card p-4 text-sm leading-relaxed text-muted-foreground">
+            <CollapsibleContent className="mt-3 border-l-2 border-border bg-transparent pl-4 py-2 text-sm leading-relaxed text-muted-foreground">
               {rationale}
             </CollapsibleContent>
           </Collapsible>
@@ -334,7 +334,7 @@ export default function StrandSelector({
         <div className="flex flex-col gap-1">
           <span
             className={[
-              "inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
+              "inline-flex w-fit items-center gap-1.5 px-3 py-1 text-xs font-medium",
               tooMany
                 ? "bg-red-500/10 text-red-600"
                 : tooFew
@@ -364,7 +364,7 @@ export default function StrandSelector({
           onClick={handleSubmit}
           disabled={!canSubmit}
           aria-label={submitAriaLabel}
-          className="rounded-lg bg-primary px-6 text-[15px] font-semibold text-primary-foreground hover:bg-primary/90"
+          className="bg-primary px-6 text-[15px] font-semibold text-primary-foreground hover:bg-primary/90"
         >
           {submitting ? (
             <span className="inline-flex items-center gap-2">

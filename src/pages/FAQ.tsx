@@ -36,6 +36,13 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
  * Pass 1 scope: shell + chrome + sidebar + per-category panels +
  * inline accordion + contact strip + closing CTA. Preserves: data
  * structures, deep-link hash expansion, all handlers.
+ *
+ * ADR-026 Phase 2 (2026-06-10): FT-register flatten. Category panels
+ * become plain sections separated by hairline rules; sidebar loses the
+ * card look (rule-head label, hairline right rule); hero flattened to
+ * eyebrow + .title-h1 + .standfirst; answers render in the serif
+ * standfirst register; mint CTA squared to .cta-block. No logic or
+ * copy changes.
  */
 
 interface FAQItem {
@@ -150,9 +157,9 @@ export default function FAQ() {
                 sectionRefs.current[c.id]?.scrollIntoView({ behavior: "smooth", block: "start" });
                 closeSheet?.();
               }}
-              className="group w-full grid grid-cols-[auto_1fr_auto] items-baseline gap-x-3 px-4 py-2 text-left text-[13px] text-muted-foreground hover:text-foreground hover:bg-[#FAF9F7] transition-colors border-l-2 border-transparent"
+              className="group w-full grid grid-cols-[auto_1fr_auto] items-baseline gap-x-3 px-1 py-2 text-left text-[13px] text-muted-foreground hover:text-foreground transition-colors"
             >
-              <span className="shrink-0 text-[10px] font-bold tabular-nums tracking-[0.08em] text-primary">
+              <span className="shrink-0 text-[10px] font-bold tabular-nums tracking-[0.08em] text-[#15735F]">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="truncate">{c.label}</span>
@@ -170,9 +177,9 @@ export default function FAQ() {
     <div className="relative min-h-screen flex flex-col text-foreground">
       <TopBar />
 
-      <main className="flex-1 pt-[68px]">
-        <section className="pt-6 pb-8 lg:pb-12">
-          <div className="mx-auto max-w-screen-lg px-6">
+      <main className="flex-1">
+        <section className="pt-8 pb-8 lg:pb-12">
+          <div className="mx-auto max-w-6xl px-6">
 
             {/* Mobile category trigger */}
             <div className="lg:hidden mb-4">
@@ -180,18 +187,14 @@ export default function FAQ() {
                 <SheetTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-[13px] font-semibold text-foreground transition-colors"
-                    style={{ background: "#F3F1ED", border: "1.5px solid #D5D0C8" }}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-foreground transition-colors bg-[#F3F1ED] border border-border"
                   >
-                    <List className="h-4 w-4" style={{ color: "#2ECDB0" }} />
+                    <List className="h-4 w-4" style={{ color: "#15735F" }} />
                     <span>Categories</span>
                   </button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[300px] p-6 overflow-y-auto">
-                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80 mb-4">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                    <span>Categories</span>
-                  </div>
+                  <div className="rule-head mb-4">Categories</div>
                   {categoryNav(undefined)}
                 </SheetContent>
               </Sheet>
@@ -200,23 +203,18 @@ export default function FAQ() {
             <div className="flex gap-8 lg:gap-10">
 
               {/* ── Category sidebar, desktop only ── */}
-              <aside className="hidden lg:block w-[220px] shrink-0">
+              <aside className="hidden lg:block w-[220px] shrink-0 border-r border-border pr-6">
                 <div className="sticky top-20">
-                  <div className="panel-ivory py-5">
-                    <div className="px-5 pb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                      <span>Categories</span>
+                  <div className="rule-head mb-3">Categories</div>
+                  <div className="max-h-[calc(100vh-14rem)] overflow-y-auto">
+                    {categoryNav()}
+                  </div>
+                  <div className="pt-4 mt-2 border-t border-border">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                      Total
                     </div>
-                    <div className="max-h-[calc(100vh-14rem)] overflow-y-auto">
-                      {categoryNav()}
-                    </div>
-                    <div className="px-5 pt-4 mt-1 border-t border-[#E5E2DC]">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
-                        Total
-                      </div>
-                      <div className="mt-1 text-[12px] text-foreground tabular-nums">
-                        {totalQuestions} questions
-                      </div>
+                    <div className="mt-1 text-[12px] text-foreground tabular-nums">
+                      {totalQuestions} questions
                     </div>
                   </div>
                 </div>
@@ -226,10 +224,9 @@ export default function FAQ() {
               <div className="flex-1 min-w-0">
                 <h1 className="sr-only">Questions, answered</h1>
 
-                {/* Page-header panel */}
-                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+                {/* Page header, flat on the page */}
+                <section className="pb-8">
                   <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
                     <span className="text-foreground">Help</span>
                     <span className="text-muted-foreground/40">·</span>
                     <span className="text-muted-foreground/70">Common questions</span>
@@ -237,25 +234,25 @@ export default function FAQ() {
                   <div aria-hidden className="title-h1">
                     Questions, answered.
                   </div>
-                  <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[54ch]">
+                  <p className="standfirst mt-4 max-w-[54ch]">
                     The questions people actually ask before paying. If yours isn't here, email us, the
                     link is at the bottom.
                   </p>
                 </section>
 
-                {/* ── Category panels (separated per F6) ── */}
-                <div className="space-y-6">
+                {/* ── Category sections on hairline rules (panels flattened, ADR-026) ── */}
+                <div>
                   {categories.map((cat, i) => (
                     <section
                       key={cat.id}
                       id={cat.id}
                       ref={(el) => { sectionRefs.current[cat.id] = el; }}
-                      className="panel-ivory px-6 sm:px-10 lg:px-12 py-6 sm:py-7 scroll-mt-24"
+                      className="border-t border-border py-7 scroll-mt-24"
                     >
                       {/* Category head */}
-                      <div className="flex items-baseline justify-between pb-4 mb-2 border-b border-[#E5E2DC]">
+                      <div className="flex items-baseline justify-between pb-4 mb-2 border-b border-border">
                         <div className="flex items-baseline gap-3">
-                          <span className="text-[11px] font-bold tabular-nums tracking-[0.08em]" style={{ color: "#2ECDB0" }}>
+                          <span className="text-[11px] font-bold tabular-nums tracking-[0.08em] text-[#15735F]">
                             {String(i + 1).padStart(2, "0")}
                           </span>
                           <h2
@@ -279,9 +276,9 @@ export default function FAQ() {
                             key={item.id}
                             id={item.id}
                             className={`py-4 transition-colors duration-300 ${
-                              j > 0 ? "border-t border-[#EDEBE6]" : ""
+                              j > 0 ? "border-t border-border" : ""
                             } ${
-                              isHighlighted ? "bg-[rgba(46,205,176,0.05)] -mx-3 px-3 rounded" : ""
+                              isHighlighted ? "bg-[rgba(46,205,176,0.05)] -mx-3 px-3" : ""
                             }`}
                           >
                             <button
@@ -303,7 +300,7 @@ export default function FAQ() {
                               </span>
                             </button>
                             {isOpen && (
-                              <p className="mt-3 text-[14px] sm:text-[14.5px] text-foreground/80 leading-[1.65] max-w-[64ch]">
+                              <p className="standfirst mt-3 text-[14px] sm:text-[15px] max-w-[64ch]">
                                 {item.a}
                               </p>
                             )}
@@ -316,10 +313,10 @@ export default function FAQ() {
 
                 {/* Contact strip */}
                 <section
-                  className="px-6 sm:px-8 py-5 mb-6 mt-6 grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-3 sm:gap-5 items-baseline rounded-r-md"
-                  style={{ background: "#F3F1ED", borderLeft: "3px solid #2ECDB0" }}
+                  className="px-6 sm:px-8 py-5 mb-6 mt-6 grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-3 sm:gap-5 items-baseline"
+                  style={{ background: "#F3F1ED", borderLeft: "3px solid #1A1915" }}
                 >
-                  <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: "#1A8A72" }}>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: "#15735F" }}>
                     Still stuck?
                   </span>
                   <p className="font-display text-[15px] text-foreground leading-[1.45]" style={{ letterSpacing: "-0.012em" }}>
@@ -333,11 +330,8 @@ export default function FAQ() {
                   </a>
                 </section>
 
-                {/* Light closing CTA (F5 keep) ──
-                  * Fix 2026-05-18: wrapped in panel-ivory to match the page's
-                  * other sections. Previously sat directly on the office photo
-                  * background, making the body copy unreadable. */}
-                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-12 sm:py-14 text-center mt-2">
+                {/* Light closing CTA (F5 keep), flat on a hairline rule (ADR-026) */}
+                <section className="border-t border-border py-12 sm:py-14 text-center mt-2">
                   <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
                     {user ? "Pick up where you left off" : "Ready when you are"}
                   </div>
@@ -349,10 +343,9 @@ export default function FAQ() {
                   </h3>
                   <button
                     onClick={user ? handleOpenPlan : handleStartTest}
-                    className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
-                    style={{ background: "#2ECDB0" }}
+                    className="cta-block"
                   >
-                    {user ? "Open my plan" : "Find what fits"}
+                    {user ? "Open my plan" : "Find what works"}
                   </button>
                   {!user && (
                     <div className="mt-4 text-[11px] text-muted-foreground/70 tracking-[0.04em]">

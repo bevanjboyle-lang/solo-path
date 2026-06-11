@@ -132,10 +132,10 @@ export default function ActivationDialog({
               <Label
                 key={opt.value}
                 htmlFor={`time-${opt.value}`}
-                className={`flex cursor-pointer items-center justify-center rounded-md border px-4 py-3 text-sm font-medium transition-colors ${
+                className={`flex cursor-pointer items-center justify-center border px-4 py-3 text-sm font-medium transition-colors ${
                   selectedTime === opt.value
-                    ? "border-primary bg-[hsl(var(--surface-mint-tint))] text-primary"
-                    : "border-border bg-[hsl(var(--surface-panel))] text-foreground hover:border-primary/40"
+                    ? "border-primary bg-[hsl(var(--surface-mint-tint))] text-[#15735F]"
+                    : "border-border bg-transparent text-foreground hover:border-primary/40"
                 }`}
               >
                 <RadioGroupItem
@@ -154,7 +154,7 @@ export default function ActivationDialog({
 
           {error && (
             <div
-              className="mt-4 rounded-md border border-[hsl(var(--error))]/40 bg-[hsl(var(--error-bg))] px-3 py-2 text-sm text-[hsl(var(--error))]"
+              className="mt-4 border border-[hsl(var(--error))]/40 bg-[hsl(var(--error-bg))] px-3 py-2 text-sm text-[hsl(var(--error))]"
               role="alert"
             >
               {error}

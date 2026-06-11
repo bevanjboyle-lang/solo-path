@@ -32,11 +32,11 @@ export default function TrackerGrid({ days, variant = "thirty-day", onDayClick }
             onClick={() => day.completed && onDayClick?.(day.day)}
             disabled={!day.completed && !day.isToday}
             className={`
-              relative flex h-10 w-full items-center justify-center rounded-md text-xs font-medium transition-colors
+              relative flex h-10 w-full items-center justify-center text-xs font-medium transition-colors
               ${day.completed
-                ? "bg-primary/15 text-primary border border-primary/20 cursor-pointer hover:bg-primary/25"
+                ? "bg-primary/15 text-[#15735F] border border-primary/20 cursor-pointer hover:bg-primary/25"
                 : day.isToday
-                  ? "bg-[hsl(var(--surface-panel))] text-foreground border-2 border-primary"
+                  ? "bg-transparent text-foreground border-2 border-primary"
                   : "bg-[hsl(var(--surface-inset))] text-muted-foreground/50 border border-transparent cursor-default"
               }
             `}
@@ -55,11 +55,11 @@ export default function TrackerGrid({ days, variant = "thirty-day", onDayClick }
             onClick={() => day.completed && onDayClick?.(day.day)}
             disabled={!day.completed && !day.isToday}
             className={`
-              flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-xs font-medium transition-colors
+              flex h-10 w-10 shrink-0 items-center justify-center text-xs font-medium transition-colors
               ${day.completed
-                ? "bg-primary/15 text-primary border border-primary/20"
+                ? "bg-primary/15 text-[#15735F] border border-primary/20"
                 : day.isToday
-                  ? "bg-[hsl(var(--surface-panel))] text-foreground border-2 border-primary"
+                  ? "bg-transparent text-foreground border-2 border-primary"
                   : "bg-[hsl(var(--surface-inset))] text-muted-foreground/50 border border-transparent"
               }
             `}

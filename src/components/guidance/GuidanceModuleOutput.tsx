@@ -169,7 +169,7 @@ export default function GuidanceModuleOutput({
 
       {/* Validation warning */}
       {validationPassed === false && (
-        <div className="mb-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+        <div className="mb-5 border border-amber-300 bg-amber-50 px-4 py-3">
           <div className="flex items-start gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
             <div className="flex-1">
@@ -209,11 +209,8 @@ export default function GuidanceModuleOutput({
 
       {/* Caveat */}
       {caveat && (
-        <div
-          className="mt-6 rounded-lg px-5 py-4"
-          style={{ background: "#F5F5F5" }}
-        >
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+        <div className="mt-6 border-t border-border pt-4">
+          <p className="eyebrow eyebrow--muted mb-1">
             Caveat
           </p>
           <p className="text-sm italic text-foreground/70 leading-relaxed">{caveat}</p>
@@ -231,8 +228,8 @@ function V26Body({ output }: { output: any }) {
       {recommendation && typeof recommendation === "string" && (
         <div className="mb-4">
           <span
-            className="inline-block px-4 py-1.5 rounded-full text-sm font-bold text-white"
-            style={{ background: "#2ECDB0" }}
+            className="inline-block px-4 py-1.5 text-sm font-bold"
+            style={{ background: "#2ECDB0", color: "#1A1915" }}
           >
             {formatPillValue(recommendation)}
           </span>
@@ -283,7 +280,7 @@ function ReferenceCard({ item }: { item: ReferenceItem }) {
   const hasInline = !!item.inline_content && item.inline_content.length > 0;
 
   return (
-    <div className="rounded-lg border border-border bg-[hsl(var(--surface-panel))] px-5 py-4">
+    <div className="border-t border-border pt-4">
       <div className="flex items-start justify-between gap-3 mb-1.5">
         <h4 className="text-sm font-semibold text-foreground leading-snug">{item.title}</h4>
         <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70 shrink-0 mt-0.5">
@@ -296,7 +293,7 @@ function ReferenceCard({ item }: { item: ReferenceItem }) {
           href={item.external_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#15735F] hover:underline"
         >
           Open <ExternalLink className="h-3 w-3" />
         </a>
@@ -305,7 +302,7 @@ function ReferenceCard({ item }: { item: ReferenceItem }) {
           <button
             type="button"
             onClick={() => setExpanded((v) => !v)}
-            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-medium text-[#15735F] hover:underline"
           >
             {expanded ? (
               <>Hide <ChevronUp className="h-3 w-3" /></>
@@ -347,7 +344,7 @@ export function V28Body({ output, referenceItems }: { output: any; referenceItem
     <>
       {shortVersion && (
         <div className="mb-7">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+          <h3 className="rule-head mb-3">
             Short version
           </h3>
           <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-line">
@@ -358,14 +355,14 @@ export function V28Body({ output, referenceItems }: { output: any; referenceItem
 
       {playbook.length > 0 && (
         <div className="mb-7">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          <h3 className="rule-head mb-4">
             Playbook
           </h3>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {playbook.map((step, i) => (
               <div
                 key={i}
-                className="rounded-lg border border-border bg-[hsl(var(--surface-panel))] px-5 py-4"
+                className="border-t border-border pt-4 first:border-t-0 first:pt-0"
               >
                 {step.title && (
                   <h4 className="text-sm font-semibold text-foreground mb-2">
@@ -407,10 +404,10 @@ export function V28Body({ output, referenceItems }: { output: any; referenceItem
 
       {resolvedReferences.length > 0 && (
         <div className="mb-7">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          <h3 className="rule-head mb-4">
             References
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-4 [&>div:first-child]:border-t-0 [&>div:first-child]:pt-0">
             {resolvedReferences.map((item) => (
               <ReferenceCard key={item.id} item={item} />
             ))}
@@ -420,7 +417,7 @@ export function V28Body({ output, referenceItems }: { output: any; referenceItem
 
       {checkIn && isPlainObject(checkIn) && (
         <div className="mb-7">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+          <h3 className="rule-head mb-3">
             How Solo will follow up
           </h3>
           {typeof checkIn.summary_prose === "string" && checkIn.summary_prose && (

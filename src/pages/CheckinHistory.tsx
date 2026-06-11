@@ -190,7 +190,7 @@ export default function CheckinHistory() {
 
   const sidebarHead: ReactNode = (
     <>
-      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+      <span className="inline-block w-1.5 h-1.5 bg-primary" />
       <span>Your plan</span>
     </>
   );
@@ -220,9 +220,9 @@ export default function CheckinHistory() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main className="pt-6">
           <section className="py-16 px-6">
-            <div className="mx-auto max-w-[600px] panel-ivory px-8 sm:px-12 py-10 text-center">
+            <div className="mx-auto max-w-[600px] px-8 sm:px-12 py-10 text-center">
               <h1 className="title-h1">
                 Couldn't load your history.
               </h1>
@@ -241,7 +241,7 @@ export default function CheckinHistory() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main className="pt-6">
           <div className="flex items-center justify-center min-h-[60vh] px-6">
             <div className="flex flex-col items-center gap-4 text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -258,13 +258,13 @@ export default function CheckinHistory() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
-          <section className="py-8 lg:py-12">
+        <main>
+          <section className="pt-6 pb-8 lg:pb-12">
             <div className="mx-auto max-w-screen-xl px-6">
               <div className="flex gap-8 lg:gap-10">
                 <AreaSidebar items={sidebarItems} head={sidebarHead} footer={sidebarFooter} />
                 <div className="flex-1 min-w-0">
-                  <div className="panel-ivory px-8 sm:px-12 py-10">
+                  <div className="py-4">
                     <h1 className="title-h1">
                       Your tracker hasn't started yet.
                     </h1>
@@ -273,8 +273,7 @@ export default function CheckinHistory() {
                     </p>
                     <button
                       onClick={() => navigate("/plan")}
-                      className="mt-6 inline-flex items-center justify-center rounded-md px-5 py-2.5 text-[13px] font-semibold text-white"
-                      style={{ background: "#2ECDB0" }}
+                      className="cta-block mt-6"
                     >
                       Open Today
                     </button>
@@ -293,7 +292,7 @@ export default function CheckinHistory() {
     <div className="relative min-h-screen text-foreground">
       <TopBar />
 
-      <main className="pt-[68px]">
+      <main>
         <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-xl px-6">
             <div className="flex gap-8 lg:gap-10">
@@ -307,9 +306,9 @@ export default function CheckinHistory() {
                 <h1 className="sr-only">Check-in history</h1>
 
                 {/* ── Page-header panel ── */}
-                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+                <section className="pb-8 mb-6 border-b border-border">
                   <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+                    <span className="inline-block w-1.5 h-1.5 bg-primary" />
                     <span className="text-foreground">Your plan</span>
                     <span className="text-muted-foreground/40">·</span>
                     <span className="text-muted-foreground/70">Check-in history</span>
@@ -317,11 +316,7 @@ export default function CheckinHistory() {
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
                     <div className="lg:col-span-8">
-                      <div
-                        aria-hidden
-                        className="text-[36px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
-                        style={{ letterSpacing: "-0.028em" }}
-                      >
+                      <div aria-hidden className="title-h1">
                         Check-in history.
                       </div>
                       <p className="mt-3 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.4] max-w-[54ch]">
@@ -383,7 +378,7 @@ function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div>
       <div
-        className="font-display font-bold text-[22px] sm:text-[24px] tabular-nums text-foreground leading-none"
+        className="font-display font-bold text-[22px] sm:text-[24px] tabular-nums text-[#15735F] leading-none"
         style={{ letterSpacing: "-0.02em" }}
       >
         {String(value).padStart(2, "0")}

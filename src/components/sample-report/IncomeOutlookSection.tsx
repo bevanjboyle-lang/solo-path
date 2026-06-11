@@ -7,14 +7,14 @@ interface Props {
 
 function YearCard({ year, label }: { year: YearProjection; label: string }) {
   return (
-    <div className="rounded-md bg-card border border-primary/40 p-5">
-      <h3 className="text-sm font-bold text-primary mb-3">{label}</h3>
+    <div className="border-t-[3px] border-foreground bg-card p-5">
+      <h3 className="text-sm font-bold text-[#15735F] mb-3">{label}</h3>
       <div className="flex items-baseline gap-2 mb-3">
-        <span className="text-lg font-bold text-primary">£{(year.low_gbp / 1000).toFixed(0)}k</span>
+        <span className="text-lg font-bold text-[#15735F] tabular-nums">£{(year.low_gbp / 1000).toFixed(0)}k</span>
         <span className="text-muted-foreground">–</span>
-        <span className="text-lg font-bold text-primary">£{(year.mid_gbp / 1000).toFixed(0)}k</span>
+        <span className="text-lg font-bold text-[#15735F] tabular-nums">£{(year.mid_gbp / 1000).toFixed(0)}k</span>
         <span className="text-muted-foreground">–</span>
-        <span className="text-lg font-bold text-primary">£{(year.high_gbp / 1000).toFixed(0)}k</span>
+        <span className="text-lg font-bold text-[#15735F] tabular-nums">£{(year.high_gbp / 1000).toFixed(0)}k</span>
       </div>
       <p className="text-sm text-secondary-foreground mb-2">{year.revenue_build}</p>
       <p className="text-xs text-muted-foreground mb-1">{year.revenue_sources}</p>
@@ -53,8 +53,8 @@ function IncomeChart({ io }: { io: SoloCoreReport["income_outlook"] }) {
   ];
 
   return (
-    <div className="mb-6 rounded-md border border-primary/30 bg-card p-5">
-      <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-primary">Three-year revenue trajectory</h3>
+    <div className="mb-6 border border-border bg-card p-5">
+      <h3 className="mb-1 text-sm font-bold uppercase tracking-wider text-[#15735F]">Three-year revenue trajectory</h3>
       <p className="mb-4 text-xs text-muted-foreground">£ thousands per year. Three scenarios: low (cautious), mid (most likely), high (stretch).</p>
       <ResponsiveContainer width="100%" height={260}>
         <BarChart data={data} barGap={4} barCategoryGap="22%" margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -74,8 +74,8 @@ function IncomeChart({ io }: { io: SoloCoreReport["income_outlook"] }) {
           <Tooltip
             contentStyle={{
               background: "#FAF9F7",
-              border: "1px solid #E5E2DC",
-              borderRadius: 8,
+              border: "1px solid #D1CEC7",
+              borderRadius: 0,
               fontSize: 12,
             }}
             formatter={(value: number, name: string) => [`£${value}k`, name]}
@@ -86,9 +86,9 @@ function IncomeChart({ io }: { io: SoloCoreReport["income_outlook"] }) {
             iconSize={8}
             wrapperStyle={{ fontSize: 11, color: "#7A7670", paddingTop: 8 }}
           />
-          <Bar dataKey="low" name="Low" fill="#6EE7D3" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="mid" name="Mid (most likely)" fill="#2ECDB0" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="high" name="High" fill="#1A8A72" radius={[4, 4, 0, 0]} />
+          <Bar dataKey="low" name="Low" fill="#6EE7D3" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="mid" name="Mid (most likely)" fill="#2ECDB0" radius={[0, 0, 0, 0]} />
+          <Bar dataKey="high" name="High" fill="#15735F" radius={[0, 0, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -113,11 +113,11 @@ export default function IncomeOutlookSection({ income_outlook }: Props) {
       </div>
 
       <div className="space-y-4">
-        <div className="rounded bg-muted border-l-4 border-primary p-5">
+        <div className="bg-muted border-l-[3px] border-primary p-5">
           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Sensitivity Factors</h4>
           <p className="text-sm text-secondary-foreground">{io.sensitivity_factors}</p>
         </div>
-        <div className="rounded bg-muted border-l-4 border-primary p-5">
+        <div className="bg-muted border-l-[3px] border-primary p-5">
           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Income Floor</h4>
           <p className="text-sm text-secondary-foreground">{io.income_floor_analysis}</p>
         </div>

@@ -136,7 +136,8 @@ export default function Radar() {
       <TopBar />
       <main className="pb-12 pt-6 lg:pb-16">
         <div className="mx-auto max-w-2xl px-6">
-          <div className="panel-ivory p-5 sm:p-6 lg:p-8">
+          {/* ADR-026 Phase 4: panel-ivory wrapper dropped — content flows on the flat page. */}
+          <div>
             <header>
               <p className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
                 <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
@@ -163,8 +164,8 @@ export default function Radar() {
                   The radar unlocks with your report. It watches your market from the day you buy.
                 </p>
                 <p className="mt-4">
-                  <Link to="/cv-upload" className="inline-block rounded bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-                    Find what fits
+                  <Link to="/cv-upload" className="cta-block">
+                    Find what works
                   </Link>
                 </p>
               </div>

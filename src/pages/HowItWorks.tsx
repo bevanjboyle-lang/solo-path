@@ -11,14 +11,14 @@ import { Link } from "react-router-dom";
 
 function Section({ eyebrow, title, children }: { eyebrow?: string; title: string; children: React.ReactNode }) {
   return (
-    <section className="mt-8 border-t border-stone-200 pt-6 first:mt-6 first:border-t-0 first:pt-0">
+    <section className="mt-8 border-t border-border pt-6 first:mt-6 first:border-t-0 first:pt-0">
       {eyebrow && (
-        <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{eyebrow}</p>
+        <p className="eyebrow">{eyebrow}</p>
       )}
-      <h2 className="mt-2 text-lg font-semibold leading-snug tracking-tight text-foreground md:text-xl">
+      <h2 className="mt-2 font-display text-lg font-bold leading-snug tracking-tight text-foreground md:text-xl">
         {title}
       </h2>
-      <div className="mt-3 space-y-3 text-sm leading-snug text-foreground">{children}</div>
+      <div className="standfirst mt-3 space-y-3 text-[14px]">{children}</div>
     </section>
   );
 }
@@ -35,13 +35,13 @@ export default function HowItWorks() {
       <TopBar />
       <main className="pb-12 pt-6 lg:pb-16">
       <div className="mx-auto max-w-2xl px-6">
-        <div className="panel-ivory p-5 sm:p-6 lg:p-8">
+        <div>
           <header>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">How Solo works</p>
+            <p className="eyebrow">How Solo works</p>
             <h1 className="title-h1 mt-3">
               Solo doesn't guess. It decides.
             </h1>
-            <p className="mt-3 text-base leading-snug text-muted-foreground">
+            <p className="standfirst mt-3">
               Most "AI career tools" are a chatbot with a nice font. Solo is a structured decision engine
               with a curated library behind it. Here is exactly what happens between your answers and your
               report, so you can judge it before you pay.
@@ -96,22 +96,22 @@ export default function HowItWorks() {
             </p>
           </Section>
 
-          <footer className="mt-10 border-t border-stone-200 pt-6 text-center">
-            <p className="text-base font-semibold leading-snug text-foreground">
+          <footer className="mt-10 border-t border-border pt-6 text-center">
+            <p className="font-display text-base font-bold leading-snug text-foreground">
               See it on a real example, then decide.
             </p>
-            <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-4 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
                 to="/sample-report"
-                className="inline-block rounded bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="cta-block"
               >
                 See a real sample report
               </Link>
               <Link
                 to="/cv-upload"
-                className="text-sm font-medium text-primary underline decoration-1 underline-offset-4 hover:text-primary/80"
+                className="link-edit"
               >
-                Find what fits
+                Find what works
               </Link>
             </div>
           </footer>

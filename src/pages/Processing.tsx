@@ -226,12 +226,12 @@ export default function Processing() {
     <div className="relative min-h-screen text-foreground">
       <TopBar minimal />
 
-      <main className="pt-[68px]">
+      <main>
         <section className="py-12 lg:py-20">
           <div className="mx-auto max-w-2xl px-6">
-            <div className="panel-ivory">
+            <div>
               {/* ─── Panel top row: status chip + small Solo logo ─── */}
-              <div className="px-8 sm:px-12 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+              <div className="pt-8 sm:pt-10 flex items-center justify-between gap-6">
                 <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em]">
                   <span
                     className={`inline-block w-1.5 h-1.5 rounded-full ${
@@ -301,27 +301,27 @@ function GeneratingBody({
   isReady: boolean;
 }) {
   return (
-    <div className="px-8 sm:px-12 pt-6 pb-12">
+    <div className="pt-6 pb-12">
       {/* Eyebrow */}
-      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground">
+      <div className="flex items-center gap-3">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-        <span>Generating report</span>
-        <span className="text-muted-foreground/40">·</span>
-        <span className="text-muted-foreground normal-case tracking-normal text-[12px] font-normal">
+        <span className="eyebrow">Generating report</span>
+        <span className="text-muted-foreground/40 text-[12px]">·</span>
+        <span className="text-muted-foreground text-[12px] font-normal">
           your answers received
         </span>
       </div>
 
       {/* H1 + subhead */}
-      <h1 className="mt-6 text-[36px] sm:text-[44px] lg:text-[48px] font-extrabold tracking-tight leading-[1.1] text-foreground">
+      <h1 className="mt-6 title-h1">
         Building your report.
       </h1>
-      <p className="mt-3 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed">
+      <p className="standfirst mt-3">
         This takes a couple of minutes.
       </p>
 
       {/* Hairline separator */}
-      <div className="h-px bg-[#E5E2DC] my-8" />
+      <div className="h-px bg-border my-8" />
 
       {/* Cycling region, aria-live, heartbeat dot + display-weight message */}
       <div
@@ -356,7 +356,7 @@ function GeneratingBody({
       </div>
 
       {/* Hairline separator */}
-      <div className="h-px bg-[#E5E2DC] my-8" />
+      <div className="h-px bg-border my-8" />
 
       {/* Estimate row: framing on the left, elapsed counter on the right */}
       <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
@@ -389,7 +389,7 @@ function FailedBody({
   onRetry: () => void;
 }) {
   return (
-    <div className="px-8 sm:px-12 pt-6 pb-12">
+    <div className="pt-6 pb-12">
       {/* Eyebrow, red dot + small-caps label + muted reassurance */}
       <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600" />
@@ -401,10 +401,10 @@ function FailedBody({
       </div>
 
       {/* H1 + explainer */}
-      <h1 className="mt-6 text-[36px] sm:text-[44px] lg:text-[48px] font-extrabold tracking-tight leading-[1.1] text-foreground">
+      <h1 className="mt-6 title-h1">
         We couldn't generate your report.
       </h1>
-      <p className="mt-4 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed max-w-2xl">
+      <p className="standfirst mt-4 max-w-2xl">
         Something went wrong on our side. Your answers are saved, you can retry
         without starting over.
       </p>
@@ -416,7 +416,7 @@ function FailedBody({
       <div className="mt-8 flex flex-col items-start gap-3">
         <button
           onClick={onRetry}
-          className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors"
+          className="cta-block"
         >
           Try again
         </button>
@@ -443,7 +443,7 @@ function TimedOutBody({
   onRetry: () => void;
 }) {
   return (
-    <div className="px-8 sm:px-12 pt-6 pb-12">
+    <div className="pt-6 pb-12">
       <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600" />
         <span className="text-red-700">Taking longer than usual</span>
@@ -453,10 +453,10 @@ function TimedOutBody({
         </span>
       </div>
 
-      <h1 className="mt-6 text-[36px] sm:text-[44px] lg:text-[48px] font-extrabold tracking-tight leading-[1.1] text-foreground">
+      <h1 className="mt-6 title-h1">
         This is taking longer than usual.
       </h1>
-      <p className="mt-4 text-[16px] sm:text-[17px] text-muted-foreground leading-relaxed max-w-2xl">
+      <p className="standfirst mt-4 max-w-2xl">
         Your answers are saved. You can retry now, or come back via the email
         we just sent and we'll pick up where we left off.
       </p>
@@ -466,7 +466,7 @@ function TimedOutBody({
       <div className="mt-8 flex flex-col items-start gap-3">
         <button
           onClick={onRetry}
-          className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors"
+          className="cta-block"
         >
           Try again
         </button>
@@ -494,7 +494,7 @@ function ReferenceRow({
   const prefix = reportId.slice(0, 6);
   const ts = failureTime ? formatTimestamp(failureTime) : "";
   return (
-    <div className="mt-8 bg-[#F3F0EA] border border-[#E5E2DC] rounded-lg px-5 py-3 flex items-center gap-4">
+    <div className="mt-8 border-t border-border pt-3 flex items-center gap-4">
       <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground shrink-0">
         Reference
       </span>

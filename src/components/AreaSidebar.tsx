@@ -87,7 +87,7 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
         {items.map((item) => {
           if (item.isDivider) {
             return (
-              <li key={item.id} aria-hidden className="my-3 h-px bg-[#E5E2DC] mx-3" />
+              <li key={item.id} aria-hidden className="my-3 h-px bg-border mx-3" />
             );
           }
           if (item.isHeader) {
@@ -108,19 +108,19 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
                 onClick={() => handleActivate(item, closeSheet)}
                 aria-current={item.isActive ? "page" : undefined}
                 className={cn(
-                  "group flex w-full items-baseline gap-3 border-l-2 pl-4 pr-3 py-2 text-left text-[13.5px] transition-colors",
+                  "group flex w-full items-baseline gap-3 border-l-2 pl-4 pr-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em] transition-colors",
                   item.isActive
-                    ? "border-primary bg-[#FAF9F7] font-semibold text-foreground"
+                    ? "border-[#15735F] font-bold text-foreground"
                     : isUtility
-                    ? "border-transparent text-muted-foreground/80 hover:bg-[#FAF9F7] hover:text-foreground"
-                    : "border-transparent text-muted-foreground hover:bg-[#FAF9F7] hover:text-foreground",
+                    ? "border-transparent text-muted-foreground/80 hover:text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
                 {item.numeral && (
                   <span
                     className={cn(
                       "shrink-0 text-[10px] font-semibold tabular-nums tracking-[0.1em] transition-colors",
-                      item.isActive ? "text-primary" : "text-muted-foreground/60",
+                      item.isActive ? "text-[#15735F]" : "text-muted-foreground/60",
                     )}
                   >
                     {item.numeral}
@@ -149,12 +149,12 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
         * vs title top) are all consistent. */}
       <aside
         className={cn(
-          "hidden lg:block w-[220px] shrink-0",
+          "hidden lg:block w-[220px] shrink-0 border-r border-border",
           className,
         )}
       >
         <div className="sticky top-20">
-          <div className="panel-ivory py-4 flex flex-col gap-4">
+          <div className="pb-4 flex flex-col gap-4">
             {head && (
               <div className="px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground flex items-center gap-3">
                 {head}
@@ -164,7 +164,7 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
               {renderList()}
             </div>
             {footer && (
-              <div className="px-5 pt-3 border-t border-[#E5E2DC] text-[11px] text-muted-foreground">
+              <div className="px-5 pt-3 border-t border-border text-[11px] text-muted-foreground">
                 {footer}
               </div>
             )}
@@ -175,7 +175,7 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
       {/* Mobile hamburger + sheet */}
       <div className="lg:hidden">
         <div
-          className="sticky z-30 border-b border-[#E5E2DC]"
+          className="sticky z-30 border-b border-border"
           style={{
             top: 56,
             background: "hsl(var(--background) / 0.95)",
@@ -188,7 +188,7 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
                 <button
                   type="button"
                   aria-label="Open section menu"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#D8D4CC] bg-[#FAF9F7] px-3 py-1.5 text-[12px] font-medium text-foreground hover:bg-[#F3F0EA] transition-colors"
+                  className="inline-flex items-center gap-1.5 border border-border bg-[#FAF9F7] px-3 py-1.5 text-[12px] font-medium text-foreground hover:bg-[#F3F1ED] transition-colors"
                 >
                   <Menu className="h-3.5 w-3.5" />
                   <span>Menu</span>
@@ -202,7 +202,7 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
                   {renderList(() => setSheetOpen(false))}
                 </div>
                 {footer && (
-                  <div className="mt-6 pt-4 border-t border-[#E5E2DC] text-[11px] text-muted-foreground px-2">
+                  <div className="mt-6 pt-4 border-t border-border text-[11px] text-muted-foreground px-2">
                     {footer}
                   </div>
                 )}

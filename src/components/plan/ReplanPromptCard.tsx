@@ -66,7 +66,7 @@ export default function ReplanPromptCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="mb-6 rounded-xl border border-primary/30 bg-[hsl(var(--surface-panel))] px-6 py-5"
+      className="mb-6 border border-border border-l-2 border-l-primary bg-transparent px-6 py-5"
     >
       <h3
         className="font-display text-lg font-semibold text-foreground"

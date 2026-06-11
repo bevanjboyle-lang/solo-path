@@ -12,7 +12,6 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import GlassCard from "@/components/ui/GlassCard";
 import GuidanceModuleOutput, { V28Body, isV28 } from "@/components/guidance/GuidanceModuleOutput";
 
 /*
@@ -419,7 +418,7 @@ export default function Library() {
     <div className="relative min-h-screen text-foreground">
       <TopBar />
 
-      <main className="pt-[68px]">
+      <main>
         <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-xl px-6">
             <div className="flex gap-8 lg:gap-10">
@@ -445,13 +444,13 @@ export default function Library() {
                   stat={header.stat}
                 />
 
-                {/* Tab content panel, each tab on its own ivory surface. */}
-                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+                {/* Tab content, flat on the page, opened by a hairline rule. */}
+                <section className="border-t border-border pt-6 mb-6">
                   {activeTab === "today" ? (
                     todayLoading || !todayData ? (
-                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-3">
                         {Array.from({ length: 4 }).map((_, i) => (
-                          <Skeleton key={i} className="h-24 rounded-lg" />
+                          <Skeleton key={i} className="h-24" />
                         ))}
                       </div>
                     ) : (
@@ -459,9 +458,9 @@ export default function Library() {
                     )
                   ) : activeTab === "browse" ? (
                     browseLoading || !browseData ? (
-                      <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-3">
                         {Array.from({ length: 6 }).map((_, i) => (
-                          <Skeleton key={i} className="h-24 rounded-lg" />
+                          <Skeleton key={i} className="h-24" />
                         ))}
                       </div>
                     ) : (
@@ -576,30 +575,30 @@ function TodayTab({
         Chosen for where you are right now.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div>
         {featured.map((item) => (
           <button
             key={item.module_id}
             onClick={() => onOpenArticle(item.module_id, item.is_unlocked)}
-            className="w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-5 text-left transition-colors hover:border-primary/30"
+            className="w-full border-t border-border py-5 text-left transition-colors hover:bg-[hsl(var(--surface-card))]"
           >
             <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--surface-inset))]">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                 {!item.is_unlocked ? (
                   <Lock className="h-4 w-4 text-muted-foreground" />
                 ) : item.is_completed ? (
-                  <Check className="h-4 w-4 text-primary" />
+                  <Check className="h-4 w-4 text-[#15735F]" />
                 ) : (
-                  <BookOpen className="h-4 w-4 text-primary" />
+                  <BookOpen className="h-4 w-4 text-[#15735F]" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#15735F]">
                     {item.track_name}
                   </span>
                   {item.tag === "up_next" && (
-                    <span className="text-[9px] font-medium uppercase tracking-wider text-accent-foreground bg-accent/20 px-1.5 py-0.5 rounded">
+                    <span className="text-[9px] font-medium uppercase tracking-wider text-accent-foreground bg-accent/20 px-1.5 py-0.5">
                       Up next
                     </span>
                   )}
@@ -653,10 +652,10 @@ function BrowseTab({
             <button
               key={t}
               onClick={() => onFilterChange(t)}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`border px-3 py-1.5 text-xs font-medium transition-colors ${
                 filter === t
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-[hsl(var(--surface-inset))] text-muted-foreground hover:text-foreground"
+                  ? "border-foreground bg-foreground text-[#FAF9F7]"
+                  : "border-border text-muted-foreground hover:text-foreground"
               }`}
             >
               {label}
@@ -676,15 +675,15 @@ function BrowseTab({
         <div className="space-y-10">
           {displayTracks.map((track) => (
             <section key={track.track_id}>
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-sm font-semibold text-foreground">{track.name}</h2>
-                <span className="text-[10px] text-muted-foreground">
+              <h2 className="rule-head flex items-baseline justify-between">
+                <span>{track.name}</span>
+                <span className="text-[10px] font-normal normal-case tracking-normal text-muted-foreground">
                   {track.completed_count}/{track.total_count} done
                 </span>
-              </div>
-              <p className="text-xs text-muted-foreground mb-4">{track.description}</p>
+              </h2>
+              <p className="text-xs text-muted-foreground mt-2 mb-4">{track.description}</p>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div>
                 {/* Sort sector-relevant modules first for Track E */}
                 {[...track.modules]
                   .sort((a, b) => (b.is_sector_relevant ? 1 : 0) - (a.is_sector_relevant ? 1 : 0))
@@ -692,21 +691,21 @@ function BrowseTab({
                     <button
                       key={mod.module_id}
                       onClick={() => onOpenArticle(mod.module_id, mod.is_unlocked)}
-                      className="w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-5 text-left transition-colors hover:border-primary/30"
+                      className="w-full border-t border-border first:border-t-0 py-5 text-left transition-colors hover:bg-[hsl(var(--surface-card))]"
                     >
                       <div className="flex items-start gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--surface-inset))]">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                           {!mod.is_unlocked ? (
                             <Lock className="h-4 w-4 text-muted-foreground" />
                           ) : completedSet.has(mod.module_id) ? (
-                            <Check className="h-4 w-4 text-primary" />
+                            <Check className="h-4 w-4 text-[#15735F]" />
                           ) : (
-                            <BookOpen className="h-4 w-4 text-primary" />
+                            <BookOpen className="h-4 w-4 text-[#15735F]" />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
                           {mod.is_sector_relevant && (
-                            <span className="text-[9px] font-medium uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded mb-1 inline-block">
+                            <span className="text-[9px] font-medium uppercase tracking-wider text-[#15735F] bg-primary/10 px-1.5 py-0.5 mb-1 inline-block">
                               Your sector
                             </span>
                           )}
@@ -762,7 +761,7 @@ function ModulesTab({
     return (
       <div className="space-y-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <Skeleton key={i} className="h-20 rounded-lg" />
+          <Skeleton key={i} className="h-20" />
         ))}
       </div>
     );
@@ -775,7 +774,7 @@ function ModulesTab({
   const firstLockedIndex = modules.findIndex((m) => !m.is_unlocked);
 
   return (
-    <div className="space-y-3">
+    <div>
       {modules.map((mod, i) => (
         <div key={mod.module_id}>
           {/* Insert dark gate row before the first locked module (buyer view only). */}
@@ -785,24 +784,24 @@ function ModulesTab({
 
           <button
             onClick={() => onSelectModule(mod.module_id, mod.is_unlocked)}
-            className={`w-full rounded-lg border border-border bg-[hsl(var(--surface-panel))] p-4 text-left transition-colors ${
-              mod.is_unlocked ? "hover:border-primary/30 cursor-pointer" : "opacity-70 cursor-pointer hover:border-primary/30"
+            className={`w-full border-t border-border py-4 text-left transition-colors hover:bg-[hsl(var(--surface-card))] ${
+              mod.is_unlocked ? "cursor-pointer" : "opacity-70 cursor-pointer"
             }`}
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-[hsl(var(--surface-inset))]">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center">
                 {!mod.is_unlocked ? (
                   <Lock className="h-4 w-4 text-muted-foreground" />
                 ) : mod.is_completed ? (
-                  <Check className="h-4 w-4 text-primary" />
+                  <Check className="h-4 w-4 text-[#15735F]" />
                 ) : (
-                  <BookOpen className="h-4 w-4 text-primary" />
+                  <BookOpen className="h-4 w-4 text-[#15735F]" />
                 )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">{mod.track_name}</span>
-                  {mod.is_completed && <span className="text-[9px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">Done</span>}
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-[#15735F]">{mod.track_name}</span>
+                  {mod.is_completed && <span className="text-[9px] text-[#15735F] bg-primary/10 px-1.5 py-0.5">Done</span>}
                 </div>
                 <h3 className="text-sm font-semibold text-foreground leading-snug">{mod.title}</h3>
                 <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{mod.description}</p>
@@ -845,14 +844,13 @@ function LibraryPageHeader({
   stat?: string;
 }) {
   return (
-    <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
-      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-        <span className="text-foreground">{eyebrow}</span>
+    <section className="pt-2 pb-8 mb-6">
+      <div className="flex items-center gap-3 mb-4">
+        <span className="eyebrow">{eyebrow}</span>
         {stat && (
           <>
             <span className="text-muted-foreground/40">·</span>
-            <span className="normal-case tracking-normal text-[12px] font-normal">{stat}</span>
+            <span className="text-[12px] text-muted-foreground">{stat}</span>
           </>
         )}
       </div>
@@ -861,7 +859,7 @@ function LibraryPageHeader({
           <div aria-hidden className="title-h1">
             {h1}
           </div>
-          <p className="mt-4 text-[15.5px] text-muted-foreground leading-relaxed max-w-2xl">
+          <p className="standfirst mt-4 max-w-2xl">
             {sub}
           </p>
         </div>
@@ -900,8 +898,7 @@ function DarkGateRow({ onSubscribe }: { onSubscribe: () => void }) {
       <button
         type="button"
         onClick={onSubscribe}
-        className="shrink-0 inline-flex items-center justify-center rounded-md px-4 py-2 text-[12px] font-semibold transition-opacity hover:opacity-90"
-        style={{ background: "#2ECDB0", color: "#0F2A2A" }}
+        className="cta-block shrink-0 text-[12px]"
       >
         Subscribe to open
       </button>
@@ -947,8 +944,7 @@ function Day31Banner({ onSubscribe }: { onSubscribe: () => void }) {
           <button
             type="button"
             onClick={onSubscribe}
-            className="inline-flex items-center justify-center rounded-md px-5 py-2.5 text-[13px] font-semibold transition-opacity hover:opacity-90"
-            style={{ background: "#2ECDB0", color: "#0F2A2A" }}
+            className="cta-block"
           >
             Subscribe
           </button>
@@ -976,7 +972,7 @@ function QuestionForm({
         <div>
           <h2 className="text-lg font-semibold text-foreground">{data.title}</h2>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] rounded-full bg-[hsl(var(--surface-inset))] px-2 py-0.5 text-muted-foreground flex items-center gap-1">
+            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
               <Clock className="h-3 w-3" /> ~{data.estimated_minutes} min
             </span>
           </div>
@@ -988,10 +984,10 @@ function QuestionForm({
 
       <div className="flex-1 px-6 py-8 space-y-6">
         {data.what_you_get && (
-          <GlassCard className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-1">You'll get</p>
+          <div className="border-t-[3px] border-foreground pt-3">
+            <p className="eyebrow mb-1">You'll get</p>
             <p className="text-sm text-muted-foreground leading-relaxed">{data.what_you_get}</p>
-          </GlassCard>
+          </div>
         )}
 
         <div className="h-px bg-border" />
@@ -1026,7 +1022,7 @@ function QuestionForm({
                           disabled={submitting}
                           onClick={() => onAnswerChange(q.id, opt)}
                           className={
-                            "text-left text-sm leading-relaxed px-4 py-3 rounded-md border transition-colors " +
+                            "text-left text-sm leading-relaxed px-4 py-3 border transition-colors " +
                             (selected
                               ? "border-primary bg-primary/10 text-foreground"
                               : "border-border bg-[hsl(var(--surface-panel))] text-muted-foreground hover:border-primary/40 hover:text-foreground")
@@ -1102,7 +1098,7 @@ function ArticleDrawer({
       {/* Header */}
       <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-[hsl(var(--surface-panel))] px-6 py-4">
         <div>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-primary">
+          <span className="eyebrow text-[10px]">
             {data.track_name}
           </span>
           <h2 className="text-lg font-semibold text-foreground">{data.title}</h2>
@@ -1150,12 +1146,12 @@ function ArticleDrawer({
 
         {/* What you get */}
         {data.what_you_get && (
-          <GlassCard className="p-5">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
+          <div className="border-t-[3px] border-foreground pt-3">
+            <h3 className="eyebrow mb-2">
               What you get
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed">{data.what_you_get}</p>
-          </GlassCard>
+          </div>
         )}
 
         {/* Completed state, show output.
@@ -1234,7 +1230,7 @@ function ArticleDrawer({
 
         {/* Not unlocked → subscribe */}
         {!data.is_unlocked && (
-          <div className="rounded-lg border border-border bg-[hsl(var(--surface-inset))] p-6 text-center">
+          <div className="border border-border p-6 text-center">
             <Lock className="mx-auto h-5 w-5 text-muted-foreground mb-3" />
             <p className="text-sm font-medium text-foreground mb-1">Subscribe to open</p>
             <p className="text-xs text-muted-foreground mb-4">

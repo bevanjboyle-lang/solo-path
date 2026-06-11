@@ -16,7 +16,6 @@ import {
 import TakeAnotherTestCard from "@/components/account/TakeAnotherTestCard";
 import TopBar from "@/components/TopBar";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
@@ -268,7 +267,7 @@ export default function Account() {
     <div className="relative min-h-screen text-foreground">
       <TopBar />
 
-      <main className="pt-[68px]">
+      <main>
         <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-xl px-6">
             <div className="flex gap-8 lg:gap-10">
@@ -284,8 +283,8 @@ export default function Account() {
                 {/* Page-header panel: H1 + subhead + right-side Member-since date only (F1). */}
                 <AccountPageHeader memberSince={memberSince} />
 
-                {/* Section panel: own ivory surface, editorial section-head. */}
-                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+                {/* Section: flat editorial block opening on a rule-head (ADR-026 Phase 4). */}
+                <section className="mb-6">
 
                   {/* Cancel-pending / payment-failed banners: contextual inside Subscription section, above section-head (F7). */}
                   {activeSection === "subscription" && isCancelPending && (
@@ -299,7 +298,7 @@ export default function Account() {
                   <h2 className="font-display text-[24px] sm:text-[26px] font-bold tracking-tight leading-[1.15] text-foreground mb-2">
                     {current.h2}
                   </h2>
-                  <p className="font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[54ch] mb-6">
+                  <p className="standfirst max-w-[54ch] mb-6">
                     {current.lede}
                   </p>
 
@@ -332,7 +331,7 @@ export default function Account() {
                         onCancel={() => setShowCancelSub(true)}
                         onResume={handleResumeSub}
                       />
-                      <div className="mt-6 pt-6 border-t border-[#E5E2DC]">
+                      <div className="mt-6 pt-6 border-t border-border">
                         <TakeAnotherTestCard />
                       </div>
                     </>
@@ -415,7 +414,7 @@ export default function Account() {
             </AlertDialogDescription>
           </AlertDialogHeader>
 
-          <div className="mt-3 rounded-md bg-[#F3F1ED] border border-[#E5E2DC] px-4 py-3">
+          <div className="mt-3 bg-[#F3F1ED] border border-border px-4 py-3">
             <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2">
               What gets deleted
             </div>
@@ -432,7 +431,7 @@ export default function Account() {
             <p className="text-[13px] text-foreground">
               Type{" "}
               <span
-                className="font-mono text-[12px] px-1.5 py-0.5 rounded"
+                className="font-mono text-[12px] px-1.5 py-0.5"
                 style={{ background: "#F3F1ED", color: "#1D2025" }}
               >
                 delete
@@ -468,17 +467,14 @@ export default function Account() {
 /* ── AccountPageHeader, H1 + subhead + right-side Member-since (F1) ── */
 function AccountPageHeader({ memberSince }: { memberSince: string | null }) {
   return (
-    <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
-      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-        <span className="text-foreground">Account</span>
-      </div>
+    <section className="pb-6 mb-6 border-b border-border">
+      <div className="eyebrow mb-4">Account</div>
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
         <div className="lg:col-span-9">
           <div aria-hidden className="title-h1">
             Account.
           </div>
-          <p className="mt-3 font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[52ch]">
+          <p className="standfirst mt-3 max-w-[52ch]">
             Profile, subscription, billing, and privacy. Self-serve.
           </p>
         </div>
@@ -497,15 +493,15 @@ function AccountPageHeader({ memberSince }: { memberSince: string | null }) {
   );
 }
 
-/* ── SectionHead, mint numeral + small-caps eyebrow + right-side state meta ── */
+/* ── SectionHead, rule-head: mint-ink numeral + small-caps label on a 3px ink rule + right-side state meta ── */
 function SectionHead({ numeral, eyebrow, meta }: { numeral: string; eyebrow: string; meta: string }) {
   return (
-    <div className="flex items-baseline justify-between pb-4 mb-5 border-b border-[#E5E2DC]">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground inline-flex items-baseline gap-3">
-        <span className="text-primary tabular-nums">{numeral}</span>
+    <div className="rule-head flex items-baseline justify-between mb-5">
+      <span className="inline-flex items-baseline gap-3">
+        <span className="text-[#15735F] tabular-nums">{numeral}</span>
         <span>{eyebrow}</span>
       </span>
-      <span className="text-[11px] text-muted-foreground/70 tracking-[0.04em]">
+      <span className="normal-case font-normal text-[11px] text-muted-foreground/70 tracking-[0.04em]">
         {meta}
       </span>
     </div>
@@ -541,9 +537,13 @@ function ProfileSection({
               autoFocus
             />
             <div className="flex items-center gap-3">
-              <Button size="sm" onClick={onSave} disabled={saving}>
+              <button
+                onClick={onSave}
+                disabled={saving}
+                className="cta-block inline-flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
+              >
                 {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
-              </Button>
+              </button>
               <button
                 onClick={onCancelEdit}
                 disabled={saving}
@@ -569,7 +569,7 @@ function ProfileSection({
       </div>
 
       {/* Sign-in email, read-only */}
-      <div className="grid grid-cols-[140px_1fr_auto] sm:grid-cols-[180px_1fr_auto] gap-x-6 sm:gap-x-8 items-start py-4 border-t border-[#EDEBE6]">
+      <div className="grid grid-cols-[140px_1fr_auto] sm:grid-cols-[180px_1fr_auto] gap-x-6 sm:gap-x-8 items-start py-4 border-t border-border">
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground pt-1">
           Sign-in email
         </span>
@@ -608,7 +608,7 @@ function SubscriptionSection({
     return (
       <div>
         {/* Plan-row */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center pt-1 pb-5 border-t border-[#E5E2DC]">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center pt-1 pb-5 border-t border-border">
           <div>
             <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1.5">
               Current plan
@@ -628,9 +628,9 @@ function SubscriptionSection({
         </div>
 
         {/* Upgrade block, F2: inline at standard weight, no urgency. */}
-        <div className="mt-6 pt-6 border-t border-[#E5E2DC] grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 lg:gap-8 items-center">
+        <div className="mt-6 pt-6 border-t border-border grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 lg:gap-8 items-center">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary mb-2">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#15735F] mb-2">
               Want to keep going?
             </div>
             <p className="font-display text-[15.5px] text-foreground leading-[1.4] max-w-[54ch] tracking-tight">
@@ -641,7 +641,7 @@ function SubscriptionSection({
           <div className="flex items-baseline gap-4">
             <span className="font-display text-[24px] font-extrabold text-foreground tracking-tight tabular-nums">£19</span>
             <span className="text-[12px] text-muted-foreground">/ month</span>
-            <Button onClick={onSubscribe} className="ml-2">Subscribe</Button>
+            <button onClick={onSubscribe} className="cta-block ml-2">Subscribe</button>
           </div>
         </div>
       </div>
@@ -652,7 +652,7 @@ function SubscriptionSection({
   const priceLine = subscriptionPlan === "annual" ? "£149 / year · Annual" : "£19 / month · Monthly";
   return (
     <div>
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-center pt-1 pb-1 border-t border-[#E5E2DC]">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-center pt-1 pb-1 border-t border-border">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1.5">
             Current plan
@@ -687,12 +687,17 @@ function SubscriptionSection({
         </div>
         <div className="flex flex-wrap items-center gap-4">
           {isCancelPending ? (
-            <Button onClick={onResume}>Resume subscription</Button>
+            <button onClick={onResume} className="cta-block">Resume subscription</button>
           ) : paymentFailed ? (
-            <Button onClick={onManageBilling}>Update card</Button>
+            <button onClick={onManageBilling} className="cta-block">Update card</button>
           ) : (
             <>
-              <Button variant="outline" onClick={onManageBilling}>Manage billing</Button>
+              <button
+                onClick={onManageBilling}
+                className="px-[18px] py-[9px] text-[13px] font-semibold text-foreground bg-transparent border border-border transition-colors hover:bg-[#F3F1ED]"
+              >
+                Manage billing
+              </button>
               <button
                 onClick={onCancel}
                 className="text-[13px] font-medium text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC]"
@@ -713,7 +718,7 @@ function BillingSection({ onOpenPortal }: { onOpenPortal: () => void }) {
     <div>
       {/* Empty-state for now, invoice fetch is post-Pass 1 wiring.
        * Renders the Stripe deferral footnote as the section's primary content. */}
-      <div className="rounded-md bg-[#F3F1ED] border border-[#E5E2DC] px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="bg-[#F3F1ED] border border-border px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex-1">
           <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80 mb-1">
             Source
@@ -723,9 +728,12 @@ function BillingSection({ onOpenPortal }: { onOpenPortal: () => void }) {
             {" "}Update your card, download formal invoices, or view full history in the Stripe portal.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={onOpenPortal} className="shrink-0">
+        <button
+          onClick={onOpenPortal}
+          className="shrink-0 px-[18px] py-[9px] text-[13px] font-semibold text-foreground bg-transparent border border-border transition-colors hover:bg-[#FAF9F7]"
+        >
           Open Stripe portal
-        </Button>
+        </button>
       </div>
     </div>
   );
@@ -752,13 +760,17 @@ function PrivacySection({
             Deletes your uploaded file and the extracted text. Your report and plan stay, only the source CV is removed.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={onRemoveCv} disabled={cvRemoved}>
+        <button
+          onClick={onRemoveCv}
+          disabled={cvRemoved}
+          className="px-[18px] py-[9px] text-[13px] font-semibold text-foreground bg-transparent border border-border transition-colors hover:bg-[#F3F1ED] disabled:opacity-55 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+        >
           {cvRemoved ? "Removed" : "Remove CV"}
-        </Button>
+        </button>
       </div>
 
       {/* Request export */}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:gap-8 items-center py-4 border-t border-[#EDEBE6]">
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:gap-8 items-center py-4 border-t border-border">
         <div>
           <div className="font-display text-[15px] font-semibold text-foreground tracking-tight mb-1">
             Request my data.
@@ -767,14 +779,17 @@ function PrivacySection({
             We'll email a full export of everything we hold about you answers, report, check-ins, library reads within 14 days.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={onRequestExport}>
+        <button
+          onClick={onRequestExport}
+          className="px-[18px] py-[9px] text-[13px] font-semibold text-foreground bg-transparent border border-border transition-colors hover:bg-[#F3F1ED]"
+        >
           Request export
-        </Button>
+        </button>
       </div>
 
       {/* Danger zone sub-panel, stone-tinted segregation, not red wall. */}
       <div
-        className="mt-6 rounded-md px-6 py-5"
+        className="mt-6 px-6 py-5"
         style={{ background: "#F3F1ED", border: "1px solid #D5D0C8" }}
       >
         <div className="flex items-center gap-3 pb-3 mb-4 border-b border-[#D5D0C8]">
@@ -795,7 +810,7 @@ function PrivacySection({
         </p>
         <button
           onClick={onDeleteAccount}
-          className="inline-flex items-center justify-center rounded-md px-4 py-2 text-[13px] font-semibold transition-colors border-[1.5px]"
+          className="inline-flex items-center justify-center px-4 py-2 text-[13px] font-semibold transition-colors border-[1.5px]"
           style={{ borderColor: "#D94F4F", color: "#8E2424", background: "transparent" }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "#FDF0F0"; }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
@@ -811,12 +826,12 @@ function PrivacySection({
 function CancelPendingBanner({ accessEndDate, onResume }: { accessEndDate: string; onResume: () => void }) {
   return (
     <div
-      className="rounded-md mb-5 px-5 py-3.5 grid grid-cols-[auto_1fr_auto] gap-x-4 items-center"
+      className="mb-5 px-5 py-3.5 grid grid-cols-[auto_1fr_auto] gap-x-4 items-center"
       style={{ background: "#D6F5EE", borderLeft: "3px solid #2ECDB0" }}
     >
       <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#2ECDB0" }} />
       <div className="text-[13.5px] leading-snug text-foreground">
-        <span className="text-[11px] font-bold uppercase tracking-[0.16em] mr-2" style={{ color: "#1A8A72" }}>
+        <span className="text-[11px] font-bold uppercase tracking-[0.16em] mr-2" style={{ color: "#15735F" }}>
           Cancellation scheduled
         </span>
         Your subscription ends on <strong>{accessEndDate}</strong>. You'll keep full access until then.
@@ -835,7 +850,7 @@ function CancelPendingBanner({ accessEndDate, onResume }: { accessEndDate: strin
 function PaymentFailedBanner({ onUpdate }: { onUpdate: () => void }) {
   return (
     <div
-      className="rounded-md mb-5 px-5 py-3.5 grid grid-cols-[auto_1fr_auto] gap-x-4 items-center"
+      className="mb-5 px-5 py-3.5 grid grid-cols-[auto_1fr_auto] gap-x-4 items-center"
       style={{ background: "#FDF0F0", borderLeft: "3px solid #D94F4F" }}
     >
       <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#D94F4F" }} />

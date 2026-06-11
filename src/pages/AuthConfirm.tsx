@@ -106,9 +106,9 @@ export default function AuthConfirm() {
   return (
     <div className="relative min-h-screen flex flex-col text-foreground">
       <TopBar minimal />
-      <main className="flex-1 pt-[68px] flex items-center justify-center px-6 py-12">
+      <main className="flex-1 pt-6 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-[560px]">
-          <div className="panel-ivory px-8 sm:px-12 py-12 sm:py-14 text-center">
+          <div className="py-12 sm:py-14 text-center">
             {errorMessage ? (
               <>
                 <div className="flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-5">
@@ -121,12 +121,8 @@ export default function AuthConfirm() {
                 <p className="mt-4 font-display text-[15px] text-muted-foreground leading-[1.45] max-w-[44ch] mx-auto">
                   {errorMessage}
                 </p>
-                <div className="mt-8 pt-6 border-t border-[#E5E2DC]">
-                  <a
-                    href="/"
-                    className="inline-flex items-center justify-center rounded-md px-6 py-3 text-[14px] font-semibold text-white transition-opacity hover:opacity-90"
-                    style={{ background: "#2ECDB0" }}
-                  >
+                <div className="mt-8 pt-6 border-t border-border">
+                  <a href="/" className="cta-block">
                     Back to home
                   </a>
                 </div>

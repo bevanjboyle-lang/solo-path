@@ -806,7 +806,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
   const sidebarHead: ReactNode = (
     <>
-      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+      <span className="inline-block w-1.5 h-1.5 bg-primary" />
       <span>Your plan</span>
     </>
   );
@@ -817,7 +817,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main className="pt-6">
           <section className="py-10 lg:py-14">
             <div className="mx-auto max-w-3xl px-6">
               <Banner variant="error">
@@ -839,7 +839,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main className="pt-6">
           <section className="py-12">
             <div className="mx-auto max-w-3xl px-6 flex flex-col items-center gap-4 text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -868,7 +868,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
         </Banner>
       )}
 
-      <main className="pt-[68px]">
+      <main>
         <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-xl px-6">
             <div className="flex gap-8 lg:gap-10">
@@ -910,10 +910,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                     ? new Date(activatedAt).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
                     : null;
                   return (
-                    <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-10 sm:py-12 mb-6">
+                    <section className="pb-8 mb-6">
                       {/* Eyebrow, mint dot + YOUR PLAN + tier */}
                       <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4 flex-wrap">
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+                        <span className="inline-block w-1.5 h-1.5 bg-primary" />
                         <span className="text-foreground">Your plan</span>
                         <span className="text-muted-foreground/40">·</span>
                         <span className="text-muted-foreground/70">{tierLabel}</span>
@@ -946,10 +946,10 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                               type="button"
                               onClick={exportPdf}
                               disabled={exportingPdf}
-                              className={`rounded-md px-4 py-2 text-[12.5px] font-semibold transition-colors border ${
+                              className={`px-4 py-2 text-[12.5px] font-semibold transition-colors border ${
                                 exportingPdf
-                                  ? "bg-[#E5E2DC] text-muted-foreground/70 border-[#D8D4CC] cursor-not-allowed"
-                                  : "bg-[#F3F0EA] text-foreground border-[#D8D4CC] hover:bg-[#E8E4DC]"
+                                  ? "bg-[#E5E2DC] text-muted-foreground/70 border-border cursor-not-allowed"
+                                  : "bg-transparent text-foreground border-border hover:bg-[#F3F1ED]"
                               }`}
                             >
                               {exportingPdf ? (
@@ -987,7 +987,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
                 {/* ─── Strand selector (pending_selection state) ─── */}
                 {awaitingSelection && coreReport?.options && coreReport.options.length > 0 && (
-                  <section className="mb-8 panel-ivory px-6 sm:px-10 py-8">
+                  <section className="mb-8 border-t border-border pt-6">
                     <StrandSelector
                       options={coreReport.options}
                       recommended_selection={coreReport.recommended_selection ?? null}
@@ -999,7 +999,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
 
                 {/* ─── Plan-building hold ─── */}
                 {planBuilding && !awaitingSelection && !planStuck && (
-                  <div className="mb-8 panel-ivory px-6 sm:px-10 py-5 flex items-center gap-3 text-[13.5px] text-muted-foreground">
+                  <div className="mb-8 border-t border-border pt-5 pb-5 flex items-center gap-3 text-[13.5px] text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     <span>Building your plan… this usually takes a minute or two.</span>
                   </div>
@@ -1016,7 +1016,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                     <button
                       type="button"
                       onClick={() => window.location.reload()}
-                      className="mt-3 rounded-md bg-primary px-5 py-2.5 text-[13.5px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90"
+                      className="cta-block mt-3"
                     >
                       Refresh
                     </button>
@@ -1062,7 +1062,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   */}
                 {!awaitingSelection && (
                   <div id="plan-section-today" className="scroll-mt-24">
-                    <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
+                    <section className="border-t border-border pt-6 pb-8">
                       {/* Section eyebrow, consistency-sweep 2026-05-18:
                         * surfaces "01 TODAY" so the in-body numerals read
                         * contiguously (01 Today / 02 Tracker / 03 Days / 04
@@ -1071,7 +1071,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                         * numeral, which made the body sections appear to
                         * jump from 02 to 04. */}
                       <div className="flex items-baseline gap-3 mb-5 text-[11px] font-bold uppercase tracking-[0.18em]">
-                        <span className="text-primary tabular-nums">01</span>
+                        <span className="text-[#15735F] tabular-nums">01</span>
                         <span className="text-muted-foreground">Today</span>
                       </div>
                       <TodayCard
@@ -1305,10 +1305,10 @@ function PanelSection({
   children: ReactNode;
 }) {
   return (
-    <section className="mt-6 panel-ivory px-6 sm:px-10 lg:px-12 py-8">
+    <section className="mt-6 border-t border-border pt-6 pb-2">
       <div className="flex items-baseline justify-between gap-4 mb-6">
         <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          <span className="text-primary mr-3 tabular-nums">{num}</span>
+          <span className="text-[#15735F] mr-3 tabular-nums">{num}</span>
           {label}
         </div>
         {meta && (
@@ -1335,7 +1335,7 @@ function DarkWall() {
       <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 sm:gap-10 items-center">
         <div className="sm:col-span-8">
           <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgba(250,249,247,0.65)] mb-3">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+            <span className="inline-block w-1.5 h-1.5 bg-primary" />
             <span className="text-[#FAF9F7]">30 days complete</span>
           </div>
           <p className="text-[18px] sm:text-[20px] font-semibold leading-snug text-[#FAF9F7]">
@@ -1359,7 +1359,7 @@ function DarkWall() {
 
 function DormantTrackerBlock() {
   return (
-    <div className="bg-[#F3F0EA] border border-[#E5E2DC] rounded-lg px-8 sm:px-12 py-10 sm:py-12 text-center">
+    <div className="bg-[#F3F1ED] border border-border px-8 sm:px-12 py-10 sm:py-12 text-center">
       <div className="text-[22px] sm:text-[26px] font-extrabold tracking-tight text-foreground">
         Your tracker starts when you're ready.
       </div>
@@ -1477,10 +1477,10 @@ function DayRow({
       // the system's existing completion mark (matches /auth sent state and
       // /account modal confirmations). Earns the most semantically loaded state.
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-white" style={{ background: "#2ECDB0" }}>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground" style={{ background: "#2ECDB0" }}>
           <span
-            className="inline-flex items-center justify-center w-2 h-2 rounded-full text-[7px] font-bold leading-none"
-            style={{ background: "rgba(255,255,255,0.92)", color: "#1A8A72" }}
+            className="inline-flex items-center justify-center w-2 h-2 text-[7px] font-bold leading-none"
+            style={{ background: "rgba(255,255,255,0.92)", color: "#15735F" }}
             aria-hidden="true"
           >
             ✓
@@ -1491,23 +1491,23 @@ function DayRow({
     }
     if (isToday) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em]" style={{ border: "1.5px solid #2ECDB0", color: "#1A8A72" }}>
-          <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#2ECDB0" }} />
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em]" style={{ border: "1.5px solid #2ECDB0", color: "#15735F" }}>
+          <span className="inline-block w-1.5 h-1.5 animate-pulse" style={{ background: "#2ECDB0" }} />
           Today
         </span>
       );
     }
     if (isMissed) {
       return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground" style={{ background: "#F3F1ED", border: "1px solid #D5D0C8" }}>
-          <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#A09A92" }} />
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground" style={{ background: "#F3F1ED", border: "1px solid #D1CEC7" }}>
+          <span className="inline-block w-1.5 h-1.5" style={{ background: "#A09A92" }} />
           Missed
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
-        <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ border: "1px solid #A09A92" }} />
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
+        <span className="inline-block w-1.5 h-1.5" style={{ border: "1px solid #A09A92" }} />
         Future
       </span>
     );
@@ -1515,7 +1515,7 @@ function DayRow({
 
   return (
     <div
-      className={`border-t border-[#EDEBE6] first:border-t-0 transition-colors ${
+      className={`border-t border-border first:border-t-0 transition-colors ${
         isExpanded ? "bg-[#FAFAF7]" : ""
       }`}
     >
@@ -1532,7 +1532,7 @@ function DayRow({
           * a uniform text block. */}
         <span
           className={`shrink-0 font-display font-bold text-[15px] tabular-nums tracking-[0.04em] ${
-            isToday ? "text-primary"
+            isToday ? "text-[#15735F]"
               : isCompleted ? "text-foreground"
               : isMissed ? "text-muted-foreground"
               : "text-muted-foreground/70"
@@ -1540,7 +1540,7 @@ function DayRow({
         >
           <span
             className={`mr-1 ${
-              isToday || isCompleted ? "text-primary" : "text-muted-foreground/60"
+              isToday || isCompleted ? "text-[#15735F]" : "text-muted-foreground/60"
             }`}
           >
             Day
@@ -1586,16 +1586,16 @@ function DayRow({
             // Pass 2 (2026-05-18, F4 + lift-in): right-side hint on the missed
             // CTA names the spec's hard rule ("backfilling won't change today")
             // at the moment of decision, before the user clicks.
-            <div className="mt-5 pt-5 border-t border-[#E5E2DC] flex items-baseline gap-3 flex-wrap">
+            <div className="mt-5 pt-5 border-t border-border flex items-baseline gap-3 flex-wrap">
               <button
                 onClick={onOpenCheckin}
-                className="inline-flex items-center justify-center rounded-md px-4 py-2 text-[13px] font-semibold transition-colors"
+                className="inline-flex items-center justify-center px-4 py-2 text-[13px] font-semibold transition-colors"
                 style={
                   isToday
-                    ? { background: "#2ECDB0", color: "#FFFFFF" }
+                    ? { background: "#2ECDB0", color: "#1A1915" }
                     : isMissed
                       ? { background: "#FAFAF7", color: "#1D2025", border: "1px solid #2ECDB0" }
-                      : { background: "#F3F1ED", color: "#1D2025", border: "1px solid #D5D0C8" }
+                      : { background: "#F3F1ED", color: "#1D2025", border: "1px solid #D1CEC7" }
                 }
               >
                 {isToday
@@ -1715,7 +1715,7 @@ function DayBody({
       {/* Meta row, time required */}
       {dayDetail.time_required && (
         <div className="flex items-baseline gap-3 mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          <span className="text-primary">{labels.timeReq}</span>
+          <span className="text-[#15735F]">{labels.timeReq}</span>
           <span className={`normal-case tracking-normal text-[13px] font-medium ${
             isMissedRow ? "text-muted-foreground" : "text-foreground"
           }`}>
@@ -1726,9 +1726,9 @@ function DayBody({
 
       {/* Time allocation */}
       {timeAllocationEntries.length > 0 && (
-        <div className="mb-5 rounded-md px-4 py-3" style={{ background: "#F3F1ED" }}>
+        <div className="mb-5 border border-border px-4 py-3" style={{ background: "#F3F1ED" }}>
           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
+            <span className="inline-block w-1.5 h-1.5 bg-primary" aria-hidden="true" />
             {labels.alloc}
           </div>
           <div className="space-y-1.5">
@@ -1746,19 +1746,19 @@ function DayBody({
       {dayDetail.tasks?.length > 0 && (
         <div>
           <div className="flex items-baseline gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-3">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary translate-y-[-1px]" aria-hidden="true" />
-            <span className="text-primary">{labels.tasks}</span>
+            <span className="inline-block w-1.5 h-1.5 bg-primary translate-y-[-1px]" aria-hidden="true" />
+            <span className="text-[#15735F]">{labels.tasks}</span>
             <span className="ml-auto tabular-nums text-muted-foreground/70">{dayDetail.tasks.length}</span>
           </div>
           <ul className="space-y-4">
             {dayDetail.tasks.map((task, i) => (
-              <li key={task.task_id || i} className="border-l-2 border-[#D5D0C8] pl-4">
+              <li key={task.task_id || i} className="border-l-2 border-border pl-4">
                 <div className="flex items-baseline justify-between gap-3 mb-1.5">
                   <p className="font-display text-[14.5px] font-semibold text-foreground leading-snug" style={{ letterSpacing: "-0.012em" }}>
                     {task.description}
                   </p>
                   {task.move_type && (
-                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: "#1A8A72" }}>
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: "#15735F" }}>
                       {task.move_type}
                     </span>
                   )}
@@ -1770,11 +1770,11 @@ function DayBody({
                   * "⧉ Copy" text+glyph treatment per F3. */}
                 {task.outreach_draft && !isMissedRow && (
                   <div
-                    className="mt-3 rounded-md px-4 py-3.5"
+                    className="mt-3 px-4 py-3.5"
                     style={{ background: "#F3F1ED", borderLeft: "3px solid #2ECDB0" }}
                   >
                     <div className="flex items-baseline justify-between gap-3 mb-2">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "#1A8A72" }}>
+                      <span className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "#15735F" }}>
                         Draft Solo prepared
                       </span>
                       <button
@@ -1839,12 +1839,12 @@ function DayBody({
                   (task.move_type === "direct" || task.move_type === "visibility") && (
                   task.status === "sent" ? (
                     <div
-                      className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-white"
+                      className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground"
                       style={{ background: "#2ECDB0" }}
                     >
                       <span
-                        className="inline-flex items-center justify-center w-2 h-2 rounded-full text-[7px] font-bold leading-none"
-                        style={{ background: "rgba(255,255,255,0.92)", color: "#1A8A72" }}
+                        className="inline-flex items-center justify-center w-2 h-2 text-[7px] font-bold leading-none"
+                        style={{ background: "rgba(255,255,255,0.92)", color: "#15735F" }}
                         aria-hidden="true"
                       >
                         ✓
@@ -1860,7 +1860,7 @@ function DayBody({
                       type="button"
                       onClick={() => onMarkTaskSent(task.task_id)}
                       disabled={sentInFlightTaskId === task.task_id}
-                      className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-[#D8D4CC] bg-transparent px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground hover:bg-[#F3F1ED] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-3 inline-flex items-center gap-1.5 border border-border bg-transparent px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground hover:bg-[#F3F1ED] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {sentInFlightTaskId === task.task_id ? "Marking…" : "Mark as sent"}
                     </button>
@@ -1890,12 +1890,12 @@ function DayBody({
                   onMarkTaskResponse && (
                   task.response_received === true ? (
                     <div
-                      className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-white"
+                      className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground"
                       style={{ background: "#2ECDB0" }}
                     >
                       <span
-                        className="inline-flex items-center justify-center w-2 h-2 rounded-full text-[7px] font-bold leading-none"
-                        style={{ background: "rgba(255,255,255,0.92)", color: "#1A8A72" }}
+                        className="inline-flex items-center justify-center w-2 h-2 text-[7px] font-bold leading-none"
+                        style={{ background: "rgba(255,255,255,0.92)", color: "#15735F" }}
                         aria-hidden="true"
                       >
                         ✓
@@ -1908,11 +1908,11 @@ function DayBody({
                     </div>
                   ) : task.response_received === false ? (
                     <div
-                      className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
-                      style={{ background: "#F3F1ED", border: "1px solid #D5D0C8" }}
+                      className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+                      style={{ background: "#F3F1ED", border: "1px solid #D1CEC7" }}
                     >
                       <span
-                        className="inline-block w-1.5 h-1.5 rounded-full"
+                        className="inline-block w-1.5 h-1.5"
                         style={{ background: "#A09A92" }}
                       />
                       <span>
@@ -1927,7 +1927,7 @@ function DayBody({
                         type="button"
                         onClick={() => onMarkTaskResponse(task.task_id, true)}
                         disabled={responseInFlightTaskId === task.task_id}
-                        className="inline-flex items-center gap-1.5 rounded-md border border-[#D8D4CC] bg-transparent px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground hover:bg-[#F3F1ED] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center gap-1.5 border border-border bg-transparent px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground hover:bg-[#F3F1ED] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {responseInFlightTaskId === task.task_id ? "Logging…" : "Got a reply"}
                       </button>
@@ -1935,7 +1935,7 @@ function DayBody({
                         type="button"
                         onClick={() => onMarkTaskResponse(task.task_id, false)}
                         disabled={responseInFlightTaskId === task.task_id}
-                        className="inline-flex items-center gap-1.5 rounded-md border border-[#D8D4CC] bg-transparent px-3 py-1.5 text-[12px] font-semibold text-muted-foreground transition-colors hover:text-foreground hover:border-foreground hover:bg-[#F3F1ED] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="inline-flex items-center gap-1.5 border border-border bg-transparent px-3 py-1.5 text-[12px] font-semibold text-muted-foreground transition-colors hover:text-foreground hover:border-foreground hover:bg-[#F3F1ED] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         No reply yet
                       </button>

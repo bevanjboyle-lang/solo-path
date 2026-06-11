@@ -178,7 +178,7 @@ export default function CheckInPanel({
               </DrawerTitle>
               {readOnly && (
                 <span
-                  className="inline-flex items-center px-2 py-[2px] rounded-sm text-[9px] font-bold uppercase tracking-[0.16em] text-muted-foreground border border-[#D5D0C8]"
+                  className="inline-flex items-center px-2 py-[2px] text-[9px] font-bold uppercase tracking-[0.16em] text-muted-foreground border border-border"
                 >
                   Locked
                 </span>
@@ -202,7 +202,7 @@ export default function CheckInPanel({
               // same kind of conversation, frozen as a record"). User text stays
               // in display 500, direct voice. Foot strip shows just "Submitted
               // on DD MMM", no time, no exchange count.
-              <div className="rounded-lg border border-border bg-[hsl(var(--surface-inset))] p-4 max-h-[55vh] overflow-y-auto">
+              <div className="border border-border bg-[hsl(var(--surface-inset))] p-4 max-h-[55vh] overflow-y-auto">
                 {readOnlyLoading ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -213,18 +213,18 @@ export default function CheckInPanel({
                     {readOnlyError}
                   </p>
                 ) : readOnlyExchanges && readOnlyExchanges.length > 0 ? (
-                  <div className="divide-y divide-[#E5E2DC]">
+                  <div className="divide-y divide-border">
                     {readOnlyExchanges.map((ex, i) => {
                       const isUser = ex.role === "user";
                       return (
                         <div key={i} className="py-3 first:pt-0 last:pb-0 space-y-1.5">
                           <div
                             className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.18em] ${
-                              isUser ? "text-muted-foreground" : "text-[#1A8A72]"
+                              isUser ? "text-muted-foreground" : "text-[#15735F]"
                             }`}
                           >
                             <span
-                              className="inline-block w-[5px] h-[5px] rounded-full"
+                              className="inline-block w-[5px] h-[5px]"
                               style={{ background: isUser ? "#7A7670" : "#2ECDB0" }}
                               aria-hidden="true"
                             />
@@ -254,7 +254,7 @@ export default function CheckInPanel({
                     This check-in has no recorded exchanges.
                   </p>
                 )}
-                <div className="mt-4 pt-4 border-t border-[#E5E2DC] flex items-baseline justify-between gap-3">
+                <div className="mt-4 pt-4 border-t border-border flex items-baseline justify-between gap-3">
                   <Button
                     variant="ghost"
                     onClick={handleDone}
@@ -272,7 +272,7 @@ export default function CheckInPanel({
             ) : aiReply ? (
               <>
                 {/* F87: AI's closing message rendered inline. */}
-                <div className="rounded-lg border border-primary/30 bg-[hsl(var(--surface-mint-tint))] p-4">
+                <div className="border border-primary/30 bg-[hsl(var(--surface-mint-tint))] p-4">
                   <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
                     {aiReply}
                   </p>
@@ -280,7 +280,7 @@ export default function CheckInPanel({
                 <div className="flex">
                   <Button
                     onClick={handleDone}
-                    className="rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                    className="bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                   >
                     Done
                   </Button>
@@ -309,7 +309,7 @@ export default function CheckInPanel({
                   <Button
                     onClick={handleSubmit}
                     disabled={!response.trim() || submitting}
-                    className="rounded-lg bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+                    className="bg-primary px-6 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
                   >
                     {submitting ? (
                       <>

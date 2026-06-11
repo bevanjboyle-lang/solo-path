@@ -261,10 +261,7 @@ export default function Report() {
   } as SidebarItem & { numeral?: string }));
 
   const sidebarHead: ReactNode = (
-    <>
-      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-      <span>Your report</span>
-    </>
+    <span>Your report</span>
   );
 
   const sidebarFooter: ReactNode = (
@@ -284,7 +281,7 @@ export default function Report() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main>
           <section className="py-10 lg:py-14">
             <div className="mx-auto max-w-3xl px-6">
               <Banner variant="error">
@@ -301,7 +298,7 @@ export default function Report() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main>
           <section className="py-12">
             <div className="mx-auto max-w-3xl px-6 flex flex-col items-center gap-4 text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -317,36 +314,31 @@ export default function Report() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main>
           <section className="py-12 lg:py-20">
             <div className="mx-auto max-w-[640px] px-6">
-              <div className="panel-ivory px-8 sm:px-10 py-10">
-                <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground mb-5">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                  <span>No report yet</span>
-                </div>
-                <h1 className="title-h1">
-                  No report yet.
-                </h1>
-                <p className="mt-4 text-[15px] text-muted-foreground leading-relaxed">
-                  Complete the fit-check to generate yours. About eight minutes; you'll see your warmest path inside the first read.
-                </p>
-                <div className="mt-7 flex flex-col items-start gap-3 border-t border-[#E5E2DC] pt-7">
-                  <button
-                    type="button"
-                    onClick={() => startTest(navigate)}
-                    className="rounded-md bg-primary px-7 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors"
-                  >
-                    Find what fits →
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/")}
-                    className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
-                  >
-                    Go back home
-                  </button>
-                </div>
+              <div className="eyebrow mb-5">No report yet</div>
+              <h1 className="title-h1">
+                No report yet.
+              </h1>
+              <p className="standfirst mt-4">
+                Complete the fit-check to generate yours. About eight minutes; you'll see your warmest path inside the first read.
+              </p>
+              <div className="mt-7 flex flex-col items-start gap-3 border-t border-border pt-7">
+                <button
+                  type="button"
+                  onClick={() => startTest(navigate)}
+                  className="cta-block"
+                >
+                  Find what works →
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/")}
+                  className="text-[13px] text-muted-foreground border-b border-[#D8D4CC] hover:text-foreground hover:border-foreground transition-colors"
+                >
+                  Go back home
+                </button>
               </div>
             </div>
           </section>
@@ -371,7 +363,7 @@ export default function Report() {
     <div className="relative min-h-screen text-foreground">
       <TopBar />
 
-      <main className="pt-[68px]">
+      <main>
         <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-xl px-6">
             <div className="flex gap-8 lg:gap-10">
@@ -384,13 +376,12 @@ export default function Report() {
               <div className="flex-1 min-w-0">
                 <h1 className="sr-only">{h1Title}</h1>
 
-                {/* ─── Page-header bar ─── */}
-                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
-                  <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                    <span className="text-foreground">Your Plan B report</span>
+                {/* ─── Page header — flat editorial head (ADR-026 Phase 4) ─── */}
+                <header className="pt-2 pb-8">
+                  <div className="flex items-center gap-2.5 mb-4 flex-wrap">
+                    <span className="eyebrow">Your Plan B report</span>
                     <span className="text-muted-foreground/40">·</span>
-                    <span className="normal-case tracking-normal text-[12px] font-normal">
+                    <span className="text-muted-foreground/70 text-[11px]">
                       {draftedAt}
                     </span>
                   </div>
@@ -400,7 +391,7 @@ export default function Report() {
                       <div aria-hidden className="title-h1">
                         {h1Title}
                       </div>
-                      <p className="mt-4 text-[15.5px] text-muted-foreground leading-relaxed max-w-2xl">
+                      <p className="standfirst mt-4 max-w-2xl">
                         {subhead}
                       </p>
                     </div>
@@ -411,10 +402,10 @@ export default function Report() {
                           type="button"
                           onClick={exportPdf}
                           disabled={exportingPdf}
-                          className={`rounded-md px-5 py-2.5 text-[13px] font-semibold transition-colors border ${
+                          className={`px-5 py-2.5 text-[13px] font-semibold transition-colors border ${
                             exportingPdf
                               ? "bg-[#E5E2DC] text-muted-foreground/70 border-[#D8D4CC] cursor-not-allowed"
-                              : "bg-[#F3F0EA] text-foreground border-[#D8D4CC] hover:bg-[#E8E4DC]"
+                              : "bg-transparent text-foreground border-foreground hover:bg-[#F3F1ED]"
                           }`}
                         >
                           {exportingPdf ? (
@@ -443,7 +434,7 @@ export default function Report() {
                       )}
                     </div>
                   </div>
-                </section>
+                </header>
 
                 {/* ─── Sections, render in canonical order ─── */}
                 {visibleSections.map((s) => {
@@ -542,8 +533,8 @@ function SectionHead({
 }) {
   const labelColour = tone === "dark" ? "text-[#FAF9F7]" : "text-foreground";
   const metaColour = tone === "dark" ? "text-[rgba(250,249,247,0.55)]" : "text-muted-foreground/80";
-  const ruleColour = tone === "dark" ? "border-white/10" : "border-[#E5E2DC]";
-  const numColour = "text-primary"; // mint on both tones, same eyebrow vocabulary
+  const ruleColour = tone === "dark" ? "border-white/10" : "border-border";
+  const numColour = tone === "dark" ? "text-[#2ECDB0]" : "text-[#15735F]";
   return (
     <div className={`flex items-baseline justify-between gap-4 pb-4 border-b ${ruleColour} mb-6`}>
       <div className="text-[11px] font-semibold uppercase tracking-[0.18em]">
@@ -569,7 +560,7 @@ function FullSection({
   children: ReactNode;
 }) {
   return (
-    <section id={meta.id} className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6 scroll-mt-24">
+    <section id={meta.id} className="border-t border-border py-8 sm:py-10 scroll-mt-24">
       <SectionHead meta={meta} />
       {/*
        * Body wrapped in .prose-serif per F5. Internal section composites
@@ -617,12 +608,12 @@ function BriefSection({
 
   if (expanded) {
     return (
-      <section id={meta.id} className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6 scroll-mt-24">
+      <section id={meta.id} className="border-t border-border py-8 sm:py-10 scroll-mt-24">
         <SectionHead meta={meta} />
         <div className="prose-serif">
           {children}
         </div>
-        <div className="mt-6 pt-5 border-t border-[#E5E2DC] flex justify-end">
+        <div className="mt-6 pt-5 border-t border-border flex justify-end">
           <button
             type="button"
             onClick={onToggle}
@@ -638,7 +629,7 @@ function BriefSection({
   return (
     <section
       id={meta.id}
-      className="panel-ivory px-6 sm:px-10 lg:px-12 py-5 mb-6 scroll-mt-24 hover:bg-[#FAFAF7] transition-colors"
+      className="border-t border-border py-5 scroll-mt-24"
     >
       <button
         type="button"
@@ -647,7 +638,7 @@ function BriefSection({
       >
         <div className="flex items-baseline gap-4 flex-1 min-w-0">
           <div className="text-[11px] font-semibold uppercase tracking-[0.18em] shrink-0">
-            <span className="text-primary mr-2 tabular-nums">{meta.numeral}</span>
+            <span className="text-[#15735F] mr-2 tabular-nums">{meta.numeral}</span>
             <span className="text-foreground">{meta.label}</span>
           </div>
           <span className="text-[14px] text-muted-foreground truncate hidden sm:inline">
@@ -675,7 +666,7 @@ function DarkSection({
   return (
     <section
       id={meta.id}
-      className="panel-dark px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6 scroll-mt-24"
+      className="panel-dark px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mt-8 scroll-mt-24"
     >
       <SectionHead meta={meta} tone="dark" />
       {/*

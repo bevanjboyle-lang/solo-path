@@ -159,10 +159,10 @@ export default function Auth() {
     <div className="relative min-h-screen text-foreground">
       <TopBar minimal />
 
-      <main className="pt-[68px]">
-        <section className="py-12 lg:py-20">
-          <div className="mx-auto w-full max-w-[460px] px-6">
-            <div className="panel-ivory">
+      <main className="pt-6">
+        <section className="py-10 lg:py-16">
+          <div className="mx-auto w-full max-w-md px-6">
+            <div>
               {/* In-card banners sit above the eyebrow, push content down */}
               {bannerState === "transport_error" && (
                 <CardBanner tone="error" label="Couldn't send" message="We couldn't send the link right now. Please try again in a moment." />
@@ -216,13 +216,12 @@ function FormBody({
   onStartTest: () => void;
 }) {
   return (
-    <div className="px-8 sm:px-10 pt-8 sm:pt-10 pb-8">
+    <div className="pt-6 pb-8">
       {/* Eyebrow */}
-      <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
-        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-        <span className="text-foreground">Returning sign-in</span>
+      <div className="flex items-center gap-3">
+        <span className="eyebrow">Returning sign-in</span>
         <span className="text-muted-foreground/40">·</span>
-        <span className="text-muted-foreground normal-case tracking-normal text-[12px] font-normal">
+        <span className="text-muted-foreground text-[12px]">
           magic link
         </span>
       </div>
@@ -230,7 +229,7 @@ function FormBody({
       <h1 className="mt-5 title-h1">
         Sign in.
       </h1>
-      <p className="mt-3 text-[14.5px] sm:text-[15px] text-muted-foreground leading-relaxed">
+      <p className="standfirst mt-3">
         We'll email you a one-time link. No password required.
       </p>
 
@@ -244,7 +243,7 @@ function FormBody({
         <div className="space-y-2">
           <label
             htmlFor="auth-email"
-            className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+            className="eyebrow--muted text-[11px] font-semibold uppercase tracking-[0.18em]"
           >
             Email
           </label>
@@ -257,16 +256,16 @@ function FormBody({
             placeholder="you@work-or-personal.com"
             autoComplete="email"
             autoFocus
-            className="w-full bg-white border border-[#D8D4CC] rounded-lg px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-white border border-border px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
         <button
           type="submit"
           disabled={!isValidEmail || submitting}
-          className={`w-full rounded-md px-6 py-3 text-[14px] font-semibold transition-colors flex items-center justify-center gap-2 ${
+          className={`w-full px-6 py-3 text-[14px] font-semibold transition-colors flex items-center justify-center gap-2 ${
             isValidEmail && !submitting
-              ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90"
+              ? "bg-primary text-primary-foreground hover:opacity-90"
               : "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
           }`}
         >
@@ -278,7 +277,7 @@ function FormBody({
       </form>
 
       {/* Trust line — hairline above, faint dot leading, two-sentence auth contract */}
-      <div className="mt-7 pt-5 border-t border-[#E5E2DC]">
+      <div className="mt-7 pt-5 border-t border-border">
         <p className="flex items-start gap-3 text-[12.5px] text-muted-foreground leading-relaxed">
           <span className="inline-block w-1 h-1 rounded-full bg-[#C8C3BA] mt-2 shrink-0" />
           <span>
@@ -304,7 +303,7 @@ function FormBody({
           onClick={onStartTest}
           className="text-foreground border-b border-[#D8D4CC] hover:border-foreground transition-colors"
         >
-          Find what fits →
+          Find what works →
         </button>
       </p>
     </div>
@@ -329,7 +328,7 @@ function SentBody({
   onStartTest: () => void;
 }) {
   return (
-    <div className="px-8 sm:px-10 pt-8 sm:pt-10 pb-8">
+    <div className="pt-6 pb-8">
       {/* Sent eyebrow — tick replaces mint dot */}
       <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
         <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-primary-foreground">
@@ -337,7 +336,7 @@ function SentBody({
             <path d="M2 6l3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
-        <span className="text-primary">Sent</span>
+        <span className="text-[#15735F]">Sent</span>
         <span className="text-muted-foreground/40">·</span>
         <span className="text-muted-foreground normal-case tracking-normal text-[12px] font-normal">
           link valid 15 minutes
@@ -358,7 +357,7 @@ function SentBody({
         </p>
 
         {/* Monospaced verifiable email line — anti-enumeration cover */}
-        <div className="bg-[#F3F0EA] border border-[#E5E2DC] rounded-lg px-4 py-3 flex items-baseline gap-3 flex-wrap">
+        <div className="bg-[#F3F1ED] border border-border px-4 py-3 flex items-baseline gap-3 flex-wrap">
           <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground shrink-0">
             Sent to
           </span>
@@ -377,7 +376,7 @@ function SentBody({
       </div>
 
       {/* Sent actions — hairline above, two tertiary text links, faint middle dot */}
-      <div className="mt-7 pt-5 border-t border-[#E5E2DC] flex items-center justify-center gap-3 flex-wrap">
+      <div className="mt-7 pt-5 border-t border-border flex items-center justify-center gap-3 flex-wrap">
         <button
           type="button"
           onClick={onResend}
@@ -409,7 +408,7 @@ function SentBody({
           onClick={onStartTest}
           className="text-foreground border-b border-[#D8D4CC] hover:border-foreground transition-colors"
         >
-          Find what fits →
+          Find what works →
         </button>
       </p>
     </div>
@@ -450,7 +449,7 @@ function CardBanner({
           bg: "bg-[#E8F7F3]",
           rule: "border-primary",
           dot: "bg-primary",
-          label: "text-[#1A8A72]",
+          label: "text-[#15735F]",
         };
     }
   })();

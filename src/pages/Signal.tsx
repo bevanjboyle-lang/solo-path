@@ -31,13 +31,13 @@ export default function Signal() {
       <TopBar />
       <main className="pb-12 pt-6 lg:pb-16">
       <div className="mx-auto max-w-2xl px-6">
-        <div className="panel-ivory p-5 sm:p-6 lg:p-8">
+        <div>
           <header>
-            <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">The Signal</p>
+            <p className="eyebrow">The Signal</p>
             <h1 className="title-h1 mt-3">
               Where independent work is opening up.
             </h1>
-            <p className="mt-3 text-base leading-snug text-muted-foreground">
+            <p className="standfirst mt-3">
               A weekly read for mid-career professionals weighing an independent path: what's shifting in
               your field, what buyers are commissioning, and where the openings are.
             </p>
@@ -54,18 +54,18 @@ export default function Signal() {
           {!loading && editions && editions.length > 0 && (
             <section className="mt-8">
               {editions.map((e) => (
-                <article key={e.slug} className="border-t border-stone-200 py-5 first:border-t-0 first:pt-0">
-                  <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                <article key={e.slug} className="border-t border-border py-5 first:border-t-0 first:pt-0">
+                  <p className="eyebrow--muted text-[11px] font-semibold uppercase tracking-[0.12em]">
                     {formatPublishDate(e.publish_date)}
                   </p>
-                  <h2 className="mt-1.5 text-lg font-semibold leading-snug tracking-tight text-foreground">
-                    <Link to={`/signal/${e.slug}`} className="hover:text-primary">{e.lead_headline}</Link>
+                  <h2 className="mt-1.5 font-display text-lg font-bold leading-snug tracking-tight text-foreground">
+                    <Link to={`/signal/${e.slug}`} className="hover:text-[#15735F]">{e.lead_headline}</Link>
                   </h2>
-                  <p className="mt-1 text-sm leading-snug text-muted-foreground">{e.lead_subheadline}</p>
-                  <p className="mt-2">
+                  <p className="standfirst mt-1 text-[14px]">{e.lead_subheadline}</p>
+                  <p className="mt-3">
                     <Link
                       to={`/signal/${e.slug}`}
-                      className="text-sm font-medium text-primary underline decoration-1 underline-offset-4 hover:text-primary/80"
+                      className="link-edit"
                     >
                       Read the full edition &rarr;
                     </Link>
@@ -75,7 +75,7 @@ export default function Signal() {
             </section>
           )}
 
-          <div className="mt-10 border-t border-stone-200 pt-6">
+          <div className="mt-10 border-t border-border pt-6">
             <SignalSubscribe source="signal_archive" />
           </div>
         </div>

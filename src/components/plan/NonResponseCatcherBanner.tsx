@@ -307,7 +307,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
         return (
           <section
             key={row.id}
-            className="panel-ivory px-6 sm:px-10 lg:px-12 py-7 sm:py-8 relative"
+            className="border-t border-border pt-6 pb-7 relative"
           >
             {/* Dismiss × — top-right, quiet */}
             <button
@@ -315,14 +315,14 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
               onClick={() => handleDismiss(row.id)}
               disabled={isInFlight}
               aria-label="Dismiss this Catcher"
-              className="absolute top-4 right-4 sm:top-5 sm:right-5 inline-flex items-center justify-center w-7 h-7 rounded-full text-muted-foreground/60 hover:text-foreground hover:bg-[#F3F1ED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="absolute top-4 right-4 sm:top-5 sm:right-5 inline-flex items-center justify-center w-7 h-7 text-muted-foreground/60 hover:text-foreground hover:bg-[#F3F1ED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span aria-hidden="true" className="text-[16px] leading-none">×</span>
             </button>
 
             {/* Eyebrow — mint dot + label */}
             <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-5 flex-wrap">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+              <span className="inline-block w-1.5 h-1.5 bg-primary" />
               <span className="text-foreground">About that message</span>
               <span className="text-muted-foreground/40">·</span>
               <span className="text-muted-foreground/70">Five days on</span>
@@ -345,7 +345,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
             </p>
 
             {/* Action stack — three buttons in design-doc order */}
-            <div className="mt-6 pt-5 border-t border-[#E5E2DC]">
+            <div className="mt-6 pt-5 border-t border-border">
               <div className="flex flex-wrap items-center gap-2">
                 {followUp && (
                   <button
@@ -354,7 +354,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
                       setExpandedFollowUpRowId(isExpanded ? null : row.id)
                     }
                     disabled={isInFlight}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isExpanded ? "Hide the draft" : followUp.label}
                   </button>
@@ -364,7 +364,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
                     type="button"
                     onClick={() => handleNextContact(row.id)}
                     disabled={isInFlight}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-[#D8D4CC] bg-transparent px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground hover:bg-[#F3F1ED] disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 border border-border bg-transparent px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground hover:bg-[#F3F1ED] disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {nextContact.label}
                   </button>
@@ -374,7 +374,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
                     type="button"
                     onClick={() => handleMoveOn(row)}
                     disabled={isInFlight}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-[#D8D4CC] bg-transparent px-3 py-1.5 text-[12px] font-semibold text-muted-foreground transition-colors hover:text-foreground hover:border-foreground hover:bg-[#F3F1ED] disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 border border-border bg-transparent px-3 py-1.5 text-[12px] font-semibold text-muted-foreground transition-colors hover:text-foreground hover:border-foreground hover:bg-[#F3F1ED] disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {moveOn.label}
                   </button>
@@ -395,7 +395,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
                 Stone callout with the draft body, Copy button, and
                 "Logged as sent" confirmation that records action_taken. */}
             {isExpanded && followUp?.body && (
-              <div className="mt-5 rounded-md border border-[#D8D4CC] bg-[#F7F5F0] px-4 py-3.5">
+              <div className="mt-5 border border-border bg-[#F7F5F0] px-4 py-3.5">
                 <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
                   Draft follow-up
                 </div>
@@ -407,7 +407,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
                     type="button"
                     onClick={() => handleCopyDraft(followUp.body ?? "")}
                     disabled={isInFlight}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-[#D8D4CC] bg-white px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 border border-border bg-transparent px-3 py-1.5 text-[12px] font-semibold text-foreground transition-colors hover:border-foreground disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     Copy
                   </button>
@@ -415,7 +415,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
                     type="button"
                     onClick={() => handleFollowUpLogged(row.id)}
                     disabled={isInFlight}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-1.5 bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isInFlight ? "Logging…" : "Logged as sent"}
                   </button>

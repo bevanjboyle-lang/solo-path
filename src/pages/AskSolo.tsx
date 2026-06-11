@@ -348,7 +348,7 @@ export default function AskSolo() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main>
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="flex flex-col items-center gap-4 text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -376,8 +376,7 @@ export default function AskSolo() {
       </div>
       <button
         onClick={handleSubscribe}
-        className="inline-flex items-center justify-center rounded-md px-4 py-2 text-[12.5px] font-semibold text-white whitespace-nowrap"
-        style={{ background: "#2ECDB0" }}
+        className="cta-block whitespace-nowrap text-[12.5px]"
       >
         Subscribe, £19/mo →
       </button>
@@ -389,14 +388,14 @@ export default function AskSolo() {
     <div className="relative min-h-screen text-foreground">
       <TopBar />
 
-      <main className="pt-[68px]">
+      <main>
         {exhaustedBanner}
 
         <div className="mx-auto max-w-screen-xl px-4 sm:px-6 py-6 lg:py-8">
           <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-0 min-h-[760px]">
 
             {/* ── Thread list (desktop) ── */}
-            <aside className="hidden lg:block panel-ivory rounded-r-none border-r-0">
+            <aside className="hidden lg:block border-r border-border">
               <ThreadList
                 threadGroups={threadGroups}
                 activeThreadId={activeThreadId}
@@ -407,10 +406,10 @@ export default function AskSolo() {
             </aside>
 
             {/* ── Conversation main column ── */}
-            <section className="panel-ivory lg:rounded-l-none flex flex-col overflow-hidden">
+            <section className="flex flex-col overflow-hidden">
 
               {/* Header: mobile thread trigger + thread title + quota pill */}
-              <div className="px-5 sm:px-8 py-4 border-b border-[#E5E2DC] grid grid-cols-[auto_1fr_auto] gap-3 items-center">
+              <div className="px-5 sm:px-8 py-4 border-b border-border grid grid-cols-[auto_1fr_auto] gap-3 items-center">
                 <Sheet open={threadDrawerOpen} onOpenChange={setThreadDrawerOpen}>
                   <SheetTrigger asChild>
                     <button
@@ -466,10 +465,10 @@ export default function AskSolo() {
               {/* Context-note strip (deep-link state) */}
               {contextId && messages.length <= 1 && (
                 <div
-                  className="px-5 sm:px-8 py-3 border-b border-[#E5E2DC] grid grid-cols-[auto_1fr_auto] gap-3 items-baseline"
+                  className="px-5 sm:px-8 py-3 border-b border-border grid grid-cols-[auto_1fr_auto] gap-3 items-baseline"
                   style={{ background: "#F3F1ED" }}
                 >
-                  <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "#1A8A72" }}>
+                  <span className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "#15735F" }}>
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
                     About
                   </span>
@@ -500,10 +499,10 @@ export default function AskSolo() {
 
                 {/* Streaming message, text cursor + drafting flag */}
                 {sending && (
-                  <div className="py-5 border-t border-[#EDEBE6] first:border-t-0">
-                    <div className="flex items-baseline gap-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] mb-3.5" style={{ color: "#1A8A72" }}>
+                  <div className="py-5 border-t border-border first:border-t-0">
+                    <div className="flex items-baseline gap-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] mb-3.5" style={{ color: "#15735F" }}>
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                      <span style={{ color: "#1A8A72", fontWeight: 700 }}>Solo replied</span>
+                      <span style={{ color: "#15735F", fontWeight: 700 }}>Solo replied</span>
                       <span
                         className="ml-auto text-[10px] italic normal-case tracking-[0.04em] text-muted-foreground/80 font-medium inline-flex items-center gap-1.5"
                       >
@@ -526,10 +525,10 @@ export default function AskSolo() {
                 {/* 7/10 inline nudge, only show when quota is in warning state and not yet dismissed */}
                 {quotaWarning && messages.length > 0 && !nudgeDismissed && (
                   <div
-                    className="my-5 px-5 py-3.5 rounded-r grid grid-cols-[auto_1fr_auto] gap-x-4 items-baseline"
+                    className="my-5 px-5 py-3.5 grid grid-cols-[auto_1fr_auto] gap-x-4 items-baseline"
                     style={{ background: "#F3F1ED", borderLeft: "2px solid #2ECDB0" }}
                   >
-                    <span className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "#1A8A72" }}>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "#15735F" }}>
                       Heads up
                     </span>
                     <div className="text-[13px] text-foreground/90 leading-[1.5]">
@@ -549,14 +548,14 @@ export default function AskSolo() {
               </div>
 
               {/* Input dock */}
-              <div className="border-t border-[#E5E2DC] px-5 sm:px-8 py-4">
+              <div className="border-t border-border px-5 sm:px-8 py-4">
                 <div
-                  className={`rounded-md p-3 grid grid-cols-[1fr_auto] gap-3 items-end transition-colors ${
+                  className={`p-3 grid grid-cols-[1fr_auto] gap-3 items-end transition-colors ${
                     quotaExhausted ? "opacity-55 cursor-not-allowed" : ""
                   }`}
                   style={{
                     background: quotaExhausted ? "#F3F1ED" : "#FAF9F7",
-                    border: "1.5px solid #D5D0C8",
+                    border: "1px solid #D1CEC7",
                   }}
                 >
                   <textarea
@@ -579,8 +578,7 @@ export default function AskSolo() {
                   <button
                     onClick={handleSend}
                     disabled={!input.trim() || sending || quotaExhausted}
-                    className="inline-flex items-center justify-center rounded-md px-4 py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:bg-[#ECEAE4] disabled:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-100"
-                    style={!input.trim() || sending || quotaExhausted ? undefined : { background: "#2ECDB0" }}
+                    className="cta-block inline-flex items-center justify-center px-4 py-2.5 text-[13px] disabled:bg-[#ECEAE4] disabled:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-100"
                   >
                     {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ask"}
                   </button>
@@ -599,7 +597,7 @@ export default function AskSolo() {
                     className={isSubscriber ? "font-semibold" : ""}
                     style={
                       isSubscriber
-                        ? { color: "#1A8A72" }
+                        ? { color: "#15735F" }
                         : quotaExhausted
                         ? { color: "#D4940A", fontWeight: 600 }
                         : undefined
@@ -656,10 +654,10 @@ function ThreadList({
         type="button"
         onClick={onNewThread}
         disabled={isExhausted}
-        className="mx-4 mb-4 px-3.5 py-2.5 rounded-md inline-flex items-center gap-2 text-[13px] font-semibold text-foreground transition-colors disabled:opacity-55 disabled:cursor-not-allowed"
-        style={{ background: "#F3F1ED", border: "1.5px solid #D5D0C8" }}
+        className="mx-4 mb-4 px-3.5 py-2.5 inline-flex items-center gap-2 text-[13px] font-semibold text-foreground transition-colors disabled:opacity-55 disabled:cursor-not-allowed"
+        style={{ background: "#F3F1ED", border: "1px solid #D1CEC7" }}
       >
-        <Plus className="h-3.5 w-3.5" style={{ color: "#2ECDB0" }} />
+        <Plus className="h-3.5 w-3.5" style={{ color: "#15735F" }} />
         <span>New conversation</span>
       </button>
 
@@ -733,8 +731,8 @@ function QuotaPill({
   if (isSubscriber) {
     return (
       <div
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-[0.16em] whitespace-nowrap"
-        style={{ background: "#D6F5EE", color: "#1A8A72" }}
+        className="inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] whitespace-nowrap"
+        style={{ background: "#D6F5EE", color: "#15735F" }}
       >
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
         Subscriber
@@ -744,7 +742,7 @@ function QuotaPill({
   if (exhausted) {
     return (
       <div
-        className="inline-flex items-baseline gap-2 px-3 py-1.5 rounded-full text-[11px] tracking-[0.04em] whitespace-nowrap"
+        className="inline-flex items-baseline gap-2 px-3 py-1.5 text-[11px] tracking-[0.04em] whitespace-nowrap"
         style={{ background: "#1D2025" }}
       >
         <span className="text-[10px] font-bold uppercase tracking-[0.14em]" style={{ color: "rgba(250,249,247,0.65)" }}>
@@ -756,7 +754,7 @@ function QuotaPill({
   }
   return (
     <div
-      className="inline-flex items-baseline gap-2 px-3 py-1.5 rounded-full text-[11px] tracking-[0.04em] whitespace-nowrap"
+      className="inline-flex items-baseline gap-2 px-3 py-1.5 text-[11px] tracking-[0.04em] whitespace-nowrap"
       style={{ background: warning ? "#FDF8E8" : "#F3F1ED" }}
     >
       <span
@@ -777,13 +775,13 @@ function QuotaPill({
 function Message({ msg, formatTime }: { msg: ChatMessage; formatTime: (d: Date) => string }) {
   const isUser = msg.role === "user";
   return (
-    <div className="py-5 border-t border-[#EDEBE6] first:border-t-0">
+    <div className="py-5 border-t border-border first:border-t-0">
       <div className="flex items-baseline gap-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] mb-3.5">
         <span
           className="inline-block w-1.5 h-1.5 rounded-full"
           style={{ background: isUser ? "#7A7670" : "#2ECDB0" }}
         />
-        <span style={{ color: isUser ? "#1D2025" : "#1A8A72", fontWeight: isUser ? 600 : 700 }}>
+        <span style={{ color: isUser ? "#1D2025" : "#15735F", fontWeight: isUser ? 600 : 700 }}>
           {isUser ? "You asked" : "Solo replied"}
         </span>
         <span className="ml-auto text-[10px] normal-case tracking-[0.04em] text-muted-foreground/60 font-medium">
@@ -825,7 +823,7 @@ function EmptyWelcome({ onSuggest }: { onSuggest: (q: string) => void }) {
         Your report, your strands, your check-ins. Solo replies in plain language and links back to the modules it's drawing on.
       </p>
 
-      <div className="mt-12 pt-6 border-t border-[#E5E2DC]">
+      <div className="mt-12 pt-6 border-t border-border">
         <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60 mb-4">
           Three places people usually start
         </div>
@@ -836,7 +834,7 @@ function EmptyWelcome({ onSuggest }: { onSuggest: (q: string) => void }) {
               type="button"
               onClick={() => onSuggest(s.q)}
               className={`w-full text-left grid grid-cols-[1fr_auto] gap-4 items-baseline py-3.5 ${
-                i > 0 ? "border-t border-[#EDEBE6]" : ""
+                i > 0 ? "border-t border-border" : ""
               }`}
             >
               <span

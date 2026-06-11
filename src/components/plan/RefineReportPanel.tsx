@@ -109,7 +109,7 @@ export default function RefineReportPanel({
               onClick={submitRefinement}
               disabled={submitting || !feedback.trim() || remaining <= 0}
               style={{ background: "#2ECDB0" }}
-              className="text-white font-semibold border-0 hover:opacity-90 disabled:opacity-40 min-w-[140px]"
+              className="text-primary-foreground font-semibold border-0 hover:opacity-90 disabled:opacity-40 min-w-[140px]"
             >
               {submitting ? (
                 <span className="inline-flex items-center gap-2">

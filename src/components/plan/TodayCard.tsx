@@ -89,10 +89,10 @@ export default function TodayCard({
 
   if (state === "loading") {
     return (
-      <div className="rounded-xl border border-border bg-[hsl(var(--surface-panel))] p-8 animate-pulse">
-        <div className="h-5 w-3/4 rounded bg-[hsl(var(--surface-inset))]" />
-        <div className="mt-4 h-4 w-full rounded bg-[hsl(var(--surface-inset))]" />
-        <div className="mt-6 h-10 w-48 rounded-lg bg-[hsl(var(--surface-inset))]" />
+      <div className="border-t border-border pt-6 animate-pulse">
+        <div className="h-5 w-3/4 bg-[hsl(var(--surface-inset))]" />
+        <div className="mt-4 h-4 w-full bg-[hsl(var(--surface-inset))]" />
+        <div className="mt-6 h-10 w-48 bg-[hsl(var(--surface-inset))]" />
       </div>
     );
   }
@@ -104,7 +104,7 @@ export default function TodayCard({
 
   return (
     <motion.div
-      className="rounded-xl border border-border bg-[hsl(var(--surface-panel))] p-8"
+      className=""
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -126,8 +126,8 @@ export default function TodayCard({
           onClick={() => handleCTA(cta.action)}
           className={
             cta.variant === "primary"
-              ? "rounded-lg bg-primary px-6 text-[15px] font-semibold text-primary-foreground hover:bg-primary/90"
-              : "rounded-lg px-6 text-[15px] font-medium"
+              ? "bg-primary px-6 text-[15px] font-semibold text-primary-foreground hover:bg-primary/90"
+              : "px-6 text-[15px] font-medium"
           }
         >
           {cta.label}

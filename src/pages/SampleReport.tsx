@@ -102,18 +102,14 @@ export default function SampleReport() {
     <div className="relative min-h-screen flex flex-col text-foreground">
 
       {/*
-        ── Sample-strip, persistent warning band (F3).
-        Visual-audit 2026-05-18: when this strip rendered with
-        py-2.5 + its own borderBottom it read as a second header
-        chrome stacked above the TopBar ("double chrome" finding).
-        Tightened to py-1.5 and the separator border dropped so
-        the strip sits flush against the TopBar's top edge, one
-        visual chrome unit, warning context on top, nav below.
-        Kept sticky-top-0 z-50 so it pins above the TopBar on scroll.
+        ── Sample-strip, persistent band (F3).
+        ADR-026 Phase 2 (2026-06-11): flattened from the warning-tint
+        band to the FT register — ivory strip, hairline bottom rule,
+        amber dot as the "sample" marker. Kept sticky-top-0 z-50 so it
+        pins above the masthead on scroll.
       */}
       <div
-        className="sticky top-0 z-50 px-6 py-1.5 grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-x-4 items-baseline"
-        style={{ background: "#FDF8E8" }}
+        className="sticky top-0 z-50 border-b border-border bg-[#FAF9F7] px-6 py-1.5 grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-x-4 items-baseline"
       >
         <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: "#A37500" }}>
           <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#D4940A" }} />
@@ -126,7 +122,7 @@ export default function SampleReport() {
           onClick={handleStartTest}
           className="text-[12px] font-semibold text-foreground underline underline-offset-[3px] decoration-[#A37500] hover:decoration-foreground whitespace-nowrap"
         >
-          Find what fits, for you →
+          Find what works, for you →
         </button>
       </div>
 
@@ -136,15 +132,14 @@ export default function SampleReport() {
         <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-lg px-6">
 
-            {/* ── Page-header panel ── */}
-            <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-10 sm:py-12 mb-6">
-              <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4 flex-wrap">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                <span className="text-foreground">Sample report</span>
+            {/* ── Page header — flat editorial head (ADR-026 Phase 2) ── */}
+            <header className="pt-4 pb-8">
+              <div className="flex items-center gap-2.5 mb-4 flex-wrap">
+                <span className="eyebrow">Sample report</span>
                 <span className="text-muted-foreground/40">·</span>
-                <span className="text-muted-foreground/70">Sarah Okafor</span>
+                <span className="eyebrow eyebrow--muted">Sarah Okafor</span>
                 <span className="text-muted-foreground/40">·</span>
-                <span className="text-muted-foreground/70 normal-case tracking-normal text-[11px] font-normal">example profile</span>
+                <span className="text-muted-foreground/70 text-[11px]">example profile</span>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 lg:gap-10 items-end">
@@ -152,7 +147,7 @@ export default function SampleReport() {
                   <h1 className="title-h1">
                     This is the report part of Sarah's £19.99.
                   </h1>
-                  <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[58ch]">
+                  <p className="standfirst mt-4 max-w-[58ch]">
                     A real example, fractional FD path, 11 years in corporate finance. Ten scored business paths with our top recommendations, archetype analysis, AI defensibility. The same £19.99 also bought Sarah a 30-day activation plan built from this report, daily check-ins to track real progress, and the first three guidance modules from the library. Yours would map to your profile; the details would be yours.
                   </p>
                 </div>
@@ -171,54 +166,49 @@ export default function SampleReport() {
                   </div>
                 </div>
               </div>
-            </section>
+            </header>
 
             {/* ── Two-column shell: TOC sidebar + report body ── */}
             <div className="flex gap-8 lg:gap-10">
 
-              {/* TOC sidebar, desktop only (F5) */}
+              {/* TOC sidebar, desktop only (F5) — flat hairline-rule list (ADR-026 Phase 2) */}
               <aside className="hidden lg:block w-[220px] shrink-0">
-                <div className="sticky top-[68px] pt-2">
-                  <div className="panel-ivory py-5">
-                    <div className="px-5 pb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                      <span>Sarah's report</span>
-                    </div>
-                    <nav aria-label="Report sections">
-                      <ul className="flex flex-col gap-0.5">
-                        {visibleSections.map((s) => {
-                          const isActive = activeSectionId === s.id;
-                          return (
-                            <li key={s.id}>
-                              <button
-                                type="button"
-                                onClick={() => scrollToSection(s.id)}
-                                className={`group w-full flex items-baseline gap-3 px-4 py-2 text-left text-[13px] transition-colors border-l-2 ${
-                                  isActive
-                                    ? "border-primary bg-[#FAF9F7] font-semibold text-foreground"
-                                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-[#FAF9F7]"
+                <div className="sticky top-6 pt-2">
+                  <div className="rule-head">Sarah's report</div>
+                  <nav aria-label="Report sections">
+                    <ul className="flex flex-col">
+                      {visibleSections.map((s) => {
+                        const isActive = activeSectionId === s.id;
+                        return (
+                          <li key={s.id} className="border-b border-border">
+                            <button
+                              type="button"
+                              onClick={() => scrollToSection(s.id)}
+                              className={`group w-full flex items-baseline gap-3 pl-3 py-2.5 text-left text-[13px] transition-colors border-l-2 ${
+                                isActive
+                                  ? "border-primary font-semibold text-foreground"
+                                  : "border-transparent text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              <span
+                                className={`shrink-0 text-[10px] font-bold tabular-nums tracking-[0.08em] ${
+                                  isActive ? "text-[#15735F]" : "text-muted-foreground/60"
                                 }`}
                               >
-                                <span
-                                  className={`shrink-0 text-[10px] font-bold tabular-nums tracking-[0.08em] ${
-                                    isActive ? "text-primary" : "text-muted-foreground/60"
-                                  }`}
-                                >
-                                  {s.numeral}
-                                </span>
-                                <span className="truncate">{s.label}</span>
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </nav>
-                    <div className="px-5 pt-4 mt-1 border-t border-[#E5E2DC]">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
-                        Sample
-                      </div>
-                      <div className="mt-1 text-[12px] text-foreground">9 sections</div>
+                                {s.numeral}
+                              </span>
+                              <span className="truncate">{s.label}</span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </nav>
+                  <div className="pt-4 mt-1">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                      Sample
                     </div>
+                    <div className="mt-1 text-[12px] text-foreground">9 sections</div>
                   </div>
                 </div>
               </aside>
@@ -266,12 +256,8 @@ export default function SampleReport() {
                   return node;
                 })}
 
-                {/* ── Closing CTA ──
-                  * Consistency-sweep 2026-05-18: wrapped in panel-ivory so the
-                  * body copy + microcopy don't sit illegibly on the office
-                  * photo. Same fix pattern as /pricing + /faq closing CTAs.
-                  */}
-                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-14 sm:py-16 text-center mt-2">
+                {/* ── Closing CTA — flat editorial band on a heavy ink rule (ADR-026 Phase 2) ── */}
+                <section className="border-t-[3px] border-foreground py-14 sm:py-16 text-center mt-8">
                   <div className="text-[11px] font-bold uppercase tracking-[0.22em] text-muted-foreground mb-4">
                     You've seen Sarah's
                   </div>
@@ -281,15 +267,11 @@ export default function SampleReport() {
                   >
                     Eight minutes for yours.
                   </h3>
-                  <p className="font-display text-[15px] sm:text-[17px] text-muted-foreground max-w-[58ch] mx-auto mb-7">
+                  <p className="standfirst max-w-[58ch] mx-auto mb-7">
                     Your archetype, your paths, your income outlook, your AI defensibility, plus a 30-day activation plan, daily check-ins, and the first three guidance modules. Built from your answers, not Sarah's. £19.99 after the free preview.
                   </p>
-                  <button
-                    onClick={handleStartTest}
-                    className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
-                    style={{ background: "#2ECDB0" }}
-                  >
-                    Find what fits
+                  <button onClick={handleStartTest} className="cta-block">
+                    Find what works
                   </button>
                   <div className="mt-4 text-[11px] text-muted-foreground/70 tracking-[0.04em]">
                     One-time payment · No subscription required · Free preview before you pay
@@ -360,11 +342,12 @@ function SectionHead({
 }) {
   const labelColour = tone === "dark" ? "text-[#FAF9F7]" : "text-foreground";
   const metaColour = tone === "dark" ? "text-[rgba(250,249,247,0.55)]" : "text-muted-foreground/80";
-  const ruleColour = tone === "dark" ? "border-white/10" : "border-[#E5E2DC]";
+  const ruleColour = tone === "dark" ? "border-white/10" : "border-border";
+  const numeralColour = tone === "dark" ? "text-[#2ECDB0]" : "text-[#15735F]";
   return (
     <div className={`flex items-baseline justify-between gap-4 pb-4 border-b ${ruleColour} mb-6`}>
       <div className="text-[11px] font-semibold uppercase tracking-[0.18em]">
-        <span className="text-primary mr-3 tabular-nums">{meta.numeral}</span>
+        <span className={`${numeralColour} mr-3 tabular-nums`}>{meta.numeral}</span>
         <span className={labelColour}>{meta.label}</span>
       </div>
       <div className={`text-[11px] font-semibold uppercase tracking-[0.14em] ${metaColour} tabular-nums shrink-0`}>
@@ -376,7 +359,7 @@ function SectionHead({
 
 function FullSection({ meta, children }: { meta: SectionMeta; children: ReactNode }) {
   return (
-    <section id={meta.id} className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6 scroll-mt-24">
+    <section id={meta.id} className="border-t border-border py-8 sm:py-10 scroll-mt-24">
       <SectionHead meta={meta} />
       <div className="prose-serif">{children}</div>
     </section>
@@ -406,10 +389,10 @@ function BriefSection({
 
   if (expanded) {
     return (
-      <section id={meta.id} className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6 scroll-mt-24">
+      <section id={meta.id} className="border-t border-border py-8 sm:py-10 scroll-mt-24">
         <SectionHead meta={meta} />
         <div className="prose-serif">{children}</div>
-        <div className="mt-6 pt-5 border-t border-[#E5E2DC] flex justify-end">
+        <div className="mt-6 pt-5 border-t border-border flex justify-end">
           <button
             type="button"
             onClick={onToggle}
@@ -425,7 +408,7 @@ function BriefSection({
   return (
     <section
       id={meta.id}
-      className="panel-ivory px-6 sm:px-10 lg:px-12 py-5 mb-6 scroll-mt-24 hover:bg-[#FAFAF7] transition-colors"
+      className="border-t border-border py-5 scroll-mt-24"
     >
       <button
         type="button"
@@ -434,7 +417,7 @@ function BriefSection({
       >
         <div className="flex items-baseline gap-4 flex-1 min-w-0">
           <div className="text-[11px] font-semibold uppercase tracking-[0.18em] shrink-0">
-            <span className="text-primary mr-2 tabular-nums">{meta.numeral}</span>
+            <span className="text-[#15735F] mr-2 tabular-nums">{meta.numeral}</span>
             <span className="text-foreground">{meta.label}</span>
           </div>
           <span className="text-[14px] text-muted-foreground truncate hidden sm:inline">
@@ -452,7 +435,7 @@ function BriefSection({
 
 function DarkSection({ meta, children }: { meta: SectionMeta; children: ReactNode }) {
   return (
-    <section id={meta.id} className="panel-dark px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6 scroll-mt-24">
+    <section id={meta.id} className="panel-dark px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mt-8 scroll-mt-24">
       <SectionHead meta={meta} tone="dark" />
       <div className="prose-serif text-[#FAF9F7]">{children}</div>
     </section>
@@ -464,22 +447,18 @@ function DarkSection({ meta, children }: { meta: SectionMeta; children: ReactNod
 function MidContentConversion({ onTake }: { onTake: () => void }) {
   return (
     <section
-      className="mb-6 px-6 sm:px-10 py-6 grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-4 lg:gap-8 items-center rounded-r-md"
+      className="my-8 px-6 sm:px-10 py-6 grid grid-cols-1 lg:grid-cols-[auto_1fr_auto] gap-4 lg:gap-8 items-center"
       style={{ background: "#F3F1ED", borderLeft: "3px solid #2ECDB0" }}
     >
-      <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: "#1A8A72" }}>
+      <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: "#15735F" }}>
         What you'd get
       </span>
-      <p className="font-display text-[15.5px] text-foreground leading-[1.45]" style={{ letterSpacing: "-0.012em" }}>
+      <p className="standfirst text-[15.5px]">
         <strong>This report is one piece of what £19.99 buys.</strong>{" "}
         It comes with a 30-day activation plan, daily check-ins, and the first three guidance modules, all built around your archetype, your domains, your day-rate band. Eight minutes; pay only after the preview.
       </p>
-      <button
-        onClick={onTake}
-        className="inline-flex items-center justify-center rounded-md px-5 py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
-        style={{ background: "#2ECDB0" }}
-      >
-        Find what fits
+      <button onClick={onTake} className="cta-block whitespace-nowrap">
+        Find what works
       </button>
     </section>
   );

@@ -12,7 +12,7 @@ export default function Footer({ sticky = true }: FooterProps) {
       <footer
         className={
           sticky
-            ? "fixed bottom-0 left-0 right-0 z-40 py-4 shadow-[0_-2px_12px_rgba(0,0,0,0.25)]"
+            ? "fixed bottom-0 left-0 right-0 z-40 py-4 border-t border-[#3A3833]"
             : "relative z-10 py-10"
         }
         style={{ background: "#1A1915", color: "#FAF9F7" }}

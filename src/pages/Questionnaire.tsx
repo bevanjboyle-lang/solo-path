@@ -293,12 +293,12 @@ export default function Questionnaire() {
     <div className="relative min-h-screen text-foreground">
       <TopBar minimal />
 
-      <main className="pt-[68px]">
-        <section className="py-10 lg:py-14">
+      <main className="pt-6">
+        <section className="py-6 lg:py-8">
           <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory">
-              {/* ─── Panel top row: Back to /cv-upload + Auto-saved indicator + Solo logo ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+            <div>
+              {/* ─── Top row: Back to /cv-upload + Auto-saved indicator (flat page, ADR-026 Phase 3) ─── */}
+              <div className="flex items-center justify-between gap-6">
                 <button
                   onClick={() => navigate("/cv-upload")}
                   className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors"
@@ -318,15 +318,15 @@ export default function Questionnaire() {
               </div>
 
               {/* ─── Section label ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pt-6">
+              <div className="pt-6">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  <span className="text-primary mr-3 tabular-nums">02</span>
+                  <span className="text-[#15735F] mr-3 tabular-nums">02</span>
                   Activation
                 </div>
               </div>
 
               {/* ─── Progress header ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pt-4">
+              <div className="pt-4">
                 <ProgressHeader
                   currentStep={stepNumber}
                   totalSteps={totalSteps}
@@ -338,7 +338,7 @@ export default function Questionnaire() {
 
               {/* ─── Body: question step OR email capture ─── */}
               <div
-                className={`px-8 sm:px-12 lg:px-16 pb-10 transition-opacity duration-200 ${
+                className={`pb-10 transition-opacity duration-200 ${
                   isGenerating ? "opacity-50 pointer-events-none" : "opacity-100"
                 }`}
               >
@@ -382,7 +382,7 @@ export default function Questionnaire() {
                           setGenError(null);
                           goForward();
                         }}
-                        className="text-primary border-b-[1.5px] border-primary pb-0.5 hover:opacity-80 transition-opacity"
+                        className="text-[#15735F] border-b-[1.5px] border-primary pb-0.5 hover:opacity-80 transition-opacity"
                       >
                         Try again
                       </button>
@@ -392,7 +392,7 @@ export default function Questionnaire() {
               </div>
 
               {/* ─── Action row ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pb-12 border-t border-[#E5E2DC] pt-8">
+              <div className="pb-12 border-t border-border pt-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     {isGenerating ? (
@@ -416,9 +416,9 @@ export default function Questionnaire() {
                   <button
                     onClick={goForward}
                     disabled={!isStepValid() || isGenerating}
-                    className={`rounded-md px-7 py-3 text-[14px] font-semibold transition-colors w-full sm:w-auto flex items-center justify-center gap-2 ${
+                    className={`px-7 py-3 text-[14px] font-semibold transition-colors w-full sm:w-auto flex items-center justify-center gap-2 ${
                       isStepValid() && !isGenerating
-                        ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90"
+                        ? "cta-block"
                         : "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
                     }`}
                   >
@@ -446,7 +446,7 @@ export default function Questionnaire() {
       <DialogPrimitive.Root open={showRefusalModal} onOpenChange={setShowRefusalModal}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/65 backdrop-blur-[4px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] max-w-[640px] w-[calc(100vw-2rem)] bg-[#FAF9F7] border border-[#E5E2DC] rounded-2xl shadow-2xl overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-200">
+          <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%] max-w-[640px] w-[calc(100vw-2rem)] bg-[#FAF9F7] border border-border overflow-hidden data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 duration-200">
             {/* Head */}
             <div className="px-8 pt-8 pb-6">
               <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground mb-4">
@@ -459,7 +459,7 @@ export default function Questionnaire() {
             </div>
 
             {/* Dark consequence inset, three numbered sentences from the spec */}
-            <div className="mx-8 my-2 bg-[#1A1915] rounded-xl overflow-hidden">
+            <div className="mx-8 my-2 bg-[#1A1915] overflow-hidden">
               {[
                 "If you close this tab, your report is gone.",
                 "There is no recovery.",
@@ -488,11 +488,11 @@ export default function Questionnaire() {
             </DialogPrimitive.Description>
 
             {/* Inverted hierarchy, mint primary on cancel, tertiary link on confirm */}
-            <div className="px-8 pb-8 pt-2 border-t border-[#E5E2DC]">
+            <div className="px-8 pb-8 pt-2 border-t border-border">
               <div className="flex flex-col items-stretch gap-3 pt-6">
                 <button
                   onClick={() => setShowRefusalModal(false)}
-                  className="rounded-md px-7 py-3 text-[14px] font-semibold bg-primary text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90 transition-colors w-full"
+                  className="cta-block px-7 py-3 text-[14px] font-semibold transition-colors w-full text-center"
                 >
                   Go back and add my email
                 </button>
@@ -535,7 +535,7 @@ function QuestionEyebrow({
         </>
       ) : (
         <span className="text-foreground">
-          <span className="text-primary mr-2 tabular-nums">
+          <span className="text-[#15735F] mr-2 tabular-nums">
             {String(stepNumber).padStart(2, "0")}
           </span>
           Question {String(stepNumber).padStart(2, "0")}
@@ -584,7 +584,7 @@ function QuestionStep({
           <h2 className="lg:col-span-8 text-[28px] sm:text-[32px] lg:text-[36px] font-semibold tracking-tight leading-[1.2] text-foreground">
             {question.text}
             {question.required === false && (
-              <span className="ml-3 align-middle inline-block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70 border border-[#D8D4CC] rounded px-2 py-0.5">
+              <span className="ml-3 align-middle inline-block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70 border border-border px-2 py-0.5">
                 Optional
               </span>
             )}
@@ -617,14 +617,14 @@ function QuestionStep({
         )}
 
         {question.type === "text" && (
-          <div className="bg-[#F3F0EA] border border-[#D8D4CC] rounded-xl overflow-hidden">
+          <div className="bg-[#F3F0EA] border border-border overflow-hidden">
             <textarea
               className="w-full resize-y bg-transparent px-6 py-5 text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground/60 focus:outline-none min-h-[180px]"
               placeholder={question.placeholder}
               value={textValue}
               onChange={(e) => onChange(e.target.value)}
             />
-            <div className="border-t border-[#E5E2DC] px-6 py-3 flex items-baseline justify-between gap-4 text-[12px] text-muted-foreground">
+            <div className="border-t border-border px-6 py-3 flex items-baseline justify-between gap-4 text-[12px] text-muted-foreground">
               <span>
                 {question.expandableHint ? (
                   <em className="not-italic">{question.expandableHint}</em>
@@ -650,7 +650,7 @@ function QuestionStep({
             <select
               value={typeof value === "string" ? value : ""}
               onChange={(e) => onChange(e.target.value)}
-              className="w-full bg-[#F3F0EA] border border-[#D8D4CC] rounded-xl px-6 py-5 pr-12 text-[15px] text-foreground focus:outline-none focus:border-primary cursor-pointer appearance-none"
+              className="w-full bg-[#F3F0EA] border border-border px-6 py-5 pr-12 text-[15px] text-foreground focus:outline-none focus:border-primary cursor-pointer appearance-none"
             >
               <option value="">Select an option…</option>
               {question.options.map((opt) => (
@@ -695,18 +695,18 @@ function RadioStack({
             key={opt}
             onClick={() => onChange(opt)}
             type="button"
-            className={`relative text-left flex items-start gap-5 px-5 py-4 sm:px-6 sm:py-5 border rounded-xl transition-colors group ${
+            className={`relative text-left flex items-start gap-5 px-5 py-4 sm:px-6 sm:py-5 border transition-colors group ${
               selected
                 ? "border-primary bg-gradient-to-r from-primary/[0.06] to-transparent"
-                : "border-[#E5E2DC] bg-white hover:border-[#C8C3BA]"
+                : "border-border bg-white hover:border-[#C8C3BA]"
             }`}
           >
             {selected && (
-              <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-primary rounded-r" />
+              <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-primary" />
             )}
             <span
               className={`shrink-0 w-8 text-center text-[12px] font-semibold tabular-nums pt-0.5 ${
-                selected ? "text-primary" : "text-muted-foreground"
+                selected ? "text-[#15735F]" : "text-muted-foreground"
               }`}
             >
               {prefix}
@@ -787,20 +787,20 @@ function CheckboxStack({
                 if (selected) onChange(value.filter((s) => s !== opt));
                 else onChange([...value, opt]);
               }}
-              className={`relative text-left flex items-start gap-5 px-5 py-4 sm:px-6 sm:py-5 border rounded-xl transition-colors ${
+              className={`relative text-left flex items-start gap-5 px-5 py-4 sm:px-6 sm:py-5 border transition-colors ${
                 selected
                   ? "border-primary bg-gradient-to-r from-primary/[0.06] to-transparent"
                   : atMax
-                  ? "border-[#E5E2DC] bg-[#F3F0EA] opacity-50 cursor-not-allowed"
-                  : "border-[#E5E2DC] bg-white hover:border-[#C8C3BA]"
+                  ? "border-border bg-[#F3F0EA] opacity-50 cursor-not-allowed"
+                  : "border-border bg-white hover:border-[#C8C3BA]"
               }`}
             >
               {selected && (
-                <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-primary rounded-r" />
+                <span className="absolute left-0 top-2 bottom-2 w-[2px] bg-primary" />
               )}
               <span
                 className={`shrink-0 w-8 text-center text-[12px] font-semibold tabular-nums pt-0.5 ${
-                  selected ? "text-primary" : "text-muted-foreground"
+                  selected ? "text-[#15735F]" : "text-muted-foreground"
                 }`}
               >
                 {prefix}
@@ -889,7 +889,7 @@ function EmailCaptureStep({
               placeholder="e.g. Jane"
               value={firstName}
               onChange={(e) => onFirstNameChange(e.target.value)}
-              className="w-full bg-white border border-[#D8D4CC] rounded-lg px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+              className="w-full bg-white border border-border px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
             />
           </div>
           {!emailRefused && (
@@ -906,7 +906,7 @@ function EmailCaptureStep({
                 placeholder="you@work-or-personal.com"
                 value={email}
                 onChange={(e) => onEmailChange(e.target.value)}
-                className="w-full bg-white border border-[#D8D4CC] rounded-lg px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+                className="w-full bg-white border border-border px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
               />
             </div>
           )}
@@ -920,9 +920,9 @@ function EmailCaptureStep({
         </div>
 
         {/* Trust line, bracketed stone-tinted inset between fields and button (F4) */}
-        <div className="bg-[#F3F0EA] border border-[#E5E2DC] rounded-lg px-5 py-3.5 flex items-center gap-4">
+        <div className="bg-[#F3F0EA] border border-border px-5 py-3.5 flex items-center gap-4">
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary shrink-0">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#15735F] shrink-0">
             Trust
           </span>
           <span className="text-[13.5px] text-foreground leading-snug">

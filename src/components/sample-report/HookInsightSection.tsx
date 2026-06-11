@@ -24,17 +24,17 @@ export default function HookInsightSection({ hook_insight }: Props) {
   return (
     <section>
       <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your Market Edge</h2>
-      <div className="rounded-lg bg-muted border-l-[6px] border-primary p-6 sm:p-10">
+      <div className="border-l-[3px] border-primary pl-6 sm:pl-10 py-2">
         <div className="flex items-start gap-3 mb-4">
-          <Lightbulb className="h-5 w-5 text-primary mt-1 shrink-0" />
-          <h3 className="text-[1.5rem] font-bold text-primary leading-snug">{headline}</h3>
+          <Lightbulb className="h-5 w-5 text-[#15735F] mt-1 shrink-0" />
+          <h3 className="text-[1.5rem] font-bold text-[#15735F] leading-snug">{headline}</h3>
         </div>
         <p className="text-base leading-relaxed text-secondary-foreground">{paragraph}</p>
 
         {/* First move callout */}
         {first_move && (
-          <div className="mt-6 rounded-lg border border-primary/30 bg-card p-5">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-2">
+          <div className="mt-6 border border-border bg-card p-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#15735F] mb-2">
               Your single most important early move
             </p>
             <p className="text-base font-semibold text-foreground mb-1">{first_move.action}</p>
@@ -43,7 +43,7 @@ export default function HookInsightSection({ hook_insight }: Props) {
             )}
 
             {(first_move.draft_subject || first_move.draft_body) && (
-              <div className="rounded-md border border-border bg-muted overflow-hidden">
+              <div className="border border-border bg-muted overflow-hidden">
                 <div className="flex items-center justify-between border-b border-border px-4 py-2.5 bg-card">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />

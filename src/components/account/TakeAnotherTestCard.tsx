@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { claimSecondReport } from "@/lib/handlers";
@@ -132,21 +130,23 @@ export default function TakeAnotherTestCard() {
           ? "Not yet available"
           : "Start new report";
     return (
-      <Button size="sm" onClick={handleClick} disabled={disabled} className="mt-4">
+      <button
+        onClick={handleClick}
+        disabled={disabled}
+        className="cta-block mt-4 inline-flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed"
+      >
         {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : label}
-      </Button>
+      </button>
     );
   };
 
   return (
-    <Card className="border-border bg-[hsl(var(--surface-panel))]">
-      <CardContent className="p-6">
-        <h2 className="font-display text-base font-semibold text-foreground mb-3">
-          Take another test
-        </h2>
-        {renderBody()}
-        {renderButton()}
-      </CardContent>
-    </Card>
+    <div>
+      <h2 className="font-display text-base font-semibold text-foreground mb-3">
+        Take another test
+      </h2>
+      {renderBody()}
+      {renderButton()}
+    </div>
   );
 }

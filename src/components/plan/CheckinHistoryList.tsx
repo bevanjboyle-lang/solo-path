@@ -80,8 +80,8 @@ function fmtDayOfWeek(d: Date): string {
 function StatusPill({ status }: { status: CheckinTimelineEntryStatus }) {
   if (status === "completed") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-white" style={{ background: "#2ECDB0" }}>
-        <span className="inline-flex items-center justify-center w-2 h-2 rounded-full text-[7px] font-bold" style={{ background: "rgba(255,255,255,0.9)", color: "#2ECDB0" }}>
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-primary-foreground" style={{ background: "#2ECDB0" }}>
+        <span className="inline-flex items-center justify-center w-2 h-2 text-[7px] font-bold" style={{ background: "rgba(255,255,255,0.9)", color: "#15735F" }}>
           ✓
         </span>
         Completed
@@ -90,23 +90,23 @@ function StatusPill({ status }: { status: CheckinTimelineEntryStatus }) {
   }
   if (status === "today") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em]" style={{ background: "transparent", border: "1.5px solid #2ECDB0", color: "#1A8A72" }}>
-        <span className="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#2ECDB0" }} />
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em]" style={{ background: "transparent", border: "1.5px solid #2ECDB0", color: "#15735F" }}>
+        <span className="inline-block w-1.5 h-1.5 animate-pulse" style={{ background: "#2ECDB0" }} />
         Today
       </span>
     );
   }
   if (status === "missed") {
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground" style={{ background: "#F3F1ED", border: "1px solid #D5D0C8" }}>
-        <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#A09A92" }} />
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground" style={{ background: "#F3F1ED", border: "1px solid #D1CEC7" }}>
+        <span className="inline-block w-1.5 h-1.5" style={{ background: "#A09A92" }} />
         Missed
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] rounded-full text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
-      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ border: "1px solid #A09A92" }} />
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
+      <span className="inline-block w-1.5 h-1.5" style={{ border: "1px solid #A09A92" }} />
       Future
     </span>
   );
@@ -136,12 +136,12 @@ function WeekSeparator({ bucket }: { bucket: WeekBucket }) {
   const isAhead = futureCount === bucket.entries.length;
 
   return (
-    <div className="px-6 sm:px-8 py-3 flex items-baseline gap-3 border-t border-[#E5E2DC]">
+    <div className="px-6 sm:px-8 py-3 flex items-baseline gap-3 border-t border-border">
       <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
-        <span className="text-primary tabular-nums mr-2">W{bucket.weekNumber}</span>
+        <span className="text-[#15735F] tabular-nums mr-2">W{bucket.weekNumber}</span>
         Week {bucket.weekNumber} · {dateRange}{isAhead ? " · ahead" : ""}
       </span>
-      <span className="flex-1 h-px bg-[#EDEBE6] mb-[1px]" />
+      <span className="flex-1 h-px bg-border mb-[1px]" />
       <span className="text-[10px] text-muted-foreground/60 tabular-nums tracking-[0.04em]">
         {summary}
       </span>
@@ -173,7 +173,7 @@ function TimelineRow({
 
   return (
     <div
-      className={`grid grid-cols-[72px_auto_1fr_auto] sm:grid-cols-[88px_120px_auto_1fr_auto] gap-x-4 sm:gap-x-5 items-start px-6 sm:px-8 ${rowPadding} border-t border-[#EDEBE6] ${
+      className={`grid grid-cols-[72px_auto_1fr_auto] sm:grid-cols-[88px_120px_auto_1fr_auto] gap-x-4 sm:gap-x-5 items-start px-6 sm:px-8 ${rowPadding} border-t border-border ${
         isCompleted ? "cursor-pointer hover:bg-[#F3F1ED]/40 transition-colors" : ""
       }`}
       style={rowBg}
@@ -195,7 +195,7 @@ function TimelineRow({
       >
         <span
           className={`mr-1.5 ${
-            isToday || isCompleted ? "text-primary" : "text-muted-foreground/50"
+            isToday || isCompleted ? "text-[#15735F]" : "text-muted-foreground/50"
           }`}
         >
           {String(entry.day).padStart(2, "0")}
@@ -253,7 +253,7 @@ function TimelineRow({
               onOpenToday();
             }}
             className="text-[12px] font-semibold whitespace-nowrap underline underline-offset-[3px]"
-            style={{ color: "#1A8A72", textDecorationColor: "#2ECDB0" }}
+            style={{ color: "#15735F", textDecorationColor: "#2ECDB0" }}
           >
             Open in Today →
           </button>

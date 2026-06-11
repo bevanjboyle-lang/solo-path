@@ -129,10 +129,10 @@ export default function WeeklyFrictionReviewCard({ userId }: Props) {
   })();
 
   return (
-    <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+    <section className="border-t border-border pt-6 pb-8 mb-6">
       {/* Eyebrow — mint dot + label + date range */}
       <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-5 flex-wrap">
-        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+        <span className="inline-block w-1.5 h-1.5 bg-primary" />
         <span className="text-foreground">This week</span>
         <span className="text-muted-foreground/40">·</span>
         <span className="text-muted-foreground/70">Friction review</span>
@@ -164,10 +164,10 @@ export default function WeeklyFrictionReviewCard({ userId }: Props) {
       </p>
 
       {/* Next week action — small-caps label + body text */}
-      <div className="mt-7 pt-5 border-t border-[#E5E2DC]">
+      <div className="mt-7 pt-5 border-t border-border">
         <div className="flex items-baseline gap-3 mb-2">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+          <span className="inline-block w-1.5 h-1.5 bg-primary" />
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#15735F]">
             This week
           </span>
         </div>
@@ -185,9 +185,9 @@ export default function WeeklyFrictionReviewCard({ userId }: Props) {
         * Suppressed cleanly if the row predates v3 of the prompt (older
         * rows have no cohort_pulse field). */}
       {r.cohort_pulse && (
-        <div className="mt-6 pt-5 border-t border-[#E5E2DC]">
+        <div className="mt-6 pt-5 border-t border-border">
           <div className="flex items-baseline gap-3 mb-2">
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-muted-foreground/60" />
+            <span className="inline-block w-1.5 h-1.5 bg-muted-foreground/60" />
             <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
               Cohort pulse
             </span>
@@ -203,7 +203,7 @@ export default function WeeklyFrictionReviewCard({ userId }: Props) {
       )}
 
       {/* Generated-at footnote — tiny, muted, for transparency */}
-      <div className="mt-6 pt-4 border-t border-[#EDEBE6] text-[10px] uppercase tracking-[0.14em] text-muted-foreground/60">
+      <div className="mt-6 pt-4 border-t border-border text-[10px] uppercase tracking-[0.14em] text-muted-foreground/60">
         Generated{" "}
         {new Date(generated_at).toLocaleDateString("en-GB", {
           day: "numeric",

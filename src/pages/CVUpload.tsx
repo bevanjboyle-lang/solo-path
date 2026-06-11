@@ -56,7 +56,7 @@ const WHY_BULLETS = [
 function SectionLabel({ num, children }: { num: string; children: React.ReactNode }) {
   return (
     <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-      <span className="text-primary mr-3 tabular-nums">{num}</span>
+      <span className="text-[#15735F] mr-3 tabular-nums">{num}</span>
       {children}
     </div>
   );
@@ -64,17 +64,12 @@ function SectionLabel({ num, children }: { num: string; children: React.ReactNod
 
 function WhyWeAskCard() {
   return (
-    <aside className="border border-[#D8D4CC] bg-[#F3F0EA] rounded-xl">
-      <div className="border-b border-[#E5E2DC] px-6 py-4">
-        <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em]">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-          <span className="text-foreground">Why we ask</span>
-        </div>
-      </div>
-      <ul className="px-6 py-6 space-y-5">
+    <aside className="border-t border-border pt-5">
+      <h4 className="rule-head">Why we ask</h4>
+      <ul className="pt-5 space-y-5">
         {WHY_BULLETS.map((item, i) => (
           <li key={i} className="flex gap-4">
-            <span className="text-primary text-[10px] font-semibold tabular-nums tracking-[0.1em] pt-1 shrink-0">
+            <span className="text-[#15735F] text-[10px] font-semibold tabular-nums tracking-[0.1em] pt-1 shrink-0">
               {String(i + 1).padStart(2, "0")}
             </span>
             <span className="text-[13.5px] text-foreground leading-relaxed">
@@ -97,7 +92,7 @@ function WhyWeAskMobile() {
       <ul className="space-y-5">
         {WHY_BULLETS.map((item, i) => (
           <li key={i} className="flex gap-4">
-            <span className="text-primary text-[10px] font-semibold tabular-nums tracking-[0.1em] pt-1 shrink-0">
+            <span className="text-[#15735F] text-[10px] font-semibold tabular-nums tracking-[0.1em] pt-1 shrink-0">
               {String(i + 1).padStart(2, "0")}
             </span>
             <span className="text-[13.5px] text-foreground leading-relaxed">
@@ -191,12 +186,12 @@ export default function CVUpload() {
           The Back affordance is inline at the top of the panel below. */}
       <TopBar minimal />
 
-      <main className="pt-[68px]">
+      <main>
         <section className="py-10 lg:py-14">
           <div className="mx-auto max-w-6xl px-6">
-            <div className="panel-ivory">
+            <div>
               {/* ─── Panel top row: Back link + section label + small Solo logo ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pt-8 sm:pt-10 flex items-center justify-between gap-6">
+              <div className="pt-8 sm:pt-10 flex items-center justify-between gap-6">
                 <button
                   onClick={() => navigate("/")}
                   className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors"
@@ -208,11 +203,11 @@ export default function CVUpload() {
               </div>
 
               {/* ─── Page content ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pt-6">
+              <div className="pt-6">
                 <SectionLabel num="01">Activation</SectionLabel>
               </div>
 
-              <div className="px-8 sm:px-12 lg:px-16 pt-4">
+              <div className="pt-4">
                 <ProgressHeader
                   currentStep={1}
                   totalSteps={3}
@@ -222,7 +217,7 @@ export default function CVUpload() {
               </div>
 
               {/* ─── H1 + standfirst (asymmetric on desktop, stacked on mobile) ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pb-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12">
+              <div className="pb-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12">
                 <div className="lg:col-span-7">
                   <h1 className="title-h1">
                     Upload your CV{" "}
@@ -242,7 +237,7 @@ export default function CVUpload() {
               </div>
 
               {/* ─── Drop zone + Why we ask (asymmetric 8/4 on desktop) ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pb-10">
+              <div className="pb-10">
                 {isMobile ? (
                   <div className="space-y-6">
                     <CVUploadZone
@@ -286,16 +281,16 @@ export default function CVUpload() {
               </div>
 
               {/* ─── Action row ─── */}
-              <div className="px-8 sm:px-12 lg:px-16 pb-12 border-t border-[#E5E2DC] pt-8">
+              <div className="pb-12 border-t border-border pt-8">
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
                   <div className="flex flex-col items-start gap-3">
                     <button
                       onClick={handleContinue}
                       disabled={!cvPath}
-                      className={`rounded-md px-7 py-3 text-[14px] font-semibold transition-colors w-full sm:w-auto ${
+                      className={`transition-colors w-full sm:w-auto text-center ${
                         cvPath
-                          ? "bg-primary text-primary-foreground shadow-sm ring-1 ring-black/5 hover:bg-primary/90"
-                          : "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
+                          ? "cta-block"
+                          : "px-[18px] py-[9px] text-[13px] font-semibold bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
                       }`}
                     >
                       Continue
@@ -314,7 +309,7 @@ export default function CVUpload() {
               </div>
 
               {/* ─── Footer (compressed inside panel) ─── */}
-              <div className="border-t border-[#E5E2DC] px-8 sm:px-12 lg:px-16 py-5">
+              <div className="border-t border-border py-5">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[12px] text-muted-foreground">
                   <div className="flex items-center gap-3">
                     <SoloLogo width={64} height={18} />

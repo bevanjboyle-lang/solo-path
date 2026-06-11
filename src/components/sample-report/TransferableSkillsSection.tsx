@@ -19,12 +19,12 @@ function DemandDot({ demand }: { demand: "high" | "medium" | "low" }) {
 
 function SkillBar({ skill }: { skill: Skill }) {
   return (
-    <div className="rounded-md bg-card p-5">
+    <div className="border-t border-border pt-4 pb-1">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-semibold text-foreground">{skill.skill_name}</span>
         <div className="flex items-center gap-3">
           <DemandDot demand={skill.market_demand} />
-          <span className="text-sm font-bold text-primary">{skill.strength}/100</span>
+          <span className="text-sm font-bold text-[#15735F] tabular-nums">{skill.strength}/100</span>
         </div>
       </div>
       <Progress

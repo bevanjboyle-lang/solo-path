@@ -105,7 +105,7 @@ function Eyebrow({
       {spec && (
         <>
           <span className="text-muted-foreground/40">/</span>
-          <span className={tone === "success" ? "text-primary normal-case tracking-normal text-[12px] font-normal" : "text-muted-foreground normal-case tracking-normal text-[12px] font-normal"}>
+          <span className={tone === "success" ? "text-[#15735F] normal-case tracking-normal text-[12px] font-normal" : "text-muted-foreground normal-case tracking-normal text-[12px] font-normal"}>
             {spec}
           </span>
         </>
@@ -141,7 +141,7 @@ function Surface({
       ? "border-red-600/70"
       : state === "uploaded"
       ? "border-primary/60"
-      : "border-[#D8D4CC]";
+      : "border-border";
 
   return (
     <div
@@ -154,7 +154,7 @@ function Surface({
       onKeyDown={isInteractive ? onKeyDown : undefined}
       aria-label={isInteractive ? ariaLabel : undefined}
       aria-live="polite"
-      className={`w-full bg-[#F3F0EA] border ${borderColour} rounded-xl transition-colors ${
+      className={`w-full bg-[#F3F0EA] border ${borderColour} transition-colors ${
         isInteractive ? "cursor-pointer hover:border-primary/60" : ""
       }`}
     >
@@ -325,7 +325,7 @@ export default function CVUploadZone({
           }}
           ariaLabel="Drop your CV here, or click to browse"
         >
-          <div className="border-b border-[#E5E2DC] px-8 py-4">
+          <div className="border-b border-border px-8 py-4">
             <Eyebrow
               tone={state === "hovering" ? "active" : "neutral"}
               label={state === "hovering" ? "Release to upload" : "Upload / Drop zone"}
@@ -335,7 +335,7 @@ export default function CVUploadZone({
           <div className="px-8 sm:px-12 py-14 sm:py-16">
             <p className="text-[20px] sm:text-[22px] font-semibold tracking-tight text-foreground leading-snug">
               Drop your CV here, or{" "}
-              <em className="not-italic text-primary border-b-[1.5px] border-primary pb-0.5">
+              <em className="not-italic text-[#15735F] border-b-[1.5px] border-primary pb-0.5">
                 click to browse
               </em>
               .
@@ -351,7 +351,7 @@ export default function CVUploadZone({
       {/* ─── Uploading ─── */}
       {state === "uploading" && uploadedFile && (
         <Surface state={state}>
-          <div className="border-b border-[#E5E2DC] px-8 py-4">
+          <div className="border-b border-border px-8 py-4">
             <Eyebrow tone="active" label="Uploading" spec={`${uploadedFile.name} · ${formatBytes(uploadedFile.size)}`} />
           </div>
           <div className="px-8 sm:px-12 py-12">
@@ -359,7 +359,7 @@ export default function CVUploadZone({
               <div className="text-[15px] font-semibold text-foreground truncate pr-4">
                 {uploadedFile.name}
               </div>
-              <div className="text-[13px] font-semibold text-primary tabular-nums shrink-0">
+              <div className="text-[13px] font-semibold text-[#15735F] tabular-nums shrink-0">
                 {uploadProgress}%
               </div>
             </div>
@@ -379,7 +379,7 @@ export default function CVUploadZone({
       {/* ─── Uploaded ─── */}
       {state === "uploaded" && uploadedFile && (
         <Surface state={state}>
-          <div className="border-b border-[#E5E2DC] px-8 py-4">
+          <div className="border-b border-border px-8 py-4">
             <Eyebrow tone="success" label="Uploaded" spec="Ready to continue" />
           </div>
           <div className="px-8 sm:px-12 py-8 flex items-center gap-5">
@@ -405,7 +405,7 @@ export default function CVUploadZone({
                 <span className="text-muted-foreground/40">·</span>
                 <span>Uploaded just now</span>
                 <span className="text-muted-foreground/40">·</span>
-                <span className="text-primary">
+                <span className="text-[#15735F]">
                   Encrypted <span className="text-muted-foreground/60">·</span> EU storage{" "}
                   <span className="text-muted-foreground/60">·</span> deletable from /account
                 </span>
@@ -424,7 +424,7 @@ export default function CVUploadZone({
       {/* ─── Errors (size / type / upload-failed) ─── */}
       {(state === "error-size" || state === "error-type" || state === "error-failed") && (
         <Surface state={state}>
-          <div className="border-b border-[#E5E2DC] px-8 py-4">
+          <div className="border-b border-border px-8 py-4">
             <Eyebrow
               tone="error"
               label="Rejected"
@@ -469,7 +469,7 @@ export default function CVUploadZone({
                 <>
                   <button
                     onClick={handleRetry}
-                    className="text-primary border-b-[1.5px] border-primary pb-0.5 hover:opacity-80 transition-opacity"
+                    className="text-[#15735F] border-b-[1.5px] border-primary pb-0.5 hover:opacity-80 transition-opacity"
                   >
                     Retry upload
                   </button>
@@ -487,7 +487,7 @@ export default function CVUploadZone({
                   Drop a different file, or{" "}
                   <button
                     onClick={triggerBrowse}
-                    className="text-primary border-b-[1.5px] border-primary pb-0.5 hover:opacity-80 transition-opacity"
+                    className="text-[#15735F] border-b-[1.5px] border-primary pb-0.5 hover:opacity-80 transition-opacity"
                   >
                     click to browse
                   </button>

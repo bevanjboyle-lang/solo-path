@@ -155,12 +155,12 @@ export default function Subscribe() {
     return (
       <div className="relative min-h-screen text-foreground">
         <TopBar />
-        <main className="pt-[68px]">
+        <main>
           <section className="py-20 lg:py-28 px-6">
             <div className="mx-auto max-w-[600px]">
-              <div className="panel-ivory px-10 sm:px-14 py-12 sm:py-14">
-                <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] mb-5" style={{ color: "#1A8A72" }}>
-                  <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full text-[8px] font-bold text-white" style={{ background: "#2ECDB0" }}>
+              <div className="border-t-[3px] border-foreground pt-6">
+                <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] mb-5" style={{ color: "#15735F" }}>
+                  <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full text-[8px] font-bold" style={{ background: "#2ECDB0", color: "#1A1915" }}>
                     ✓
                   </span>
                   <span>Subscribed · active</span>
@@ -168,15 +168,11 @@ export default function Subscribe() {
                 <h1 className="title-h1">
                   You're already subscribed.
                 </h1>
-                <p className="mt-3.5 font-display text-[16px] sm:text-[17px] text-muted-foreground leading-[1.45] max-w-[38ch]">
+                <p className="standfirst mt-3.5 max-w-[38ch]">
                   Your subscription is active. Head back to your plan.
                 </p>
-                <div className="mt-8 pt-6 border-t border-[#E5E2DC]">
-                  <button
-                    onClick={handleBackToPlan}
-                    className="inline-flex items-center justify-center rounded-md px-7 py-3.5 text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
-                    style={{ background: "#2ECDB0" }}
-                  >
+                <div className="mt-8 pt-6 border-t border-border">
+                  <button onClick={handleBackToPlan} className="cta-block">
                     Back to plan
                   </button>
                 </div>
@@ -193,18 +189,18 @@ export default function Subscribe() {
     <div className="relative min-h-screen text-foreground">
       <TopBar />
 
-      <main className="pt-[68px]">
+      <main>
         <div className="mx-auto max-w-screen-lg px-6 pt-6 pb-10 lg:pb-14">
 
           {/* Payment-cancelled info banner */}
           {paymentCancelled && (
             <div
-              className="rounded-md mb-6 px-5 py-3.5 grid grid-cols-[auto_1fr] gap-x-4 items-center"
+              className="mb-6 px-5 py-3.5 grid grid-cols-[auto_1fr] gap-x-4 items-center"
               style={{ background: "#D6F5EE", borderLeft: "3px solid #2ECDB0" }}
             >
               <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#2ECDB0" }} />
               <div className="text-[13.5px] leading-[1.5] text-foreground">
-                <span className="text-[11px] font-bold uppercase tracking-[0.16em] mr-2" style={{ color: "#1A8A72" }}>
+                <span className="text-[11px] font-bold uppercase tracking-[0.16em] mr-2" style={{ color: "#15735F" }}>
                   No charge made
                 </span>
                 You cancelled checkout. <strong>Nothing was charged.</strong> You can try again whenever you're ready.
@@ -215,7 +211,7 @@ export default function Subscribe() {
           {/* Checkout error banner */}
           {error && (
             <div
-              className="rounded-md mb-6 px-5 py-3.5 grid grid-cols-[auto_1fr] gap-x-4 items-center"
+              className="mb-6 px-5 py-3.5 grid grid-cols-[auto_1fr] gap-x-4 items-center"
               style={{ background: "#FDF0F0", borderLeft: "3px solid #D94F4F" }}
             >
               <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#D94F4F" }} />
@@ -231,12 +227,12 @@ export default function Subscribe() {
           {/* Cancel-pending info banner */}
           {isCancelPending && (
             <div
-              className="rounded-md mb-6 px-5 py-3.5 grid grid-cols-[auto_1fr_auto] gap-x-4 items-center"
+              className="mb-6 px-5 py-3.5 grid grid-cols-[auto_1fr_auto] gap-x-4 items-center"
               style={{ background: "#D6F5EE", borderLeft: "3px solid #2ECDB0" }}
             >
               <span className="inline-block w-2 h-2 rounded-full" style={{ background: "#2ECDB0" }} />
               <div className="text-[13.5px] leading-[1.5] text-foreground">
-                <span className="text-[11px] font-bold uppercase tracking-[0.16em] mr-2" style={{ color: "#1A8A72" }}>
+                <span className="text-[11px] font-bold uppercase tracking-[0.16em] mr-2" style={{ color: "#15735F" }}>
                   Cancellation scheduled
                 </span>
                 Your subscription is set to end on <strong>{cancelEndDate}</strong>. Resume it instead.
@@ -251,10 +247,10 @@ export default function Subscribe() {
           )}
 
           {/* ── Hero ── */}
-          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-10 sm:py-12 mb-6">
+          <section className="pt-2 pb-9">
             {/* Day-31 context pill, only when ?from=day31 (F8). */}
             {fromDay31 && (
-              <div className="inline-flex items-center gap-2.5 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground" style={{ background: "#F3F1ED" }}>
+              <div className="inline-flex items-center gap-2.5 mb-5 px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground" style={{ background: "#F3F1ED" }}>
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
                 <span>Your 30 days are complete</span>
               </div>
@@ -265,35 +261,41 @@ export default function Subscribe() {
               {/* F5: H1 copy is placeholder pending positioning-strategy review. */}
               Keep your plan alive.
             </h1>
-            <p className="mt-4 font-display text-[17px] sm:text-[19px] text-muted-foreground leading-[1.4] max-w-[60ch]">
+            <p className="standfirst mt-4 max-w-[60ch]">
               Your 30-day report is yours forever. The subscription is what keeps the tracker moving
               after day 30, weekly check-ins, the 22 modules you haven't opened yet, and unlimited
               Ask Solo.
             </p>
           </section>
 
-          {/* ── Two PricingCards (peer/preferred, annual elevated) ── */}
-          <section className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
-            <PricingCard
-              data={monthlyCard}
-              onSubscribe={() => handleCheckout("monthly")}
-              loading={checkingOut === "monthly"}
-              disabled={checkingOut !== null}
-            />
-            <PricingCard
-              data={annualCard}
-              onSubscribe={() => handleCheckout("annual")}
-              loading={checkingOut === "annual"}
-              disabled={checkingOut !== null}
-            />
+          {/* ── Two pricing columns (peer/preferred), hairline divide, 3px ink rule atop each ── */}
+          <section className="border-t border-border pt-8 pb-8">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-0">
+              <div className="lg:pr-10">
+                <PricingCard
+                  data={monthlyCard}
+                  onSubscribe={() => handleCheckout("monthly")}
+                  loading={checkingOut === "monthly"}
+                  disabled={checkingOut !== null}
+                />
+              </div>
+              <div className="lg:border-l lg:border-border lg:pl-10">
+                <PricingCard
+                  data={annualCard}
+                  onSubscribe={() => handleCheckout("annual")}
+                  loading={checkingOut === "annual"}
+                  disabled={checkingOut !== null}
+                />
+              </div>
+            </div>
           </section>
 
           {/* ── What the subscription does, 2×2 grid ── */}
-          <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
-            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-6">
-              <span className="text-primary tabular-nums">02</span>
+          <section className="border-t border-border pt-8 pb-8">
+            <h4 className="rule-head mb-1">
+              <span className="mr-3 text-[#15735F] tabular-nums">02</span>
               <span>What the subscription does</span>
-            </div>
+            </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2">
               {WHAT_THE_SUB_DOES.map((item, i) => {
@@ -303,12 +305,12 @@ export default function Subscribe() {
                   <div
                     key={item.n}
                     className={`py-5 grid grid-cols-[36px_1fr] gap-x-3 items-baseline ${
-                      isLeft ? "sm:pr-6 sm:border-r border-[#E5E2DC]" : "sm:pl-6"
-                    } ${!isTopRow ? "border-t border-[#E5E2DC] sm:border-t" : ""} ${
+                      isLeft ? "sm:pr-6 sm:border-r border-border" : "sm:pl-6"
+                    } ${!isTopRow ? "border-t border-border sm:border-t" : ""} ${
                       isTopRow && !isLeft ? "sm:border-t-0" : ""
                     }`}
                   >
-                    <span className="font-display font-bold text-[11px] tabular-nums tracking-[0.06em]" style={{ color: "#2ECDB0" }}>
+                    <span className="font-display font-bold text-[11px] tabular-nums tracking-[0.06em] text-[#15735F]">
                       {item.n}
                     </span>
                     <div>
@@ -325,10 +327,10 @@ export default function Subscribe() {
 
           {/* ── What stays the same, stone callout with mint left rule (F7) ── */}
           <section
-            className="px-6 sm:px-8 py-5 mb-6 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-3 sm:gap-5 items-baseline rounded-r-md"
+            className="px-6 sm:px-8 py-5 mb-6 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-3 sm:gap-5 items-baseline"
             style={{ background: "#F3F1ED", borderLeft: "3px solid #2ECDB0" }}
           >
-            <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: "#1A8A72" }}>
+            <span className="text-[11px] font-bold uppercase tracking-[0.16em]" style={{ color: "#15735F" }}>
               What stays
             </span>
             <p className="font-display text-[15px] sm:text-[15.5px] text-foreground leading-[1.45]" style={{ letterSpacing: "-0.012em" }}>
@@ -338,14 +340,11 @@ export default function Subscribe() {
           </section>
 
           {/* ── Tertiary row ──
-            * Consistency-sweep 2026-05-18: wrapped in card-stone so the
-            * "Not right now" + "See full subscription FAQ" links don't sit
-            * illegibly against the office photo background. Stone band is
-            * lighter than panel-ivory (these are secondary navigation, not
-            * a primary CTA, kept visually quieter than the upgrade cards
-            * above).
+            * ADR-026 Phase 4: the office-photo background is gone, so the
+            * card-stone wrapper is no longer needed for legibility. Flat
+            * hairline-ruled row keeps these quieter than the columns above.
             */}
-          <section className="card-stone px-6 sm:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <section className="border-t border-border pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
             <button
               onClick={handleBackToPlan}
               className="text-[13px] font-medium text-muted-foreground hover:text-foreground underline underline-offset-[4px] decoration-[#D8D4CC]"
@@ -370,9 +369,11 @@ export default function Subscribe() {
 
 /* ── PricingCard ──
  *
- * Local editorial composite. Supports optional `topTag` (mint-bordered pill
- * half-overlapping the top border) and `elevated` (1px border-strong outline).
- * Per F1, annual on /subscribe renders elevated; monthly does not.
+ * Local editorial composite. ADR-026 Phase 4: no longer a card — a column
+ * opening on a 3px ink rule (the Pricing.tsx / Landing pricing-band pattern).
+ * `topTag` ("Two months free") renders as a square mint-bordered tag in the
+ * column head, keeping its animate-savings-glow; `elevated` no longer draws
+ * a shadow (flat system), the tag + divider carry the preference instead.
  *
  * Future component-inventory work will lift this into a shared composite with
  * Pricing.tsx's version. Pass 1 keeps them inline per page to avoid premature
@@ -387,26 +388,23 @@ function PricingCard({
   disabled: boolean;
 }) {
   return (
-    <div
-      className="relative panel-ivory p-8 sm:p-9 flex flex-col"
-      style={data.elevated ? { boxShadow: "0 4px 32px rgba(0,0,0,0.18), 0 1px 6px rgba(0,0,0,0.10), 0 0 0 1px #D5D0C8" } : undefined}
-    >
-      {/* Optional top tag pill ("Two months free"), half-overlaps the top border. */}
-      {data.topTag && (
-        <div
-          className="absolute -top-3 left-9 inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.18em]"
-          style={{ background: "#FAF9F7", border: "1px solid #2ECDB0", color: "#1A8A72" }}
-        >
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-          <span>{data.topTag}</span>
-        </div>
-      )}
-
+    <div className="relative flex h-full flex-col border-t-[3px] border-foreground pt-5">
       {/* Card head */}
-      <div className="pb-5 mb-5 border-b border-[#E5E2DC]">
-        <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-          <span>{data.pre}</span>
+      <div className="pb-5 mb-5 border-b border-border">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <span className="eyebrow--muted text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {data.pre}
+          </span>
+          {/* Optional top tag ("Two months free"), square editorial badge, keeps its glow. */}
+          {data.topTag && (
+            <span
+              className="animate-savings-glow inline-flex items-center gap-2 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em]"
+              style={{ background: "#FAF9F7", border: "1px solid #2ECDB0", color: "#15735F" }}
+            >
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
+              <span>{data.topTag}</span>
+            </span>
+          )}
         </div>
         <h3 className="font-display text-[20px] sm:text-[22px] font-bold tracking-tight text-foreground leading-[1.2] mb-2" style={{ letterSpacing: "-0.02em" }}>
           {data.title}
@@ -421,7 +419,7 @@ function PricingCard({
           <span className="text-[14px] text-muted-foreground">{data.priceQual}</span>
         </div>
         {data.extraMeta && (
-          <div className="mt-1.5 text-[13px] font-medium" style={{ color: "#1A8A72" }}>
+          <div className="mt-1.5 text-[13px] font-medium text-[#15735F]">
             {data.extraMeta}
           </div>
         )}
@@ -433,7 +431,7 @@ function PricingCard({
           <li
             key={i}
             className={`relative pl-4 py-2 text-[14px] text-foreground/85 leading-[1.5] ${
-              i > 0 ? "border-t border-[#EDEBE6]" : ""
+              i > 0 ? "border-t border-border" : ""
             }`}
           >
             <span className="absolute left-0 top-[18px] w-2 h-[1.5px] bg-primary" />
@@ -447,8 +445,7 @@ function PricingCard({
         <button
           onClick={onSubscribe}
           disabled={disabled}
-          className="w-full inline-flex items-center justify-center rounded-md px-5 py-3.5 text-[14px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed"
-          style={{ background: "#2ECDB0" }}
+          className="cta-block w-full inline-flex items-center justify-center text-center disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>

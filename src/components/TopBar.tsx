@@ -48,7 +48,7 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
               Sign in
             </Link>
             <button onClick={() => startTest(navigate)} className="cta-block">
-              Find what fits
+              Find what works
             </button>
           </>
         }

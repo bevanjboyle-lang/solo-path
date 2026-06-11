@@ -85,9 +85,9 @@ export default function LegalPage({
                 sectionRefs.current[s.id]?.scrollIntoView({ behavior: "smooth", block: "start" });
                 closeSheet?.();
               }}
-              className="group w-full flex items-baseline gap-3 px-4 py-2 text-left text-[13px] text-muted-foreground hover:text-foreground hover:bg-[#FAF9F7] transition-colors border-l-2 border-transparent"
+              className="group w-full flex items-baseline gap-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground transition-colors"
             >
-              <span className="shrink-0 text-[10px] font-bold tabular-nums tracking-[0.08em] text-primary">
+              <span className="shrink-0 text-[10px] font-bold tabular-nums tracking-[0.08em] text-[#15735F]">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="truncate">{s.title}</span>
@@ -102,7 +102,7 @@ export default function LegalPage({
     <div className="relative min-h-screen flex flex-col text-foreground">
       <TopBar />
 
-      <main className="flex-1 pt-[68px]">
+      <main className="flex-1">
         <section className="py-8 lg:py-12">
           <div className="mx-auto max-w-screen-lg px-6">
 
@@ -112,10 +112,10 @@ export default function LegalPage({
                 <SheetTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-[13px] font-semibold text-foreground transition-colors"
-                    style={{ background: "#F3F1ED", border: "1.5px solid #D5D0C8" }}
+                    className="inline-flex items-center gap-2 border border-border px-4 py-2 text-[13px] font-semibold text-foreground transition-colors"
+                    style={{ background: "#F3F1ED" }}
                   >
-                    <List className="h-4 w-4" style={{ color: "#2ECDB0" }} />
+                    <List className="h-4 w-4" style={{ color: "#15735F" }} />
                     <span>On this page</span>
                   </button>
                 </SheetTrigger>
@@ -132,23 +132,20 @@ export default function LegalPage({
             <div className="flex gap-8 lg:gap-10">
 
               {/* ── TOC sidebar — desktop only ── */}
-              <aside className="hidden lg:block w-[220px] shrink-0">
+              <aside className="hidden lg:block w-[220px] shrink-0 border-r border-border pr-6">
                 <div className="sticky top-20">
-                  <div className="panel-ivory py-5">
-                    <div className="px-5 pb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                      <span>On this page</span>
+                  <div className="rule-head mb-3">
+                    On this page
+                  </div>
+                  <div className="max-h-[calc(100vh-14rem)] overflow-y-auto">
+                    {tocNav()}
+                  </div>
+                  <div className="pt-4 mt-1 border-t border-border">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                      Sections
                     </div>
-                    <div className="max-h-[calc(100vh-14rem)] overflow-y-auto">
-                      {tocNav()}
-                    </div>
-                    <div className="px-5 pt-4 mt-1 border-t border-[#E5E2DC]">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
-                        Sections
-                      </div>
-                      <div className="mt-1 text-[12px] text-foreground tabular-nums">
-                        {sections.length}
-                      </div>
+                    <div className="mt-1 text-[12px] text-foreground tabular-nums">
+                      {sections.length}
                     </div>
                   </div>
                 </div>
@@ -158,25 +155,24 @@ export default function LegalPage({
               <div className="flex-1 min-w-0">
                 <h1 className="sr-only">{title}</h1>
 
-                {/* Page-header panel */}
-                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-8 sm:py-10 mb-6">
+                {/* Page header — flat, on the page */}
+                <section className="pb-8 sm:pb-10 mb-6 border-b border-border">
                   <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 sm:gap-8 items-end">
                     <div>
-                      <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
-                        <span className="text-foreground">Legal</span>
+                      <div className="eyebrow flex items-center gap-2.5 mb-4">
+                        <span>Legal</span>
                         <span className="text-muted-foreground/40">·</span>
                         <span className="text-muted-foreground/70">{eyebrow}</span>
                       </div>
                       <div
                         aria-hidden
-                        className="text-[34px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
+                        className="font-display text-[34px] sm:text-[40px] lg:text-[44px] font-extrabold tracking-tight leading-[1.05] text-foreground"
                         style={{ letterSpacing: "-0.028em" }}
                       >
                         {title}.
                       </div>
                       {subhead && (
-                        <p className="mt-4 font-display text-[15px] sm:text-[16px] text-muted-foreground leading-[1.45] max-w-[54ch]">
+                        <p className="standfirst mt-4 max-w-[54ch]">
                           {subhead}
                         </p>
                       )}
@@ -192,13 +188,13 @@ export default function LegalPage({
                   </div>
                 </section>
 
-                {/* Body — continuous panel with hairline section breaks */}
-                <section className="panel-ivory px-6 sm:px-10 lg:px-12 py-2 sm:py-4 mb-6">
+                {/* Body — continuous column with hairline section breaks */}
+                <section className="mb-6">
 
                   {/* Optional TBC banner — non-prod only */}
                   {isTBC && (
                     <div
-                      className="rounded-md mt-5 mb-2 px-4 py-3 grid grid-cols-[auto_1fr] gap-x-3 items-baseline"
+                      className="mt-5 mb-2 px-4 py-3 grid grid-cols-[auto_1fr] gap-x-3 items-baseline"
                       style={{ background: "#FDF8E8", borderLeft: "3px solid #D4940A" }}
                     >
                       <span className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: "#D4940A" }}>
@@ -216,13 +212,13 @@ export default function LegalPage({
                       id={s.id}
                       ref={(el) => { sectionRefs.current[s.id] = el; }}
                       className={`py-7 sm:py-8 scroll-mt-24 transition-colors duration-300 ${
-                        i > 0 ? "border-t border-[#E5E2DC]" : ""
+                        i > 0 ? "border-t border-border" : ""
                       } ${
                         highlightedId === s.id ? "bg-[rgba(46,205,176,0.05)] -mx-4 px-4" : ""
                       }`}
                     >
                       <div className="flex items-baseline gap-4 mb-4">
-                        <span className="shrink-0 text-[11px] font-bold tabular-nums tracking-[0.08em]" style={{ color: "#2ECDB0" }}>
+                        <span className="shrink-0 text-[11px] font-bold tabular-nums tracking-[0.08em]" style={{ color: "#15735F" }}>
                           {String(i + 1).padStart(2, "0")}
                         </span>
                         <h2

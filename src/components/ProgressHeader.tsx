@@ -49,7 +49,7 @@ export default function ProgressHeader({
   const stepNumLabel = String(currentStep).padStart(2, "0");
 
   return (
-    <div className="border-b border-[#E5E2DC] pb-5 mb-8">
+    <div className="border-b border-border pb-5 mb-8">
       <div className="flex items-center gap-6">
         {onBack && (
           <button
@@ -63,7 +63,7 @@ export default function ProgressHeader({
         )}
 
         <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground shrink-0">
-          <span className="text-primary mr-2 tabular-nums">{stepNumLabel}</span>
+          <span className="text-[#15735F] mr-2 tabular-nums">{stepNumLabel}</span>
           Step {currentStep} of {totalSteps}
         </div>
 
@@ -78,7 +78,7 @@ export default function ProgressHeader({
                   {i > 0 && (
                     <div
                       className={`h-px flex-1 transition-colors ${
-                        isCompleted ? "bg-primary" : "bg-[#E5E2DC]"
+                        isCompleted ? "bg-primary" : "bg-border"
                       }`}
                     />
                   )}
@@ -86,7 +86,7 @@ export default function ProgressHeader({
                     <span
                       className={`text-[10px] font-semibold tabular-nums tracking-[0.1em] ${
                         isActive || isCompleted
-                          ? "text-primary"
+                          ? "text-[#15735F]"
                           : "text-muted-foreground/60"
                       }`}
                     >
@@ -110,7 +110,7 @@ export default function ProgressHeader({
           </div>
         ) : (
           <div className="flex-1 flex items-center gap-3">
-            <div className="flex-1 h-0.5 bg-[#E5E2DC] overflow-hidden">
+            <div className="flex-1 h-0.5 bg-border overflow-hidden">
               <div
                 className="h-full bg-primary transition-all duration-300"
                 style={{ width: `${(currentStep / totalSteps) * 100}%` }}
