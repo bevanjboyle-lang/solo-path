@@ -376,7 +376,7 @@ function validateReport(report: Partial<SoloCoreReport>, context: ValidationCont
   }
   if (report.options) {
     const opts = report.options; let score = 100;
-    if (opts.length !== 10) { hard.push("OPTIONS_COUNT"); hints.push(`options has ${opts.length} items - produce exactly 10, ranked by composite_score descending.`); score = 20; }
+    if (opts.length < 7) { hard.push("OPTIONS_COUNT"); hints.push(`options has ${opts.length} items - produce up to 10 (minimum 7), ranked by composite_score descending; never pad with weak or off-domain options.`); score = 20; }
     const commercialModels = new Set<string>();
     opts.forEach((o, i) => {
       if (!o.business_model_id) { hard.push(`OPT_${i + 1}_MISSING_BM_ID`); score = Math.min(score, 20); }
@@ -552,7 +552,7 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 5. primary_move_type and structural_warmth must match the KB - pass through unmodified
 6. At least 3 distinct commercial model types represented across the options array
 7. transferable_skills has exactly 6 items, ranked by strength descending
-8. options has EXACTLY 10 items, ranked by composite_score descending (canonical 10-options product rule, ADR-019)
+8. options has up to 10 items, ranked by composite_score descending. Aim for 10; if fewer than 10 models genuinely clear the eligibility filter, produce as many as honestly fit (minimum 7) and never pad with weak or off-domain options (honest coverage over forced count; ADR-019 as amended)
 9. ai_impact.part_3.steps has exactly 4 items
 
 ---
@@ -668,7 +668,7 @@ Rank all remaining models by adjusted score.
 
 ### Step 4 - Apply diversity constraint and select exactly 10 final options
 
-From all scored models, select the top 10. Per ADR-019, you must produce exactly 10 options.
+From all scored models, select the top 10. Aim for 10; if fewer than 10 models genuinely clear the eligibility filter, produce as many as honestly fit (minimum 7) rather than padding with weak or off-domain options. When you produce fewer than 10, that is acceptable and expected for narrow specialisms.
 
 **Rule 1 - Domain relevance floor (mandatory):** Remove any model whose domain is materially unrelated to the user's primary and secondary archetypes - unless that model also appears in secondary_pool.
 
@@ -720,7 +720,7 @@ Before finalising, verify:
 - business_model_id, primary_move_type, structural_warmth passed through exactly from the KB
 - primary_move_type one of: platform, visibility, community, direct, mixed
 - structural_warmth a boolean
-- Options array contains EXACTLY 10 options, ranked by composite_score descending
+- Options array contains up to 10 options (10 where enough genuinely fit, minimum 7 otherwise), ranked by composite_score descending
 - Each option has unique rank and composite_score
 - Each option has 2-3 fit_tags - short, specific labels
 - Each option carries a caution_note: for ranks 4-10 populate with one-sentence risk flag; for ranks 1-3 may be null but prefer naming a real risk
@@ -919,7 +919,7 @@ function buildP0bUserMessage(qd: P0bQuestionnaireInput): string {
 // MAIN INDEX
 // =============================================================================
 
-const FUNCTION_VERSION = "v45.17-pr7-hook-prompt-strengthened";
+const FUNCTION_VERSION = "v45.18-graceful-degradation-min7-options";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
 const MAX_P1_VALIDATOR_RETRIES = 2;
