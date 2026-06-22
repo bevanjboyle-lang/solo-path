@@ -160,68 +160,66 @@ function PrimaryButton({ onClick, children }: { onClick: () => void; children: R
   );
 }
 
-function EngineArt() {
-  // Option A (2026-06-10): the taxonomy, orbital. Solo's archetype categories
-  // as a slow two-ring orbital system around the engine core; counter-rotating
-  // node rings (CSS, disabled for reduced-motion), static category labels.
-  const labels = [
-    { x: 124, y: 5, anchor: "start", t: "Finance" },
-    { x: 78, y: -86, anchor: "start", t: "Legal" },
-    { x: 0, y: -162, anchor: "middle", t: "Risk & Governance" },
-    { x: -124, y: 5, anchor: "end", t: "Tech & Digital" },
-    { x: -78, y: 100, anchor: "end", t: "HR & People" },
-    { x: 78, y: 100, anchor: "start", t: "Marketing" },
+function EngineExhibit() {
+  // A + C blend (2026-06-10): replaces the orbital "EngineArt". The "Solo Index"
+  // (the three credibility figures as a typographic stack) sits over a real
+  // specimen entry drawn from the knowledge base. Sober, editorial, no motion.
+  // Figures and the specimen (Enterprise Risk Management / ARCH_ERM) are real as
+  // of 2026-06-10; refresh the specimen if the KB mapping changes materially.
+  const serif = { fontFamily: "'Source Serif 4', Georgia, serif" };
+  const index = [
+    { n: "95", label: "career archetypes" },
+    { n: "480", label: "business models" },
+    { n: "2,159", label: "scored combinations" },
+  ];
+  const specimen = [
+    { k: "Domain", v: "Risk & Governance" },
+    { k: "Viable models", v: "18" },
+    { k: "Top match", v: "Enterprise Risk Advisory" },
   ];
   return (
-    <svg width="440" height="360" viewBox="0 0 460 380" aria-hidden>
-      <g transform="translate(230,190)">
-        <circle r="56" fill="none" stroke="rgba(250,249,247,.12)" />
-        <circle r="102" fill="none" stroke="rgba(250,249,247,.08)" />
-        <circle r="146" fill="none" stroke="rgba(250,249,247,.05)" />
-        <circle r="8" fill="#2ECDB0" />
-        <g className="orbit-cw">
-          <circle cx="56" cy="0" r="4.5" fill="#2ECDB0" opacity=".8" />
-          <circle cx="-28" cy="48.5" r="4.5" fill="#2ECDB0" opacity=".55" />
-          <circle cx="-28" cy="-48.5" r="4.5" fill="#2ECDB0" opacity=".65" />
-          <circle cx="39.6" cy="39.6" r="3.2" fill="#FAF9F7" opacity=".5" />
-          <circle cx="-39.6" cy="-39.6" r="3.2" fill="#FAF9F7" opacity=".4" />
-        </g>
-        <g className="orbit-ccw">
-          <circle cx="102" cy="0" r="3.6" fill="#2ECDB0" opacity=".5" />
-          <circle cx="51" cy="88.3" r="3.6" fill="#FAF9F7" opacity=".4" />
-          <circle cx="-51" cy="88.3" r="3.6" fill="#2ECDB0" opacity=".4" />
-          <circle cx="-102" cy="0" r="3.6" fill="#FAF9F7" opacity=".35" />
-          <circle cx="-51" cy="-88.3" r="3.6" fill="#2ECDB0" opacity=".45" />
-          <circle cx="51" cy="-88.3" r="3.6" fill="#FAF9F7" opacity=".45" />
-        </g>
-        <g>
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((deg, i) => {
-            const rad = (deg * Math.PI) / 180;
-            return (
-              <circle
-                key={deg}
-                cx={(146 * Math.cos(rad)).toFixed(1)}
-                cy={(146 * Math.sin(rad)).toFixed(1)}
-                r="2.4"
-                fill={i % 3 === 0 ? "#2ECDB0" : "#FAF9F7"}
-                opacity={i % 3 === 0 ? ".3" : ".25"}
-              />
-            );
-          })}
-        </g>
-        {labels.map((l) => (
-          <text
-            key={l.t}
-            x={l.x}
-            y={l.y}
-            textAnchor={l.anchor as "start" | "middle" | "end"}
-            style={{ font: "600 9px Inter", letterSpacing: ".1em", fill: "rgba(250,249,247,.55)", textTransform: "uppercase" }}
+    <div className="flex h-full flex-col justify-center px-7 py-9">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#2ECDB0]">
+        The Solo index
+      </div>
+      <div className="mt-3.5 border-t" style={{ borderColor: "rgba(250,249,247,.14)" }}>
+        {index.map((r) => (
+          <div
+            key={r.n}
+            className="flex items-baseline justify-between border-b py-2.5"
+            style={{ borderColor: "rgba(250,249,247,.09)" }}
           >
-            {l.t.toUpperCase()}
-          </text>
+            <span style={{ ...serif, fontSize: "27px", lineHeight: 1, color: "#FAF9F7" }}>{r.n}</span>
+            <span className="text-[11px]" style={{ color: "rgba(250,249,247,.6)" }}>{r.label}</span>
+          </div>
         ))}
-      </g>
-    </svg>
+      </div>
+      <p className="mt-3.5 text-[12px] leading-[1.5]" style={{ color: "rgba(250,249,247,.7)" }}>
+        Your report is selected from this library, not generated from a blank page.
+      </p>
+
+      <div className="mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#2ECDB0]">
+        A specimen entry
+      </div>
+      <h3 className="mt-2" style={{ ...serif, fontSize: "20px", lineHeight: 1.2, color: "#FAF9F7" }}>
+        Enterprise Risk Management
+      </h3>
+      <div className="mt-3">
+        {specimen.map((r, i) => (
+          <div
+            key={r.k}
+            className={"flex items-baseline justify-between py-2" + (i < specimen.length - 1 ? " border-b" : "")}
+            style={{ borderColor: "rgba(250,249,247,.09)" }}
+          >
+            <span className="text-[11.5px]" style={{ color: "rgba(250,249,247,.6)" }}>{r.k}</span>
+            <span className="text-[12.5px]" style={{ color: "#FAF9F7" }}>{r.v}</span>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3.5 text-[10.5px]" style={{ color: "rgba(250,249,247,.5)" }}>
+        One of 95 archetypes. Yours is built the same way.
+      </p>
+    </div>
   );
 }
 
@@ -288,18 +286,7 @@ export default function Landing() {
             {/* The engine — dark visual panel */}
             <div className="lg:border-l lg:border-border lg:px-7">
               <div className="panel-dark flex h-full flex-col">
-                <div className="flex flex-1 items-center justify-center px-5 pb-2 pt-8">
-                  <EngineArt />
-                </div>
-                <div className="px-7 pb-6 text-center">
-                  <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#2ECDB0]">The engine</div>
-                  <h3 className="mt-2 font-display text-[21px] font-bold leading-[1.25] tracking-tight" style={{ color: "#FAF9F7" }}>
-                    95 archetypes. 480 business models. 2,159 scored combinations.
-                  </h3>
-                  <p className="mt-2 text-[12.5px] leading-[1.5]" style={{ color: "rgba(250,249,247,.7)" }}>
-                    Your report is not generated from a blank page. It is selected from a library built for people with your kind of experience.
-                  </p>
-                </div>
+                <EngineExhibit />
               </div>
             </div>
 
