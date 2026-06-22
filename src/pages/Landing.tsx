@@ -195,7 +195,7 @@ function EngineExhibit() {
         ))}
       </div>
       <p className="mt-3.5 text-[12px] leading-[1.5]" style={{ color: "rgba(250,249,247,.7)" }}>
-        Your report is selected from this library, not generated from a blank page.
+        Your report is selected from this tested library, not generated from a blank page.
       </p>
 
       <div className="mt-7 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#2ECDB0]">
