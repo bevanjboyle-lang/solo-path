@@ -52,3 +52,6 @@ verify_jwt = false
 
 [functions.generate-signal-edition]
 verify_jwt = false
+
+[functions.subscribe-signal]
+verify_jwt = false
