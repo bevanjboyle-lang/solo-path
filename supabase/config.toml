@@ -40,3 +40,15 @@ verify_jwt = true
 # verify_jwt: true; this block documents the intent in source.
 [functions.get-library-content]
 verify_jwt = true
+
+[functions.weekly-cron-watchdog]
+verify_jwt = false
+
+[functions.cleanup-old-cvs]
+verify_jwt = false
+
+[functions.sitemap]
+verify_jwt = false
+
+[functions.generate-signal-edition]
+verify_jwt = false
