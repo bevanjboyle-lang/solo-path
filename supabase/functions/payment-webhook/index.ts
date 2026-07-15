@@ -1,3 +1,20 @@
+// payment-webhook v33 — subscription-mode guard + retryable failures — 2026-07-15
+//
+// Found during the Day Zero subscription smoke test (first real £19 sub):
+//   (1) A subscription-mode checkout fell into the initial_report branch
+//       (metadata.type absent → defaulted to "initial_report"): the new
+//       subscriber got the REPORT welcome email ("your report is unlocked…
+//       choose paths") and a spurious subscription_sessions merge ran.
+//       v33 exits early on session.mode === "subscription" — those checkouts
+//       belong entirely to stripe-subscription-webhook.
+//   (2) The V-024/V-025 "return 500 so Stripe retries" promise was hollow:
+//       the idempotency row was already inserted, so the retry hit the
+//       duplicate check and was swallowed as 200 idempotent. v33 releases the
+//       idempotency claim (deletes the event row) before every post-guard
+//       non-2xx return, making retries actually re-run. All side effects in
+//       the retried path are idempotent (set-union module merge, status
+//       advance no-ops once done, magic-link/email re-send is the point).
+//
 // payment-webhook v32 — F44 #27 copy fix — 2026-06-01
 //
 // F44 #27: the welcome email fired at payment time but claimed "Your plan is
@@ -37,7 +54,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 // V-036 (vibe code review 2026-05-14): TRANCHE_1_MODULES sourced from shared module.
 import { TRANCHE_1_MODULES } from "../_shared/constants.ts";
 
-const FUNCTION_VERSION = "v32-f44-copy-fix";
+const FUNCTION_VERSION = "v33-subscription-mode-guard";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -95,7 +112,7 @@ async function sendWelcomeEmail(
   }
 }
 
-// ── ADR-013: user resolution helpers ────────────────────────────────────────────
+// ── ADR-013: user resolution helpers ────────────────────────────────────
 
 // V-026 (vibe code review 2026-05-14): direct auth.users query via service-role.
 // Previous implementation paginated admin.listUsers at perPage:1000 — would
@@ -178,7 +195,7 @@ async function linkAnonRows(
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -235,6 +252,18 @@ Deno.serve(async (req: Request) => {
     );
   }
 
+  // v33 (2026-07-15): release the idempotency claim before any post-guard
+  // non-2xx return. Stripe retries non-2xx deliveries; without this delete,
+  // the retry hits the duplicate check below and gets swallowed as 200
+  // idempotent — the V-024/V-025 "will retry" promise never actually re-ran.
+  const releaseIdempotency = async () => {
+    const { error: relErr } = await supabase
+      .from("stripe_webhook_events")
+      .delete()
+      .eq("event_id", event.id);
+    if (relErr) console.error(`${FUNCTION_VERSION} idempotency release failed:`, relErr.message);
+  };
+
   // V-022 fix (2026-05-14): event-id idempotency guard. Stripe retries any non-2xx
   // response, plus manual replays from the dashboard. Without this guard, retries
   // re-sent the welcome email + magic link, re-ran subscription_sessions writes, and
@@ -265,9 +294,29 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  // ───── checkout.session.completed ────────────────────────────────────────────
+  // ───── checkout.session.completed ────────────────────────────────────────
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
+
+    // v33 (2026-07-15): subscription-mode checkouts are fully handled by
+    // stripe-subscription-webhook (customer.subscription.* events). Before
+    // this guard, a subscription checkout fell into the initial_report branch
+    // below: the new subscriber received the report welcome email ("your
+    // report is unlocked — choose your paths") and a spurious
+    // subscription_sessions merge ran. Observed live on the first real £19
+    // subscription. Exit early; nothing here applies to subscriptions.
+    if (session.mode === "subscription") {
+      console.log(`${FUNCTION_VERSION} subscription-mode checkout ${session.id} — deferring to stripe-subscription-webhook`);
+      return new Response(
+        JSON.stringify({
+          received: true,
+          type: "subscription_checkout",
+          response_text: "Subscription checkout — handled by the subscription webhook.",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const rawMetadata = (session.metadata ?? {}) as Record<string, string | undefined>;
     const customerId = session.customer as string | null;
     const customerEmail = session.customer_details?.email || null;
@@ -287,6 +336,7 @@ Deno.serve(async (req: Request) => {
         "Failed to resolve user for checkout",
         JSON.stringify({ metadata: rawMetadata, hasEmail: !!customerEmail, sessionId: session.id }),
       );
+      await releaseIdempotency(); // v33: let Stripe's retry re-attempt resolution
       return new Response(
         JSON.stringify({ error: "Cannot resolve user", response_text: "Cannot identify buyer" }),
         {
@@ -327,7 +377,7 @@ Deno.serve(async (req: Request) => {
         console.error("Error updating user_profiles with customer ID:", profileError);
     }
 
-    // ── BRANCH: second-report £9.99 (unchanged) ──────────────────────────────────────────
+    // ── BRANCH: second-report £9.99 (unchanged) ──────────────────────────────────
     if (paymentType === "second_report") {
       const nowIso = new Date().toISOString();
       const { error: flagErr } = await supabase
@@ -394,6 +444,7 @@ Deno.serve(async (req: Request) => {
       // £19.99 and ended up with locked modules. Return 500 so Stripe retries; V-022
       // idempotency makes the retry safe (the email won't double-send).
       console.error(`${FUNCTION_VERSION} V-024 fatal: module unlock failed:`, moduleErr);
+      await releaseIdempotency(); // v33: make the retry actually re-run
       return new Response(
         JSON.stringify({
           error: "module_unlock_failed",
@@ -478,6 +529,7 @@ Deno.serve(async (req: Request) => {
 
         if (linkError || !linkData?.properties?.action_link) {
           console.error(`${FUNCTION_VERSION} V-025 fatal: magic link generation failed:`, linkError?.message);
+          await releaseIdempotency(); // v33: make the retry actually re-run
           return new Response(
             JSON.stringify({
               error: "magic_link_failed",
@@ -496,6 +548,7 @@ Deno.serve(async (req: Request) => {
         console.log(`${FUNCTION_VERSION} welcome email sent to ${customerEmail}`);
       } catch (emailErr) {
         console.error(`${FUNCTION_VERSION} V-025 fatal: welcome email send failed:`, (emailErr as Error).message);
+        await releaseIdempotency(); // v33: make the retry actually re-run
         return new Response(
           JSON.stringify({
             error: "welcome_email_failed",

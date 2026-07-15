@@ -1,3 +1,16 @@
+// create-subscription v25 — Day Zero smoke-test fix — 2026-07-15
+//
+// Found during the first real £19 subscription: metadata { userId, plan } was
+// set on the checkout SESSION only, so the subscription object carried no user
+// mapping and stripe-subscription-webhook had to fall back to a customer-id
+// lookup (which had its own bug, fixed in its v26). Fixes here:
+//   (1) subscription_data.metadata now stamps user_id + plan onto the Stripe
+//       subscription object itself — every customer.subscription.* event
+//       carries the mapping natively from now on.
+//   (2) session metadata gains type: "subscription" so payment-webhook can
+//       distinguish subscription checkouts from report purchases (its v33
+//       also guards on session.mode as belt and braces).
+//
 // create-subscription v24 — 2026-05-05: F65 CORS — x-client-session-id added to Access-Control-Allow-Headers
 // create-subscription v21 — Audit P0 #6,#7,#8: Stripe API version standardised to 2025-01-27.acacia, price IDs via env vars, APP_URL fail-loud
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
@@ -104,7 +117,11 @@ Deno.serve(async (req: Request) => {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${appUrl}/payment-success?subscription=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/subscribe?payment_cancelled=1`,
-      metadata: { userId, plan },
+      metadata: { userId, plan, type: "subscription" },
+      // v25 (2026-07-15): stamp the mapping onto the subscription object itself
+      // so customer.subscription.* webhook events can resolve the user without
+      // any database lookup.
+      subscription_data: { metadata: { user_id: userId, plan } },
     });
 
     return new Response(

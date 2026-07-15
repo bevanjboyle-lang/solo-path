@@ -1,3 +1,34 @@
+// stripe-subscription-webhook v26 — Day Zero smoke-test fix — 2026-07-15
+//
+// LIVE BUG (found during the first real £19 subscription, 2026-07-15):
+// v25's userId fallback selected user_profiles.id (the table's own PK) and
+// used it as the auth user_id. Every downstream update then filtered on
+// user_id = <that PK value>, matched ZERO rows, raised no error, and the
+// function returned 200 "Subscription updated successfully" having written
+// nothing. Stripe marked both deliveries successful; the customer paid and
+// stayed locked. Fixes in v26:
+//   (1) metadata first: accept subscription.metadata.user_id OR .userId
+//       (create-subscription v25+ stamps subscription_data.metadata.user_id
+//       so subscription objects carry the mapping natively).
+//   (2) customer fallback selects user_id (not id), via maybeSingle.
+//   (3) fail-loud guard: if the user_profiles update matches 0 rows, return
+//       500 so Stripe retries — a zero-row update is a failure, never success.
+//   (4) idempotency release: any post-guard non-2xx return now deletes the
+//       stripe_webhook_events row first. Without that, Stripe's retry hit the
+//       duplicate check and was swallowed as 200 idempotent, so "will retry"
+//       never actually re-ran.
+//
+// stripe-subscription-webhook v25 — Track F unlock — 2026-05-18
+//
+// Coaching layer Phase 5b (admin/coaching-layer-design.md v1.10 §4.4):
+// BASE_SUBSCRIPTION_MODULES extended from [1..19] to [1..19, 26..32] so new
+// subscribers' modules_unlocked list includes the 7 Rejection & Resilience
+// modules unconditionally. Track E (20-25) remains sector-gated via
+// getApplicableTrackEModules. Existing subscribers' rows are NOT backfilled
+// by this version — their modules_unlocked won't include 26-32 until a
+// subsequent subscription event triggers a re-upsert. That's acceptable for
+// MVP (Bevan can run a one-off backfill SQL if needed).
+//
 // stripe-subscription-webhook v24 — Drift 6 fix — 2026-05-18
 //
 // Drift 6 (journey-trace audit 2026-05-18): mirror subscription state from
@@ -54,7 +85,7 @@ function getApplicableTrackEModules(q3a: string, q11: string, archetype: string 
   return TRACK_E_PATTERNS.filter(({ pattern }) => pattern.test(haystack)).map(({ moduleId }) => moduleId);
 }
 
-const FUNCTION_VERSION = "v24-drift-6-tracker-mirror";
+const FUNCTION_VERSION = "v26-userid-fix";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -108,6 +139,17 @@ Deno.serve(async (req: Request) => {
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
+
+  // v26: release the idempotency claim before any post-guard non-2xx return.
+  // Stripe retries non-2xx deliveries; without this delete, the retry hits the
+  // duplicate check below and gets swallowed as 200 idempotent.
+  const releaseIdempotency = async () => {
+    const { error: relErr } = await supabase
+      .from("stripe_webhook_events")
+      .delete()
+      .eq("event_id", event.id);
+    if (relErr) console.error(`${FUNCTION_VERSION} idempotency release failed:`, relErr.message);
+  };
 
   // V-056 fix (2026-05-14): event-id idempotency guard. See payment-webhook v27
   // for the same pattern. Without this, Stripe retries re-run user_profiles
@@ -167,26 +209,28 @@ Deno.serve(async (req: Request) => {
 
   const subscriptionActive = ["active", "trialing"].includes(status);
 
-  let userId = subscription.metadata?.user_id;
+  // v26 fix (2026-07-15): resolve the auth user_id.
+  // Priority 1: subscription metadata (create-subscription v25+ sets
+  // subscription_data.metadata.user_id; accept legacy camelCase too).
+  // Priority 2: user_profiles lookup by stripe_customer_id — selecting the
+  // user_id column. v25 selected `id` (the table PK) here and used it as the
+  // auth user_id, which silently matched zero rows in every later update.
+  let userId = subscription.metadata?.user_id || subscription.metadata?.userId;
   if (!userId) {
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("id")
-      .eq("stripe_customer_id", customerId)
-      .single();
-    if (profile) userId = profile.id;
-  }
-  if (!userId) {
-    const { data: profile2 } = await supabase
+    const { data: profile, error: lookupErr } = await supabase
       .from("user_profiles")
       .select("user_id")
       .eq("stripe_customer_id", customerId)
-      .single();
-    if (profile2) userId = profile2.user_id;
+      .maybeSingle();
+    if (lookupErr) {
+      console.error("user_profiles lookup by stripe_customer_id failed:", lookupErr.message);
+    }
+    if (profile?.user_id) userId = profile.user_id as string;
   }
 
   if (!userId) {
     console.error("Could not find user for customer:", customerId);
+    await releaseIdempotency(); // let Stripe's retry re-attempt resolution
     return new Response(
       JSON.stringify({ error: "User not found", response_text: "User not found for this customer" }),
       { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -210,15 +254,30 @@ Deno.serve(async (req: Request) => {
     updateData.subscription_plan = null;
   }
 
-  const { error } = await supabase
+  const { data: updatedProfiles, error } = await supabase
     .from("user_profiles")
     .update(updateData)
-    .eq("user_id", userId);
+    .eq("user_id", userId)
+    .select("user_id");
 
   if (error) {
     console.error("Error updating user_profiles:", error);
+    await releaseIdempotency();
     return new Response(
       JSON.stringify({ error: error.message, response_text: "Failed to update subscription" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
+  // v26 fail-loud guard: an update that matches zero rows is a failure, not a
+  // success. Return 500 so Stripe retries (idempotency released above) rather
+  // than reporting success on a no-op — the exact phantom-200 failure mode
+  // that let a paid subscriber stay locked on 2026-07-15.
+  if (!updatedProfiles || updatedProfiles.length === 0) {
+    console.error(`${FUNCTION_VERSION} user_profiles update matched 0 rows for user_id=${userId} (customer=${customerId}, sub=${subscriptionId})`);
+    await releaseIdempotency();
+    return new Response(
+      JSON.stringify({ error: "No matching user_profiles row", response_text: "Subscription user row not found" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -237,11 +296,7 @@ Deno.serve(async (req: Request) => {
   //   deleted                  → "cancelled"
   // Activate-plan sets it to "trial" on initial activation; that gets
   // overwritten the moment a real subscription event arrives.
-  const trackerStatus = subscriptionActive
-    ? "active"
-    : event.type === "customer.subscription.deleted"
-      ? "cancelled"
-      : "cancelled";
+  const trackerStatus = subscriptionActive ? "active" : "cancelled";
   const { error: trackerErr } = await supabase
     .from("tracker_sessions")
     .update({

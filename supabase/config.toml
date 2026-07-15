@@ -55,3 +55,9 @@ verify_jwt = false
 
 [functions.subscribe-signal]
 verify_jwt = false
+
+[functions.stripe-subscription-webhook]
+verify_jwt = false
+
+[functions.payment-webhook]
+verify_jwt = false
