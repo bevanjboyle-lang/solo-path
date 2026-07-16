@@ -1,14 +1,16 @@
-// send-abandonment-email v3 — F44 fix: cron-callable (verify_jwt:false) — 2026-06-01
-// F44 found pg_cron job 4 calling this tokenless → 401 every 30 min → recovery
-// emails never sent. The function is purely DB-state-driven (no input controls
-// recipients) + idempotent via the abandonment_*_sent_at flags, so it is safe to
-// deploy verify_jwt:false, matching the other cron-fired functions. No logic change.
+// send-abandonment-email v4 — 2026-07-01 — ADR-027 consent gating.
+//   Each abandonment nudge is now gated by can_send_email(email,'lifecycle') before
+//   sending: a suppressed / opted-out / frequency-capped recipient is skipped and
+//   the step is consumed (sent flag marked) so we do not re-evaluate every 30 min.
+//   Every send is recorded in email_send_log. Each email carries a one-click
+//   unsubscribe footer link + List-Unsubscribe headers (RFC 8058). See
+//   admin/communication-preferences-design.md.
 //
+// v3 — F44 fix: cron-callable (verify_jwt:false) — 2026-06-01
 // v2 — vibe code review fix V-058 — 2026-05-14
-// V-058: APP_URL and FROM_ADDRESS read from env vars with safe defaults.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v3-cron-callable";
+const FUNCTION_VERSION = "v4-consent-gated";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -36,6 +38,7 @@ async function sendEmail(
   to: string,
   subject: string,
   html: string,
+  unsubUrl: string,
 ): Promise<boolean> {
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -44,7 +47,16 @@ async function sendEmail(
         "Content-Type": "application/json",
         Authorization: `Bearer ${resendApiKey}`,
       },
-      body: JSON.stringify({ from: FROM_ADDRESS, to: [to], subject, html }),
+      body: JSON.stringify({
+        from: FROM_ADDRESS,
+        to: [to],
+        subject,
+        html,
+        headers: {
+          "List-Unsubscribe": `<${unsubUrl}>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        },
+      }),
     });
     if (!res.ok) {
       const body = await res.text();
@@ -58,7 +70,7 @@ async function sendEmail(
   }
 }
 
-function emailShell(heading: string, p1: string, p2: string, cta: string, magicLink: string, footer: string): string {
+function emailShell(heading: string, p1: string, p2: string, cta: string, magicLink: string, footer: string, unsubUrl: string): string {
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 32px 24px;">
       <div style="margin-bottom: 32px;">
@@ -69,6 +81,7 @@ function emailShell(heading: string, p1: string, p2: string, cta: string, magicL
       <p style="color: #4a4a4a; font-size: 15px; line-height: 1.7; margin-bottom: 28px;">${p2}</p>
       <a href="${magicLink}" style="display: inline-block; background: #2ECDB0; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600; font-size: 15px; margin-bottom: 32px;">${cta} &rarr;</a>
       <p style="color: #999; font-size: 13px; line-height: 1.6; margin-top: 32px;">${footer}</p>
+      <p style="color: #bbb; font-size: 12px; line-height: 1.6; margin-top: 16px;">Not useful? <a href="${unsubUrl}" style="color: #999;">Unsubscribe</a> and we'll stop.</p>
     </div>
   `;
 }
@@ -145,7 +158,7 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  let sent1h = 0, sent24h = 0, sent72h = 0, errors = 0;
+  let sent1h = 0, sent24h = 0, sent72h = 0, errors = 0, skipped = 0;
 
   for (const report of unpaidCandidates) {
     const hoursOld = hoursSince(report.created_at);
@@ -168,6 +181,40 @@ Deno.serve(async (req: Request) => {
       continue;
     }
     const userEmail = userData.user.email;
+
+    // ADR-027: consent gate. Resolve prefs (get token), check can_send_email('lifecycle').
+    const { data: prefsRow } = await supabase.rpc("ensure_comm_prefs", {
+      p_email: userEmail,
+      p_user_id: report.user_id,
+    });
+    const prefs = Array.isArray(prefsRow) ? prefsRow[0] : prefsRow;
+    const unsubUrl = `${supabaseUrl}/functions/v1/manage-unsubscribe?token=${prefs?.unsubscribe_token ?? ""}`;
+
+    const { data: gate } = await supabase.rpc("can_send_email", {
+      p_email: userEmail,
+      p_class: "lifecycle",
+      p_user_id: report.user_id,
+    });
+    const allowed = Array.isArray(gate) && gate[0]?.allowed === true;
+    if (!allowed) {
+      const reason = (Array.isArray(gate) && gate[0]?.reason) || "blocked";
+      await supabase.rpc("log_email_send", {
+        p_email: userEmail,
+        p_user_id: report.user_id,
+        p_class: "lifecycle",
+        p_key: `abandonment_${emailType}`,
+        p_status: "skipped",
+        p_skip_reason: reason,
+      });
+      // consume the step so we do not re-evaluate this recipient every 30 min
+      await supabase
+        .from("reports")
+        .update({ [`abandonment_${emailType}_sent_at`]: new Date().toISOString() })
+        .eq("id", report.id);
+      skipped++;
+      console.log(`Abandonment ${emailType} skipped for ${userEmail}: ${reason}`);
+      continue;
+    }
 
     let magicLink = `${APP_URL}/teaser?report_id=${report.id}`;
     try {
@@ -197,6 +244,7 @@ Deno.serve(async (req: Request) => {
         "See my report",
         magicLink,
         "This link takes you straight back to your report. No sign-in required.",
+        unsubUrl,
       );
     } else if (emailType === "24h") {
       subject = "Still thinking about your plan?";
@@ -207,6 +255,7 @@ Deno.serve(async (req: Request) => {
         "Go back to my report",
         magicLink,
         "Your report is saved and waiting. This link signs you straight in.",
+        unsubUrl,
       );
     } else {
       subject = "Last one from us";
@@ -217,10 +266,11 @@ Deno.serve(async (req: Request) => {
         "View my report",
         magicLink,
         "We won't email you again about this report.",
+        unsubUrl,
       );
     }
 
-    const ok = await sendEmail(resendApiKey, userEmail, subject, html);
+    const ok = await sendEmail(resendApiKey, userEmail, subject, html, unsubUrl);
 
     if (ok) {
       const updateField = `abandonment_${emailType}_sent_at`;
@@ -228,6 +278,15 @@ Deno.serve(async (req: Request) => {
         .from("reports")
         .update({ [updateField]: new Date().toISOString() })
         .eq("id", report.id);
+
+      await supabase.rpc("log_email_send", {
+        p_email: userEmail,
+        p_user_id: report.user_id,
+        p_class: "lifecycle",
+        p_key: `abandonment_${emailType}`,
+        p_status: "sent",
+        p_skip_reason: null,
+      });
 
       if (updateError) {
         console.error(`Failed to mark ${emailType} sent for report ${report.id}:`, updateError);
@@ -238,12 +297,20 @@ Deno.serve(async (req: Request) => {
         else sent72h++;
       }
     } else {
+      await supabase.rpc("log_email_send", {
+        p_email: userEmail,
+        p_user_id: report.user_id,
+        p_class: "lifecycle",
+        p_key: `abandonment_${emailType}`,
+        p_status: "error",
+        p_skip_reason: null,
+      });
       errors++;
     }
   }
 
   const totalSent = sent1h + sent24h + sent72h;
-  console.log(`Abandonment emails: ${sent1h} T+1h, ${sent24h} T+24h, ${sent72h} T+72h, ${errors} errors`);
+  console.log(`Abandonment emails: ${sent1h} T+1h, ${sent24h} T+24h, ${sent72h} T+72h, ${skipped} skipped, ${errors} errors`);
 
   return new Response(
     JSON.stringify({
@@ -251,10 +318,11 @@ Deno.serve(async (req: Request) => {
       sent_24h: sent24h,
       sent_72h: sent72h,
       total_sent: totalSent,
+      skipped,
       errors,
       candidates_checked: unpaidCandidates.length,
       version: FUNCTION_VERSION,
-      response_text: `Sent ${totalSent} abandonment emails (${sent1h} T+1h, ${sent24h} T+24h, ${sent72h} T+72h)`,
+      response_text: `Sent ${totalSent} abandonment emails (${sent1h} T+1h, ${sent24h} T+24h, ${sent72h} T+72h), ${skipped} skipped by consent gate`,
     }),
     { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );

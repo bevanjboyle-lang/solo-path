@@ -1025,7 +1025,13 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                 )}
 
                 {/* ─── Day 31+ Dark Wall (the screen's single dark moment) ─── */}
-                {planState === "day31_nosub" && <DarkWall />}
+                {planState === "day31_nosub" && (
+                  <DarkWall
+                    startedAt={activatedAt}
+                    days={trackerDays}
+                    phases={activationPlan?.activation_plan?.phases ?? null}
+                  />
+                )}
 
                 {/* ─── Non-Response Catcher (coaching layer Phase 3 slice 3a) ───
                   * admin/coaching-layer-design.md v1.6 §4.2. Renders above
@@ -1332,30 +1338,99 @@ function PanelSection({
 
 /* ─────────────────────────── Day 31+ Dark Wall ─────────────────────────── */
 
-function DarkWall() {
-  const today = new Date();
-  const ended = today.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-  const startDate = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-  const started = startDate.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+/*
+ * D31-SUMMARY v1 (Day Zero, 2026-07-16). The wall previously showed a fake
+ * date range (today minus 30, computed client-side) and no progress at all —
+ * bible §25 wants the day-30 boundary to say what actually happened. This v1
+ * renders the REAL numbers already in scope: true start/end dates from
+ * activated_at, check-ins completed from the tracker, and a per-phase
+ * completion breakdown walked out of the working plan. The richer narrative
+ * summary ("key moments, where you stand") remains a later pass — it needs a
+ * server-side summarisation step, not a client card.
+ */
+function DarkWall({
+  startedAt,
+  days,
+  phases,
+}: {
+  startedAt: string | null;
+  days: { day: number; completed: boolean }[];
+  phases: Phase[] | null;
+}) {
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+
+  const startDate = startedAt ? new Date(startedAt) : null;
+  const endDate = startDate
+    ? new Date(startDate.getTime() + 29 * 24 * 60 * 60 * 1000)
+    : null;
+  const started = startDate ? fmt(startDate) : null;
+  const ended = endDate ? fmt(endDate) : null;
+
+  const totalDays = days.length || 30;
+  const completedSet = new Set(days.filter((d) => d.completed).map((d) => d.day));
+  const doneCount = completedSet.size;
+
+  // Per-phase completion: days_detail day labels vary ("1", "Day 1", "day-1"),
+  // so extract the first integer — same normalisation findDayDetail uses.
+  const dayNum = (raw: unknown): number | null => {
+    const m = String(raw ?? "").match(/\d+/);
+    return m ? parseInt(m[0], 10) : null;
+  };
+  const phaseRows = (phases ?? [])
+    .map((ph) => {
+      const detail = Array.isArray(ph.days_detail) ? ph.days_detail : [];
+      const phaseDays = detail
+        .map((dd) => dayNum((dd as { day?: unknown }).day))
+        .filter((n): n is number => n !== null);
+      if (phaseDays.length === 0) return null;
+      const done = phaseDays.filter((n) => completedSet.has(n)).length;
+      return { name: ph.phase, done, total: phaseDays.length };
+    })
+    .filter((r): r is { name: string; done: number; total: number } => r !== null);
 
   return (
     <div className="mb-6 panel-dark px-6 sm:px-10 lg:px-12 py-7 sm:py-8">
-      <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 sm:gap-10 items-center">
+      <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 sm:gap-10 items-start">
         <div className="sm:col-span-8">
           <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[rgba(250,249,247,0.65)] mb-3">
             <span className="inline-block w-1.5 h-1.5 bg-primary" />
             <span className="text-[#FAF9F7]">30 days complete</span>
           </div>
           <p className="text-[18px] sm:text-[20px] font-semibold leading-snug text-[#FAF9F7]">
-            Your report and history stay here. To keep running your plan, open a subscription.
+            You showed up for {doneCount} of {totalDays} days. Your report and
+            full history stay here. To keep running your plan, open a
+            subscription.
           </p>
+          {phaseRows.length > 0 && (
+            <div className="mt-5 space-y-1.5">
+              {phaseRows.map((r) => (
+                <div
+                  key={r.name}
+                  className="flex items-baseline justify-between gap-4 text-[12.5px] text-[rgba(250,249,247,0.8)]"
+                >
+                  <span className="truncate">{r.name}</span>
+                  <span className="shrink-0 tabular-nums font-semibold text-[#FAF9F7]">
+                    {r.done}/{r.total} days
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="sm:col-span-4 sm:text-right">
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[rgba(250,249,247,0.55)] mb-1">
             Your 30 days
           </div>
           <div className="text-[13.5px] font-semibold text-[#FAF9F7] tabular-nums">
-            started {started} · ended {ended}
+            {started && ended ? (
+              <>started {started} · ended {ended}</>
+            ) : (
+              <>30 days complete</>
+            )}
+          </div>
+          <div className="mt-2 text-[12px] text-[rgba(250,249,247,0.65)] tabular-nums">
+            {doneCount} check-ins logged
           </div>
         </div>
       </div>

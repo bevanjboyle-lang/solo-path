@@ -136,8 +136,18 @@ export default function Subscribe() {
     try {
       const priceId = plan === "monthly" ? "price_sub_monthly" : "price_sub_annual";
       await triggerStripeCheckout(priceId, { email: user?.email });
-    } catch {
+    } catch (err) {
+      // Day Zero fix (2026-07-16): the error banner renders above the fold, so
+      // from the pricing cards a failed checkout read as "the button does
+      // nothing" (observed live during the Gate A smoke, when missing price
+      // env vars 500'd create-subscription). The toast is viewport-fixed and
+      // visible from anywhere on the page.
       setError(true);
+      const msg =
+        err instanceof Error && err.message && !/non-2xx/i.test(err.message)
+          ? err.message
+          : "We couldn't open checkout. Please try again in a moment.";
+      toast({ title: "Checkout failed", description: msg, variant: "destructive" });
     }
     setCheckingOut(null);
   };

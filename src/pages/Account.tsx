@@ -15,6 +15,7 @@ import {
 } from "@/lib/handlers";
 import TakeAnotherTestCard from "@/components/account/TakeAnotherTestCard";
 import TripwireCard from "@/components/account/TripwireCard";
+import CommunicationPreferences from "@/components/CommunicationPreferences";
 import TopBar from "@/components/TopBar";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { Input } from "@/components/ui/input";
@@ -79,7 +80,7 @@ export default function Account() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { isActive: isSubscriber } = useSubscriptionStatus();
-  type AccountSection = "profile" | "subscription" | "billing" | "privacy";
+  type AccountSection = "profile" | "subscription" | "billing" | "communications" | "privacy";
   const [activeSection, setActiveSection] = useState<AccountSection>("profile");
   // CV state
   const [cvRemoved, setCvRemoved] = useState(false);
@@ -210,9 +211,16 @@ export default function Account() {
       h2: "Billing.",
       lede: "Recent charges and the path to formal invoices. Stripe is the source of truth.",
     },
+    communications: {
+      eyebrow: "Communications",
+      numeral: "04",
+      meta: "applies immediately",
+      h2: "Communications.",
+      lede: "Which emails you get, and how often. Pause everything for a fortnight, or switch streams off for good — changes apply immediately.",
+    },
     privacy: {
       eyebrow: "Privacy & data",
-      numeral: "04",
+      numeral: "05",
       meta: "your data is yours",
       h2: "Privacy & data.",
       lede: "Remove individual pieces of your data or export everything we hold. Account deletion is also here, behind a typed confirmation.",
@@ -224,7 +232,8 @@ export default function Account() {
     { id: "profile",      label: "Profile",        numeral: "01", onClick: () => setActiveSection("profile"),      isActive: activeSection === "profile" },
     { id: "subscription", label: "Subscription",   numeral: "02", onClick: () => setActiveSection("subscription"), isActive: activeSection === "subscription" },
     { id: "billing",      label: "Billing",        numeral: "03", onClick: () => setActiveSection("billing"),      isActive: activeSection === "billing" },
-    { id: "privacy",      label: "Privacy & data", numeral: "04", onClick: () => setActiveSection("privacy"),      isActive: activeSection === "privacy" },
+    { id: "communications", label: "Communications", numeral: "04", onClick: () => setActiveSection("communications"), isActive: activeSection === "communications" },
+    { id: "privacy",      label: "Privacy & data", numeral: "05", onClick: () => setActiveSection("privacy"),      isActive: activeSection === "privacy" },
     { id: "sep",          label: "",               isDivider: true },
     { id: "signout",      label: "Sign out",       isUtility: true, onClick: handleSignOut },
   ];
@@ -344,6 +353,11 @@ export default function Account() {
                   {/* Billing */}
                   {activeSection === "billing" && (
                     <BillingSection onOpenPortal={handleBillingPortal} />
+                  )}
+
+                  {/* Communications (ADR-027 preference centre — Day Zero C0.8 push, 2026-07-16) */}
+                  {activeSection === "communications" && (
+                    <CommunicationPreferences />
                   )}
 
                   {/* Privacy & data */}

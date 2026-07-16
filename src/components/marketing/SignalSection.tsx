@@ -20,6 +20,7 @@
 
 import { Link } from "react-router-dom";
 import { useSignal } from "@/hooks/useSignal";
+import SignalSubscribe from "@/components/marketing/SignalSubscribe";
 
 function formatPublishDate(iso: string): string {
   try {
@@ -53,6 +54,11 @@ export default function SignalSection() {
               A weekly intelligence digest for independent professionals.
               Launches soon.
             </p>
+            {/* Day Zero C0.7 completion (2026-07-16): capture on the landing
+              * page, not only /signal. Same public subscribe-signal function. */}
+            <div className="mx-auto mt-6 max-w-md text-left">
+              <SignalSubscribe source="landing" />
+            </div>
           </div>
         </div>
       </section>
@@ -100,6 +106,12 @@ export default function SignalSection() {
                 Read the full edition &rarr;
               </Link>
             </p>
+
+            {/* Day Zero C0.7 completion (2026-07-16): capture on the landing
+              * page, not only /signal. Same public subscribe-signal function. */}
+            <div className="mt-8 border-t border-border pt-6">
+              <SignalSubscribe source="landing" />
+            </div>
           </div>
         </div>
       </div>
