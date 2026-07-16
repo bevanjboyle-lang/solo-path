@@ -3,6 +3,12 @@
 // in stripe-subscription-webhook (getApplicableTrackEModules) and
 // get-library-content (getTrackEModulesForUser) — the two copies had drifted.
 //
+// v27 sync (2026-07-16, Day Zero): module 24 gains tax/VAT/customs/accountancy
+// patterns. Found during the Gate A subscription smoke: the mapping had no tax
+// pattern at all, so tax professionals matched ZERO Track E modules. Keep in
+// sync with the inline copy in stripe-subscription-webhook (updated same day,
+// its v27) and redeploy get-library-content whenever this file changes.
+//
 // Track-E modules 20-25 are sector-specific. Each user gets the modules whose
 // sector matches their questionnaire answers (q3a sector + q11 sector_client_context)
 // and/or their assigned archetype name.
@@ -16,7 +22,7 @@
 //   21 — Public Sector (government, NHS, local authority)
 //   22 — Technology / Digital (software, data, cyber, product)
 //   23 — Healthcare & Life Sciences (pharma, clinical, medical, biotech)
-//   24 — Professional Services (legal, consulting, HR, executive coaching)
+//   24 — Professional Services (legal, consulting, tax, VAT/customs, accountancy, HR, executive coaching)
 //   25 — Marketing / Creative / Communications (brand, content, design, PR)
 //
 // Treasury was previously missed by the get-library-content regex; it's now
@@ -44,7 +50,7 @@ const TRACK_E_PATTERNS: Array<{ moduleId: number; pattern: RegExp }> = [
   },
   {
     moduleId: 24,
-    pattern: /legal|management consult|strategy consult|\bhr\b|people.*consult|executive coach|talent|organisational development|\bod\b|professional services/,
+    pattern: /legal|management consult|strategy consult|\bhr\b|people.*consult|executive coach|talent|organisational development|\bod\b|professional services|\btax\b|\bvat\b|indirect tax|transfer pricing|customs|hmrc|accountan/,
   },
   {
     moduleId: 25,

@@ -1,3 +1,18 @@
+// stripe-subscription-webhook v27 — Track-E tax pattern + started_at-on-activation — 2026-07-16
+//
+// (a) TRACK-E-TAX (found during the Gate A smoke): the sector mapping had no
+//     tax/VAT/customs pattern, so tax professionals (including a tax director
+//     smoke-testing the product) matched ZERO Track E modules. Tax and
+//     accountancy practice added to module 24 (Professional Services). Keep in
+//     sync with _shared/track-e-mapping.ts (repo) — get-library-content must be
+//     CLI-redeployed with the updated shared file (its bundle >100KB exceeds
+//     the MCP deploy limit; staged for the next paste block).
+// (b) subscription_started_at now stamps on the FIRST transition to active,
+//     not only on customer.subscription.created: Checkout-born subscriptions
+//     arrive 'incomplete' at created (payment settles moments later via the
+//     updated event), so the created-only stamp never fired for them.
+//     Idempotent — only fills a NULL column.
+//
 // stripe-subscription-webhook v26 — Day Zero smoke-test fix — 2026-07-15
 //
 // LIVE BUG (found during the first real £19 subscription, 2026-07-15):
@@ -72,12 +87,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 // Inlined from _shared/track-e-mapping.ts (V-057). See deploy note in file
 // header for why. Keep in sync with the shared module if patterns change.
+// v27 (2026-07-16): module 24 gains tax/VAT/customs/accountancy patterns.
 const TRACK_E_PATTERNS: Array<{ moduleId: number; pattern: RegExp }> = [
   { moduleId: 20, pattern: /financial services|banking|insurance|asset management|wealth|fintech|risk.*compli|compliance.*risk|audit|treasury/ },
   { moduleId: 21, pattern: /public sector|government|local authority|nhs|central government|defence|education|regulatory bod/ },
   { moduleId: 22, pattern: /technology|digital|software|data.*analytic|analytic.*data|\bai\b|machine learning|cloud|cybersecurity|product manager|product director|\btech\b/ },
   { moduleId: 23, pattern: /healthcare|\bnhs\b|life sciences|pharma|medical device|biotech|clinical|health tech/ },
-  { moduleId: 24, pattern: /legal|management consult|strategy consult|\bhr\b|people.*consult|executive coach|talent|organisational development|\bod\b|professional services/ },
+  { moduleId: 24, pattern: /legal|management consult|strategy consult|\bhr\b|people.*consult|executive coach|talent|organisational development|\bod\b|professional services|\btax\b|\bvat\b|indirect tax|transfer pricing|customs|hmrc|accountan/ },
   { moduleId: 25, pattern: /marketing|creative|advertising|\bbrand\b|content|\bdesign\b|communications|\bpr\b|public relations|digital marketing|growth market/ },
 ];
 function getApplicableTrackEModules(q3a: string, q11: string, archetype: string = ""): number[] {
@@ -85,7 +101,7 @@ function getApplicableTrackEModules(q3a: string, q11: string, archetype: string 
   return TRACK_E_PATTERNS.filter(({ pattern }) => pattern.test(haystack)).map(({ moduleId }) => moduleId);
 }
 
-const FUNCTION_VERSION = "v26-userid-fix";
+const FUNCTION_VERSION = "v27-tax-startedat";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -280,6 +296,20 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ error: "No matching user_profiles row", response_text: "Subscription user row not found" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+  }
+
+  // v27 (2026-07-16): stamp subscription_started_at on the FIRST transition to
+  // active, whatever event carries it. Checkout-born subscriptions arrive
+  // 'incomplete' on customer.subscription.created (payment settles moments
+  // later via updated), so a created-only stamp never fired for them.
+  // Idempotent: only fills a NULL column; never overwrites an existing start.
+  if (subscriptionActive) {
+    const { error: startedAtErr } = await supabase
+      .from("user_profiles")
+      .update({ subscription_started_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .is("subscription_started_at", null);
+    if (startedAtErr) console.error(`${FUNCTION_VERSION} started_at stamp failed (non-fatal):`, startedAtErr.message);
   }
 
   // Drift 6 fix (2026-05-18, journey-trace audit): mirror the subscription
