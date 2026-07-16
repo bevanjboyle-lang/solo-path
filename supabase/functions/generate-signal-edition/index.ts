@@ -187,6 +187,36 @@ function slugify(s: string): string {
     .slice(0, 80);
 }
 
+
+/*
+ * C0.10 rate-limit shim (Day Zero, 2026-07-16). Per-IP daily counter via the
+ * consume_rate_limit() SECURITY DEFINER function (migration
+ * day_zero_c010_rate_limit_shim). The pre-existing per-user/per-session caps
+ * remain; this adds the dimension an abuser cannot rotate for free. Fail-OPEN
+ * on infrastructure errors (availability first at this scale), fail-CLOSED on
+ * the limit itself. Limits are env-overridable without a redeploy.
+ */
+// deno-lint-ignore no-explicit-any
+async function consumeRateLimit(admin: any, name: string, req: Request, limit: number, globalBucket = false): Promise<boolean> {
+  try {
+    const ip = globalBucket
+      ? "global"
+      : (req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+         req.headers.get("cf-connecting-ip") ||
+         "unknown");
+    const { data, error } = await admin.rpc("consume_rate_limit", { p_key: `${name}:${ip}`, p_limit: limit });
+    if (error) {
+      console.error(`rate-limit rpc error (fail-open) [${name}]:`, error.message);
+      return true;
+    }
+    if (data !== true) console.warn(`rate-limit exceeded: ${name} key=${ip}`);
+    return data === true;
+  } catch (e) {
+    console.error(`rate-limit threw (fail-open) [${name}]:`, e);
+    return true;
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -204,6 +234,17 @@ Deno.serve(async (req: Request) => {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  // C0.10: this endpoint is public for pg_cron's sake but each call is an LLM
+  // edition generation. A GLOBAL daily cap (default 8) keeps abuse at pennies
+  // without breaking the Monday cron or manual fires.
+  const GLOBAL_LIMIT = parseInt(Deno.env.get("RATE_LIMIT_SIGNAL_GLOBAL_DAY") || "8", 10);
+  if (!(await consumeRateLimit(supabase, "generate-signal-edition", req, GLOBAL_LIMIT, true))) {
+    return new Response(
+      JSON.stringify({ error: "rate_limited", response_text: "Signal generation daily cap reached." }),
+      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
 
   let bodyOverride: { archetype_id?: string } = {};
   try {

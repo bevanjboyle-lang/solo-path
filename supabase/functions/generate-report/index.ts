@@ -1060,6 +1060,36 @@ function buildP1UserMessage(qd: Qd, cvExtract: Record<string, unknown> | undefin
   return msg;
 }
 
+
+/*
+ * C0.10 rate-limit shim (Day Zero, 2026-07-16). Per-IP daily counter via the
+ * consume_rate_limit() SECURITY DEFINER function (migration
+ * day_zero_c010_rate_limit_shim). The pre-existing per-user/per-session caps
+ * remain; this adds the dimension an abuser cannot rotate for free. Fail-OPEN
+ * on infrastructure errors (availability first at this scale), fail-CLOSED on
+ * the limit itself. Limits are env-overridable without a redeploy.
+ */
+// deno-lint-ignore no-explicit-any
+async function consumeRateLimit(admin: any, name: string, req: Request, limit: number, globalBucket = false): Promise<boolean> {
+  try {
+    const ip = globalBucket
+      ? "global"
+      : (req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+         req.headers.get("cf-connecting-ip") ||
+         "unknown");
+    const { data, error } = await admin.rpc("consume_rate_limit", { p_key: `${name}:${ip}`, p_limit: limit });
+    if (error) {
+      console.error(`rate-limit rpc error (fail-open) [${name}]:`, error.message);
+      return true;
+    }
+    if (data !== true) console.warn(`rate-limit exceeded: ${name} key=${ip}`);
+    return data === true;
+  } catch (e) {
+    console.error(`rate-limit threw (fail-open) [${name}]:`, e);
+    return true;
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   const t0 = Date.now();
@@ -1072,6 +1102,13 @@ Deno.serve(async (req: Request) => {
     const clientSessionId = extractClientSessionId(req, body);
     if (!userId && !clientSessionId) {
       return new Response(JSON.stringify({ error: "Unauthorized", response_text: "Unauthorized - pass either an authed JWT or x-client-session-id." }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // C0.10: per-IP daily cap. The 3/24h per-session cap below survives, but a
+    // caller-minted x-client-session-id rotates for free — the IP does not.
+    const IP_LIMIT = parseInt(Deno.env.get("RATE_LIMIT_GENERATE_REPORT_PER_IP_DAY") || "10", 10);
+    if (!(await consumeRateLimit(supabase, "generate-report", req, IP_LIMIT))) {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded", response_text: "You've hit today's limit for report generation from this connection. Please try again tomorrow." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const rateQuery = supabase.from("reports").select("id", { count: "exact", head: true }).gt("created_at", windowStart);
