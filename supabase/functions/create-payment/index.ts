@@ -1,3 +1,13 @@
+// create-payment v25 — C1.5 feedback-for-access codes — 2026-07-18
+//
+// Adds allow_promotion_codes:true to the Checkout session so Stripe shows an
+// "Add promotion code" field. Bevan creates a 100%-off coupon with ~10 limited
+// promotion codes in the Stripe dashboard (Phase 1 feedback users); a session
+// discounted to £0 completes without collecting a card and flows through the
+// normal checkout.session.completed unlock path (payment_intent is only read
+// by the charge.refunded branch, which a £0 session never triggers). With no
+// code entered, behaviour is byte-identical to v24.
+//
 // create-payment v24 — F44 fix: force Stripe email capture — 2026-05-16
 //
 // F44 (today): a live anon checkout completed but the webhook 400'd with
@@ -37,7 +47,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
-const FUNCTION_VERSION = "v24-customer-creation-always";
+const FUNCTION_VERSION = "v25-promotion-codes";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -197,6 +207,9 @@ Deno.serve(async (req: Request) => {
       // which can complete a payment with no email on the resulting session and
       // breaks the anon→user resolution path in payment-webhook.
       customer_creation: "always",
+      // v25 (C1.5): show the promotion-code field. Codes are created and
+      // capped in the Stripe dashboard; no code entered = unchanged flow.
+      allow_promotion_codes: true,
       success_url: `${appUrl}/payment-success?token={CHECKOUT_SESSION_ID}&report_id=${reportId || ''}`,
       cancel_url: `${appUrl}/teaser?report_id=${reportId || ''}`,
       metadata,
