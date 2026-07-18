@@ -73,3 +73,9 @@ verify_jwt = true
 
 [functions.send-nurture-emails]
 verify_jwt = false
+
+[functions.send-funnel-digest]
+verify_jwt = false
+
+[functions.generate-content-batch]
+verify_jwt = false

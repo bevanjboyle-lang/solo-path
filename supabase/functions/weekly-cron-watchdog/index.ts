@@ -11,6 +11,10 @@
 //   1. signal_editions: at least one row created in the last 8 days.
 //   2. radar_items: at least one row created in the last 8 days.
 //   3. public.get_recent_cron_failures(): zero failed cron runs in 8 days.
+//   4. diagnostic_nurture: no active sequence overdue by more than 26 hours
+//      (v2, C1.2 — catches the daily drip cron failing silently).
+//   5. content_batches: if a fresh Signal edition exists, a Monday content
+//      batch exists for it (v2, C1.3 — catches the loop generator failing).
 //
 // Behaviour: sends an email via Resend ONLY when a problem is found, or when
 // invoked with body {"force": true} (used for smoke tests — sends a status
@@ -21,7 +25,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v1";
+const FUNCTION_VERSION = "v2-nurture-and-loop-checks";
 const FROM_ADDRESS = "Solo <hello@solo-plan.com>";
 const DEFAULT_OWNER_EMAIL = "bevan.j.boyle@gmail.com";
 
@@ -84,14 +88,51 @@ Deno.serve(async (req: Request) => {
     for (const f of failures) {
       const key = `${f.jobname} (job ${f.jobid})`;
       const cur = byJob.get(key);
-      if (cur) { cur.count++; }
-      else byJob.set(key, { count: 1, sample: String(f.return_message || "").slice(0, 200), last: String(f.start_time) });
+      if (cur) {
+        cur.count++;
+        // v2 fix: keep the true latest failure time (v1 kept the first seen).
+        if (String(f.start_time) > cur.last) cur.last = String(f.start_time);
+      } else {
+        byJob.set(key, { count: 1, sample: String(f.return_message || "").slice(0, 200), last: String(f.start_time) });
+      }
     }
     for (const [job, info] of byJob) {
       problems.push(`Cron failures: ${job} failed ${info.count}x in the last 8 days (latest ${info.last}). Error: ${info.sample}`);
     }
   } else {
     okNotes.push("No failed cron runs in the last 8 days.");
+  }
+
+  // 4. Nurture drip overdue? (v2) An active sequence whose next send is more
+  // than 26 hours past due means the daily 08:10 cron is not doing its job.
+  const overdueCutoff = new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString();
+  const { count: overdueCount, error: nuErr } = await supabase
+    .from("diagnostic_nurture")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "active")
+    .lt("next_send_at", overdueCutoff);
+  if (nuErr) problems.push(`Could not check diagnostic_nurture: ${nuErr.message}`);
+  else if ((overdueCount ?? 0) > 0) problems.push(`Nurture drip stalled: ${overdueCount} active sequence(s) overdue by more than a day (cron diagnostic-nurture-daily / send-nurture-emails).`);
+  else okNotes.push("Nurture drip: no overdue sequences.");
+
+  // 5. Monday content batch produced for the fresh edition? (v2) Only flags
+  // when an edition exists; a missing edition is already check 1's problem.
+  const { data: freshEdition } = await supabase
+    .from("signal_editions")
+    .select("id")
+    .eq("published", true)
+    .gte("created_at", since)
+    .order("publish_date", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (freshEdition) {
+    const { count: batchCount, error: cbErr } = await supabase
+      .from("content_batches")
+      .select("id", { count: "exact", head: true })
+      .eq("edition_id", freshEdition.id);
+    if (cbErr) problems.push(`Could not check content_batches: ${cbErr.message}`);
+    else if ((batchCount ?? 0) === 0) problems.push("No Monday content batch for this week's Signal edition (cron generate-content-batch-monday / generate-content-batch).");
+    else okNotes.push("Weekly content batch produced for the fresh edition.");
   }
 
   const healthy = problems.length === 0;
