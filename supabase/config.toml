@@ -70,3 +70,6 @@ verify_jwt = false
 
 [functions.track-event]
 verify_jwt = true
+
+[functions.send-nurture-emails]
+verify_jwt = false

@@ -1,5 +1,11 @@
-// subscribe-signal v4 (2026-07-18, Day Zero C1.1) — capture readers into the
-// Signal list AND mirror them to Beehiiv when configured.
+// subscribe-signal v5 (2026-07-18, C1.2) — capture readers into the Signal
+// list AND mirror them to Beehiiv when configured.
+// v5: nurture enrolment. Diagnostic captures are inserted into
+//   public.diagnostic_nurture and send-nurture-emails is poked immediately so
+//   email 1 (the read recap) lands in the inbox at capture, honouring the
+//   "get a copy in your inbox" promise. The drip (emails 2-5, day 2/4/7/11)
+//   runs from the daily cron. Beehiiv automations sit behind the Scale plan,
+//   so the sequence runs on our own stack (ADR-027 gates apply per send).
 // v4: diagnostic-sourced capture (free diagnostic, admin/free-diagnostic-design.md):
 //   - body.diagnostic {snapshot, sector, seniority, work_type} accepted when
 //     source === "diagnostic"
@@ -21,7 +27,7 @@
 // v2 (2026-06-01): CORS allow x-client-session-id.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v4-diagnostic-capture";
+const FUNCTION_VERSION = "v5-nurture-enrol";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -146,8 +152,8 @@ async function mirrorToBeehiiv(email: string, source: string, diagnostic: Diagno
     const payload: Record<string, unknown> = {
       email,
       reactivate_existing: true,
-      // Diagnostic captures get the automation's Day 0 read-recap as their
-      // welcome (C1.2 email 1); everyone else keeps the platform welcome.
+      // Diagnostic captures get the drip's Day 0 read-recap as their welcome
+      // (C1.2 email 1, sent from our stack); everyone else keeps the platform welcome.
       send_welcome_email: !isDiagnostic,
       utm_source: "solo-plan.com",
       utm_medium: source,
@@ -213,6 +219,42 @@ Deno.serve(async (req: Request) => {
       return json({ error: "insert_failed", response_text: "Something went wrong. Please try again." }, 500);
     }
     await mirrorToBeehiiv(email, source, diagnostic);
+
+    // v5: enrol diagnostic captures in the own-stack nurture drip and poke the
+    // sender so email 1 (read recap) arrives now. Best-effort; never blocks
+    // the capture response. Re-takes hit the unique index and are left alone.
+    if (diagnostic) {
+      try {
+        await sb.rpc("ensure_comm_prefs", { p_email: email, p_user_id: null });
+        const { error: enrolErr } = await sb.from("diagnostic_nurture").insert({
+          email,
+          read_snapshot: diagnostic.snapshot.slice(0, 4000),
+          sector: diagnostic.sector.slice(0, 120),
+          seniority: diagnostic.seniority.slice(0, 120),
+          work_type: diagnostic.work_type.slice(0, 120),
+        });
+        if (!enrolErr) {
+          const poke = fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/send-nurture-emails`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          }).then(async (r) => {
+            if (!r.ok) console.error(`${FUNCTION_VERSION} nurture poke failed:`, r.status, (await r.text()).slice(0, 200));
+          }).catch((e) => console.error(`${FUNCTION_VERSION} nurture poke threw:`, (e as Error)?.message ?? String(e)));
+          // deno-lint-ignore no-explicit-any
+          const runtime = (globalThis as any).EdgeRuntime;
+          if (runtime?.waitUntil) runtime.waitUntil(poke);
+          else await poke;
+        } else if (enrolErr.code === "23505") {
+          console.log(`${FUNCTION_VERSION} nurture: already enrolled, sequence untouched`);
+        } else {
+          console.error(`${FUNCTION_VERSION} nurture enrol error:`, enrolErr.message);
+        }
+      } catch (err) {
+        console.error(`${FUNCTION_VERSION} nurture enrol threw:`, (err as Error)?.message ?? String(err));
+      }
+    }
+
     return json({ ok: true, response_text: "You're on the list for The Signal." });
   } catch (e) {
     return json({ error: String((e as Error)?.message ?? e), response_text: "Something went wrong." }, 500);
