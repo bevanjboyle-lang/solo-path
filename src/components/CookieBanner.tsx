@@ -40,7 +40,7 @@ export default function CookieBanner() {
     >
       <div className="mx-auto flex max-w-5xl flex-col items-start gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm leading-relaxed text-foreground">
-          This site uses only essential cookies required for login and security. No tracking or advertising cookies.{" "}
+          This site uses essential cookies for login and security, plus EU-hosted analytics to understand how the product is used. No advertising cookies.{" "}
           <Link
             to="/privacy"
             className="font-medium text-foreground underline underline-offset-4 hover:text-primary transition-colors"

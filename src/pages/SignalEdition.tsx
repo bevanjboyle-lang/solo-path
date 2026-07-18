@@ -153,7 +153,13 @@ export default function SignalEdition() {
             </p>
           </footer>
 
-          <div className="mt-8 border-t border-border pt-6"><SignalSubscribe source="signal_edition" /></div>
+          <div className="mt-8 border-t border-border pt-6">
+            <SignalSubscribe source="signal_edition" />
+            <p className="mt-4 text-[13px] text-muted-foreground">
+              Not sure where you'd fit?{" "}
+              <Link to="/diagnostic" className="link-edit">Take the 90-second diagnostic &rarr;</Link>
+            </p>
+          </div>
         </div>
       </div>
     </main>

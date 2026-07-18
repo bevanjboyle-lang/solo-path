@@ -8,6 +8,7 @@
 // placed BEFORE the SPA catch-all rewrite.
 //
 // Static public routes + /signal/:slug for every published edition.
+// v1.1 (2026-07-18, C1.1): /diagnostic added to the static route list.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
@@ -20,6 +21,7 @@ const STATIC_ROUTES: Array<{ path: string; priority: string; changefreq: string 
   { path: "/sample-report", priority: "0.8", changefreq: "monthly" },
   { path: "/faq", priority: "0.6", changefreq: "monthly" },
   { path: "/signal", priority: "0.9", changefreq: "weekly" },
+  { path: "/diagnostic", priority: "0.9", changefreq: "monthly" },
   { path: "/privacy", priority: "0.2", changefreq: "yearly" },
   { path: "/terms", priority: "0.2", changefreq: "yearly" },
 ];

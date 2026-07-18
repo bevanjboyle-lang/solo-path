@@ -22,6 +22,7 @@ const sections: LegalSection[] = [
       <ul className="list-disc list-inside space-y-2">
         <li><strong>Account data</strong>, email address, password hash</li>
         <li><strong>Profile data</strong>, questionnaire answers, CV text if uploaded, archetype classification</li>
+        <li><strong>Diagnostic data</strong>, the six answers you give in the free diagnostic and, if you choose to enter it, the email address used to send your read and add you to The Signal</li>
         <li><strong>Usage data</strong>, pages viewed, features used, check-in history</li>
         <li><strong>Payment data</strong>, processed by Stripe. We never see or store full card numbers</li>
       </ul>
@@ -61,6 +62,8 @@ const sections: LegalSection[] = [
         <li><strong>AI provider</strong>, generation, with SCCs</li>
         <li><strong>Hosting</strong>, application hosting</li>
         <li><strong>Resend</strong>, transactional email</li>
+        <li><strong>Beehiiv</strong>, newsletter delivery for The Signal (email address, subscription source, and your diagnostic read if you request a copy)</li>
+        <li><strong>PostHog</strong>, EU-hosted product analytics</li>
       </ul>
     ),
   },
@@ -100,8 +103,8 @@ const sections: LegalSection[] = [
     title: "Cookies",
     content: (
       <p>
-        Essential cookies only (authentication session). No advertising or tracking cookies. No
-        third-party analytics cookies.
+        Essential cookies (authentication session) plus first-party analytics via PostHog, hosted in
+        the EU and used only to understand how the product is used. No advertising cookies.
       </p>
     ),
   },
@@ -118,7 +121,7 @@ export default function PrivacyPolicy() {
       title="Privacy policy"
       eyebrow="Privacy"
       subhead="How Solo handles the information you give us when you take the test, pay for a report, and use the product."
-      lastUpdated="April 2026"
+      lastUpdated="July 2026"
       sections={sections}
       isTBC
     />

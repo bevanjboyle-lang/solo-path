@@ -77,6 +77,10 @@ export default function Signal() {
 
           <div className="mt-10 border-t border-border pt-6">
             <SignalSubscribe source="signal_archive" />
+            <p className="mt-4 text-[13px] text-muted-foreground">
+              Or see what the engine says about you:{" "}
+              <Link to="/diagnostic" className="link-edit">take the 90-second diagnostic &rarr;</Link>
+            </p>
           </div>
         </div>
       </div>

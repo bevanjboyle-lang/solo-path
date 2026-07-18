@@ -111,6 +111,18 @@ export default function SignalSection() {
               * page, not only /signal. Same public subscribe-signal function. */}
             <div className="mt-8 border-t border-border pt-6">
               <SignalSubscribe source="landing" />
+              {/* C1.1 (2026-07-18): quiet route into the free diagnostic for
+                * readers weighing the test itself. Text link only; the page's
+                * primary CTA stays with the paid funnel. */}
+              <p className="mt-4 text-[13px] text-muted-foreground">
+                Or start with something free:{" "}
+                <Link
+                  to="/diagnostic"
+                  className="font-medium text-primary underline decoration-1 underline-offset-4 hover:text-primary/80"
+                >
+                  the 90-second diagnostic &rarr;
+                </Link>
+              </p>
             </div>
           </div>
         </div>

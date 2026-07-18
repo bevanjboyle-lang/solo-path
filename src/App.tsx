@@ -43,6 +43,7 @@ import DevScreens from "./pages/DevScreens";
 import SampleReport from "./pages/SampleReport";
 import Signal from "./pages/Signal";
 import SignalEdition from "./pages/SignalEdition";
+import Diagnostic from "./pages/Diagnostic";
 import HowItWorks from "./pages/HowItWorks";
 import Radar from "./pages/Radar";
 import Pipeline from "./pages/Pipeline";
@@ -122,6 +123,7 @@ function AnimatedRoutes() {
             <Route path="/auth/confirm" element={<AuthConfirm />} />
 
             {/* Activation funnel — anonymous */}
+            <Route path="/diagnostic" element={<Diagnostic />} />
             <Route path="/cv-upload" element={<CVUpload />} />
             <Route path="/questionnaire" element={<Questionnaire />} />
             <Route path="/processing" element={<Processing />} />
