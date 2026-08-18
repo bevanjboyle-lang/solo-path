@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, type ReactNode } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,14 +19,90 @@ import ArchetypeSection from "@/components/sample-report/ArchetypeSection";
 import TransferableValueSection from "@/components/sample-report/TransferableValueSection";
 import TransferableSkillsSection from "@/components/sample-report/TransferableSkillsSection";
 import BusinessPaths from "@/components/sample-report/BusinessPaths";
-import {
-  RecommendationTeaser,
-  IncomeOutlookTeaser,
-  AIImpactTeaser,
-} from "@/components/sample-report/LockedSections";
 
 import type { SoloCoreReport, ReportRow } from "@/types/canonical";
 import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
+
+/* ── Blueprint Move 5 (2026-08-18): the locked area now renders the user's
+   REAL analysis, redacted server-side by get-teaser-preview. The fictional
+   sample components (RecommendationTeaser etc.) stay on /sample-report where
+   fiction is the point, and are no longer imported here. Nothing sensitive
+   reaches this page: openings + masked word-counts + income fractions only. */
+
+interface RedactedField {
+  opening: string;
+  masked_words: number;
+}
+
+export interface LockedPreview {
+  recommendation: {
+    lead_option_name: string | null;
+    rationale: RedactedField;
+    key_condition: RedactedField;
+  } | null;
+  reality_check: {
+    most_likely_failure_mode: RedactedField;
+    honest_income_outlook: RedactedField;
+  } | null;
+  income_outlook: {
+    primary_option_name: string | null;
+    years: Array<{ label: string; low_frac: number; mid_frac: number; high_frac: number }>;
+    sensitivity: RedactedField;
+  } | null;
+  ai_impact: {
+    displacement_risk: "low" | "medium" | "high" | null;
+    part_1: RedactedField;
+    part_2: RedactedField;
+    adaptation_steps: number;
+  } | null;
+  first_move: {
+    has_named_target: boolean;
+    action: RedactedField;
+    window: string;
+    draft_ready: boolean;
+  } | null;
+}
+
+interface TeaserPreviewResponse {
+  version: string;
+  status: string;
+  first_name: string | null;
+  free_core: Partial<SoloCoreReport> | null;
+  locked_preview: LockedPreview | null;
+  error?: string;
+}
+
+/** Client-side mirror of the server redaction, used only for dev-bypass on the sample fixture. */
+function redactLocal(s: string | undefined | null, showWords: number): RedactedField {
+  const words = (s ?? "").trim().split(/\s+/).filter(Boolean);
+  return { opening: words.slice(0, showWords).join(" "), masked_words: Math.max(0, words.length - showWords) };
+}
+
+function sampleToPreview(core: SoloCoreReport): LockedPreview {
+  const lead = core.options?.find((o) => o.rank === core.recommendation?.recommended_rank) ?? core.options?.[0];
+  const years = (["year_1", "year_2", "year_3"] as const).map((k, i) => {
+    const y = core.income_outlook?.[k];
+    return { label: `Year ${i + 1}`, low: y?.low_gbp ?? 0, mid: y?.mid_gbp ?? 0, high: y?.high_gbp ?? 0 };
+  });
+  const maxHigh = Math.max(1, ...years.map((y) => y.high));
+  return {
+    recommendation: core.recommendation
+      ? { lead_option_name: lead?.model_name ?? null, rationale: redactLocal(core.recommendation.rationale, 9), key_condition: redactLocal(core.recommendation.key_condition, 5) }
+      : null,
+    reality_check: core.reality_check
+      ? { most_likely_failure_mode: redactLocal(core.reality_check.most_likely_failure_mode, 7), honest_income_outlook: redactLocal(core.reality_check.honest_income_outlook, 6) }
+      : null,
+    income_outlook: core.income_outlook
+      ? { primary_option_name: lead?.model_name ?? null, years: years.map((y) => ({ label: y.label, low_frac: y.low / maxHigh, mid_frac: y.mid / maxHigh, high_frac: y.high / maxHigh })), sensitivity: redactLocal(core.income_outlook.sensitivity_factors, 6) }
+      : null,
+    ai_impact: core.ai_impact
+      ? { displacement_risk: core.ai_impact.part_1?.displacement_risk ?? null, part_1: redactLocal(core.ai_impact.part_1?.content, 8), part_2: redactLocal(core.ai_impact.part_2?.content, 0), adaptation_steps: core.ai_impact.part_3?.steps?.length ?? 0 }
+      : null,
+    first_move: core.hook_insight?.first_move
+      ? { has_named_target: Boolean(core.hook_insight.first_move.target), action: redactLocal(core.hook_insight.first_move.action, 4), window: "24 hours", draft_ready: Boolean(core.hook_insight.first_move.draft_body) }
+      : null,
+  };
+}
 
 /*
  * Teaser, Pass 1 /teaser v1 (2026-05-17)
@@ -102,6 +178,7 @@ export default function Teaser() {
   const [payError, setPayError] = useState<string | null>(null);
   const [firstName, setFirstName] = useState<string | null>(null);
   const [coreReport, setCoreReport] = useState<SoloCoreReport | null>(null);
+  const [lockedPreview, setLockedPreview] = useState<LockedPreview | null>(null);
   const [reportStatus, setReportStatus] = useState<ReportRow["status"] | null>(null);
   const [error, setError] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
@@ -122,6 +199,7 @@ export default function Teaser() {
   useEffect(() => {
     if (!reportId && isDevBypass()) {
       setCoreReport(SAMPLE_CORE_REPORT);
+      setLockedPreview(sampleToPreview(SAMPLE_CORE_REPORT));
       setFirstName("Sarah");
       setReportStatus("teaser_ready");
       setLoading(false);
@@ -141,27 +219,33 @@ export default function Teaser() {
       }
     }, 8000);
 
-    (supabase as any)
-      .from("reports")
-      .select(
-        "id, status, hook_insight, core_report, activation_plan, market_snapshots, recommended_selection, ai_impact_section, selected_strands, selected_option_rank, answers"
-      )
-      .eq("id", reportId)
-      .maybeSingle()
+    // Move 5 (2026-08-18): the teaser no longer selects the full core_report
+    // into an unpaid browser. get-teaser-preview returns the sanitised free
+    // zone plus a server-redacted preview of the user's real locked sections.
+    // The paired migration revokes anon SELECT on the sensitive columns, so
+    // this is also the page's only viable data path.
+    supabase.functions
+      .invoke("get-teaser-preview", { body: { report_id: reportId } })
       .then(
-        ({ data, error: fetchError }: { data: Record<string, unknown> | null; error: unknown }) => {
+        ({ data, error: fetchError }: { data: TeaserPreviewResponse | null; error: unknown }) => {
           if (cancelled) return;
           window.clearTimeout(timeoutId);
 
           if (fetchError) {
+            // A 404 means no such report: same fallback as the no-report-id
+            // branch (Drift D). Anything else is a real error state.
+            const status = (fetchError as { context?: { status?: number } })?.context?.status;
+            if (status === 404 && !isDevBypass()) {
+              noReportFallback();
+              return;
+            }
             setError(true);
             setLoading(false);
             return;
           }
 
-          if (!data) {
+          if (!data || data.error) {
             if (!isDevBypass()) {
-              // Drift D fix: same fallback as the no-report-id branch.
               noReportFallback();
               return;
             }
@@ -178,15 +262,21 @@ export default function Teaser() {
             }
           }
 
-          const answers = data.answers as Record<string, unknown> | null;
-          setFirstName((answers?.first_name as string) || null);
-          setCoreReport((data.core_report as SoloCoreReport | null) ?? null);
+          setFirstName(data.first_name || null);
+          const free = (data.free_core ?? null) as SoloCoreReport | null;
+          if (free?.hook_insight?.paragraph && (data.free_core as { hook_insight?: { paragraph_masked_words?: number } })?.hook_insight?.paragraph_masked_words) {
+            // The paragraph arrives as its opening words only (bible §7d:
+            // headline free, paragraph paid); make the cut read as intended.
+            free.hook_insight.paragraph = `${free.hook_insight.paragraph} …`;
+          }
+          setCoreReport(free);
+          setLockedPreview(data.locked_preview ?? null);
           setLoading(false);
         },
         (fetchError: unknown) => {
           if (cancelled) return;
           window.clearTimeout(timeoutId);
-          console.error("Teaser: report fetch failed", fetchError);
+          console.error("Teaser: preview fetch failed", fetchError);
           setError(true);
           setLoading(false);
         }
@@ -430,8 +520,8 @@ export default function Teaser() {
               {/* ─── Dark gate band, one earned dark moment per v1.4 §8 ─── */}
               <GateBand optionsCount={coreReport?.options?.length ?? 10} />
 
-              {/* ─── Stone locked area, wraps the 3 existing Teaser composites ─── */}
-              <LockedArea />
+              {/* ─── Stone locked area: the user's REAL analysis, redacted ─── */}
+              <LockedArea preview={lockedPreview} />
 
               {/* ─── Checkout error (P1-f) — surfaced at the conversion point ─── */}
               {payError && (
@@ -582,24 +672,158 @@ function GateBand({ optionsCount }: { optionsCount: number }) {
 
 /* ─────────────────────────── Stone locked area ─────────────────────────── */
 
-function LockedArea() {
+/* Redaction rendering: real opening words, then ink mask bars whose count is
+   driven by the true hidden word-count. Deterministic widths (no Math.random,
+   stable across renders), styled to the editorial register rather than a blur:
+   the blur said "content withheld"; the bars say "your sentences are here". */
+
+const MASK_WIDTHS = [64, 88, 44, 72, 56, 96, 38, 80];
+
+function MaskBars({ words, seed = 0 }: { words: number; seed?: number }) {
+  const bars = Math.max(3, Math.min(26, Math.round(words / 2.4)));
+  return (
+    <span className="inline" aria-label="locked content" role="img">
+      {Array.from({ length: bars }, (_, i) => (
+        <span
+          key={i}
+          className="inline-block h-[11px] bg-[#1A1915]/[0.13] rounded-[1px] mr-[6px] align-baseline"
+          style={{ width: `${MASK_WIDTHS[(seed + i) % MASK_WIDTHS.length]}px` }}
+        />
+      ))}
+    </span>
+  );
+}
+
+function RedactedText({ field, seed = 0 }: { field: RedactedField | undefined | null; seed?: number }) {
+  if (!field) return null;
+  return (
+    <span className="text-[14px] leading-[1.9] text-foreground">
+      {field.opening}{field.opening ? " " : ""}
+      <MaskBars words={field.masked_words} seed={seed} />
+    </span>
+  );
+}
+
+function LockedCard({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="bg-white border border-[#E5E2DC] px-6 py-5">
+      <div className="flex items-center gap-3 mb-3">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{title}</span>
+        <span className="flex-1 h-px bg-[#EBE8E2]" />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#15735F]">yours · locked</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+const RISK_LABELS: Record<string, string> = { low: "Low", medium: "Medium", high: "High" };
+
+function LockedArea({ preview }: { preview: LockedPreview | null }) {
   return (
     <div className="px-8 sm:px-12 lg:px-16 py-10 bg-[#F3F0EA]">
-      <div className="flex items-center gap-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-6">
+      <div className="flex items-center gap-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">
         <span className="text-[#15735F] tabular-nums">05</span>
         <span className="text-foreground">Behind the gate</span>
         <span className="flex-1 h-px bg-[#D8D4CC]" />
         <span>locked</span>
       </div>
-      {/* Wraps the existing canonical teaser components. Phase 2 will replace
-          these with the inline strand-card + calendar-silhouette design from
-          CD's proposal. For now the existing chrome lands inside the editorial
-          stone container, providing the visual gate without rewriting the
-          content model. */}
+      <p className="text-[13px] text-muted-foreground mb-6 max-w-xl">
+        This is not a sample. It is your analysis, already written, shown here with the
+        specifics masked. The full report lifts every bar.
+      </p>
       <div className="space-y-4">
-        <RecommendationTeaser />
-        <IncomeOutlookTeaser />
-        <AIImpactTeaser />
+        {preview?.recommendation && (
+          <LockedCard title="Solo's recommendation">
+            <p className="text-[14px] leading-[1.9] text-foreground">
+              {preview.recommendation.lead_option_name && (
+                <>Our recommendation runs through{" "}
+                  <strong className="font-semibold">{preview.recommendation.lead_option_name}</strong>.{" "}
+                </>
+              )}
+              <RedactedText field={preview.recommendation.rationale} seed={1} />
+            </p>
+            <p className="mt-3 text-[14px] leading-[1.9]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mr-2">The condition</span>
+              <RedactedText field={preview.recommendation.key_condition} seed={4} />
+            </p>
+          </LockedCard>
+        )}
+
+        {preview?.income_outlook && preview.income_outlook.years.length > 0 && (
+          <LockedCard title="Reality check and income outlook">
+            <div className="flex items-end gap-6 h-[120px] mb-3 max-w-md" aria-label="Income outlook, values locked">
+              {preview.income_outlook.years.map((y) => (
+                <div key={y.label} className="flex-1 flex flex-col items-center gap-1.5">
+                  <div className="w-full flex items-end justify-center gap-1.5 h-[96px]">
+                    <div className="w-3 bg-[#1A1915]/[0.14]" style={{ height: `${Math.max(4, y.low_frac * 96)}px` }} />
+                    <div className="w-3 bg-[#15735F]/70" style={{ height: `${Math.max(4, y.mid_frac * 96)}px` }} />
+                    <div className="w-3 bg-[#1A1915]/[0.28]" style={{ height: `${Math.max(4, y.high_frac * 96)}px` }} />
+                  </div>
+                  <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{y.label}</span>
+                </div>
+              ))}
+              <div className="flex flex-col justify-between h-[96px] text-[10px] tabular-nums text-muted-foreground/70 select-none">
+                <span>£██,███</span>
+                <span>£██,███</span>
+                <span>£█,███</span>
+              </div>
+            </div>
+            <p className="text-[13px] text-muted-foreground mb-2">
+              Your real year-one to year-three shape{preview.income_outlook.primary_option_name ? (
+                <> for <span className="text-foreground font-medium">{preview.income_outlook.primary_option_name}</span></>
+              ) : null}. The numbers unlock.
+            </p>
+            <p className="text-[14px] leading-[1.9]">
+              <RedactedText field={preview.reality_check?.honest_income_outlook} seed={2} />
+            </p>
+            <p className="mt-3 text-[14px] leading-[1.9]">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mr-2">Most likely failure mode</span>
+              <RedactedText field={preview.reality_check?.most_likely_failure_mode} seed={5} />
+            </p>
+          </LockedCard>
+        )}
+
+        {preview?.ai_impact && (
+          <LockedCard title="AI and your path">
+            <p className="text-[14px] leading-[1.9] text-foreground">
+              {preview.ai_impact.displacement_risk && (
+                <>Displacement risk to your current role:{" "}
+                  <strong className="font-semibold">{RISK_LABELS[preview.ai_impact.displacement_risk] ?? preview.ai_impact.displacement_risk}</strong>.{" "}
+                </>
+              )}
+              <RedactedText field={preview.ai_impact.part_1} seed={3} />
+            </p>
+            {preview.ai_impact.adaptation_steps > 0 && (
+              <p className="mt-3 text-[13px] text-muted-foreground">
+                Plus a {preview.ai_impact.adaptation_steps}-step adaptation path, specific to your profile.
+              </p>
+            )}
+          </LockedCard>
+        )}
+
+        {preview?.first_move && (
+          <LockedCard title="Your first move">
+            <p className="text-[14px] leading-[1.9] text-foreground">
+              <RedactedText field={preview.first_move.action} seed={6} />
+            </p>
+            <p className="mt-3 text-[13px] text-muted-foreground">
+              {preview.first_move.draft_ready
+                ? "A ready-to-send draft, written for you, with a 24-hour window."
+                : "A single named action with a 24-hour window."}
+              {preview.first_move.has_named_target ? " The recipient is named inside." : ""}
+            </p>
+          </LockedCard>
+        )}
+
+        {!preview && (
+          <LockedCard title="Your full analysis">
+            <p className="text-[14px] leading-[1.9] text-foreground">
+              The recommendation, the income outlook, the AI-impact analysis and your
+              first move are generated and waiting behind the gate.
+            </p>
+          </LockedCard>
+        )}
       </div>
     </div>
   );

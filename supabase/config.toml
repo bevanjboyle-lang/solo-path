@@ -11,6 +11,12 @@ project_id = "dnnxmjazillhktwttkux"
 [functions.generate-report]
 verify_jwt = false
 
+# Anonymous teaser preview (Move 5, 2026-08-18): serves the sanitised free
+# zone + server-redacted locked preview to the pre-payment teaser. Must stay
+# false; the report UUID is the capability, and nothing sensitive is returned.
+[functions.get-teaser-preview]
+verify_jwt = false
+
 # Authed-only — flipped true 2026-06-10 (was false; forgeable identity).
 [functions.generate-guidance]
 verify_jwt = true

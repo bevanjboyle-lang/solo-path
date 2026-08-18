@@ -79,7 +79,7 @@ interface CandidateTask {
   archetype_name: string | null;
 }
 
-const OPENAI_MODEL = "gpt-4o-2024-08-06";
+const OPENAI_MODEL = "gpt-5.4-mini"; // Move 6 re-pin off legacy gpt-4o (2026-08-18)
 const SILENCE_THRESHOLD_DAYS = 5;
 
 Deno.serve(async (req: Request) => {

@@ -92,6 +92,36 @@ const MODEL_TIER1 = "gpt-5.4";        // High-stakes synthesis and user-facing c
 const MODEL_TIER2 = "gpt-5.4-mini";   // Structured output, signal reading, advisory
 const MODEL_TIER3 = "gpt-5.4-nano";   // Classification, extraction, low-temp structured tasks
 
+// ── Move 6 (2026-08-18): prompt_runs telemetry (mirrors generate-report). ──
+const PROMPT_RUN_RATES_GBP_PER_1M: Record<string, { input: number; output: number }> = {
+  "gpt-5.4": { input: 1.9, output: 7.6 },
+  "gpt-5.4-mini": { input: 0.4, output: 1.5 },
+  "gpt-5.4-nano": { input: 0.08, output: 0.3 },
+};
+
+type PromptRunUsage = { prompt_tokens?: number; completion_tokens?: number } | null | undefined;
+
+async function logPromptRun(
+  sb: { from: (t: string) => { insert: (row: unknown) => PromiseLike<unknown> } },
+  o: { prompt_id: string; model: string; usage: PromptRunUsage; latency_ms: number; report_id: string | null },
+): Promise<void> {
+  try {
+    const inTok = o.usage?.prompt_tokens ?? 0;
+    const outTok = o.usage?.completion_tokens ?? 0;
+    const rates = PROMPT_RUN_RATES_GBP_PER_1M[o.model];
+    const cost = rates ? (inTok * rates.input + outTok * rates.output) / 1_000_000 : null;
+    await sb.from("prompt_runs").insert({
+      prompt_id: o.prompt_id, prompt_version_hash: null, function_name: "generate-plan",
+      user_id: null, report_id: o.report_id, model: o.model,
+      input_token_count: inTok, output_token_count: outTok,
+      cost_estimate_gbp: cost, latency_ms: o.latency_ms,
+      guardrails_passed: null, judge_scores: null,
+    });
+  } catch (e) {
+    console.warn(`prompt_runs log failed [${o.prompt_id}]:`, (e as Error)?.message ?? e);
+  }
+}
+
 function getUserIdFromJwt(authHeader: string | null): string | null {
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   try {
@@ -782,7 +812,18 @@ async function generatePlanInBackground(args: {
       ),
     ];
 
+    const tCalls = Date.now();
     const results = await Promise.all(apiCalls);
+    const callsLatency = Date.now() - tCalls;
+
+    // Move 6 telemetry: P3 + each P4 (latency is the shared parallel wall time).
+    {
+      const usageOf = (r: unknown) => (r as { usage?: PromptRunUsage })?.usage;
+      await logPromptRun(supabase, { prompt_id: "P3-activation-plan", model: MODEL_TIER1, usage: usageOf(results[0]), latency_ms: callsLatency, report_id });
+      for (let i = 1; i < results.length; i++) {
+        await logPromptRun(supabase, { prompt_id: "P4-market-snapshot", model: MODEL_TIER3, usage: usageOf(results[i]), latency_ms: callsLatency, report_id });
+      }
+    }
 
     const activationResult = results[0] as { choices: Array<{ message: { content: string | null }; finish_reason: string }> };
     const rawActivationContent = activationResult.choices[0].message.content || "{}";
@@ -918,6 +959,7 @@ async function generatePlanInBackground(args: {
       const recalibrationSystemPrompt = isPortfolio
         ? `You are Solo's intelligence engine. The user selected ${selectedStrands.length} business model strands to pursue as a portfolio. Regenerate the reality_check for their portfolio. The reality_check should address the portfolio as a whole — the risk of spreading too thin, the benefit of diversification, and the most likely failure mode. Do not reference inputs by name or question number in the output.`
         : `You are Solo's intelligence engine. The user selected rank ${selectedStrands[0].rank} (not the recommended rank 1). Regenerate the reality_check for this specific choice — the trade-offs of going with a non-default option, what the user is giving up by skipping rank 1, and the most likely failure mode of their chosen model. Do not reference inputs by name or question number in the output.`;
+      const tRecal = Date.now();
       const recalibrationRes = await openai.chat.completions.create({
         model: MODEL_TIER2,
         temperature: 0.4,
@@ -939,6 +981,7 @@ async function generatePlanInBackground(args: {
         response_format: { type: "json_schema", json_schema: RECALIBRATION_SCHEMA },
       });
 
+      await logPromptRun(supabase, { prompt_id: "P-reality-recalibration", model: MODEL_TIER2, usage: (recalibrationRes as { usage?: PromptRunUsage })?.usage, latency_ms: Date.now() - tRecal, report_id });
       const recalibrated = parseJ(recalibrationRes.choices[0].message.content || "{}");
       if (recalibrated.reality_check) {
         // V-015 (vibe code review 2026-05-14): only update reality_check (the
@@ -990,7 +1033,9 @@ async function generatePlanInBackground(args: {
     // reviewed). On exhaustion we log a quality_failure event and deliver the last
     // plan as a fallback. Any reviewer/regeneration error breaks the loop and
     // delivers the current plan — review must never block plan delivery.
-    if (Deno.env.get("WP8_PLAN_REVIEW_ENABLED") === "true") {
+    // Blueprint Move 6 (2026-08-18): default ON (was opt-in). Review never
+    // blocks delivery by design; set WP8_PLAN_REVIEW_ENABLED=false to disable.
+    if (Deno.env.get("WP8_PLAN_REVIEW_ENABLED") !== "false") {
       const REVIEW_MAX_REGENS = 2;
       const reviewBaseUrl = Deno.env.get("SUPABASE_URL");
       const reviewKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");

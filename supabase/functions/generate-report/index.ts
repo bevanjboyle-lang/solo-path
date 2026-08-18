@@ -922,6 +922,48 @@ function buildP0bUserMessage(qd: P0bQuestionnaireInput): string {
 const FUNCTION_VERSION = "v45.18-graceful-degradation-min7-options";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
+
+// ── Move 6 (2026-08-18): prompt_runs telemetry for the core generators. ─────
+// Until today only review-plan logged to prompt_runs (£1.36 lifetime); the
+// flagship pipeline flew blind on cost and volume. Token counts are the
+// ground truth; cost_estimate_gbp uses best-effort per-1M rates (verify
+// against the live price list when convenient; correcting the map re-prices
+// history via tokens, nothing is lost).
+const PROMPT_RUN_RATES_GBP_PER_1M: Record<string, { input: number; output: number }> = {
+  "gpt-5.4": { input: 1.9, output: 7.6 },
+  "gpt-5.4-mini": { input: 0.4, output: 1.5 },
+  "gpt-5.4-nano": { input: 0.08, output: 0.3 },
+};
+
+type PromptRunUsage = { prompt_tokens?: number; completion_tokens?: number } | null | undefined;
+
+async function logPromptRun(
+  supabase: { from: (t: string) => { insert: (row: unknown) => PromiseLike<unknown> } },
+  o: { prompt_id: string; model: string; usage: PromptRunUsage; latency_ms: number; report_id: string | null; function_name: string },
+): Promise<void> {
+  try {
+    const inTok = o.usage?.prompt_tokens ?? 0;
+    const outTok = o.usage?.completion_tokens ?? 0;
+    const rates = PROMPT_RUN_RATES_GBP_PER_1M[o.model];
+    const cost = rates ? (inTok * rates.input + outTok * rates.output) / 1_000_000 : null;
+    await supabase.from("prompt_runs").insert({
+      prompt_id: o.prompt_id,
+      prompt_version_hash: null,
+      function_name: o.function_name,
+      user_id: null,
+      report_id: o.report_id,
+      model: o.model,
+      input_token_count: inTok,
+      output_token_count: outTok,
+      cost_estimate_gbp: cost,
+      latency_ms: o.latency_ms,
+      guardrails_passed: null,
+      judge_scores: null,
+    });
+  } catch (e) {
+    console.warn(`prompt_runs log failed [${o.prompt_id}]:`, (e as Error)?.message ?? e);
+  }
+}
 const MAX_P1_VALIDATOR_RETRIES = 2;
 
 const corsHeaders = {
@@ -1196,11 +1238,13 @@ async function generateReportInBackground(args: BgArgs) {
   try {
     const flags = deriveFlags(questionnaireData);
     console.log(`bg ${reportId}: domain classifier (P0b) starting`);
+    const tP0b = Date.now();
     const dcr = await openai.chat.completions.create({
       model: MODEL_TIER3, temperature: 0.3, max_completion_tokens: 300,
       response_format: { type: "json_object" },
       messages: [{ role: "system", content: P0B_SYSTEM_PROMPT }, { role: "user", content: buildP0bUserMessage(questionnaireData) }],
     });
+    await logPromptRun(supabase, { prompt_id: "P0b-domain-classifier", model: MODEL_TIER3, usage: dcr.usage, latency_ms: Date.now() - tP0b, report_id: reportId, function_name: "generate-report" });
     const domainClassifier = parseJ(dcr.choices[0].message.content || "{}");
     const primaryDomain = (domainClassifier.primary_domain as string) || "Strategy & Advisory";
     const secondaryDomain = (domainClassifier.secondary_domain as string) || null;
@@ -1233,12 +1277,20 @@ async function generateReportInBackground(args: BgArgs) {
     for (const m of modelRows || []) { kbModelIndex.set(m.id as string, { primary_move_type: (m.primary_move_type as string) || "direct", structural_warmth: !!m.structural_warmth }); }
     const validationContext: ValidationContext = { allowed_business_model_ids: allowedBmIds, kb_model_index: kbModelIndex };
     console.log(`bg ${reportId}: P1 (${MODEL_TIER1}) starting | kb_archetypes=${archetypeIds.length} kb_models=${modelRows?.length || 0}`);
-    const p1Result = await callP1WithRetry({ openai, systemPrompt, userMessage, validationContext, reportId });
+    const p1Result = await callP1WithRetry({ openai, systemPrompt, userMessage, validationContext, reportId, supabase });
     const finalReport = p1Result.report;
     const validation = p1Result.validation;
     const optionCount = Array.isArray(finalReport?.options) ? finalReport!.options!.length : 0;
     console.log(`bg ${reportId}: P1 done | attempts=${p1Result.attempts} | options=${optionCount} | validation_passed=${validation.passed} | hard_failures=${validation.hard_failures.length} | overall_score=${validation.overall_score} | total_words=${validation.total_word_count}`);
-    if (!validation.passed) { console.warn(`bg ${reportId}: validation failed after ${p1Result.attempts} attempt(s): ` + validation.hard_failures.slice(0, 8).join(", ")); }
+    if (!validation.passed) {
+      console.warn(`bg ${reportId}: validation failed after ${p1Result.attempts} attempt(s): ` + validation.hard_failures.slice(0, 8).join(", "));
+      // Move 6 (2026-08-18): a best-effort ship is no longer silent. The row
+      // still ships (a waiting user beats a failed one) but the event makes
+      // every degraded report countable in the Monday digest and reviewable.
+      try {
+        await supabase.from("events").insert({ event_type: "report_validation_failed", user_id: userId, report_id: reportId, client_session_id: clientSessionId, payload: { attempts: p1Result.attempts, hard_failures: validation.hard_failures.slice(0, 10), overall_score: validation.overall_score } });
+      } catch (e) { console.warn(`bg ${reportId}: quality event insert failed:`, (e as Error)?.message ?? e); }
+    }
     const hookInsight = (finalReport?.hook_insight ?? null) as SoloCoreReport["hook_insight"] | null;
     const aiImpactSection = (finalReport?.ai_impact ?? null) as SoloCoreReport["ai_impact"] | null;
     const recommendedSelection = (finalReport?.recommended_selection ?? null) as SoloCoreReport["recommended_selection"] | null;
@@ -1296,8 +1348,8 @@ async function generateReportInBackground(args: BgArgs) {
   }
 }
 
-async function callP1WithRetry(args: { openai: OpenAI; systemPrompt: string; userMessage: string; validationContext: ValidationContext; reportId: string; }): Promise<{ report: Partial<SoloCoreReport> | null; validation: ValidationResult; attempts: number; rawContentLengths: number[]; }> {
-  const { openai, systemPrompt, userMessage, validationContext, reportId } = args;
+async function callP1WithRetry(args: { openai: OpenAI; systemPrompt: string; userMessage: string; validationContext: ValidationContext; reportId: string; supabase: { from: (t: string) => { insert: (row: unknown) => PromiseLike<unknown> } }; }): Promise<{ report: Partial<SoloCoreReport> | null; validation: ValidationResult; attempts: number; rawContentLengths: number[]; }> {
+  const { openai, systemPrompt, userMessage, validationContext, reportId, supabase } = args;
   const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [{ role: "system", content: systemPrompt }, { role: "user", content: userMessage }];
   const rawContentLengths: number[] = [];
   let lastReport: Partial<SoloCoreReport> | null = null;
@@ -1311,6 +1363,7 @@ async function callP1WithRetry(args: { openai: OpenAI; systemPrompt: string; use
     const rawContent = completion.choices[0].message.content || "";
     rawContentLengths.push(rawContent.length);
     console.log(`bg ${reportId}: P1 attempt ${attempt}/${totalAttempts} | latency=${latency}ms | prompt=${usage?.prompt_tokens} completion=${usage?.completion_tokens} | content_len=${rawContent.length}`);
+    await logPromptRun(supabase, { prompt_id: "P1-core-report", model: MODEL_TIER1, usage, latency_ms: latency, report_id: reportId, function_name: "generate-report" });
     const parsed = parseJ(rawContent) as Partial<SoloCoreReport>;
     lastReport = parsed;
     const validation = validateReport(parsed, validationContext);

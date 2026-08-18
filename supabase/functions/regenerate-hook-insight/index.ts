@@ -175,7 +175,11 @@ interface BusinessOption {
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  const FLAG = (Deno.env.get("WP2_HOOK_REGENERATION_ENABLED") ?? "false").toLowerCase();
+  // Blueprint Move 6 (2026-08-18): default ON. The best-of-3 loop was built,
+  // judged and verified in May, then left dark behind this flag while the
+  // eval's weakest dimension stayed the hook. Set the env var to "false" to
+  // disable; absence now means enabled.
+  const FLAG = (Deno.env.get("WP2_HOOK_REGENERATION_ENABLED") ?? "true").toLowerCase();
   if (FLAG !== "true" && FLAG !== "1") {
     return new Response(
       JSON.stringify({ skipped: true, reason: "WP2_HOOK_REGENERATION_ENABLED is not enabled", version: FUNCTION_VERSION }),

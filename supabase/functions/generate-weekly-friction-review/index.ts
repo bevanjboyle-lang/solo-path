@@ -76,7 +76,7 @@ interface TargetSession {
   subscription_status: string | null;
 }
 
-const OPENAI_MODEL = "gpt-4o-2024-08-06"; // json_schema strict mode
+const OPENAI_MODEL = "gpt-5.4-mini"; // Move 6 re-pin off legacy gpt-4o (2026-08-18); json_schema strict mode
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
