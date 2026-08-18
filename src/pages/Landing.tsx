@@ -272,10 +272,22 @@ export default function Landing() {
                 ) : (
                   <PrimaryButton onClick={handleStartTest}>Find what works</PrimaryButton>
                 )}
+                {/* Sprint 1: secondary CTA label normalised to canon. */}
                 <button onClick={handleSampleReport} className="link-edit">
-                  See a sample report
+                  See the sample report
                 </button>
               </div>
+              {!isAuthed && (
+                /* Sprint 1: the free diagnostic (the capture centrepiece) was
+                   unreachable from the landing; one quiet bridge, no competing
+                   weight against the primary. */
+                <div className="mt-3 text-[12.5px] text-muted-foreground">
+                  Not ready for the full test?{" "}
+                  <Link to="/diagnostic" className="font-medium text-foreground underline decoration-[#2ECDB0] decoration-2 underline-offset-4 hover:decoration-[#15735F]">
+                    Try the free 90-second diagnostic →
+                  </Link>
+                </div>
+              )}
               <div className="mt-7 flex gap-5 border-t border-border pt-3.5 text-[11.5px] text-muted-foreground">
                 <span><b className="font-semibold text-foreground">£19.99</b> one-time</span>
                 <span><b className="font-semibold text-foreground">8 min</b> test</span>
@@ -496,7 +508,7 @@ export default function Landing() {
             <div className="grid gap-6 lg:grid-cols-12 lg:gap-12">
               <div className="lg:col-span-4">
                 <h4 className="rule-head border-b-0 pb-0">Questions, answered</h4>
-                <Link to="/faq" className="link-edit mt-4 inline-block">See all on /faq →</Link>
+                <Link to="/faq" className="link-edit mt-4 inline-block">See all questions →</Link>
               </div>
               <div className="lg:col-span-8">
                 {FAQ_ITEMS.map((item, i) => (

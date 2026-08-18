@@ -366,7 +366,7 @@ export default function Report() {
       <main>
         <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-xl px-6">
-            <div className="flex gap-8 lg:gap-10">
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">{/* Sprint 1: mobile shell fix */}
               <AreaSidebar
                 items={sidebarItems}
                 head={sidebarHead}

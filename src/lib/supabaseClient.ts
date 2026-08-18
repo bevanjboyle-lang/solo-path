@@ -8,7 +8,16 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getClientSessionId } from "./clientSession";
 
-const SUPABASE_HOST = new URL(import.meta.env.VITE_SUPABASE_URL!).host;
+// Sprint 1: guard the module-load URL parse; an unset VITE_SUPABASE_URL used to
+// throw here and blank the whole app. Empty host disables the interceptor below.
+const SUPABASE_HOST = (() => {
+  try {
+    return new URL(import.meta.env.VITE_SUPABASE_URL!).host;
+  } catch {
+    console.error("VITE_SUPABASE_URL is unset or invalid; the client-session header interceptor is disabled.");
+    return "";
+  }
+})();
 
 let installed = false;
 
@@ -24,7 +33,7 @@ export function installSupabaseFetchHeader() {
     else if (input instanceof URL) url = input.toString();
     else url = input.url;
 
-    if (url.includes(SUPABASE_HOST)) {
+    if (SUPABASE_HOST && url.includes(SUPABASE_HOST)) {
       const headers = new Headers(init.headers || (input instanceof Request ? input.headers : undefined));
       headers.set("X-Client-Session-Id", getClientSessionId());
       return originalFetch(input, { ...init, headers });

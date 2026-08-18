@@ -40,6 +40,7 @@ interface PricingCardData {
   bullets: ReactNode[];
   ctaLabel: string;
   secondaryMicrocopy?: string;
+  ctaSecondary?: boolean; // Sprint 1: render the CTA as the hairline-outline secondary so the page keeps one mint primary.
 }
 
 const reportCard: PricingCardData = {
@@ -76,8 +77,11 @@ const subscriptionCard: PricingCardData = {
     <>Unlimited Ask Solo, context-aware to your plan.</>,
     <>Plan regenerates when your moves don't land. Cancel any time.</>,
   ],
-  ctaLabel: "Find what works",
+  // Sprint 1: was a second mint "Find what works" bar; the one-off report keeps the primary.
+  // Same handler as before: the test comes first, the microcopy below says so.
+  ctaLabel: "Continue with the subscription",
   secondaryMicrocopy: "Subscribe after the test, only if you decide to",
+  ctaSecondary: true,
 };
 
 /* ── Comparison rows, editorial sentences per cell, not binary ── */
@@ -256,8 +260,9 @@ export default function Pricing() {
                 <span className="text-[#15735F] tabular-nums mr-3">04</span>
                 <span>Three things people ask before paying</span>
               </div>
+              {/* Sprint 1: user-facing route literal replaced; same target. */}
               <button onClick={() => navigate("/faq")} className="link-edit">
-                See all on /faq →
+                See all questions →
               </button>
             </div>
 
@@ -392,6 +397,14 @@ function PricingCard({
             className="w-full px-5 py-[9px] text-[13px] font-semibold text-foreground bg-[#F3F1ED] border border-border transition-opacity hover:opacity-90"
           >
             {isAuthedBuyer && authedBuyerCtaLabel ? authedBuyerCtaLabel : data.ctaLabel}
+          </button>
+        ) : data.ctaSecondary && !isAuthedBuyer ? (
+          /* Sprint 1: subscription SKU renders as hairline-outline secondary (anon state); authed "Upgrade now" keeps its existing treatment. */
+          <button
+            onClick={onPrimary}
+            className="w-full border border-border bg-transparent px-[18px] py-[9px] text-center text-[13px] font-semibold text-foreground transition-colors hover:border-foreground"
+          >
+            {data.ctaLabel}
           </button>
         ) : (
           <button onClick={onPrimary} className="cta-block w-full text-center">

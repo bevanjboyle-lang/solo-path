@@ -153,7 +153,8 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
           className,
         )}
       >
-        <div className="sticky top-20">
+        {/* Sprint 1: offset tracks the sticky nav (4px house rule + 42px nav + breathing). */}
+        <div className="sticky top-[62px]">
           <div className="pb-4 flex flex-col gap-4">
             {head && (
               <div className="px-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground flex items-center gap-3">
@@ -177,7 +178,8 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
         <div
           className="sticky z-30 border-b border-border"
           style={{
-            top: 56,
+            // Sprint 1: pins directly beneath the house rule (4px) + nav (42px).
+            top: 46,
             background: "hsl(var(--background) / 0.95)",
             backdropFilter: "blur(8px)",
           }}

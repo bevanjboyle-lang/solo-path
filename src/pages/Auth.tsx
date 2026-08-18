@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { signIn, startTest } from "@/lib/handlers";
 import { isDevBypass } from "@/lib/devBypass";
@@ -72,6 +72,8 @@ export default function Auth() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const redirectTarget = safeRedirectTarget(params.get("redirect"));
+  // Sprint 1: a ?redirect= param means ProtectedRoute sent the user here from a gated page.
+  const gatedArrival = params.get("redirect") !== null;
   const expired = params.get("expired") === "true";
   const prefillEmail = params.get("email") || "";
 
@@ -169,6 +171,20 @@ export default function Auth() {
               )}
               {bannerState === "expired" && (
                 <CardBanner tone="info" label="Expired link" message="That link has expired. Enter your email to get a fresh one." />
+              )}
+
+              {/* Sprint 1: quiet context line for gated arrivals, above the form. Reads existing state only. */}
+              {view === "form" && gatedArrival && (
+                <p className="mt-6 border-b border-border pb-4 text-[12.5px] leading-relaxed text-muted-foreground">
+                  Sign in to open your Solo account area. New here? The report comes first:{" "}
+                  <Link
+                    to="/cv-upload"
+                    className="border-b border-[#D8D4CC] text-foreground transition-colors hover:border-foreground"
+                  >
+                    Find what works
+                  </Link>
+                  .
+                </p>
               )}
 
               {view === "form" ? (

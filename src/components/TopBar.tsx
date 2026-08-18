@@ -40,7 +40,9 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
     to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
 
   return (
-    <header>
+    // Sprint 1: display:contents so the sticky section-nav participates in the
+    // page's own flow; wrapped in a plain <header> box it could never stick.
+    <header className="contents">
       <Masthead
         right={
           <>
@@ -53,7 +55,7 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
           </>
         }
       />
-      <nav className="section-nav sticky z-40" style={{ top: 4 }} aria-label="Sections">
+      <nav className="section-nav" aria-label="Sections">
         <div className="mx-auto max-w-6xl px-6">
           <div className="section-nav-row">
             {SECTIONS.map((s) => (

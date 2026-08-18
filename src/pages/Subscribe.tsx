@@ -28,7 +28,7 @@ import { useToast } from "@/hooks/use-toast";
  *     two-column inline layout with mint-text label + display-weight
  *     sentence. NOT panel-dark (would over-weight reassurance).
  *   F8, Day-31 context pill conditional on ?from=day31 query param.
- *   25/3/22 module canonical applied throughout.
+ *   32/3/29 module canonical applied throughout (Sprint 1: was the stale 25/3/22).
  *
  * Cadence: zero dark. Calm continuation surface. User arrived here from
  * /plan's Day-31 wall, they've already seen the dark moment. Dark on
@@ -271,9 +271,10 @@ export default function Subscribe() {
               {/* F5: H1 copy is placeholder pending positioning-strategy review. */}
               Keep your plan alive.
             </h1>
+            {/* Sprint 1: stale module count corrected to the 3/29/32 canon. */}
             <p className="standfirst mt-4 max-w-[60ch]">
               Your 30-day report is yours forever. The subscription is what keeps the tracker moving
-              after day 30, weekly check-ins, the 22 modules you haven't opened yet, and unlimited
+              after day 30, weekly check-ins, the 29 modules you haven't opened yet, and unlimited
               Ask Solo.
             </p>
           </section>

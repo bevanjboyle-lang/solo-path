@@ -282,25 +282,56 @@ letter-spacing: 0.14em; text-transform: uppercase; font-weight: 600;
 .ticker-val { color: #2ECDB0; font-weight: 600; font-variant-numeric: tabular-nums; }
 .ticker-due { color: rgba(250,249,247,0.55); font-size: 11px; }
 
-/* ── Masthead + section nav (TopBar v2) ── */
+/* ── Masthead + section nav (TopBar v2; Sprint 1 mobile spec 2026-08-18) ──
+   Mobile (<640px): the centred three-column grid collapsed into itself
+   (wordmark over Sign in, CTA wrapping to three lines). The mobile masthead
+   is now a two-ended row: brand left, actions right, tagline slot hidden,
+   wordmark and CTA compressed. From sm upward the approved centred grid
+   returns unchanged. */
 .masthead { border-bottom: 1px solid #D1CEC7; background: #FAF9F7; }
 .masthead-grid {
-display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-height: 72px;
+display: flex; align-items: center; justify-content: space-between; gap: 12px;
+height: 58px;
+}
+@media (min-width: 640px) {
+.masthead-grid { display: grid; grid-template-columns: 1fr auto 1fr; height: 72px; }
 }
 @media (min-width: 1024px) { .masthead-grid { height: 84px; } }
 .masthead-word {
 font-family: 'Plus Jakarta Sans';
-font-weight: 600; font-size: 36px; letter-spacing: -0.045em; line-height: 1;
+font-weight: 600; font-size: 27px; letter-spacing: -0.045em; line-height: 1;
 color: #1A1915;
 }
+@media (min-width: 640px) { .masthead-word { font-size: 36px; } }
 @media (min-width: 1024px) { .masthead-word { font-size: 42px; } }
-.section-nav { border-bottom: 1px solid #D1CEC7; background: #FAF9F7; }
+.masthead-brand svg { width: 34px; height: 34px; }
+@media (min-width: 640px) { .masthead-brand svg { width: 44px; height: 44px; } }
+@media (max-width: 639px) {
+.masthead .cta-block { padding: 7px 12px; font-size: 12px; white-space: nowrap; }
+.masthead a[href="/auth"] { white-space: nowrap; }
+}
+/* Sprint 1: the nav previously carried inline `sticky` while trapped as the
+   last child of its own <header>, so it could never actually stick (a sticky
+   element cannot escape its containing block). The header is now
+   display:contents in TopBar/TopBarAuthed and stickiness lives here. */
+.section-nav {
+border-bottom: 1px solid #D1CEC7; background: #FAF9F7;
+/* top:4px sits flush beneath the fixed 4px MintTopBar house rule. */
+position: sticky; top: 4px; z-index: 40;
+}
 .section-nav-row {
 display: flex; gap: 26px; height: 42px; align-items: stretch;
 overflow-x: auto; scrollbar-width: none;
 }
 .section-nav-row::-webkit-scrollbar { display: none; }
+@media (max-width: 639px) {
+/* Scroll affordance: fade the clipped edge instead of cutting words in half. */
+.section-nav-row {
+gap: 22px;
+-webkit-mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 32px), transparent 100%);
+mask-image: linear-gradient(90deg, #000 0, #000 calc(100% - 32px), transparent 100%);
+}
+}
 .section-nav-link {
 display: flex; align-items: center; flex: none;
 font-size: 11.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;

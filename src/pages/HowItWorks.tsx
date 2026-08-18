@@ -100,18 +100,19 @@ export default function HowItWorks() {
             <p className="font-display text-base font-bold leading-snug text-foreground">
               See it on a real example, then decide.
             </p>
+            {/* Sprint 1: CTA hierarchy corrected to canon; "Find what works" is the mint primary, the sample report is the underline secondary. */}
             <div className="mt-4 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link
-                to="/sample-report"
+                to="/cv-upload"
                 className="cta-block"
               >
-                See a real sample report
+                Find what works
               </Link>
               <Link
-                to="/cv-upload"
+                to="/sample-report"
                 className="link-edit"
               >
-                Find what works
+                See the sample report
               </Link>
             </div>
           </footer>

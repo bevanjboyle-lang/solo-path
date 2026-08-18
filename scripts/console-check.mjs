@@ -1,0 +1,10 @@
+import { chromium } from "playwright";
+const browser = await chromium.launch({ executablePath: "/opt/pw-browsers/chromium", args: ["--no-sandbox"] });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+page.on("console", m => console.log("CONSOLE", m.type(), m.text().slice(0, 200)));
+page.on("pageerror", e => console.log("PAGEERROR", String(e).slice(0, 300)));
+await page.goto("http://127.0.0.1:4173/", { waitUntil: "load", timeout: 20000 });
+await page.waitForTimeout(3000);
+console.log("BODYHEIGHT", await page.evaluate(() => document.body.scrollHeight));
+console.log("ROOTHTML", (await page.evaluate(() => document.getElementById("root")?.innerHTML.length)) ?? "no root");
+await browser.close();

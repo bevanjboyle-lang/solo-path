@@ -72,10 +72,12 @@ export default function SignalEdition() {
       <div className="relative min-h-screen text-foreground">
       <TopBar />
       <main className="pb-12 pt-6 lg:pb-16"><div className="mx-auto max-w-2xl px-6">
-        <div className="py-5 text-center sm:py-6">
+        {/* Sprint 1: house not-found state; hairline rule, eyebrow, mint numeral, specimen line, one link back to /signal. */}
+        <div className="mt-8 border-t border-border pt-6">
           <p className="eyebrow">The Signal</p>
-          <p className="mt-3 text-sm text-foreground">We couldn't find that edition.</p>
-          <p className="mt-4"><Link to="/signal" className="link-edit">Back to the archive</Link></p>
+          <p className="mt-3 font-display text-[2.6rem] font-semibold leading-none text-[#2ECDB0] tabular-nums">01</p>
+          <p className="standfirst mt-3">We couldn't find that edition.</p>
+          <p className="mt-4"><Link to="/signal" className="link-edit">Read the latest Signal &rarr;</Link></p>
         </div>
       </div></main>
     </div>

@@ -49,7 +49,8 @@ const WHY_BULLETS = [
   },
   {
     lead: "Deletable.",
-    body: "Remove it any time from /account.",
+    // Sprint 1: route literal replaced with plain English in user-facing copy.
+    body: "Remove it any time from your account.",
   },
 ] as const;
 
@@ -219,9 +220,10 @@ export default function CVUpload() {
               {/* ─── H1 + standfirst (asymmetric on desktop, stacked on mobile) ─── */}
               <div className="pb-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12">
                 <div className="lg:col-span-7">
+                  {/* Sprint 1: comma moved into the ink half; was rendering "CV , we'll". */}
                   <h1 className="title-h1">
-                    Upload your CV{" "}
-                    <span className="text-muted-foreground">, we'll tailor the report to your background.</span>
+                    Upload your CV,{" "}
+                    <span className="text-muted-foreground">we'll tailor the report to your background.</span>
                   </h1>
                 </div>
                 <div className="lg:col-span-5 lg:pt-2">

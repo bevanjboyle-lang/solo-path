@@ -25,9 +25,11 @@ export default function TopBarAuthed() {
   const accountActive = location.pathname.startsWith("/account");
 
   return (
-    <header>
+    // Sprint 1: display:contents so the sticky section-nav participates in the
+    // page's own flow; wrapped in a plain <header> box it could never stick.
+    <header className="contents">
       <Masthead right={<AccountDropdown isActive={accountActive} />} />
-      <nav className="section-nav sticky z-40" style={{ top: 4 }} aria-label="Main">
+      <nav className="section-nav" aria-label="Main">
         <div className="mx-auto max-w-6xl px-6">
           <div className="section-nav-row">
             {AUTHED_SECTIONS.map((s) => (

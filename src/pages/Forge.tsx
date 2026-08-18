@@ -11,6 +11,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import TopBar from "@/components/TopBar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 
 type AssetType = "one_pager" | "rate_card" | "linkedin_about";
@@ -84,6 +85,8 @@ const mdComponents = {
 export default function Forge() {
   const [assets, setAssets] = useState<ForgeAsset[]>([]);
   const [loadingList, setLoadingList] = useState(true);
+  // Sprint 1: designed failure state; set on query error, thrown fetch, or a 12s hang.
+  const [loadFailed, setLoadFailed] = useState(false);
   const [forging, setForging] = useState<AssetType | null>(null);
   const [gated, setGated] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -97,15 +100,35 @@ export default function Forge() {
 
   useEffect(() => {
     let cancelled = false;
+    // Sprint 1: a hung fetch previously left the raw loading line up forever; flip to the failure state after 12s.
+    const slowTimer = window.setTimeout(() => {
+      if (!cancelled) {
+        setLoadFailed(true);
+        setLoadingList(false);
+      }
+    }, 12000);
     (async () => {
-      const { data, error } = await forgeTable()
-        .select("id, asset_type, title, content_md, created_at")
-        .order("created_at", { ascending: false });
-      if (cancelled) return;
-      if (!error && Array.isArray(data)) setAssets(data as ForgeAsset[]);
-      setLoadingList(false);
+      try {
+        const { data, error } = await forgeTable()
+          .select("id, asset_type, title, content_md, created_at")
+          .order("created_at", { ascending: false });
+        if (cancelled) return;
+        if (error) {
+          setLoadFailed(true);
+        } else if (Array.isArray(data)) {
+          setAssets(data as ForgeAsset[]);
+          setLoadFailed(false); // a late success after the slow timer recovers the page
+        }
+      } catch {
+        if (!cancelled) setLoadFailed(true);
+      } finally {
+        if (!cancelled) {
+          window.clearTimeout(slowTimer);
+          setLoadingList(false);
+        }
+      }
     })();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; window.clearTimeout(slowTimer); };
   }, []);
 
   // Latest asset per type, in the fixed display order.
@@ -189,9 +212,28 @@ export default function Forge() {
           {!gated && (
             <>
               <section className="mt-10">
+                {/* Sprint 1: house skeleton while loading (Library.tsx pattern) and a designed failure state; raw loading text retired. */}
+                {loadFailed && !loadingList ? (
+                  <div className="border-t border-border pt-6">
+                    <p className="eyebrow">The Forge</p>
+                    <p className="standfirst mt-3">This kit didn't load. It's ours to fix, not yours.</p>
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="mt-5 border border-border bg-transparent px-[18px] py-[9px] text-[13px] font-semibold text-foreground transition-colors hover:border-foreground"
+                    >
+                      Try again
+                    </button>
+                  </div>
+                ) : (
+                <>
                 <p className="rule-head">Your independence kit</p>
                 {loadingList ? (
-                  <p className="mt-5 text-sm text-muted-foreground">Loading your kit…</p>
+                  <div className="mt-5 space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton key={i} className="h-24" />
+                    ))}
+                  </div>
                 ) : (
                   <div>
                     {ASSET_DEFS.map((def) => {
@@ -228,6 +270,8 @@ export default function Forge() {
                   </div>
                 )}
                 {notice && <p className="mt-4 text-sm text-foreground">{notice}</p>}
+                </>
+                )}
               </section>
 
               {ASSET_DEFS.filter((d) => latestByType.has(d.type)).map((def) => {

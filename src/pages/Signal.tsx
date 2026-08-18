@@ -47,8 +47,16 @@ export default function Signal() {
             <p className="mt-8 text-sm text-muted-foreground">Loading the archive…</p>
           )}
 
+          {/* Sprint 1: house empty state; hairline rule, eyebrow, mint numeral, specimen line, one link to the subscribe box below. */}
           {!loading && (error || !editions || editions.length === 0) && (
-            <p className="mt-8 text-sm text-foreground">The first editions are publishing soon.</p>
+            <section className="mt-8 border-t border-border pt-6">
+              <p className="eyebrow">The Signal</p>
+              <p className="mt-3 font-display text-[2.6rem] font-semibold leading-none text-[#2ECDB0] tabular-nums">01</p>
+              <p className="standfirst mt-3">The first editions are publishing soon.</p>
+              <p className="mt-4">
+                <a href="#signal-subscribe" className="link-edit">Get the Monday briefing &rarr;</a>
+              </p>
+            </section>
           )}
 
           {!loading && editions && editions.length > 0 && (
@@ -75,7 +83,8 @@ export default function Signal() {
             </section>
           )}
 
-          <div className="mt-10 border-t border-border pt-6">
+          {/* Sprint 1: id anchors the empty-state link above; scroll-mt clears the sticky chrome. */}
+          <div id="signal-subscribe" className="mt-10 scroll-mt-24 border-t border-border pt-6">
             <SignalSubscribe source="signal_archive" />
             <p className="mt-4 text-[13px] text-muted-foreground">
               Or see what the engine says about you:{" "}

@@ -80,6 +80,7 @@ const FOOTERLESS_ROUTES = [
   "/auth", "/auth/callback", "/auth/confirm",
   "/ask-solo",
   "/checkin",
+  "/diagnostic", // Sprint 1: the free funnel had the global footer stacked on its own micro-footer
 ];
 
 // ADR-026 (2026-06-10): the Radar ticker is part of the global chrome but stays
@@ -87,6 +88,7 @@ const FOOTERLESS_ROUTES = [
 const TICKERLESS_ROUTES = [
   "/cv-upload", "/questionnaire", "/processing", "/teaser", "/payment-success",
   "/auth", "/auth/callback", "/auth/confirm",
+  "/diagnostic", // Sprint 1: same quiet-funnel policy as its siblings
 ];
 
 function AnimatedRoutes() {

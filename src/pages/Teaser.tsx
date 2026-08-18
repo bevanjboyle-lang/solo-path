@@ -651,7 +651,7 @@ function GateBand({ optionsCount }: { optionsCount: number }) {
             {[
               { l: "Strands", v: `Top ${Math.min(optionsCount, 3)} read · ${optionsCount} total` },
               { l: "Plan days", v: "0 / 30 read" },
-              { l: "Guidance", v: "3 / 25 included" },
+              { l: "Guidance", v: "3 / 32 included" }, // Sprint 1: 32-module canon
               { l: "Subscription", v: "+ 29 more modules" },
             ].map((item) => (
               <div key={item.l}>
@@ -912,7 +912,7 @@ const WHAT_YOU_GET = [
   {
     n: "04",
     t: "3 starter guidance modules",
-    d: "The harder parts of going independent: pricing your first proposal, scoping a discovery call, what to say when a buyer asks for credentials. The other 22 modules are part of the £19/month subscription, pitched separately when the 30-day plan ends.",
+    d: "The harder parts of going independent: pricing your first proposal, scoping a discovery call, what to say when a buyer asks for credentials. The other 29 modules are part of the £19/month subscription, pitched separately when the 30-day plan ends.",
   },
 ];
 

@@ -29,10 +29,12 @@ function BrandMark({ size = 44 }: { size?: number }) {
 export default function Masthead({ right, left }: { right?: React.ReactNode; left?: React.ReactNode }) {
   return (
     <div className="masthead">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="masthead-grid">
-          <div className="flex items-center text-[12px] text-muted-foreground">{left}</div>
-          <Link to="/" className="flex items-center gap-2.5 justify-self-center" aria-label="Solo home">
+          {/* Sprint 1: the left slot is decorative and empty on every current
+              surface; on mobile it collapsed the layout, so it renders sm+. */}
+          <div className="hidden sm:flex items-center text-[12px] text-muted-foreground">{left}</div>
+          <Link to="/" className="masthead-brand flex items-center gap-2 sm:gap-2.5 justify-self-center" aria-label="Solo home">
             <BrandMark />
             <span className="masthead-word">solo</span>
           </Link>
