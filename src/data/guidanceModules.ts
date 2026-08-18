@@ -65,6 +65,14 @@ export const TRACKS: GuidanceTrack[] = [
     badgeType: "subscription",
     moduleIds: [20, 21, 22, 23, 24, 25],
   },
+  {
+    id: "F",
+    name: "Rejection & Resilience",
+    description: "The moments where most people quit: silence, rejection, the week-three doubt, the family conversation. Direct, specific, no platitudes.",
+    badge: "Subscription",
+    badgeType: "subscription",
+    moduleIds: [26, 27, 28, 29, 30, 31, 32],
+  },
 ];
 
 export const MODULES: GuidanceModule[] = [
@@ -309,6 +317,73 @@ export const MODULES: GuidanceModule[] = [
       { id: "cm_discipline", text: "What's your primary discipline?", options: ["Brand/Strategy", "Content/Copywriting", "Design/Creative Direction", "Performance Marketing", "PR/Communications"] },
       { id: "cm_portfolio", text: "Do you have a portfolio of independent work?", options: ["Yes - strong portfolio", "Some pieces", "No - only agency/in-house work"] },
       { id: "cm_pricing", text: "How do you primarily charge?", options: ["Day rate", "Project fee", "Retainer", "Mix", "Not decided"] },
+    ],
+  },
+  // ── Track F: Rejection & Resilience (Move 7 sync, 2026-08-18) ──
+  // Server truth (supabase/functions/_shared/modules-26-32.ts) has carried
+  // these seven modules since May; the client catalogue never synced, so
+  // the Library rendered 25 while every pricing surface said 32 and the
+  // server could already generate all 32. Metadata extracted verbatim from
+  // the server library; the server file remains canonical for 26-32.
+  {
+    id: 26, name: "Handling silence after sending", area: "Resilience", minutes: 4, prereq: null, track: "F",
+    description: "The most common moment people quit. What silence usually means, and the specific next move when a sent message doesn't come back.",
+    questions: [
+      { id: "sent_recency", text: "How many days has it been since you sent the message you're thinking about?", options: ["1-3 days", "4-7 days", "8-14 days", "Over two weeks"] },
+      { id: "sent_relationship", text: "Was this a cold contact, a warm reconnect, or a referral introduction?", options: ["Cold (no prior contact)", "Warm reconnect (someone I used to know)", "Referral introduction (someone introduced us)", "Existing contact I had not spoken to in a while"] },
+      { id: "usual_response_time", text: "In your experience, how quickly do people in your network normally reply to non-urgent professional messages?", options: ["Within 24 hours typically", "Within a few days", "A week is normal", "Highly variable, often longer"] },
+    ],
+  },
+  {
+    id: 27, name: "Handling explicit rejection", area: "Resilience", minutes: 4, prereq: null, track: "F",
+    description: "When someone says no directly. How to separate the no from the relationship, what to do in the next 48 hours, and the move most people miss.",
+    questions: [
+      { id: "rejection_type", text: "What kind of no was it?", options: ["A clear no with no reason", "A soft no (\"not right now\", \"maybe later\")", "A no with a specific reason", "A redirect (\"not me, try X\")"] },
+      { id: "relationship_status", text: "Do you want this relationship to continue beyond this engagement?", options: ["Yes, it's a long-term contact worth preserving", "Yes, but it was transactional", "No, this was a one-off", "Unsure"] },
+      { id: "emotional_weight", text: "How much is this one weighing on you right now?", options: ["Lightly, it stings but it's fine", "Moderately, it's on my mind", "Significantly, it's affecting the rest of my week"] },
+    ],
+  },
+  {
+    id: 28, name: "Handling the imposter spike after a small win", area: "Resilience", minutes: 4, prereq: null, track: "F",
+    description: "The strange thing that happens after the first reply, the first paid hour, the first introduction landing. Why the imposter voice gets louder right when things start working, and the specific move to make next.",
+    questions: [
+      { id: "win_type", text: "What was the small win?", options: ["First reply to outreach", "First paid work or first invoice", "First meaningful introduction landing", "First explicit expression of interest", "Something else"] },
+      { id: "imposter_voice", text: "In one line, what is the imposter voice currently saying? (Optional, leave blank if you'd rather not articulate it.)", options: [] },
+    ],
+  },
+  {
+    id: 29, name: "Handling the doubt at week three", area: "Resilience", minutes: 4, prereq: null, track: "F",
+    description: "The structural moment when momentum dips. What week three usually is, why most people misread it as failure, and the specific re-engagement move that gets the trajectory back.",
+    questions: [
+      { id: "current_state", text: "Where are you in the dip?", options: ["Just hit it, things suddenly feel hard", "Mid-week, in the middle of it", "Coming out, but not sure if I'm back yet"] },
+      { id: "dominant_friction", text: "What is your current dominant friction? (Optional)", options: [] },
+    ],
+  },
+  {
+    id: 30, name: "Handling the \"should I just take a job\" moment", area: "Resilience", minutes: 5, prereq: null, track: "F",
+    description: "When the safe option starts to look attractive again. What's actually happening, what's worth pausing the plan for vs. not, and the specific decision framework before you act.",
+    questions: [
+      { id: "trigger", text: "What surfaced this thought today?", options: ["A slow week with no replies", "A specific job opportunity that landed", "Financial pressure", "A family conversation", "General doubt without a specific trigger"] },
+      { id: "financial_runway", text: "How much runway do you have at your current burn rate?", options: ["Less than 3 months", "3-6 months", "6-12 months", "Over 12 months", "I don't track this precisely"] },
+      { id: "opportunity_specifics", text: "Is there a specific job on the table right now?", options: ["Yes, a concrete offer", "Yes, an early conversation", "No, this is hypothetical"] },
+    ],
+  },
+  {
+    id: 31, name: "Handling comparison anxiety when a peer announces something good", area: "Resilience", minutes: 4, prereq: null, track: "F",
+    description: "The specific psychological move when someone in your network posts a win that lands harder than you expected. Why it happens, what the spike tells you, and the response that actually helps your work.",
+    questions: [
+      { id: "peer_proximity", text: "Was this peer in a path close to yours, or a different one entirely?", options: ["Very close (similar archetype, similar stage)", "Somewhat adjacent (similar industry, different path)", "Different path entirely (a friend or former colleague in a different field)"] },
+      { id: "announcement_type", text: "What did they announce?", options: ["A new job or promotion", "A client win or new engagement", "A book, podcast, or public visibility", "A company milestone (sale, raise, exit)", "General visibility (a popular post, a press mention)"] },
+      { id: "response_so_far", text: "What have you done in the hour since seeing it? (Optional)", options: [] },
+    ],
+  },
+  {
+    id: 32, name: "Handling the partner or family conversation", area: "Resilience", minutes: 5, prereq: null, track: "F",
+    description: "The conversation that often determines whether your plan survives the next 90 days. What to share, what not to share, and the specific structure that works for both sides.",
+    questions: [
+      { id: "conversation_status", text: "Have you had this conversation in any meaningful form yet?", options: ["No, I've been avoiding it", "Partial, I've mentioned things but not had a real conversation", "Yes, recently, and it did not go well", "Yes, recently, and it went okay but feels unresolved"] },
+      { id: "their_concern", text: "What is their primary concern?", options: ["Income and financial security", "Your wellbeing and stress", "Specific timing (e.g. a family event coming up)", "General risk and the unknown", "I'm not sure what their primary concern is"] },
+      { id: "relationship_dynamic", text: "How do the two of you typically have hard conversations?", options: ["Head-on, we both prefer directness", "Over time, in small pieces", "With structure (we plan and schedule them)", "With some avoidance, they tend to drift"] },
     ],
   },
 ];

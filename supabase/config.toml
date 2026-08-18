@@ -106,3 +106,9 @@ verify_jwt = false
 # Bearer anyway so it also works if an MCP redeploy flips this to true.
 [functions.weekly-heartbeat]
 verify_jwt = false
+
+# admin-regenerate-ai-impact: Move 7 quarterly corpus pass. Gateway JWT on;
+# the confirm token + rate limit are the real gate. Invoked manually with
+# the anon Bearer each quarter (or by a future quarterly cron).
+[functions.admin-regenerate-ai-impact]
+verify_jwt = true
