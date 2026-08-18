@@ -17,6 +17,13 @@ verify_jwt = false
 [functions.get-teaser-preview]
 verify_jwt = false
 
+# Anonymous funnel — MUST stay false (Phase B, 2026-08-18). Serves the
+# KB-classified diagnostic read before any account exists. Rate-limited
+# per IP inside the function; falls back gracefully so the client's
+# deterministic read still renders if this errors.
+[functions.diagnostic-read]
+verify_jwt = false
+
 # Authed-only — flipped true 2026-06-10 (was false; forgeable identity).
 [functions.generate-guidance]
 verify_jwt = true

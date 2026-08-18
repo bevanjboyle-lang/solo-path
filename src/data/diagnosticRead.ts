@@ -341,6 +341,87 @@ export function assembleGenericRead(a: DiagnosticAnswers): DiagnosticRead {
   };
 }
 
+/* ── Phase B (2026-08-18): CV-first intake, the three asks ──────────────────
+ *
+ * The diagnostic no longer asks the Q10 confidence question. In its place sit
+ * three situational asks (situation, appetite, evidence) whose full option
+ * strings are sent verbatim to the diagnostic-read edge function, and whose
+ * titles seed Q7/Q9/Q10 in the questionnaire draft. Copy rules as above.
+ */
+
+/** Profile answers without the retired Q10 confidence question. */
+export type DiagnosticProfile = Omit<DiagnosticAnswers, "confidence">;
+
+export interface DiagnosticAsks {
+  /** Full option string from SITUATION_OPTIONS. */
+  situation: string;
+  /** Full option string from APPETITE_OPTIONS. */
+  appetite: string;
+  /** Chip label from EVIDENCE_RECENCY_OPTIONS. */
+  evidenceRecency: string;
+  /** Optional one-line note on who asked and what for. */
+  evidenceNote: string;
+}
+
+export const SITUATION_OPTIONS = [
+  "Restructuring noise - change programmes, consultations or cuts are in the air",
+  "Plateaued - the role still pays but has stopped going anywhere",
+  "Already decided - I'm leaving; the question is what I'm building",
+  "Just measuring - no pressure, I want to know what my options are worth",
+] as const;
+
+export const APPETITE_OPTIONS = [
+  "Advise - sell my judgement to organisations that need it",
+  "Deliver - run defined pieces of work end to end, then hand them over",
+  "Productise - turn what I know into something sold more than once",
+  "Portfolio - several strands of income rather than one job-shaped thing",
+] as const;
+
+export const EVIDENCE_RECENCY_OPTIONS = [
+  "This week",
+  "This month",
+  "A few times a year",
+  "Honestly, can't recall",
+] as const;
+
+/** "Restructuring noise - change…" → "Restructuring noise". */
+export function optionTitle(option: string): string {
+  const i = option.indexOf(" - ");
+  return i >= 0 ? option.slice(0, i) : option;
+}
+
+/** Close for the blocker line, keyed on the situation title. Replaces the
+ *  retired confidence close: it reflects what they told us, never what we
+ *  guessed. */
+const SITUATION_CLOSE: Record<string, string> = {
+  "Restructuring noise":
+    "You said restructuring noise is in the background. That is the most common trigger among people who later build a second income, and the useful moment to map options is before someone else maps them for you.",
+  "Plateaued":
+    "You said the plateau is what moved you to look. Plateaus rarely resolve inside the same role; a mapped outside option is usually what breaks the stalemate, one way or the other.",
+  "Already decided":
+    "You said the decision is already made. That changes the question from whether to how, and the how is mostly sequencing: what to line up before you hand anything in.",
+  "Just measuring":
+    "You said you are measuring, with no pressure behind it. Good. A measured read taken early is worth more than a rushed one taken the week you need it.",
+};
+
+function situationClose(situationOption: string): string {
+  return SITUATION_CLOSE[optionTitle(situationOption)] ?? SITUATION_CLOSE["Just measuring"];
+}
+
+/** Phase B deterministic assembler: profile plus the three asks, no Q10. */
+export function assembleReadFromAsks(p: DiagnosticProfile, asks: DiagnosticAsks): DiagnosticRead {
+  const base = assembleRead({ ...p, confidence: "" });
+  return {
+    ...base,
+    blocker: `${BLOCKER[workTypeKey(p.workType)]} ${situationClose(asks.situation)}`,
+  };
+}
+
+/** Generic (no-email) variant for the Phase B flow. */
+export function assembleGenericReadFromProfile(p: DiagnosticProfile): DiagnosticRead {
+  return assembleGenericRead({ ...p, confidence: "" });
+}
+
 /**
  * Plain-text snapshot for the nurture email merge field (Beehiiv custom
  * field, design §9 / nurture build note 3). Kept under 1,800 characters;

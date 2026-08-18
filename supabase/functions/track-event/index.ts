@@ -1,4 +1,5 @@
-// track-event v1 (2026-07-18, Day Zero C1.1 measurement layer)
+// track-event v2 (2026-08-18, Phase B CV-first diagnostic)
+// v1 2026-07-18, Day Zero C1.1 measurement layer.
 //
 // Public sink for the product's own funnel events (public.events). The table
 // has RLS with no anon policies by design; this function is the only write
@@ -8,13 +9,21 @@
 //   3. per-IP daily rate limit via consume_rate_limit (C0.10 shim), fail-open
 // CORS includes x-client-session-id (Signal go-live lesson). verify_jwt=true
 // in config.toml; the anon key satisfies the gateway (parse-cv pattern).
+//
+// v2 adds the CV-first intake events (diagnostic_cv_uploaded on a successful
+// parse, diagnostic_cv_confirmed when the parsed card is accepted) and the
+// Phase B payload keys: path (cv|typed), situation / appetite /
+// evidence_recency (option titles only, never the free-text note), and the
+// numeric CV parse confidence.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v1-diagnostic-events";
+const FUNCTION_VERSION = "v2-cv-first-events";
 
 const ALLOWED_EVENT_TYPES = new Set([
   "diagnostic_started",
+  "diagnostic_cv_uploaded",
+  "diagnostic_cv_confirmed",
   "diagnostic_completed",
   "diagnostic_email_captured",
   "diagnostic_read_viewed",
@@ -24,7 +33,18 @@ const ALLOWED_EVENT_TYPES = new Set([
 
 // Payload keys we accept; anything else is dropped rather than rejected so
 // client evolution never 400s old builds. No emails, no free text.
-const ALLOWED_PAYLOAD_KEYS = new Set(["sector", "seniority", "work_type", "variant", "source"]);
+const ALLOWED_PAYLOAD_KEYS = new Set([
+  "sector",
+  "seniority",
+  "work_type",
+  "variant",
+  "source",
+  "path",
+  "situation",
+  "appetite",
+  "evidence_recency",
+  "confidence",
+]);
 
 const RATE_LIMIT_PER_IP_DAY = Number(Deno.env.get("RATE_LIMIT_TRACK_EVENT_PER_IP_DAY") ?? "300");
 
