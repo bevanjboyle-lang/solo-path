@@ -24,6 +24,14 @@ verify_jwt = false
 [functions.diagnostic-read]
 verify_jwt = false
 
+# Phase C batch job (2026-08-18): regenerates kb_archetypes.capability_vector.
+# verify_jwt true (any valid JWT passes the gateway; the anon key suffices for
+# pg_net invocation); in-function guard = confirm token + idempotent skip of
+# archetypes that already carry a vector + per-IP rate limit. Writes only KB
+# columns, reads no user data.
+[functions.admin-generate-archetype-capabilities]
+verify_jwt = true
+
 # Authed-only — flipped true 2026-06-10 (was false; forgeable identity).
 [functions.generate-guidance]
 verify_jwt = true

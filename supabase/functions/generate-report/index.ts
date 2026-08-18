@@ -120,9 +120,11 @@ const REPORT_SCHEMA = {
         items: {
           type: "object",
           additionalProperties: false,
-          required: ["rank", "model_name", "business_model_id", "primary_move_type", "structural_warmth", "composite_score", "fit_tags", "source", "positioning", "target_buyer", "what_they_are_buying", "pricing", "time_to_first_revenue", "difficulty_rating", "why_this_works_for_them", "caution_note"],
+          required: ["rank", "tier", "tie_note", "model_name", "business_model_id", "primary_move_type", "structural_warmth", "composite_score", "fit_tags", "source", "positioning", "target_buyer", "what_they_are_buying", "pricing", "time_to_first_revenue", "difficulty_rating", "why_this_works_for_them", "caution_note"],
           properties: {
             rank: { type: "integer" },
+            tier: { type: "string", enum: ["front_runner", "credible", "stretch"] },
+            tie_note: { type: ["string", "null"] },
             model_name: { type: "string" },
             business_model_id: { type: "string" },
             primary_move_type: { type: "string", enum: ["direct", "platform", "visibility", "community", "mixed"] },
@@ -282,7 +284,7 @@ interface SoloCoreReport {
   archetype: { primary: string; secondary: string | null; confidence: number; summary: string; editorial_description: string; capability_tags: string[]; };
   transferable_value: { what_they_can_sell: string; why_buyers_would_pay: string; credibility_assets: string[]; };
   transferable_skills: Array<{ skill_name: string; strength: number; evidence: string; market_demand: "high" | "medium" | "low"; }>;
-  options: Array<{ rank: number; model_name: string; business_model_id: string; primary_move_type: "direct" | "platform" | "visibility" | "community" | "mixed"; structural_warmth: boolean; composite_score: number; fit_tags: string[]; source: "primary" | "secondary"; positioning: string; target_buyer: string; what_they_are_buying: string; pricing: { model: string; range_low_gbp: number; range_high_gbp: number; cadence: string; }; time_to_first_revenue: string; difficulty_rating: "easy" | "moderate" | "hard"; why_this_works_for_them: string; caution_note: string | null; }>;
+  options: Array<{ rank: number; tier: "front_runner" | "credible" | "stretch"; tie_note: string | null; model_name: string; business_model_id: string; primary_move_type: "direct" | "platform" | "visibility" | "community" | "mixed"; structural_warmth: boolean; composite_score: number; fit_tags: string[]; source: "primary" | "secondary"; positioning: string; target_buyer: string; what_they_are_buying: string; pricing: { model: string; range_low_gbp: number; range_high_gbp: number; cadence: string; }; time_to_first_revenue: string; difficulty_rating: "easy" | "moderate" | "hard"; why_this_works_for_them: string; caution_note: string | null; }>;
   recommendation: { recommended_rank: number; rationale: string; key_condition: string; };
   reality_check: { most_likely_failure_mode: string; second_failure_mode: string; what_they_will_find_hard: string; honest_income_outlook: string; };
   income_outlook: { primary_option_rank: number; year_1: YearProjection; year_2: YearProjection; year_3: YearProjection; sensitivity_factors: string; income_floor_analysis: string; income_notes: string; };
@@ -376,7 +378,7 @@ function validateReport(report: Partial<SoloCoreReport>, context: ValidationCont
   }
   if (report.options) {
     const opts = report.options; let score = 100;
-    if (opts.length < 7) { hard.push("OPTIONS_COUNT"); hints.push(`options has ${opts.length} items - produce up to 10 (minimum 7), ranked by composite_score descending; never pad with weak or off-domain options.`); score = 20; }
+    if (opts.length < 7) { hard.push("OPTIONS_COUNT"); hints.push(`options has ${opts.length} items - produce up to 10 (minimum 7) in tier order (front_runner, credible, stretch), match descending within each tier; never pad with weak or off-domain options.`); score = 20; }
     const commercialModels = new Set<string>();
     opts.forEach((o, i) => {
       if (!o.business_model_id) { hard.push(`OPT_${i + 1}_MISSING_BM_ID`); score = Math.min(score, 20); }
@@ -401,6 +403,22 @@ function validateReport(report: Partial<SoloCoreReport>, context: ValidationCont
     if (opts.length >= 6 && commercialModels.size < 3) { soft.push(`Fewer than 3 commercial model types across options (${Array.from(commercialModels).join(", ")}) - spec requires diversity.`); }
     const anyCaution = opts.some((o) => o.caution_note && o.caution_note.length > 0);
     if (!anyCaution && opts.length > 0) { soft.push("No caution_note on any option - unusual, real options carry real risk."); }
+    // Phase C tier structure: honest tiers replace implied 1-to-10 precision.
+    const TIER_ORDER: Record<string, number> = { front_runner: 0, credible: 1, stretch: 2 };
+    const badTier = opts.findIndex((o) => !(o.tier in TIER_ORDER));
+    if (badTier >= 0) { hard.push(`OPT_${badTier + 1}_BAD_TIER`); hints.push(`options[${badTier}].tier must be front_runner, credible or stretch.`); score = Math.min(score, 20); }
+    else if (opts.length > 0) {
+      const frontCount = opts.filter((o) => o.tier === "front_runner").length;
+      const stretchCount = opts.filter((o) => o.tier === "stretch").length;
+      if (opts[0].tier !== "front_runner") { hard.push("OPT_RANK1_NOT_FRONT_RUNNER"); hints.push("options[0] (rank 1) must be tier front_runner."); score = Math.min(score, 30); }
+      if (frontCount < 2 || frontCount > 3) { hard.push("OPT_FRONT_RUNNER_COUNT"); hints.push(`There are ${frontCount} front_runner options - present exactly 2 or 3 front runners.`); score = Math.min(score, 40); }
+      if (stretchCount > 2) { hard.push("OPT_STRETCH_COUNT"); hints.push(`There are ${stretchCount} stretch options - at most 2, each with what would have to be true in its caution_note.`); score = Math.min(score, 40); }
+      for (let i = 1; i < opts.length; i++) {
+        if (TIER_ORDER[opts[i].tier] < TIER_ORDER[opts[i - 1].tier]) { hard.push("OPT_TIER_ORDER"); hints.push(`options[${i}] tier ${opts[i].tier} appears after ${opts[i - 1].tier} - tiers must run front_runner, then credible, then stretch.`); score = Math.min(score, 40); break; }
+      }
+      const stretchNoCaution = opts.findIndex((o) => o.tier === "stretch" && !(o.caution_note && o.caution_note.length > 10));
+      if (stretchNoCaution >= 0) { hard.push(`OPT_${stretchNoCaution + 1}_STRETCH_NO_CONDITION`); hints.push(`options[${stretchNoCaution}] is a stretch option - its caution_note must state what would have to be true for it to work.`); score = Math.min(score, 50); }
+    }
     cardScores.options = clamp01to100(score);
   }
   if (report.recommendation) {
@@ -426,15 +444,15 @@ function validateReport(report: Partial<SoloCoreReport>, context: ValidationCont
       if (!y) { hard.push(`IO_YEAR_${idx + 1}_MISSING`); score = 0; return; }
       if (typeof y.mid_gbp !== "number") { hard.push(`IO_YEAR_${idx + 1}_MID_MISSING`); score = Math.min(score, 20); }
       if (wordCount(y.revenue_build) < 40) { hard.push(`IO_YEAR_${idx + 1}_REVENUE_BUILD_TOO_SHORT`); hints.push(`income_outlook.year_${idx + 1}.revenue_build is ${wordCount(y.revenue_build)} words - expand to describe month-by-month shape.`); score = Math.min(score, 40); }
-      if (wordCount(y.revenue_sources) < 25) { hard.push(`IO_YEAR_${idx + 1}_REVENUE_SOURCES_TOO_SHORT`); score = Math.min(score, 40); }
-      if (wordCount(y.assumptions) < 20) { hard.push(`IO_YEAR_${idx + 1}_ASSUMPTIONS_TOO_SHORT`); score = Math.min(score, 40); }
+      if (wordCount(y.revenue_sources) < 25) { hard.push(`IO_YEAR_${idx + 1}_REVENUE_SOURCES_TOO_SHORT`); hints.push(`income_outlook.year_${idx + 1}.revenue_sources is ${wordCount(y.revenue_sources)} words - expand to 35+ words naming the engagement types and client mix behind the figure.`); score = Math.min(score, 40); }
+      if (wordCount(y.assumptions) < 20) { hard.push(`IO_YEAR_${idx + 1}_ASSUMPTIONS_TOO_SHORT`); hints.push(`income_outlook.year_${idx + 1}.assumptions is ${wordCount(y.assumptions)} words - expand to 30+ words with specific commercial mechanics (client count, rate, cadence).`); score = Math.min(score, 40); }
     });
     if (typeof io.year_1?.mid_gbp === "number" && typeof io.year_2?.mid_gbp === "number" && typeof io.year_3?.mid_gbp === "number") {
       if (io.year_1.mid_gbp > io.year_2.mid_gbp || io.year_2.mid_gbp > io.year_3.mid_gbp) { hard.push("IO_MID_NOT_MONOTONIC"); hints.push(`income_outlook mid values must be non-decreasing across years.`); score = Math.min(score, 30); }
     }
-    if (wordCount(io.sensitivity_factors) < 40) { hard.push("IO_SENSITIVITY_TOO_SHORT"); score = Math.min(score, 40); }
-    if (wordCount(io.income_floor_analysis) < 30) { hard.push("IO_FLOOR_TOO_SHORT"); score = Math.min(score, 40); }
-    if (wordCount(io.income_notes) < 40) { hard.push("IO_NOTES_TOO_SHORT"); score = Math.min(score, 40); }
+    if (wordCount(io.sensitivity_factors) < 40) { hard.push("IO_SENSITIVITY_TOO_SHORT"); hints.push(`income_outlook.sensitivity_factors is ${wordCount(io.sensitivity_factors)} words - expand to 50+ words identifying 2-3 specific variables and their impact.`); score = Math.min(score, 40); }
+    if (wordCount(io.income_floor_analysis) < 30) { hard.push("IO_FLOOR_TOO_SHORT"); hints.push(`income_outlook.income_floor_analysis is ${wordCount(io.income_floor_analysis)} words - expand to 40+ words describing the honest worst case.`); score = Math.min(score, 40); }
+    if (wordCount(io.income_notes) < 40) { hard.push("IO_NOTES_TOO_SHORT"); hints.push(`income_outlook.income_notes is ${wordCount(io.income_notes)} words - expand to 50+ words referencing at least one Q-field.`); score = Math.min(score, 40); }
     cardScores.income_outlook = clamp01to100(score);
   }
   if (report.hook_insight) {
@@ -452,10 +470,10 @@ function validateReport(report: Partial<SoloCoreReport>, context: ValidationCont
     if (!ai.part_1?.displacement_risk) { hard.push("AI_P1_MISSING_RISK"); hints.push(`ai_impact.part_1 must include displacement_risk.`); score = 20; }
     if (!ai.part_1?.risk_horizon) { hard.push("AI_P1_MISSING_HORIZON"); hints.push(`ai_impact.part_1 must include risk_horizon.`); score = Math.min(score, 30); }
     if (wordCount(ai.part_1?.content) < 150) { hard.push("AI_P1_CONTENT_TOO_SHORT"); hints.push(`ai_impact.part_1.content is ${wordCount(ai.part_1?.content)} words - expand to 150-280 words.`); score = Math.min(score, 40); }
-    if (wordCount(ai.part_2?.content) < 120) { hard.push("AI_P2_CONTENT_TOO_SHORT"); score = Math.min(score, 40); }
+    if (wordCount(ai.part_2?.content) < 120) { hard.push("AI_P2_CONTENT_TOO_SHORT"); hints.push(`ai_impact.part_2.content is ${wordCount(ai.part_2?.content)} words - expand to 140+ words (validator floor is 120; write past it).`); score = Math.min(score, 40); }
     const steps = ai.part_3?.steps ?? [];
     if (steps.length !== 4) { hard.push("AI_P3_STEP_COUNT"); hints.push(`ai_impact.part_3.steps must have exactly 4 items.`); score = Math.min(score, 30); }
-    steps.forEach((s, i) => { if (wordCount(s.action) < 10) { hard.push(`AI_P3_STEP_${i + 1}_ACTION_TOO_SHORT`); score = Math.min(score, 40); } });
+    steps.forEach((s, i) => { if (wordCount(s.action) < 10) { hard.push(`AI_P3_STEP_${i + 1}_ACTION_TOO_SHORT`); hints.push(`ai_impact.part_3.steps[${i}].action is ${wordCount(s.action)} words - each action must be a specific 15+ word instruction.`); score = Math.min(score, 40); } });
     cardScores.ai_impact = clamp01to100(score);
   }
   if (report.recommendation && report.income_outlook) {
@@ -534,7 +552,7 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 - ai_impact.part_1.content: 150 words
 - ai_impact.part_1.displacement_risk: one of low/medium/high - never omitted
 - ai_impact.part_1.risk_horizon: e.g. 3-5 years - never omitted
-- ai_impact.part_2.content: 120 words
+- ai_impact.part_2.content: 140 words (validator floor is 120 - write to 140+ so the buffer rule is never in doubt; this field is the single most common validator failure)
 - ai_impact.part_3.steps: exactly 4 steps, each action >=10 words
 
 **Output field naming rules (HARD):**
@@ -552,7 +570,7 @@ The JSON shape is enforced by the schema. What you have to earn is the **narrati
 5. primary_move_type and structural_warmth must match the KB - pass through unmodified
 6. At least 3 distinct commercial model types represented across the options array
 7. transferable_skills has exactly 6 items, ranked by strength descending
-8. options has up to 10 items, ranked by composite_score descending. Aim for 10; if fewer than 10 models genuinely clear the eligibility filter, produce as many as honestly fit (minimum 7) and never pad with weak or off-domain options (honest coverage over forced count; ADR-019 as amended)
+8. options has 7 to 10 items in tier order (all front_runners, then credibles, then any stretches), match descending within each tier. If fewer than 10 genuinely fit, produce as many as honestly fit (minimum 7) and never pad with weak or off-domain options (honest coverage over forced count; ADR-019 as amended)
 9. ai_impact.part_3.steps has exactly 4 items
 
 ---
@@ -597,18 +615,25 @@ The following business models are the only models you may recommend. Do not reco
 
 {{BUSINESS_MODELS}}
 
-### Archetype-Model Mapping Table
-This table defines how well each archetype fits each business model. Use it to filter and score options.
+### Computed Candidate Table (capability join)
+For each archetype in scope, the table below lists its pre-computed candidate business models, best match first. These are the ONLY models you may recommend. The match score (0 to 1) is computed from the archetype's capability profile against each model's capability requirements, blended with the hand-scored grid where the grid has an opinion; hand-vetoed pairs have already been removed and never appear.
 
-Scoring dimensions (all 1-5):
-- capability_fit: Can this user credibly deliver this service today?
-- credibility_gap: How hard will it be for clients to trust them? (1 = easy, 5 = very hard)
-- speed_to_revenue: How quickly could they realistically get their first paid work?
-- sales_complexity: How difficult is this to sell?
-- income_potential: How strong is the earning potential?
-- recurrence: How repeatable / retainer-friendly is the income?
+Row fields:
+- match: computed match score, 0 to 1. Copy it into composite_score unchanged.
+- hint: the computed tier suggestion (front_runner / credible / stretch). Follow it unless the user's specific evidence (Q6, Q7, Q12, CV) clearly argues one step up or down; never promote a model with critical gaps to front_runner.
+- basis: "hand+capability" means the hand grid also scored this pair (more certain); "capability" means computed match only (state claims a notch more cautiously in prose).
+- critical gaps: capability requirements the archetype does not hold. A named gap must surface in that option's caution_note.
+- hand: where present, the hand grid's 1-to-5 dimensions (cap_fit, cred_gap, speed, sales, income, rec). Use cred_gap, speed and sales to sharpen positioning, time_to_first_revenue and caution notes.
 
 {{MAPPING_TABLE}}
+
+### Live market evidence (this fortnight)
+Real, dated signals from Solo's Radar for this user's domains: live UK tenders, market analysis and demand notes, refreshed weekly. Use them ONLY as follows:
+1. Where a signal genuinely supports a recommended option, cite it in recommendation.rationale or an option's why_this_works_for_them by its title and source, naturally in prose ("a live Contracts Finder tender for exactly this work closed this month").
+2. Never invent, embellish or extrapolate a signal, and never cite one that is a poor fit; an uncited list is better than a stretched citation.
+3. Income and rate claims stay anchored to the archetype rate bands and model pricing ranges, with signals as corroboration only.
+
+{{LIVE_EVIDENCE}}
 
 ### Curated AI Impact Reference
 
@@ -644,39 +669,30 @@ If a CV_CONTEXT block is present in the user message, use it as supplementary ev
 
 Use role type, seniority, Q6 (specific achievement), and Q7 (informal advisory practice) as your primary classification signals - these are richer and more revealing than job title alone. Q6 surfaces what they actually deliver at their best. Q7 surfaces latent advisory behaviour that signals commercial readiness. Q8 (peer perception) adds an external calibration. Q3b (employer and organisation type) is a critical secondary signal - a user at a Big 4 risk advisory practice maps very differently to one at an NHS acute trust, even if their job title is the same. Use Q3b to sharpen archetype placement and calibrate the commercial environment. When in doubt, favour the archetype with the strongest commercial translation.
 
-### Step 2 - Filter business models
+### Step 2 - Work from the candidate table
 
-Using the mapping table for the user's primary archetype, remove any models where:
-- capability_fit is 2 or below
-- credibility_gap is 4 or above
-- avoid is true
+The eligibility filtering is already done: the candidate table for the user's primary archetype IS the pool. Do not re-derive or second-guess the match scores; your judgment is applied through selection, ordering within a tier, tie honesty, and the prose.
 
-**Secondary archetype pool:** If you identified a secondary archetype with meaningful relevance (confidence contribution >= 0.35), also run the same filter on the secondary archetype's mapping rows. Keep the top 3 scoring eligible secondary models in a separate pool labelled secondary_pool.
+**Secondary archetype pool:** If you identified a secondary archetype with meaningful relevance (confidence contribution >= 0.35), you may also draw up to 3 models from that archetype's candidate table where they genuinely complement the primary pool. Mark those with source: "secondary".
 
-### Step 3 - Score and rank
+### Step 3 - Select 7 to 10 options and assign tiers
 
-For each remaining model, calculate a composite score using:
+Select 7 to 10 options from the candidate pool(s), ordered by tier and then by match within tier. If fewer than 10 genuinely fit this user, produce as many as honestly fit (minimum 7) rather than padding with weak options.
 
-score = (2 * capability_fit) + (2 * speed_to_revenue) + (2 * (6 - credibility_gap)) + (1 * income_potential) + (1 * recurrence) - (1 * sales_complexity)
+Tier rules (validated in code):
+- **front_runner** - exactly 2 or 3. The options you would actually tell this person to pursue. Rank 1 must be a front_runner.
+- **credible** - the middle of the list. Real paths that work with more effort or a slower ramp.
+- **stretch** - at most 2, and only where the reward justifies naming them. Each stretch option's caution_note MUST state what would have to be true for it to work ("if you first spend six months inside a client-side role...").
+- Tiers must appear in order: all front_runners, then all credibles, then any stretches. rank is just the presentation order (1, 2, 3...); composite_score is the match score copied from the candidate table.
 
-Apply adjustments based on the user's profile:
-- If the user signals urgency for income: add 2 points to models with speed_to_revenue >= 4
-- If the user signals low confidence about selling: subtract 1 point from models with sales_complexity >= 4
-- If the user is senior (10+ years): add 1 point to models with income_potential = 5
+**Tie honesty:** Where two options are effectively level (match within 0.03), say so in the tie_note of the LOWER-ranked one: name the tied option and state the single situational reason you lead with the other ("Equal on fit with the fractional route; we lead with the review model because your Q9 urgency favours faster first revenue."). Otherwise tie_note is null. Never manufacture false precision between near-equal options.
 
-Rank all remaining models by adjusted score.
+**User-profile adjustments (apply through selection and ordering within tiers):**
+- High income urgency (Q9): favour candidates whose hand speed >= 4 or short time_to_revenue.
+- Low selling confidence (Q10): be careful promoting options with hand sales complexity >= 4; say why in the caution_note if you keep one high.
+- Senior profiles (10+ years): weight income-rich retainer models more heavily among near-equal candidates.
 
-### Step 4 - Apply diversity constraint and select exactly 10 final options
-
-From all scored models, select the top 10. Aim for 10; if fewer than 10 models genuinely clear the eligibility filter, produce as many as honestly fit (minimum 7) rather than padding with weak or off-domain options. When you produce fewer than 10, that is acceptable and expected for narrow specialisms.
-
-**Rule 1 - Domain relevance floor (mandatory):** Remove any model whose domain is materially unrelated to the user's primary and secondary archetypes - unless that model also appears in secondary_pool.
-
-**Rule 2 - Commercial model diversity (soft):** Across the top 10, ensure at least 3 different commercial model types are represented.
-
-**Rule 3 - Secondary archetype supplement:** If the secondary archetype pool contains strong-fit models (composite_score within 3 points of the primary pool's top scorer), include them. Mark with source: "secondary".
-
-**Rule 4 - Minimum viable set:** If fewer than 6 models pass filtering, relax the credibility_gap filter and re-run.
+**Commercial diversity (soft):** across the final list, aim for at least 3 different commercial model types.
 
 ### Step 5 - Generate the report
 
@@ -706,24 +722,27 @@ Apply this calibration silently.
 Produce the JSON structure required by the schema. Every option must have business_model_id, primary_move_type, and structural_warmth passed through exactly from the KB.
 
 **recommended_selection guidance:**
-- Always recommend at least 2 ranks (occasionally 3 if a strong case exists for the third)
-- Option 1 should always be Rank 1 unless Rank 1 has very high sales_complexity combined with a low-confidence user profile
+- Always recommend at least 2 ranks (occasionally 3 if a strong case exists for the third), drawn from the front_runner tier
+- Option 1 should always be Rank 1 unless Rank 1 has very high hand sales complexity combined with a low-confidence user profile
 - Option 2 should complement Option 1: different buyer type, different time-to-income profile, or different commercial model type
-- The rationale must name specific buyer types or income dynamics
+- The rationale must name specific buyer types or income dynamics, and should cite a live evidence signal by title where one genuinely supports the recommendation
 
 ---
 
 ## QUALITY RULES
 
 Before finalising, verify:
-- Every option drawn from the business model library - no invented models
+- Every option drawn from the candidate table - no invented models, nothing outside the table
 - business_model_id, primary_move_type, structural_warmth passed through exactly from the KB
 - primary_move_type one of: platform, visibility, community, direct, mixed
 - structural_warmth a boolean
-- Options array contains up to 10 options (10 where enough genuinely fit, minimum 7 otherwise), ranked by composite_score descending
-- Each option has unique rank and composite_score
+- Options array contains 7 to 10 options in tier order (front_runner then credible then stretch), composite_score copied from the candidate table's match unchanged
+- Exactly 2 or 3 front_runner options; at most 2 stretch options; rank 1 is a front_runner
+- tie_note set only where two options are genuinely level (match within 0.03), naming the tie and the situational tie-break; null otherwise
 - Each option has 2-3 fit_tags - short, specific labels
-- Each option carries a caution_note: for ranks 4-10 populate with one-sentence risk flag; for ranks 1-3 may be null but prefer naming a real risk
+- Each option carries a caution_note: populate for credible and stretch tiers (stretch MUST state what would have to be true); front_runners may be null but prefer naming a real risk
+- Any named critical gap from the candidate table surfaces in that option's caution_note
+- Live evidence cited only where it genuinely fits, by title and source, never invented
 - Pricing realistic for UK market and this user's seniority level
 - target_buyer specific - not SMEs but the type, size, situation
 - time_to_first_revenue is real timeframe in weeks (4-8 weeks), never fast/medium
@@ -919,9 +938,227 @@ function buildP0bUserMessage(qd: P0bQuestionnaireInput): string {
 // MAIN INDEX
 // =============================================================================
 
-const FUNCTION_VERSION = "v45.18-graceful-degradation-min7-options";
+const FUNCTION_VERSION = "v46.1-join-discrimination-retry-hints";
 const MODEL_TIER1 = "gpt-5.4";
 const MODEL_TIER3 = "gpt-5.4-nano";
+
+/* ── Phase C (2026-08-18): capability join, honest tiers, live evidence ──
+ *
+ * Move 2: candidate options are no longer limited to the hand mapping grid
+ * (4.7% coverage, 25 archetypes with under 10 usable models). A computed
+ * capability join scores every archetype-model pair from the archetype's
+ * generated capability_vector (33 slugs at strong/present/none, calibrated
+ * against the hand grid at 0.97 avg critical coverage) against the model's
+ * curated capability_requirements. The hand grid remains the judgment
+ * layer: avoid rows are a hard veto, and hand scores blend into the match
+ * score where they exist. Unvetted pairs carry a humility discount.
+ *
+ * Move 2 presentation: options carry a tier (front_runner / credible /
+ * stretch) and an optional tie_note instead of implying that ten distinct
+ * ranks are statistically meaningful. rank remains the presentation order
+ * so existing clients keep rendering unchanged.
+ *
+ * Move 1: the prompt receives this fortnight's Radar signals for the
+ * user's domains (cite, never invent), and after validation each option
+ * gets a deterministic evidence[] block attached in code: matched live
+ * Radar items, the archetype rate calibration, and an honest coverage
+ * note when nothing matched. Deterministic attach = zero hallucination
+ * surface on evidence.
+ */
+
+const LEVEL_WEIGHT: Record<string, number> = { strong: 1, present: 0.6, none: 0 };
+const IMPORTANCE_WEIGHT: Record<string, number> = { critical: 3, important: 2, helpful: 1 };
+// v46.1: the v46.0 formula saturated at 1.00 for in-domain pairs (perfect
+// capability coverage AND cap_fit 5 are common inside an archetype's home
+// category), destroying discrimination. The match is now two components:
+// capability coverage (the gate) and a quality term built from the hand
+// grid's six dimensions where the grid has an opinion, or a coarse
+// difficulty/recurrence proxy where it does not. Scores land ~0.4-0.95
+// with real spread; ties become rare enough that tie_note means something.
+const JOIN_COVERAGE_WEIGHT = 0.62;
+const JOIN_QUALITY_WEIGHT = 0.38;
+const JOIN_UNVETTED_DISCOUNT = 0.95; // humility multiplier for pairs with no hand evidence
+const TIER_FRONT_RUNNER_MIN = 0.82;
+const TIER_CREDIBLE_MIN = 0.55;
+const CANDIDATES_PER_ARCHETYPE = 14;
+const RADAR_ITEMS_INJECTED_MAX = 14;
+const RADAR_PER_OPTION_MAX = 2;
+
+/** kb_models.category (16) → radar_items.category names (archetype-world). */
+const MODEL_CAT_TO_RADAR_CATS: Record<string, string[]> = {
+  "Finance": ["Finance", "Finance & Accounting"],
+  "Risk & Compliance": ["Risk & Governance"],
+  "Delivery & Transformation": ["Change & Delivery"],
+  "Operations": ["Operations & Efficiency"],
+  "Strategy": ["Strategy & Advisory"],
+  "HR & People": ["HR & People"],
+  "Tech & Digital": ["Tech & Digital"],
+  "Legal": ["Legal"],
+  "Marketing & Communications": ["Marketing & Communications"],
+  "Sales & Commercial": ["Sales & Commercial"],
+  "Procurement & Supply Chain": ["Procurement & Supply Chain"],
+  "Healthcare & Life Sciences": ["Healthcare & Life Sciences"],
+  "ESG & Sustainability": ["ESG & Sustainability"],
+  "Property & Real Estate": ["Property & Real Estate"],
+  "Public Sector & Policy": ["Public Sector & Policy"],
+  "Customer Experience & Service Design": ["Customer Experience & Service Design"],
+};
+
+interface CapReq { capability: string; importance: string; }
+
+interface KbModelFull {
+  id: string;
+  name: string;
+  category: string | null;
+  commercial_model: string | null;
+  pricing_range: unknown;
+  time_to_revenue: string | null;
+  difficulty: string | null;
+  target_buyer: string | null;
+  recurrence: string | null;
+  primary_move_type: string | null;
+  structural_warmth: boolean | null;
+  capability_requirements: CapReq[] | null;
+}
+
+interface HandRow {
+  archetype: string;
+  model: string;
+  cap_fit: number;
+  cred_gap: number;
+  speed: number;
+  sales_complexity: number;
+  income: number;
+  recurrence: number;
+  avoid: boolean;
+}
+
+interface CandidateRow {
+  model_id: string;
+  match: number; // 0..1
+  tier_hint: "front_runner" | "credible" | "stretch";
+  basis: "hand+capability" | "capability";
+  critical_gaps: string[];
+  hand: HandRow | null;
+}
+
+/**
+ * Move 2 capability join for one archetype: score every non-vetoed model,
+ * blend with hand scores where the grid has an opinion, veto where it says
+ * avoid, and return the top candidates with a tier hint.
+ */
+function computeCandidatesForArchetype(
+  vector: Record<string, string> | null,
+  models: KbModelFull[],
+  handRowsForArchetype: Map<string, HandRow>,
+): CandidateRow[] {
+  const out: CandidateRow[] = [];
+  for (const m of models) {
+    const hand = handRowsForArchetype.get(m.id) ?? null;
+    if (hand?.avoid) continue; // hand vetoes are law
+    const reqs = Array.isArray(m.capability_requirements) ? m.capability_requirements : [];
+    let coverage = 0;
+    const criticalGaps: string[] = [];
+    if (vector && reqs.length > 0) {
+      let got = 0;
+      let total = 0;
+      for (const r of reqs) {
+        const iw = IMPORTANCE_WEIGHT[r.importance] ?? 1;
+        const lv = LEVEL_WEIGHT[vector[r.capability] ?? "none"] ?? 0;
+        total += iw;
+        got += iw * lv;
+        if (r.importance === "critical" && (vector[r.capability] ?? "none") === "none") criticalGaps.push(r.capability);
+      }
+      coverage = total > 0 ? got / total : 0;
+    } else if (hand) {
+      coverage = hand.cap_fit / 5; // no vector: fall back to the hand grid alone
+    } else {
+      continue; // no vector and no hand row: nothing to reason from
+    }
+    // Quality term: hand grid's six dimensions normalised to 0..1 where the
+    // grid scored this pair; a coarse difficulty/recurrence proxy otherwise.
+    let quality: number;
+    if (hand) {
+      const q = 2 * hand.cap_fit + hand.speed + (6 - hand.cred_gap) + hand.income + hand.recurrence - hand.sales_complexity;
+      quality = Math.max(0, Math.min(1, (q - 1) / 28));
+    } else {
+      quality = 0.5;
+      if (m.difficulty === "easy" || m.difficulty === "low") quality += 0.12;
+      else if (m.difficulty === "hard" || m.difficulty === "high") quality -= 0.12;
+      const rec = (m.recurrence || "").toLowerCase();
+      if (rec.includes("high")) quality += 0.08;
+      else if (rec.includes("low") || rec.includes("one")) quality -= 0.08;
+    }
+    let match = JOIN_COVERAGE_WEIGHT * coverage + JOIN_QUALITY_WEIGHT * quality;
+    if (!hand) match *= JOIN_UNVETTED_DISCOUNT;
+    match = Math.round(match * 100) / 100;
+    let tier: CandidateRow["tier_hint"];
+    if (match >= TIER_FRONT_RUNNER_MIN && criticalGaps.length === 0 && (!hand || hand.cap_fit >= 4)) tier = "front_runner";
+    else if (match >= TIER_CREDIBLE_MIN && criticalGaps.length <= 1) tier = "credible";
+    else tier = "stretch";
+    out.push({ model_id: m.id, match, tier_hint: tier, basis: hand ? "hand+capability" : "capability", critical_gaps: criticalGaps, hand });
+  }
+  out.sort((a, b) => b.match - a.match);
+  return out.slice(0, CANDIDATES_PER_ARCHETYPE);
+}
+
+interface RadarItem {
+  id: string;
+  category: string;
+  source_type: string | null;
+  title: string;
+  summary: string | null;
+  url: string | null;
+  source_name: string | null;
+  buyer: string | null;
+  value_text: string | null;
+  deadline: string | null;
+  week_start: string | null;
+}
+
+function radarItemScore(r: RadarItem): number {
+  return (r.value_text ? 2 : 0) + (r.deadline ? 1 : 0);
+}
+
+/**
+ * Move 1 deterministic evidence attach: after validation, each option gets
+ * evidence[] built in code from the Radar and the archetype rate bands.
+ * Items are spread across options (an item is only reused once every
+ * option has had a chance at a fresh one).
+ */
+function attachOptionEvidence(
+  options: Array<Record<string, unknown>>,
+  modelIndex: Map<string, KbModelFull>,
+  radar: RadarItem[],
+  rateLine: string | null,
+): void {
+  const usedIds = new Set<string>();
+  for (const o of options) {
+    const model = modelIndex.get(String(o.business_model_id ?? ""));
+    const cats = model?.category ? MODEL_CAT_TO_RADAR_CATS[model.category] ?? [model.category] : [];
+    const pool = radar.filter((r) => cats.includes(r.category)).sort((a, b) => radarItemScore(b) - radarItemScore(a));
+    const fresh = pool.filter((r) => !usedIds.has(r.id));
+    const picked = (fresh.length > 0 ? fresh : pool).slice(0, RADAR_PER_OPTION_MAX);
+    picked.forEach((r) => usedIds.add(r.id));
+    const evidence: Array<Record<string, unknown>> = picked.map((r) => ({
+      kind: "radar",
+      title: r.title,
+      summary: r.summary ? String(r.summary).slice(0, 280) : null,
+      source_name: r.source_name,
+      source_type: r.source_type,
+      buyer: r.buyer,
+      value_text: r.value_text,
+      deadline: r.deadline,
+      week_start: r.week_start,
+      url: r.url,
+    }));
+    if (rateLine) evidence.push({ kind: "rate", text: rateLine });
+    if (picked.length === 0) {
+      evidence.push({ kind: "coverage", text: "No live Radar signal matched this route in the last fortnight. The Radar refreshes every Monday; thin coverage is stated rather than papered over." });
+    }
+    o.evidence = evidence;
+  }
+}
 
 // ── Move 6 (2026-08-18): prompt_runs telemetry for the core generators. ─────
 // Until today only review-plan logged to prompt_runs (£1.36 lifetime); the
@@ -1074,11 +1311,12 @@ function parseJ(s: string): Record<string, unknown> {
   }
 }
 
-function buildP1SystemPrompt(args: { archetypesText: string; modelsText: string; mappingText: string; aiImpactText: string; }): string {
+function buildP1SystemPrompt(args: { archetypesText: string; modelsText: string; mappingText: string; aiImpactText: string; evidenceText: string; }): string {
   return P1_SYSTEM_PROMPT_TEMPLATE
     .replace("{{ARCHETYPES}}", args.archetypesText)
     .replace("{{BUSINESS_MODELS}}", args.modelsText)
     .replace("{{MAPPING_TABLE}}", args.mappingText)
+    .replace("{{LIVE_EVIDENCE}}", args.evidenceText || "(no live signals available for these domains this fortnight - do not cite any)")
     .replace("{{AI_IMPACT_REFERENCE}}", args.aiImpactText || "(no curated AI impact entries available - generate from general knowledge)");
 }
 
@@ -1252,31 +1490,80 @@ async function generateReportInBackground(args: BgArgs) {
     const primaryCategories = DOMAIN_TO_CATEGORIES[primaryDomain] || [primaryDomain];
     const secondaryCategories = secondaryDomain ? DOMAIN_TO_CATEGORIES[secondaryDomain] || [secondaryDomain] : [];
     const allCategories = Array.from(new Set([...primaryCategories, ...secondaryCategories]));
-    const { data: archetypeRows } = await supabase.from("kb_archetypes").select("id, name, category, core_identity, day_rate, retainer_monthly, time_to_revenue_bias").in("category", allCategories);
+    const { data: archetypeRows } = await supabase.from("kb_archetypes").select("id, name, category, core_identity, day_rate, retainer_monthly, time_to_revenue_bias, capability_vector").in("category", allCategories);
     const archetypeIds = (archetypeRows || []).map((a) => a.id as string);
-    const { data: mappingRows } = await supabase.from("kb_mapping").select("archetype, model, cap_fit, cred_gap, speed, sales_complexity, income, recurrence").in("archetype", archetypeIds).eq("avoid", false);
-    const modelIds = Array.from(new Set((mappingRows || []).map((r) => r.model as string)));
-    const { data: modelRows } = await supabase.from("kb_models").select("id, name, commercial_model, pricing_range, time_to_revenue, difficulty, target_buyer, recurrence, primary_move_type, structural_warmth").in("id", modelIds);
-    const { data: aiImpactRows } = await supabase.from("kb_ai_impact").select("model_id, model_name, displacement_risk, opportunity, resilient_positioning, adaptation_skills").in("model_id", modelIds);
+    // Phase C: hand mappings INCLUDING avoid rows (vetoes applied in code),
+    // and ALL models with capability requirements - the candidate pool is
+    // computed by capability join, no longer bounded by the 4.7% hand grid.
+    const { data: mappingRows } = await supabase.from("kb_mapping").select("archetype, model, cap_fit, cred_gap, speed, sales_complexity, income, recurrence, avoid").in("archetype", archetypeIds);
+    const { data: allModelRows } = await supabase.from("kb_models").select("id, name, category, commercial_model, pricing_range, time_to_revenue, difficulty, target_buyer, recurrence, primary_move_type, structural_warmth, capability_requirements");
+    const allModels = (allModelRows || []) as unknown as KbModelFull[];
+    const modelFullIndex = new Map<string, KbModelFull>();
+    for (const m of allModels) modelFullIndex.set(m.id, m);
+
+    const handByArchetype = new Map<string, Map<string, HandRow>>();
+    for (const r of (mappingRows || []) as unknown as HandRow[]) {
+      if (!handByArchetype.has(r.archetype)) handByArchetype.set(r.archetype, new Map());
+      handByArchetype.get(r.archetype)!.set(r.model, r);
+    }
+    const candidatesByArchetype = new Map<string, CandidateRow[]>();
+    for (const a of archetypeRows || []) {
+      const vector = (a.capability_vector ?? null) as Record<string, string> | null;
+      candidatesByArchetype.set(a.id as string, computeCandidatesForArchetype(vector, allModels, handByArchetype.get(a.id as string) ?? new Map()));
+    }
+    const candidateModelIds = Array.from(new Set(Array.from(candidatesByArchetype.values()).flat().map((c) => c.model_id)));
+    const modelRows = candidateModelIds.map((id) => modelFullIndex.get(id)).filter((m): m is KbModelFull => !!m);
+
+    // Move 1: this fortnight's Radar signals for the domain categories.
+    const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+    const { data: radarRows } = await supabase
+      .from("radar_items")
+      .select("id, category, source_type, title, summary, url, source_name, buyer, value_text, deadline, week_start")
+      .in("category", allCategories)
+      .gte("week_start", twoWeeksAgo)
+      .order("week_start", { ascending: false })
+      .limit(60);
+    const radarItems = ((radarRows || []) as unknown as RadarItem[]).sort((a, b) => radarItemScore(b) - radarItemScore(a));
+    const injectedRadar = radarItems.slice(0, RADAR_ITEMS_INJECTED_MAX);
+    const evidenceText = injectedRadar.map((r) => {
+      const bits = [
+        `- "${r.title}" (${r.source_name || r.source_type || "Radar"}, week of ${r.week_start})`,
+        r.buyer ? `buyer: ${r.buyer}` : null,
+        r.value_text ? `value: ${r.value_text}` : null,
+        r.deadline ? `deadline: ${String(r.deadline).slice(0, 10)}` : null,
+        r.summary ? `note: ${String(r.summary).slice(0, 200)}` : null,
+      ].filter(Boolean);
+      return bits.join(" | ");
+    }).join("\n");
+
+    const { data: aiImpactRows } = await supabase.from("kb_ai_impact").select("model_id, model_name, displacement_risk, opportunity, resilient_positioning, adaptation_skills").in("model_id", candidateModelIds);
     const curatedAiImpact = (aiImpactRows || []).filter((r) => typeof r.opportunity === "string" && r.opportunity.trim().length > 0);
     const archetypesText = (archetypeRows || []).map((a) => `ARCHETYPE NAME: "${a.name}"  <-- use this EXACT string for archetype.primary; do NOT use the internal ID\n  Internal ID: ${a.id}  (used only for cross-reference, never in output fields)\n  Category: ${a.category}\n  Core identity: ${String(a.core_identity || "").slice(0, 300)}\n  Rates: ${a.day_rate} | ${a.retainer_monthly} | Speed: ${a.time_to_revenue_bias}`).join("\n\n");
-    const modelsText = (modelRows || []).map((m) => {
+    const modelsText = modelRows.map((m) => {
       let pricing = "";
-      try { const p = typeof m.pricing_range === "string" ? JSON.parse(m.pricing_range) : m.pricing_range; pricing = `£${(p.low || 0).toLocaleString()}-£${(p.high || 0).toLocaleString()}/${p.per || "project"}`; } catch { pricing = String(m.pricing_range || ""); }
+      try { const p = typeof m.pricing_range === "string" ? JSON.parse(m.pricing_range) : m.pricing_range as { low?: number; high?: number; per?: string }; pricing = `£${(p.low || 0).toLocaleString()}-£${(p.high || 0).toLocaleString()}/${p.per || "project"}`; } catch { pricing = String(m.pricing_range || ""); }
       return `[${m.id}] ${m.name}\nCommercial: ${m.commercial_model} | ${pricing}\nTTR: ${m.time_to_revenue} | Diff: ${m.difficulty} | Rec: ${m.recurrence}\nBuyer: ${m.target_buyer}\nprimary_move_type: ${m.primary_move_type || "direct"} | structural_warmth: ${m.structural_warmth ? "true" : "false"}`;
     }).join("\n\n");
-    const mappingText = (mappingRows || []).map((r) => `${r.archetype}|${r.model}|cap_fit:${r.cap_fit}|cred_gap:${r.cred_gap}|speed:${r.speed}|sales:${r.sales_complexity}|income:${r.income}|rec:${r.recurrence}`).join("\n");
+    const mappingText = (archetypeRows || []).map((a) => {
+      const cands = candidatesByArchetype.get(a.id as string) ?? [];
+      const rows = cands.map((c) => {
+        const gapText = c.critical_gaps.length ? c.critical_gaps.join(",") : "none";
+        const handText = c.hand ? `cap_fit ${c.hand.cap_fit}/5, cred_gap ${c.hand.cred_gap}, speed ${c.hand.speed}, sales ${c.hand.sales_complexity}, income ${c.hand.income}, rec ${c.hand.recurrence}` : "none";
+        return `${c.model_id} | match ${c.match.toFixed(2)} | hint ${c.tier_hint} | basis ${c.basis} | critical gaps: ${gapText} | hand: ${handText}`;
+      }).join("\n");
+      return `CANDIDATES FOR ${a.id} ("${a.name}"):\n${rows || "(no candidates - vector missing and no usable hand rows)"}`;
+    }).join("\n\n");
     const aiImpactText = curatedAiImpact.map((r) => {
       const skills = Array.isArray(r.adaptation_skills) ? (r.adaptation_skills as string[]) : [];
       return `[${r.model_id}] ${r.model_name}\ndisplacement_risk: ${r.displacement_risk}\nopportunity: ${r.opportunity}\nresilient_positioning: ${r.resilient_positioning}\nadaptation_skills:\n${skills.map((s) => `  - ${s}`).join("\n")}`;
     }).join("\n\n---\n\n");
-    const systemPrompt = buildP1SystemPrompt({ archetypesText, modelsText, mappingText, aiImpactText });
+    const systemPrompt = buildP1SystemPrompt({ archetypesText, modelsText, mappingText, aiImpactText, evidenceText });
     const userMessage = buildP1UserMessage(questionnaireData, cvExtract);
-    const allowedBmIds = new Set<string>((modelRows || []).map((m) => m.id as string));
+    const allowedBmIds = new Set<string>(candidateModelIds);
     const kbModelIndex = new Map<string, { primary_move_type: string; structural_warmth: boolean }>();
-    for (const m of modelRows || []) { kbModelIndex.set(m.id as string, { primary_move_type: (m.primary_move_type as string) || "direct", structural_warmth: !!m.structural_warmth }); }
+    for (const m of modelRows) { kbModelIndex.set(m.id, { primary_move_type: m.primary_move_type || "direct", structural_warmth: !!m.structural_warmth }); }
     const validationContext: ValidationContext = { allowed_business_model_ids: allowedBmIds, kb_model_index: kbModelIndex };
-    console.log(`bg ${reportId}: P1 (${MODEL_TIER1}) starting | kb_archetypes=${archetypeIds.length} kb_models=${modelRows?.length || 0}`);
+    console.log(`bg ${reportId}: P1 (${MODEL_TIER1}) starting | kb_archetypes=${archetypeIds.length} candidate_models=${modelRows.length} radar_injected=${injectedRadar.length}`);
     const p1Result = await callP1WithRetry({ openai, systemPrompt, userMessage, validationContext, reportId, supabase });
     const finalReport = p1Result.report;
     const validation = p1Result.validation;
@@ -1291,6 +1578,22 @@ async function generateReportInBackground(args: BgArgs) {
         await supabase.from("events").insert({ event_type: "report_validation_failed", user_id: userId, report_id: reportId, client_session_id: clientSessionId, payload: { attempts: p1Result.attempts, hard_failures: validation.hard_failures.slice(0, 10), overall_score: validation.overall_score } });
       } catch (e) { console.warn(`bg ${reportId}: quality event insert failed:`, (e as Error)?.message ?? e); }
     }
+    // Phase C Move 1: deterministic evidence attach. Built in code from the
+    // Radar and the archetype rate bands, never by the model, so the
+    // evidence surface cannot hallucinate. Attached after validation so the
+    // validator's view of the schema is unchanged.
+    try {
+      if (finalReport && Array.isArray(finalReport.options)) {
+        const primaryName = String((finalReport.archetype as Record<string, unknown> | undefined)?.primary ?? "");
+        const primaryRow = (archetypeRows || []).find((a) => a.name === primaryName) ?? (archetypeRows || [])[0];
+        const rateLine = primaryRow
+          ? `Calibrated bands for ${primaryRow.name}: day rate ${primaryRow.day_rate}${primaryRow.retainer_monthly ? `, retainer ${primaryRow.retainer_monthly}` : ""} (Solo knowledge bank, hand-reviewed).`
+          : null;
+        attachOptionEvidence(finalReport.options as unknown as Array<Record<string, unknown>>, modelFullIndex, radarItems, rateLine);
+      }
+    } catch (e) {
+      console.warn(`bg ${reportId}: evidence attach failed (non-fatal):`, (e as Error)?.message ?? e);
+    }
     const hookInsight = (finalReport?.hook_insight ?? null) as SoloCoreReport["hook_insight"] | null;
     const aiImpactSection = (finalReport?.ai_impact ?? null) as SoloCoreReport["ai_impact"] | null;
     const recommendedSelection = (finalReport?.recommended_selection ?? null) as SoloCoreReport["recommended_selection"] | null;
@@ -1298,7 +1601,23 @@ async function generateReportInBackground(args: BgArgs) {
     const hookInsightText = hookInsight?.paragraph || JSON.stringify(hookInsight ?? {});
     const userContextProfile = {
       professional_position: { job_title: questionnaireData.q1_job_title, years_experience: questionnaireData.q2_years_experience, seniority: questionnaireData.q5_seniority, sector_primary: questionnaireData.q3a_sector, employer_context: questionnaireData.q3b_employer_org_type, work_type: questionnaireData.q4_work_type },
-      kb_injection: { primary_domain: primaryDomain, secondary_domain: secondaryDomain, archetype_ids: archetypeIds, archetype_count: archetypeIds.length, model_count: modelRows?.length || 0, mapping_rows: mappingRows?.length || 0 },
+      kb_injection: {
+        primary_domain: primaryDomain,
+        secondary_domain: secondaryDomain,
+        archetype_ids: archetypeIds,
+        archetype_count: archetypeIds.length,
+        model_count: modelRows.length,
+        mapping_rows: mappingRows?.length || 0,
+        capability_join: {
+          candidate_model_count: candidateModelIds.length,
+          candidates_per_archetype: CANDIDATES_PER_ARCHETYPE,
+          avoid_vetoes_in_slice: ((mappingRows || []) as unknown as HandRow[]).filter((r) => r.avoid).length,
+          hand_scored_candidates: Array.from(candidatesByArchetype.values()).flat().filter((c) => c.basis === "hand+capability").length,
+          radar_items_available: radarItems.length,
+          radar_items_injected: injectedRadar.length,
+          thresholds: { front_runner_min: TIER_FRONT_RUNNER_MIN, credible_min: TIER_CREDIBLE_MIN, coverage_weight: JOIN_COVERAGE_WEIGHT, quality_weight: JOIN_QUALITY_WEIGHT, unvetted_discount: JOIN_UNVETTED_DISCOUNT },
+        },
+      },
       derived_flags: flags,
       ironclad: { function_version: FUNCTION_VERSION, attempts: p1Result.attempts, validation_passed: validation.passed, overall_score: validation.overall_score, hard_failures: validation.hard_failures, soft_warnings: validation.soft_warnings, card_scores: validation.card_scores, total_word_count: validation.total_word_count, never_list_hits: validation.never_list_hits, raw_content_lengths: p1Result.rawContentLengths, parsed_top_keys: finalReport ? Object.keys(finalReport) : [] },
     };
