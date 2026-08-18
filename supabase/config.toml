@@ -100,3 +100,9 @@ verify_jwt = false
 
 [functions.generate-content-batch]
 verify_jwt = false
+
+# weekly-heartbeat: cron-called via pg_net Mondays 07:50 (Phase D living
+# dossier). Same posture as generate-radar; the cron SQL sends the anon
+# Bearer anyway so it also works if an MCP redeploy flips this to true.
+[functions.weekly-heartbeat]
+verify_jwt = false

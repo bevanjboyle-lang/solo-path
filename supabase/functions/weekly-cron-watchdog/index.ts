@@ -15,6 +15,9 @@
 //      (v2, C1.2 — catches the daily drip cron failing silently).
 //   5. content_batches: if a fresh Signal edition exists, a Monday content
 //      batch exists for it (v2, C1.3 — catches the loop generator failing).
+//   6. report_evidence_refresh: if active trackers exist, at least one
+//      dossier refresh row in 8 days (v3, Phase D — the Monday heartbeat
+//      fails silently at SQL level, so only an output check can see it).
 //
 // Behaviour: sends an email via Resend ONLY when a problem is found, or when
 // invoked with body {"force": true} (used for smoke tests — sends a status
@@ -25,7 +28,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
-const FUNCTION_VERSION = "v2-nurture-and-loop-checks";
+const FUNCTION_VERSION = "v3-heartbeat-check";
 const FROM_ADDRESS = "Solo <hello@solo-plan.com>";
 const DEFAULT_OWNER_EMAIL = "bevan.j.boyle@gmail.com";
 
@@ -133,6 +136,30 @@ Deno.serve(async (req: Request) => {
     if (cbErr) problems.push(`Could not check content_batches: ${cbErr.message}`);
     else if ((batchCount ?? 0) === 0) problems.push("No Monday content batch for this week's Signal edition (cron generate-content-batch-monday / generate-content-batch).");
     else okNotes.push("Weekly content batch produced for the fresh edition.");
+  }
+
+  // 6. Dossier heartbeat ran? (Phase D, 2026-08-18) The Monday 07:50 job
+  // (cron job 18 / weekly-heartbeat) writes report_evidence_refresh rows for
+  // every live report. net.http_post "succeeds" at SQL level even when the
+  // function 401s or 500s, so the generic failure check above cannot see a
+  // dead heartbeat; this output check can. Only flags when there was at
+  // least one live target (an active tracker) to refresh.
+  const { count: activeTrackerCount, error: atErr } = await supabase
+    .from("tracker_sessions")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "active");
+  if (atErr) {
+    problems.push(`Could not check tracker_sessions for heartbeat: ${atErr.message}`);
+  } else if ((activeTrackerCount ?? 0) > 0) {
+    const { count: refreshCount, error: reErr } = await supabase
+      .from("report_evidence_refresh")
+      .select("id", { count: "exact", head: true })
+      .gte("created_at", since);
+    if (reErr) problems.push(`Could not check report_evidence_refresh: ${reErr.message}`);
+    else if ((refreshCount ?? 0) === 0) problems.push("No dossier evidence refresh in the last 8 days despite active trackers. The Monday heartbeat (cron job 18 / weekly-heartbeat) has produced nothing.");
+    else okNotes.push(`Dossier evidence refreshes in last 8 days: ${refreshCount}`);
+  } else {
+    okNotes.push("Dossier heartbeat: no active trackers to refresh (check skipped).");
   }
 
   const healthy = problems.length === 0;
