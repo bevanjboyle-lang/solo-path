@@ -439,10 +439,10 @@ export default function Landing() {
               <div className="lg:col-span-5">
                 <h4 className="rule-head border-b-0 pb-0">Pricing</h4>
                 <h3 className="mt-4 font-display text-[24px] font-bold leading-[1.2] tracking-tight">
-                  One-time. Or monthly, if you want the check-in loop.
+                  Your independence dossier, live for 30 days.
                 </h3>
                 <p className="standfirst mt-3 text-[14.5px]">
-                  Most buy the one-time. The subscription keeps the plan alive past day 30, with weekly check-ins, all 32 guidance modules, the Radar, and unlimited Ask Solo.
+                  £19.99 builds it: the report, a 30-day activation plan and the daily tracker, refreshed every Monday with live signals from your market. £19 a month keeps it live past day 30, with weekly check-ins, all 32 guidance modules and unlimited Ask Solo.
                 </p>
                 <Link to="/pricing" className="link-edit mt-4 inline-block">See full pricing →</Link>
               </div>
@@ -457,6 +457,7 @@ export default function Landing() {
                     <ul className="mt-4 space-y-1.5 text-[13px] leading-[1.55] text-muted-foreground">
                       <li>Full report, 10 scored business paths</li>
                       <li>30-day activation plan + daily tracker</li>
+                      <li>Live evidence refreshed every Monday</li>
                       <li>3 of the 32 guidance modules</li>
                       <li>Permanent access to your report</li>
                     </ul>
@@ -468,7 +469,7 @@ export default function Landing() {
                     </div>
                     <div className="mt-3 font-display text-[34px] font-extrabold leading-none tabular-nums">£19 <span className="text-[13px] font-normal text-muted-foreground">/month, cancel any time</span></div>
                     <ul className="mt-4 space-y-1.5 text-[13px] leading-[1.55] text-muted-foreground">
-                      <li>Everything in one-time, past day 30</li>
+                      <li>Your dossier stays live past day 30</li>
                       <li>All 32 guidance modules</li>
                       <li>The Opportunity Radar, weekly</li>
                       <li>Unlimited Ask Solo</li>

@@ -13,6 +13,7 @@ import CheckInPanel from "@/components/plan/CheckInPanel";
 import ReplanPromptCard from "@/components/plan/ReplanPromptCard";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
 import WeeklyFrictionReviewCard from "@/components/plan/WeeklyFrictionReviewCard";
+import RadarHeartbeatCard from "@/components/plan/RadarHeartbeatCard";
 import NonResponseCatcherBanner from "@/components/plan/NonResponseCatcherBanner";
 import PreSendBrief from "@/components/plan/PreSendBrief";
 import StrandSelector from "@/components/plan/StrandSelector";
@@ -1046,6 +1047,18 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                   */}
                 {!awaitingSelection && user && (
                   <NonResponseCatcherBanner userId={user.id} />
+                )}
+
+                {/* ─── Radar heartbeat (Phase D, blueprint Move 4) ───
+                  * The Monday pulse's radar half: live signals matched to
+                  * the user's focus strands plus one market-movement
+                  * sentence, from report_evidence_refresh. Renders above
+                  * the friction review so the pair reads as one weekly
+                  * artefact: what moved in your market, then how your week
+                  * went. Self-contained; null when no fresh heartbeat.
+                  */}
+                {!awaitingSelection && (user || isDevBypass()) && (
+                  <RadarHeartbeatCard reportId={reportId || null} />
                 )}
 
                 {/* ─── Weekly Friction Review (coaching layer Phase 2 slice 2) ───

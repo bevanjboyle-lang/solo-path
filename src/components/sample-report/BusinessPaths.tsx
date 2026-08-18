@@ -14,6 +14,15 @@ interface Props {
    * When false, render every option in full detail (post-payment / /plan).
    */
   locked?: boolean;
+  /**
+   * Phase D (weekly-heartbeat): this week's refreshed evidence, keyed by
+   * option rank. When present it replaces each option's generation-time
+   * evidence, the panel label carries the refresh week, and rows the
+   * heartbeat marked is_new get a NEW chip. Also lets pre-v46 reports
+   * (no tier, no baked evidence) show live evidence for the first time.
+   */
+  refreshedEvidence?: Record<string, EvidenceItem[]>;
+  refreshWeekStart?: string | null;
 }
 
 /*
@@ -150,7 +159,14 @@ function RadarEvidenceRow({ item }: { item: EvidenceItem }) {
     <div className="flex items-start gap-3">
       <span className="mt-[7px] inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
       <div className="min-w-0">
-        <p className="text-[13.5px] leading-snug">{title}</p>
+        <p className="text-[13.5px] leading-snug">
+          {title}
+          {item.is_new && (
+            <span className="ml-2 inline-block bg-surface-mint-tint px-1.5 py-px align-[2px] text-[9px] font-bold uppercase tracking-[0.1em] text-[hsl(var(--mint-text))]">
+              New
+            </span>
+          )}
+        </p>
         {meta.length > 0 && (
           <p className="mt-0.5 text-[11.5px] text-muted-foreground">{meta.join(" · ")}</p>
         )}
@@ -161,17 +177,26 @@ function RadarEvidenceRow({ item }: { item: EvidenceItem }) {
 
 /** Phase C evidence block: live Radar signals, the rate calibration, or an
  *  honest coverage note. Deterministic data attached server-side. */
-function EvidencePanel({ evidence }: { evidence: EvidenceItem[] }) {
+function EvidencePanel({
+  evidence,
+  refreshWeek,
+}: {
+  evidence: EvidenceItem[];
+  refreshWeek?: string | null;
+}) {
   if (!evidence || evidence.length === 0) return null;
   const radar = evidence.filter((e) => e.kind === "radar" && e.title);
   const rate = evidence.find((e) => e.kind === "rate" && e.text);
   const coverage = evidence.find((e) => e.kind === "coverage" && e.text);
   if (radar.length === 0 && !rate && !coverage) return null;
+  const weekLabel = refreshWeek ? formatWeek(refreshWeek) : null;
   return (
     <div className="mt-3 border border-border bg-white p-4">
       <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
         Live evidence <span className="text-muted-foreground/40">·</span>{" "}
-        <span className="text-[#15735F]">this fortnight</span>
+        <span className="text-[#15735F]">
+          {weekLabel ? `refreshed week of ${weekLabel}` : "this fortnight"}
+        </span>
       </p>
       <div className="space-y-2.5">
         {radar.map((item, i) => (
@@ -209,13 +234,21 @@ function FullOptionCard({
   isRecommended,
   tiered,
   compact = false,
+  refreshedEvidence,
+  refreshWeekStart,
 }: {
   option: Option;
   isRecommended: boolean;
   tiered: boolean;
   compact?: boolean;
+  refreshedEvidence?: EvidenceItem[];
+  refreshWeekStart?: string | null;
 }) {
   const isStretch = option.tier === "stretch";
+  // Phase D: this week's refresh wins over generation-time evidence, and
+  // gives pre-v46 reports (untiered, no baked evidence) a live panel too.
+  const evidence = refreshedEvidence ?? option.evidence;
+  const evidenceWeek = refreshedEvidence ? refreshWeekStart ?? null : null;
   return (
     <div
       className={`mb-4 border bg-surface-card ${compact ? "p-5" : "p-6"} ${
@@ -330,7 +363,9 @@ function FullOptionCard({
         </div>
       )}
 
-      {tiered && option.evidence && <EvidencePanel evidence={option.evidence} />}
+      {(tiered || refreshedEvidence) && evidence && (
+        <EvidencePanel evidence={evidence} refreshWeek={evidenceWeek} />
+      )}
     </div>
   );
 }
@@ -339,10 +374,14 @@ export default function BusinessPaths({
   options,
   recommended_selection,
   locked = true,
+  refreshedEvidence,
+  refreshWeekStart,
 }: Props) {
   const sorted = [...(options ?? [])].sort((a, b) => a.rank - b.rank);
   const selectedRanks = new Set(recommended_selection?.selected_ranks ?? []);
   const tiered = sorted.some((o) => !!o.tier);
+  const refreshFor = (opt: Option): EvidenceItem[] | undefined =>
+    refreshedEvidence?.[String(opt.rank)];
 
   // ────────────────────────────────────────────────────────────────────────
   // Unlocked render — /plan / post-payment / dev-bypass.
@@ -359,6 +398,8 @@ export default function BusinessPaths({
               option={opt}
               isRecommended={selectedRanks.has(opt.rank)}
               tiered={false}
+              refreshedEvidence={refreshFor(opt)}
+              refreshWeekStart={refreshWeekStart}
             />
           ))}
         </div>
@@ -390,6 +431,8 @@ export default function BusinessPaths({
                 option={opt}
                 isRecommended={selectedRanks.has(opt.rank)}
                 tiered
+                refreshedEvidence={refreshFor(opt)}
+                refreshWeekStart={refreshWeekStart}
               />
             ))}
           </>
@@ -408,6 +451,8 @@ export default function BusinessPaths({
                 isRecommended={selectedRanks.has(opt.rank)}
                 tiered
                 compact
+                refreshedEvidence={refreshFor(opt)}
+                refreshWeekStart={refreshWeekStart}
               />
             ))}
           </>
@@ -426,6 +471,8 @@ export default function BusinessPaths({
                 isRecommended={selectedRanks.has(opt.rank)}
                 tiered
                 compact
+                refreshedEvidence={refreshFor(opt)}
+                refreshWeekStart={refreshWeekStart}
               />
             ))}
           </>
@@ -437,6 +484,8 @@ export default function BusinessPaths({
             option={opt}
             isRecommended={selectedRanks.has(opt.rank)}
             tiered={false}
+            refreshedEvidence={refreshFor(opt)}
+            refreshWeekStart={refreshWeekStart}
           />
         ))}
       </div>

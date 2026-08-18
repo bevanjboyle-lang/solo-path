@@ -74,7 +74,7 @@ const categories: FAQCategory[] = [
     id: "price-and-refunds",
     label: "Price & refunds",
     items: [
-      { id: "faq-cost", q: "What does it cost?", a: "The full report is £19.99, a one-time payment. The optional subscription is £19/month or £149/year. Both are explained in detail on the pricing page." },
+      { id: "faq-cost", q: "What does it cost?", a: "£19.99, paid once, builds your independence dossier: the report, a 30-day activation plan and a daily tracker, refreshed every Monday with live signals while it's live. The optional subscription is £19/month or £149/year and keeps the dossier live past day 30. Both are explained in detail on the pricing page." },
       { id: "faq-refund", q: "Can I get a refund?", a: "Yes. The £19.99 one-time report is fully refundable within 14 days of purchase, no questions asked. Subscriptions are refundable pro-rata within the first 14 days of an annual plan; monthly subscriptions are cancellable any time but not refunded mid-period." },
       { id: "faq-free-preview", q: "What do I get for free?", a: "Your professional archetype, one hook insight headline, and the top-ranked business path headline. Enough to judge whether the full report is worth £19.99 for you." },
     ],

@@ -45,8 +45,8 @@ interface PricingCardData {
 
 const reportCard: PricingCardData = {
   pre: "One-time",
-  title: "Your report + 30-day plan",
-  oneLiner: "A diagnostic report and a structured 30-day activation plan. Yours forever.",
+  title: "Your independence dossier",
+  oneLiner: "A diagnostic report, a 30-day activation plan and a daily tracker, built as one dossier. Live for 30 days; the report is yours for good.",
   price: "£19.99",
   priceQual: "paid once",
   bullets: [
@@ -56,6 +56,7 @@ const reportCard: PricingCardData = {
     <>Your full report, <strong>10 scored business paths</strong> with our top 2–5 recommended, archetype, income outlook, AI defensibility.</>,
     <>A <strong>30-day activation plan</strong> built around your warmest strand.</>,
     <>Daily tracker for the 30 days.</>,
+    <><strong>Live evidence refreshed every Monday</strong> while your dossier is live: tenders, rate movements and demand signals matched to your paths.</>,
     <>3 of the 32 guidance modules.</>,
     <>Permanent access to your report.</>,
   ],
@@ -65,13 +66,13 @@ const reportCard: PricingCardData = {
 
 const subscriptionCard: PricingCardData = {
   pre: "Subscription",
-  title: "Ongoing plan",
-  oneLiner: "Everything above, plus weekly check-ins past day 30 and the rest of the library.",
+  title: "Keep it live",
+  oneLiner: "Your dossier stays live past day 30: the Monday refresh keeps running, plus weekly check-ins and the rest of the library.",
   price: "£19",
   priceQual: "/ month",
   annualLine: "or £149 / year · two months free",
   bullets: [
-    <>Everything in the one-time, <strong>continued past day 30</strong>.</>,
+    <>Your dossier <strong>stays live past day 30</strong>, Monday evidence refresh included.</>,
     <><strong>All 32 guidance modules</strong>, 29 more than the report includes.</>,
     <>Weekly check-ins after your first 30 days.</>,
     <>Unlimited Ask Solo, context-aware to your plan.</>,
@@ -171,8 +172,10 @@ export default function Pricing() {
             One test. Two ways to keep going.
           </h1>
           <p className="standfirst mt-4 max-w-[52ch]">
-            £19.99 gets you a report and a 30-day plan. £19 a month keeps it rolling, with the 29
-            modules and the library that doesn't expire.
+            £19.99 builds your independence dossier: the report, a 30-day plan
+            and a daily tracker, refreshed every Monday while it's live. £19 a
+            month keeps it live past day 30, with the 29 extra modules and the
+            library that doesn't expire.
           </p>
         </section>
 

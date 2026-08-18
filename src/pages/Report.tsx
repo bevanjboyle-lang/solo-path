@@ -25,6 +25,12 @@ import AIImpactSection from "@/components/sample-report/AIImpactSection";
 
 import type { SoloCoreReport, ReportRow } from "@/types/canonical";
 import { SAMPLE_CORE_REPORT } from "@/data/canonicalSampleReport";
+import {
+  fetchLatestEvidenceRefresh,
+  formatRefreshDate,
+  buildDevRefresh,
+  type EvidenceRefresh,
+} from "@/lib/evidenceRefresh";
 
 /*
  * Report Pass 1 /report v1 (2026-05-18) first Phase 2 surface
@@ -106,6 +112,8 @@ export default function Report() {
   const [pdfError, setPdfError] = useState<string | null>(null);
   // Brief-collapse state per section (F3), defaults all to collapsed; user can expand any.
   const [expandedBriefs, setExpandedBriefs] = useState<Record<string, boolean>>({});
+  // Phase D: this week's evidence refresh overlay (weekly-heartbeat).
+  const [refresh, setRefresh] = useState<EvidenceRefresh | null>(null);
 
   /* ─── Load report ─── */
   useEffect(() => {
@@ -115,6 +123,7 @@ export default function Report() {
         setReportId("dev-bypass-sample");
         setReportStatus("complete");
         setCoreReport(SAMPLE_CORE_REPORT);
+        setRefresh(buildDevRefresh(SAMPLE_CORE_REPORT));
         setLoading(false);
         return;
       }
@@ -150,6 +159,13 @@ export default function Report() {
         setRefinementCount(rc);
         if (rc >= 3) setRefineLimitReached(true);
         setLoading(false);
+        // Phase D: overlay this week's evidence refresh, non-blocking. A
+        // dossier with no refresh row renders exactly as before.
+        if (data.status === "complete") {
+          fetchLatestEvidenceRefresh(data.id as string).then((r) => {
+            if (!cancelled && r) setRefresh(r);
+          });
+        }
       } catch (err) {
         if (cancelled) return;
         console.error("Report: fetch failed", err);
@@ -356,7 +372,9 @@ export default function Report() {
     (coreReport.archetype as { short_description?: string; description?: string } | null)
       ?.description ||
     "Your full analysis. Read in any order; the sidebar tracks where you are.";
-  const draftedAt = "drafted recently";  // could pull from reports.created_at in a future pass
+  // Phase D recency: when the weekly heartbeat has refreshed this dossier,
+  // the header says so with the date; otherwise the old quiet placeholder.
+  const updatedStamp = refresh ? formatRefreshDate(refresh.weekStart) : null;
 
   /* ─── Render ─── */
   return (
@@ -387,9 +405,16 @@ export default function Report() {
                   <div className="flex items-center gap-2.5 mb-4 flex-wrap">
                     <span className="eyebrow">Your Plan B report</span>
                     <span className="text-muted-foreground/40">·</span>
-                    <span className="text-muted-foreground/70 text-[11px]">
-                      {draftedAt}
-                    </span>
+                    {updatedStamp ? (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#15735F]">
+                        <span className="inline-block h-1.5 w-1.5 rounded-full bg-primary" />
+                        Updated {updatedStamp}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground/70 text-[11px]">
+                        drafted recently
+                      </span>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
@@ -448,20 +473,20 @@ export default function Report() {
                         expanded={!!expandedBriefs[s.id]}
                         onToggle={() => toggleBrief(s.id)}
                       >
-                        {renderSectionBody(s.id, coreReport)}
+                        {renderSectionBody(s.id, coreReport, refresh)}
                       </BriefSection>
                     );
                   }
                   if (s.variant === "dark") {
                     return (
                       <DarkSection key={s.id} meta={s}>
-                        {renderSectionBody(s.id, coreReport)}
+                        {renderSectionBody(s.id, coreReport, refresh)}
                       </DarkSection>
                     );
                   }
                   return (
                     <FullSection key={s.id} meta={s} dropCap={s.id === "edge"}>
-                      {renderSectionBody(s.id, coreReport)}
+                      {renderSectionBody(s.id, coreReport, refresh)}
                     </FullSection>
                   );
                 })}
@@ -560,7 +585,11 @@ function MobileWayfinder({
 
 /* ─────────────────────────── Section-body dispatch ─────────────────────────── */
 
-function renderSectionBody(id: string, coreReport: SoloCoreReport): ReactNode {
+function renderSectionBody(
+  id: string,
+  coreReport: SoloCoreReport,
+  refresh?: EvidenceRefresh | null,
+): ReactNode {
   switch (id) {
     case "edge":
       return coreReport.hook_insight ? <HookInsightSection hook_insight={coreReport.hook_insight} /> : null;
@@ -576,6 +605,8 @@ function renderSectionBody(id: string, coreReport: SoloCoreReport): ReactNode {
           options={coreReport.options}
           recommended_selection={coreReport.recommended_selection ?? undefined}
           locked={false}
+          refreshedEvidence={refresh?.byOption}
+          refreshWeekStart={refresh?.weekStart}
         />
       ) : null;
     case "recommendation":

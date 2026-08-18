@@ -837,7 +837,7 @@ function UnlockCallout({ onUnlock, payLoading }: { onUnlock: () => void; payLoad
             <span>The offer</span>
           </div>
           <h2 className="text-[28px] sm:text-[32px] font-semibold tracking-tight leading-tight text-foreground">
-            Ten options. One plan. One payment.
+            Your independence dossier. Live for 30 days.
           </h2>
           <div className="mt-5 flex items-baseline gap-3">
             <span className="text-[48px] sm:text-[56px] font-extrabold tabular-nums text-foreground leading-none">
@@ -851,7 +851,10 @@ function UnlockCallout({ onUnlock, payLoading }: { onUnlock: () => void; payLoad
             <strong className="font-semibold text-foreground">
               One-time payment. No subscription. No auto-renewal.
             </strong>{" "}
-            You keep the report after you've paid.
+            The report, your 30-day plan and the daily tracker arrive as one
+            dossier, refreshed every Monday with live signals from your
+            market. The report stays yours for good; £19 a month keeps the
+            weekly refresh running past day 30, only if you want it.
           </p>
         </div>
         <div className="lg:col-span-7 lg:pt-4">

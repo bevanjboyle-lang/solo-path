@@ -100,6 +100,11 @@ export interface SoloCoreReport {
       week_start?: string | null;
       url?: string | null;
       text?: string;
+      /** Phase D (weekly-heartbeat): present only on refreshed evidence
+       *  rows from report_evidence_refresh. id is the radar item id;
+       *  is_new marks items not attached the previous week. */
+      id?: string;
+      is_new?: boolean;
     }>;
   }>;
   recommendation: {
