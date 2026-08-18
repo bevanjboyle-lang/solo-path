@@ -8,7 +8,7 @@ export default function PortfolioSummarySection({ portfolio_summary }: Props) {
   const { strategy, effort_distribution, strands } = portfolio_summary;
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your Portfolio at a Glance</h2>
+      <h2 className="report-h2 text-foreground mb-6">Your Portfolio at a Glance</h2>
       <div className="rounded-lg bg-card border-l-[6px] border-primary p-6 sm:p-8">
         <h3 className="text-[1.3rem] font-bold text-foreground mb-3">Your Strategic Approach</h3>
         <p className="text-sm leading-relaxed text-secondary-foreground mb-6">{strategy}</p>

@@ -78,6 +78,29 @@ export interface SoloCoreReport {
     difficulty_rating: "easy" | "moderate" | "hard";
     why_this_works_for_them: string;
     caution_note: string | null;
+    /** Phase C (2026-08-18) honest tiers. Optional: reports generated before
+     *  generate-report v46 carry none of these three fields, and every
+     *  renderer must keep working without them. */
+    tier?: "front_runner" | "credible" | "stretch";
+    /** Set only when two options are genuinely level; names the tie and the
+     *  situational tiebreak. */
+    tie_note?: string | null;
+    /** Deterministic evidence block attached in code by generate-report v46:
+     *  live Radar signals, the hand-reviewed rate band, or an honest
+     *  coverage note. Never model-generated. */
+    evidence?: Array<{
+      kind: "radar" | "rate" | "coverage";
+      title?: string;
+      summary?: string | null;
+      source_name?: string | null;
+      source_type?: string | null;
+      buyer?: string | null;
+      value_text?: string | null;
+      deadline?: string | null;
+      week_start?: string | null;
+      url?: string | null;
+      text?: string;
+    }>;
   }>;
   recommendation: {
     recommended_rank: number;

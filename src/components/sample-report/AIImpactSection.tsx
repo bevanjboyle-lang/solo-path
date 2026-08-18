@@ -28,7 +28,7 @@ export default function AIImpactSection({ ai_impact }: Props) {
        * bg-card (light) so their h3/body text stays as text-foreground.
        * Fixed 2026-05-18 closing #198.
        */}
-      <h2 className="text-[1.8rem] font-bold text-[#FAF9F7]">AI & Your Future</h2>
+      <h2 className="report-h2 text-[#FAF9F7]">AI & Your Future</h2>
 
       {/* Part 1 — How AI is affecting your current role */}
       <div className="bg-card p-6">

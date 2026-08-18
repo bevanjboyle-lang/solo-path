@@ -553,11 +553,7 @@ export default function Teaser() {
             type="button"
             onClick={handleUnlock}
             disabled={payLoading}
-            className={`w-full px-6 py-3 text-[14px] font-semibold transition-colors flex items-center justify-center gap-2 ${
-              payLoading
-                ? "bg-[#E5E2DC] text-muted-foreground/70"
-                : "cta-block"
-            }`}
+            className="cta-block w-full px-6 py-3 text-[14px] transition-colors flex items-center justify-center gap-2"
           >
             {payLoading && (
               <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -863,11 +859,7 @@ function UnlockCallout({ onUnlock, payLoading }: { onUnlock: () => void; payLoad
             type="button"
             onClick={onUnlock}
             disabled={payLoading}
-            className={`w-full px-7 py-4 text-[16px] font-semibold transition-colors flex items-center justify-center gap-2 ${
-              payLoading
-                ? "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
-                : "cta-block"
-            }`}
+            className="cta-block w-full px-7 py-4 text-[16px] transition-colors flex items-center justify-center gap-2"
           >
             {payLoading && (
               <span className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -1002,11 +994,7 @@ function BottomCTA({
           type="button"
           onClick={onUnlock}
           disabled={payLoading}
-          className={`px-8 py-4 text-[16px] font-semibold transition-colors flex items-center justify-center gap-2 ${
-            payLoading
-              ? "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
-              : "cta-block"
-          }`}
+          className="cta-block px-8 py-4 text-[16px] transition-colors flex items-center justify-center gap-2"
         >
           {payLoading && (
             <span className="inline-block w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />

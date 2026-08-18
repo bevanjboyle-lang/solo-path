@@ -68,7 +68,7 @@ export default function NetworkToolkitSection({ network_toolkit }: Props) {
   const { intro, templates } = network_toolkit;
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-2">Network Activation Toolkit</h2>
+      <h2 className="report-h2 text-foreground mb-2">Network Activation Toolkit</h2>
       <p className="text-sm text-muted-foreground mb-6">
         {intro || "Ready-to-use email and messaging templates for different outreach scenarios."}
       </p>

@@ -99,7 +99,7 @@ export default function IncomeOutlookSection({ income_outlook }: Props) {
   const io = income_outlook;
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-2">Your Income Trajectory</h2>
+      <h2 className="report-h2 text-foreground mb-2">Your Income Trajectory</h2>
       <p className="text-sm text-muted-foreground mb-6">
         Three-year projection for your #1 path. Low / mid / high scenarios per year.
       </p>

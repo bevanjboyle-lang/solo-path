@@ -15,7 +15,7 @@ const cards = [
 export default function RealityCheckSection({ reality_check }: Props) {
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-6">The Real Talk</h2>
+      <h2 className="report-h2 text-foreground mb-6">The Real Talk</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {cards.map((c) => (
           <div key={c.key} className={`bg-card p-5 border-l-[3px] ${c.borderColor}`}>

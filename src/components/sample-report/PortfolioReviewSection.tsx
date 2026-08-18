@@ -29,7 +29,7 @@ export default function PortfolioReviewSection({ portfolio_review_guide }: Props
   const { review_1, review_2 } = portfolio_review_guide;
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-2">Portfolio Review Checkpoints</h2>
+      <h2 className="report-h2 text-foreground mb-2">Portfolio Review Checkpoints</h2>
       <p className="text-sm text-muted-foreground mb-6">At each checkpoint, pause and assess. These questions guide your review.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <ReviewCard triggerDay={review_1.trigger_day} questions={review_1.questions} />

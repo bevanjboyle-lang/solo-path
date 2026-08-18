@@ -279,11 +279,7 @@ function FormBody({
         <button
           type="submit"
           disabled={!isValidEmail || submitting}
-          className={`w-full px-6 py-3 text-[14px] font-semibold transition-colors flex items-center justify-center gap-2 ${
-            isValidEmail && !submitting
-              ? "bg-primary text-primary-foreground hover:opacity-90"
-              : "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
-          }`}
+          className="cta-block w-full px-6 py-3 text-[14px] transition-colors flex items-center justify-center gap-2"
         >
           {submitting && (
             <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />

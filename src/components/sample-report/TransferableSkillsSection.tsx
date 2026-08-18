@@ -41,7 +41,7 @@ export default function TransferableSkillsSection({ transferable_skills }: Props
   const sorted = [...(transferable_skills ?? [])].sort((a, b) => b.strength - a.strength);
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your Transferable Skills</h2>
+      <h2 className="report-h2 text-foreground mb-6">Your Transferable Skills</h2>
       <div className="space-y-4">
         {sorted.map((s) => <SkillBar key={s.skill_name} skill={s} />)}
       </div>

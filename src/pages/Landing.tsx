@@ -44,16 +44,16 @@ function useHomeHandlers() {
 const STEPS = [
   {
     num: "01",
-    title: "Tell Solo about your career",
+    title: "Start with your CV",
     body:
-      "13 targeted questions covering your role, experience, network, working style, and financial situation. Upload your CV first and it cuts to around 4 questions. Takes 8 minutes.",
-    meta: "≈ 8 min · 13 questions",
+      "Drop in your CV and Solo reads your role, sector and seniority from it, then asks only what a CV cannot say: your situation, your appetite, the evidence people already come to you. The full test carries your answers forward, so most of the typing is already done. About 8 minutes end to end.",
+    meta: "≈ 8 min · your CV does the typing",
   },
   {
     num: "02",
     title: "Get your report",
     body:
-      "Solo classifies you against 95 professional archetypes and scores your profile across 480 business models. You receive a ranked shortlist of your top paths, each with a difficulty rating, a speed-to-revenue estimate, and an explanation of why it fits your profile.",
+      "Solo classifies you against 95 professional archetypes and matches your capability profile across 480 business models. Your options arrive in honest bands: the front runners we would pursue first, the credible paths behind them, and each backed by live UK market signals from this fortnight.",
     meta: "Delivered in < 8 min",
   },
   {

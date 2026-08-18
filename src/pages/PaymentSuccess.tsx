@@ -552,7 +552,7 @@ export default function PaymentSuccess() {
                       <button
                         type="button"
                         onClick={handleRetry}
-                        className="bg-[#E5E2DC] hover:bg-[#D8D4CC] text-foreground px-6 py-2.5 text-[13.5px] font-semibold border border-border transition-colors"
+                        className="cta-block--outline transition-colors"
                       >
                         Try now
                       </button>

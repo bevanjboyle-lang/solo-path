@@ -170,7 +170,7 @@ export default function FirstMoveSection({ first_move }: Props) {
 
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your First Move</h2>
+      <h2 className="report-h2 text-foreground mb-6">Your First Move</h2>
       <div className="rounded-lg bg-card border-l-[6px] border-primary p-6 sm:p-10">
         <div className="flex items-center gap-2 flex-wrap mb-4">
           <span className="inline-block rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-primary-foreground">

@@ -48,7 +48,7 @@ export default function TractionSignalsSection({ traction_signals }: Props) {
 
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-2">Tracking Your Traction</h2>
+      <h2 className="report-h2 text-foreground mb-2">Tracking Your Traction</h2>
       <p className="text-sm text-muted-foreground mb-6">
         Signals that indicate whether each strand is getting real market interest.
       </p>

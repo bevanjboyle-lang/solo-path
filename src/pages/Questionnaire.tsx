@@ -416,11 +416,7 @@ export default function Questionnaire() {
                   <button
                     onClick={goForward}
                     disabled={!isStepValid() || isGenerating}
-                    className={`px-7 py-3 text-[14px] font-semibold transition-colors w-full sm:w-auto flex items-center justify-center gap-2 ${
-                      isStepValid() && !isGenerating
-                        ? "cta-block"
-                        : "bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
-                    }`}
+                    className="cta-block px-7 py-3 text-[14px] transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
                   >
                     {isGenerating && (
                       <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />

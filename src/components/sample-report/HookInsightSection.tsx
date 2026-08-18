@@ -23,7 +23,7 @@ export default function HookInsightSection({ hook_insight }: Props) {
 
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your Market Edge</h2>
+      <h2 className="report-h2 text-foreground mb-6">Your Market Edge</h2>
       <div className="border-l-[3px] border-primary pl-6 sm:pl-10 py-2">
         <div className="flex items-start gap-3 mb-4">
           <Lightbulb className="h-5 w-5 text-[#15735F] mt-1 shrink-0" />

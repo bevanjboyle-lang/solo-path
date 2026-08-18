@@ -975,11 +975,7 @@ export default function Diagnostic() {
                   <button
                     onClick={confirmProfile}
                     disabled={!profileComplete(answers)}
-                    className={`transition-colors text-center ${
-                      profileComplete(answers)
-                        ? "cta-block"
-                        : "px-[18px] py-[9px] text-[13px] font-semibold bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
-                    }`}
+                    className="cta-block transition-colors text-center"
                   >
                     That's me, continue
                   </button>
@@ -1036,11 +1032,7 @@ export default function Diagnostic() {
                   <button
                     onClick={typedForward}
                     disabled={!qStepValid}
-                    className={`transition-colors text-center ${
-                      qStepValid
-                        ? "cta-block"
-                        : "px-[18px] py-[9px] text-[13px] font-semibold bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
-                    }`}
+                    className="cta-block transition-colors text-center"
                   >
                     Continue
                   </button>
@@ -1119,11 +1111,7 @@ export default function Diagnostic() {
                   <button
                     onClick={asksForward}
                     disabled={!askValid}
-                    className={`transition-colors text-center ${
-                      askValid
-                        ? "cta-block"
-                        : "px-[18px] py-[9px] text-[13px] font-semibold bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
-                    }`}
+                    className="cta-block transition-colors text-center"
                   >
                     {askStep === ASKS.length - 1 ? "Finish" : "Continue"}
                   </button>

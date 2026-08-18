@@ -146,7 +146,7 @@ export default function OptionsSection({ options, recommended_selection }: Props
 
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-2">Your 10 Pathways to Independence</h2>
+      <h2 className="report-h2 text-foreground mb-2">Your 10 Pathways to Independence</h2>
       <p className="text-sm text-muted-foreground mb-6">Ranked by fit with your background, market demand, and time to first revenue.</p>
 
       {top.length > 0 && (

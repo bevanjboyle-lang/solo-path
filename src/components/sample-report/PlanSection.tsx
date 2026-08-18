@@ -241,7 +241,7 @@ export default function PlanSection({ activation_plan }: Props) {
 
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-6">Your 30-Day Activation Plan</h2>
+      <h2 className="report-h2 text-foreground mb-6">Your 30-Day Activation Plan</h2>
 
       {summary && (
         <p className="text-sm text-secondary-foreground mb-6">{summary}</p>

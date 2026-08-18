@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isDevBypass } from "@/lib/devBypass";
@@ -82,7 +82,7 @@ const SECTION_DEFS: SectionMeta[] = [
   { id: "archetype",      label: "Archetype",             numeral: "02", readTime: "≈ 3 min read", variant: "full"  },
   { id: "sell",           label: "What you can sell",     numeral: "03", readTime: "≈ 3 min read", variant: "brief" },
   { id: "skills",         label: "Transferable skills",   numeral: "04", readTime: "≈ 4 min read", variant: "full"  },
-  { id: "paths",          label: "Business paths",        numeral: "05", readTime: "10 options",  variant: "full"  },
+  { id: "paths",          label: "The paths that fit",    numeral: "05", readTime: "your options", variant: "full"  },
   { id: "recommendation", label: "Recommendation",        numeral: "06", readTime: "≈ 2 min read", variant: "brief" },
   { id: "reality",        label: "Reality check",         numeral: "07", readTime: "≈ 5 min read", variant: "brief" },
   { id: "income",         label: "Income outlook",        numeral: "08", readTime: "≈ 3 min read", variant: "full"  },
@@ -363,6 +363,12 @@ export default function Report() {
     <div className="relative min-h-screen text-foreground">
       <TopBar />
 
+      <MobileWayfinder
+        sections={visibleSections}
+        activeId={activeSectionId}
+        onSelect={scrollToSection}
+      />
+
       <main>
         <section className="pt-6 pb-8 lg:pb-12">
           <div className="mx-auto max-w-screen-xl px-6">
@@ -402,11 +408,7 @@ export default function Report() {
                           type="button"
                           onClick={exportPdf}
                           disabled={exportingPdf}
-                          className={`px-5 py-2.5 text-[13px] font-semibold transition-colors border ${
-                            exportingPdf
-                              ? "bg-[#E5E2DC] text-muted-foreground/70 border-[#D8D4CC] cursor-not-allowed"
-                              : "bg-transparent text-foreground border-foreground hover:bg-[#F3F1ED]"
-                          }`}
+                          className="cta-block--outline transition-colors"
                         >
                           {exportingPdf ? (
                             <span className="inline-flex items-center gap-1.5">
@@ -479,6 +481,78 @@ export default function Report() {
           onLimitReached={() => setRefineLimitReached(true)}
           onToast={(message) => toast({ title: message })}
         />
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────── Mobile wayfinder ───────────────────────────
+ * Sprint 2: sticky current-section strip on <lg with a progress hairline;
+ * tapping opens the full section list. Desktop keeps AreaSidebar. */
+
+function MobileWayfinder({
+  sections,
+  activeId,
+  onSelect,
+}: {
+  sections: SectionMeta[];
+  activeId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  if (sections.length === 0) return null;
+  const idx = Math.max(0, sections.findIndex((s) => s.id === activeId));
+  const current = sections[idx];
+  const progress = ((idx + 1) / sections.length) * 100;
+  return (
+    <div className="wayfinder lg:hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 px-6 py-2.5 text-left"
+      >
+        <span className="text-[10px] font-semibold tabular-nums text-[#15735F]">
+          {current.numeral}
+        </span>
+        <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-foreground">
+          {current.label}
+        </span>
+        <span className="text-[11px] tabular-nums text-muted-foreground">
+          {idx + 1} / {sections.length}
+        </span>
+        <ChevronDown
+          className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      <div className="h-[2px] bg-[#ECEAE4]">
+        <div
+          className="h-full bg-[#2ECDB0] transition-[width] duration-300"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      {open && (
+        <div className="max-h-[60vh] overflow-y-auto border-t border-border bg-[#FAF9F7]">
+          {sections.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => {
+                onSelect(s.id);
+                setOpen(false);
+              }}
+              className={`flex w-full items-baseline gap-3 border-b border-border/60 px-6 py-3 text-left ${
+                s.id === activeId ? "bg-surface-mint-tint" : ""
+              }`}
+            >
+              <span className="text-[10px] font-semibold tabular-nums text-[#15735F]">
+                {s.numeral}
+              </span>
+              <span className="flex-1 text-[13px] font-medium text-foreground">{s.label}</span>
+              <span className="text-[10.5px] text-muted-foreground">{s.readTime}</span>
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

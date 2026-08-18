@@ -8,7 +8,7 @@ export default function TransferableValueSection({ transferable_value }: Props) 
   const { what_they_can_sell, why_buyers_would_pay, credibility_assets } = transferable_value;
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-6">What You Can Sell, and Why Buyers Pay</h2>
+      <h2 className="report-h2 text-foreground mb-6">What You Can Sell, and Why Buyers Pay</h2>
       <div className="border-t border-border pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>

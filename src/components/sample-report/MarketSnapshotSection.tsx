@@ -42,7 +42,7 @@ export default function MarketSnapshotSection({ market_snapshots }: Props) {
 
   return (
     <section>
-      <h2 className="text-[1.8rem] font-bold text-foreground mb-2">Market Feasibility: What You're Walking Into</h2>
+      <h2 className="report-h2 text-foreground mb-2">Market Feasibility: What You're Walking Into</h2>
       <p className="text-sm text-muted-foreground mb-6">A reality check on demand, pricing, competition, and entry strategy for each strand.</p>
 
       <div className="flex gap-0 border-b border-border mb-0">

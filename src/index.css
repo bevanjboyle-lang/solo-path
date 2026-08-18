@@ -230,6 +230,56 @@ transition: opacity 0.15s ease;
 }
 .cta-block:hover { opacity: 0.92; }
 
+/* Sprint 2: the one button family. A designed disabled state (warm well
+ * grey, no fake mint) and an outline secondary, both on the cta-block
+ * geometry, so pages stop improvising their own. */
+.cta-block:disabled,
+.cta-block--disabled {
+background: #E5E2DC;
+color: #8A867E;
+cursor: not-allowed;
+}
+.cta-block:disabled:hover,
+.cta-block--disabled:hover { opacity: 1; }
+.cta-block--outline {
+background: transparent;
+border: 1px solid #1A1915;
+color: #1A1915;
+padding: 8px 17px; /* border eats 1px so the box matches .cta-block */
+}
+.cta-block--outline:hover { background: #F3F1ED; opacity: 1; }
+.cta-block--outline:disabled {
+border-color: #D8D4CC;
+background: #E5E2DC;
+color: #8A867E;
+}
+
+/* Sprint 2: canonical in-report section heading. Replaces the drift
+ * between text-[1.8rem] composites and text-lg composites; every H2
+ * inside the report body wears this. */
+.report-h2 {
+font-size: 22px;
+font-weight: 700;
+letter-spacing: -0.02em;
+line-height: 1.25;
+color: hsl(var(--foreground));
+}
+@media (min-width: 640px) { .report-h2 { font-size: 25px; } }
+
+/* Sprint 2: mobile report wayfinder. Sticky under the 46px mobile nav
+ * band (Sprint 1 offsets), current section + progress hairline; the
+ * expanded state lists every section. Hidden at lg+ where AreaSidebar
+ * does this job. */
+.wayfinder {
+position: sticky;
+top: 46px;
+z-index: 35;
+background: rgba(250, 249, 247, 0.96);
+backdrop-filter: blur(6px);
+-webkit-backdrop-filter: blur(6px);
+border-bottom: 1px solid #D1CEC7;
+}
+
 /* Text link with mint underline. */
 .link-edit {
 font-size: 13px;
