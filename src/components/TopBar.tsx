@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { startTest } from "@/lib/handlers";
 import Masthead from "@/components/Masthead";
 import TopBarAuthed from "@/components/TopBarAuthed";
+import { useStuck } from "@/hooks/useStuck";
 
 const SECTIONS = [
   { label: "Home", to: "/" },
@@ -25,6 +26,8 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  // Sprint 3: the nav's pinned state earns a whisper of shadow.
+  const { sentinelRef, stuck } = useStuck();
 
   // A5 (2026-05-26): authed users get the authed chrome.
   if (user) {
@@ -55,7 +58,8 @@ export default function TopBar({ minimal = false }: { minimal?: boolean }) {
           </>
         }
       />
-      <nav className="section-nav" aria-label="Sections">
+      <div ref={sentinelRef} aria-hidden />
+      <nav className={`section-nav ${stuck ? "is-stuck" : ""}`} aria-label="Sections">
         <div className="mx-auto max-w-6xl px-6">
           <div className="section-nav-row">
             {SECTIONS.map((s) => (

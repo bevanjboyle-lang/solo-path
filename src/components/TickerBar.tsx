@@ -50,7 +50,23 @@ export default function TickerBar() {
     </span>,
   );
 
-  // Duplicate the run so the -50% scroll loops seamlessly.
+  // Sprint 3: the low-data state. With fewer than two real feed entries a
+  // marquee is one line chasing itself, which reads thin and slightly
+  // fake. Below that threshold the strip goes static and states the
+  // schedule instead; the marquee resumes the moment the feed does.
+  const realCount = items.length + (signal ? 1 : 0);
+  const lowData = realCount < 2;
+  if (lowData) {
+    entries.push(
+      <span className="ticker-item" key="next">
+        <span className="ticker-cat">Next sweep</span>
+        <span>Monday 07:30</span>
+      </span>,
+    );
+  }
+
+  // Duplicate the run so the -50% scroll loops seamlessly (skipped when
+  // static; a static strip shows each line once).
   return (
     <div className="ticker" role="complementary" aria-label="The Radar: live market openings">
       <div className="ticker-row">
@@ -59,11 +75,12 @@ export default function TickerBar() {
           The Radar · Live
         </Link>
         <div className="ticker-window" aria-hidden={!loaded}>
-          <div className="ticker-track">
+          <div className={`ticker-track ${lowData ? "ticker-track--static" : ""}`}>
             {entries}
-            {entries.map((e, i) => (
-              <span key={`dup${i}`}>{e}</span>
-            ))}
+            {!lowData &&
+              entries.map((e, i) => (
+                <span key={`dup${i}`}>{e}</span>
+              ))}
           </div>
         </div>
       </div>

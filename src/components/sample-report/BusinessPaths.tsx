@@ -1,5 +1,6 @@
 import { Lock, AlertTriangle, Scale } from "lucide-react";
 import LockedOverlay from "./LockedOverlay";
+import Reveal from "@/components/Reveal";
 import type { SoloCoreReport } from "@/types/canonical";
 
 type Option = SoloCoreReport["options"][number];
@@ -392,15 +393,16 @@ export default function BusinessPaths({
       return (
         <div>
           <h2 className="report-h2 mb-5">Your 10 Most Viable Paths</h2>
-          {sorted.map((opt) => (
-            <FullOptionCard
-              key={opt.rank}
-              option={opt}
-              isRecommended={selectedRanks.has(opt.rank)}
-              tiered={false}
-              refreshedEvidence={refreshFor(opt)}
-              refreshWeekStart={refreshWeekStart}
-            />
+          {sorted.map((opt, i) => (
+            <Reveal key={opt.rank} hero={i === 0} delay={i === 0 ? 80 : 0}>
+              <FullOptionCard
+                option={opt}
+                isRecommended={selectedRanks.has(opt.rank)}
+                tiered={false}
+                refreshedEvidence={refreshFor(opt)}
+                refreshWeekStart={refreshWeekStart}
+              />
+            </Reveal>
           ))}
         </div>
       );
@@ -425,15 +427,16 @@ export default function BusinessPaths({
               label="Front runners"
               explainer="The options we would pursue first. Each carries its live evidence."
             />
-            {front.map((opt) => (
-              <FullOptionCard
-                key={opt.rank}
-                option={opt}
-                isRecommended={selectedRanks.has(opt.rank)}
-                tiered
-                refreshedEvidence={refreshFor(opt)}
-                refreshWeekStart={refreshWeekStart}
-              />
+            {front.map((opt, i) => (
+              <Reveal key={opt.rank} hero={i === 0} delay={i === 0 ? 80 : 0}>
+                <FullOptionCard
+                  option={opt}
+                  isRecommended={selectedRanks.has(opt.rank)}
+                  tiered
+                  refreshedEvidence={refreshFor(opt)}
+                  refreshWeekStart={refreshWeekStart}
+                />
+              </Reveal>
             ))}
           </>
         )}
@@ -504,8 +507,10 @@ export default function BusinessPaths({
     <div>
       <h2 className="report-h2 mb-5">Your 10 Most Viable Paths</h2>
 
-      {/* Path 1 — full */}
+      {/* Path 1 — full. Sprint 3: the rank-1 entrance, the page's one
+        * considered arrival. */}
       {featured && (
+        <Reveal hero delay={80}>
         <div
           className="mb-4 border border-border bg-surface-card p-6"
           style={{ borderTop: "3px solid hsl(var(--mint))" }}
@@ -568,6 +573,7 @@ export default function BusinessPaths({
             <p className="text-sm leading-relaxed text-muted-foreground">{featured.positioning}</p>
           </div>
         </div>
+        </Reveal>
       )}
 
       {/* Paths 2-3 — locked previews */}

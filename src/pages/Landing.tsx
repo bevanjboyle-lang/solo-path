@@ -96,7 +96,7 @@ const PROPS = [
     title: "The more you use it, the sharper it gets",
     body:
       "Ask Solo anything about your progress, your options, or your next move. Every answer draws on everything it has built about you, your archetype, your active paths, your check-in history, your blockers. Not generic advice. A specific answer to your specific situation.",
-    big: false,
+    big: true,
   },
   {
     num: "05",
@@ -112,7 +112,7 @@ const PROPS = [
     title: "Every move drafted. You decide whether to make it.",
     body:
       "Whether your path calls for a direct approach to a named contact, registering on a marketplace, writing a LinkedIn post, or joining the right community, Solo generates the move. You don't have to figure out what to do next. The next move is always ready.",
-    big: true,
+    big: false,
   },
 ] as const;
 
@@ -363,14 +363,27 @@ export default function Landing() {
 
         {/* ═══ WHY SOLO · six propositions, asymmetric editorial grid ═══ */}
         <section className="border-t border-border">
-          <div className="mx-auto max-w-6xl px-6 py-8">
+          <div className="mx-auto max-w-6xl px-6 py-10">
             <div className="mb-5 flex items-baseline justify-between">
               <h4 className="rule-head border-b-0 pb-0">Why Solo</h4>
               <span className="text-[12px] text-muted-foreground">Six structural propositions</span>
             </div>
+            {/* Sprint 3: the grid now tiles 8+4 / 4+8 / 6+6, so the sixth
+              * proposition no longer sits beside an eight-column hole, and
+              * the hairline falls on the second column of each row instead
+              * of every odd index. */}
             <div className="grid gap-x-10 gap-y-9 lg:grid-cols-12">
-              {PROPS.map((p, i) => (
-                <div key={p.num} className={`${p.big ? "lg:col-span-8" : "lg:col-span-4"} ${i % 2 === 1 ? "lg:border-l lg:border-border lg:pl-10" : ""}`}>
+              {PROPS.map((p, i) => {
+                const SPANS = [
+                  "lg:col-span-8",
+                  "lg:col-span-4 lg:border-l lg:border-border lg:pl-10",
+                  "lg:col-span-4",
+                  "lg:col-span-8 lg:border-l lg:border-border lg:pl-10",
+                  "lg:col-span-6",
+                  "lg:col-span-6 lg:border-l lg:border-border lg:pl-10",
+                ];
+                return (
+                <div key={p.num} className={SPANS[i] ?? "lg:col-span-4"}>
                   <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     <span className="mr-2 text-[#15735F] tabular-nums">{p.num}</span>{p.eyebrow}
                   </div>
@@ -379,7 +392,8 @@ export default function Landing() {
                   </h3>
                   <p className={`mt-3 text-muted-foreground ${p.big ? "text-[14.5px] leading-[1.65]" : "text-[13.5px] leading-[1.6]"}`}>{p.body}</p>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>

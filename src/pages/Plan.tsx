@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isDevBypass } from "@/lib/devBypass";
 import TopBar from "@/components/TopBar";
+import EditorialLoading from "@/components/EditorialLoading";
 import Banner from "@/components/Banner";
 import TodayCard, { type PlanState } from "@/components/plan/TodayCard";
 import ActivationDialog from "@/components/plan/ActivationDialog";
@@ -842,11 +843,11 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
       <div className="relative min-h-screen text-foreground">
         <TopBar />
         <main className="pt-6">
-          <section className="py-12">
-            <div className="mx-auto max-w-3xl px-6 flex flex-col items-center gap-4 text-muted-foreground">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-[13px]">Loading your plan…</p>
-            </div>
+          <section className="py-8">
+            <EditorialLoading
+              label="Your plan"
+              line="Opening the tracker. Today's move first."
+            />
           </section>
         </main>
       </div>

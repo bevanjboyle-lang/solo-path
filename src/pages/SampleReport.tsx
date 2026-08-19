@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { startTest } from "@/lib/handlers";
 import TopBar from "@/components/TopBar";
+import MobileWayfinder from "@/components/MobileWayfinder";
 // Footer import dropped 2026-05-18 (consistency-sweep), App.tsx renders the Footer.
 import { useActiveSection } from "@/hooks/useActiveSection";
 
@@ -98,6 +99,26 @@ export default function SampleReport() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  /* Sprint 3: the 24,000-pixel sample report finally gets mobile
+   * navigation. The sample strip pins at top-0 with a height that depends
+   * on wrapping, so we measure it and pin the wayfinder directly beneath,
+   * above the section nav (z-45 vs z-40). */
+  const stripRef = useRef<HTMLDivElement | null>(null);
+  const [stripHeight, setStripHeight] = useState(34);
+  useEffect(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    const measure = () => setStripHeight(el.offsetHeight);
+    measure();
+    if (typeof ResizeObserver !== "undefined") {
+      const ro = new ResizeObserver(measure);
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
   return (
     <div className="relative min-h-screen flex flex-col text-foreground">
 
@@ -109,14 +130,20 @@ export default function SampleReport() {
         pins above the masthead on scroll.
       */}
       <div
+        ref={stripRef}
         className="sticky top-0 z-50 border-b border-border bg-[#FAF9F7] px-6 py-1.5 grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-x-4 items-baseline"
       >
         <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: "#A37500" }}>
           <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#D4940A" }} />
           <span>Sample</span>
         </div>
-        <div className="text-[12.5px] text-foreground leading-snug">
+        {/* Sprint 3: the full sentence is desktop-only; on mobile the strip
+          * compacts to one row so the new wayfinder has headroom. */}
+        <div className="hidden sm:block text-[12.5px] text-foreground leading-snug">
           <strong>This is Sarah Okafor's report</strong>, not yours. The report is one piece of the £19.99 bundle, alongside her 30-day activation plan, daily check-ins, and the first three guidance modules.
+        </div>
+        <div className="sm:hidden text-[12px] text-foreground leading-snug">
+          <strong>Sarah Okafor's report</strong>, not yours.
         </div>
         <button
           onClick={handleStartTest}
@@ -127,6 +154,14 @@ export default function SampleReport() {
       </div>
 
       <TopBar />
+
+      <MobileWayfinder
+        sections={visibleSections}
+        activeId={activeSectionId}
+        onSelect={scrollToSection}
+        topPx={stripHeight}
+        zClass="z-[45]"
+      />
 
       <main className="flex-1">
         <section className="pt-6 pb-8 lg:pb-12">

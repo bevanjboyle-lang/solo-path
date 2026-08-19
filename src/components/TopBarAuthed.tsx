@@ -9,6 +9,7 @@
 import { NavLink, useLocation } from "react-router-dom";
 import Masthead from "@/components/Masthead";
 import AccountDropdown from "./AccountDropdown";
+import { useStuck } from "@/hooks/useStuck";
 
 const AUTHED_SECTIONS = [
   { label: "Plan", to: "/plan" },
@@ -23,13 +24,16 @@ const AUTHED_SECTIONS = [
 export default function TopBarAuthed() {
   const location = useLocation();
   const accountActive = location.pathname.startsWith("/account");
+  // Sprint 3: the nav's pinned state earns a whisper of shadow.
+  const { sentinelRef, stuck } = useStuck();
 
   return (
     // Sprint 1: display:contents so the sticky section-nav participates in the
     // page's own flow; wrapped in a plain <header> box it could never stick.
     <header className="contents">
       <Masthead right={<AccountDropdown isActive={accountActive} />} />
-      <nav className="section-nav" aria-label="Main">
+      <div ref={sentinelRef} aria-hidden />
+      <nav className={`section-nav ${stuck ? "is-stuck" : ""}`} aria-label="Main">
         <div className="mx-auto max-w-6xl px-6">
           <div className="section-nav-row">
             {AUTHED_SECTIONS.map((s) => (

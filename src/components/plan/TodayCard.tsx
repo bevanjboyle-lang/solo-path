@@ -110,7 +110,9 @@ export default function TodayCard({
       transition={{ duration: 0.4 }}
     >
       {state === "done_today" && (
-        <div className="mb-4 flex items-center gap-2 text-primary">
+        /* Sprint 3: the quiet acknowledgement. The chip arrives with the
+         * product's one motion verb rather than simply being there. */
+        <div className="ack-reveal mb-4 flex items-center gap-2 text-primary">
           <CheckCircle className="h-5 w-5" />
           <span className="text-xs font-semibold uppercase tracking-[0.1em]">Done for today</span>
         </div>

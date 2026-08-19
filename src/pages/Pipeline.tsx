@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { Link } from "react-router-dom";
 import TopBar from "@/components/TopBar";
+import EditorialLoading from "@/components/EditorialLoading";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -546,7 +547,12 @@ export default function Pipeline() {
             )}
           </header>
 
-          {loading && <p className="mt-8 text-sm text-muted-foreground">Loading your pipeline…</p>}
+          {loading && (
+            <EditorialLoading
+              label="Your pipeline"
+              line="Pulling every move you've made and what came back."
+            />
+          )}
 
           {!loading && error && (
             <p className="mt-8 text-sm text-foreground">Your pipeline couldn't load just now. Try again in a minute.</p>

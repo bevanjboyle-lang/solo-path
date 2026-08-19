@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, ChevronDown } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { isDevBypass } from "@/lib/devBypass";
@@ -12,6 +12,9 @@ import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import { useToast } from "@/hooks/use-toast";
 import { useActiveSection } from "@/hooks/useActiveSection";
 import RefineReportPanel from "@/components/plan/RefineReportPanel";
+import MobileWayfinder from "@/components/MobileWayfinder";
+import Reveal from "@/components/Reveal";
+import EditorialLoading from "@/components/EditorialLoading";
 
 import HookInsightSection from "@/components/sample-report/HookInsightSection";
 import ArchetypeSection from "@/components/sample-report/ArchetypeSection";
@@ -315,11 +318,11 @@ export default function Report() {
       <div className="relative min-h-screen text-foreground">
         <TopBar />
         <main>
-          <section className="py-12">
-            <div className="mx-auto max-w-3xl px-6 flex flex-col items-center gap-4 text-muted-foreground">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-[13px]">Loading your report…</p>
-            </div>
+          <section className="py-8">
+            <EditorialLoading
+              label="Your report"
+              line="Opening your dossier. The sections arrive in reading order."
+            />
           </section>
         </main>
       </div>
@@ -464,30 +467,39 @@ export default function Report() {
                 </header>
 
                 {/* ─── Sections, render in canonical order ─── */}
-                {visibleSections.map((s) => {
+                {visibleSections.map((s, i) => {
+                  // Sprint 3: every section arrives with the one motion verb;
+                  // the first screenful staggers, later sections reveal as the
+                  // reader reaches them.
+                  const delay = Math.min(i, 3) * 70;
                   if (s.variant === "brief") {
                     return (
-                      <BriefSection
-                        key={s.id}
-                        meta={s}
-                        expanded={!!expandedBriefs[s.id]}
-                        onToggle={() => toggleBrief(s.id)}
-                      >
-                        {renderSectionBody(s.id, coreReport, refresh)}
-                      </BriefSection>
+                      <Reveal key={s.id} delay={delay}>
+                        <BriefSection
+                          meta={s}
+                          expanded={!!expandedBriefs[s.id]}
+                          onToggle={() => toggleBrief(s.id)}
+                        >
+                          {renderSectionBody(s.id, coreReport, refresh)}
+                        </BriefSection>
+                      </Reveal>
                     );
                   }
                   if (s.variant === "dark") {
                     return (
-                      <DarkSection key={s.id} meta={s}>
-                        {renderSectionBody(s.id, coreReport, refresh)}
-                      </DarkSection>
+                      <Reveal key={s.id} delay={delay}>
+                        <DarkSection meta={s}>
+                          {renderSectionBody(s.id, coreReport, refresh)}
+                        </DarkSection>
+                      </Reveal>
                     );
                   }
                   return (
-                    <FullSection key={s.id} meta={s} dropCap={s.id === "edge"}>
-                      {renderSectionBody(s.id, coreReport, refresh)}
-                    </FullSection>
+                    <Reveal key={s.id} delay={delay}>
+                      <FullSection meta={s} dropCap={s.id === "edge"}>
+                        {renderSectionBody(s.id, coreReport, refresh)}
+                      </FullSection>
+                    </Reveal>
                   );
                 })}
               </div>
@@ -506,78 +518,6 @@ export default function Report() {
           onLimitReached={() => setRefineLimitReached(true)}
           onToast={(message) => toast({ title: message })}
         />
-      )}
-    </div>
-  );
-}
-
-/* ─────────────────────────── Mobile wayfinder ───────────────────────────
- * Sprint 2: sticky current-section strip on <lg with a progress hairline;
- * tapping opens the full section list. Desktop keeps AreaSidebar. */
-
-function MobileWayfinder({
-  sections,
-  activeId,
-  onSelect,
-}: {
-  sections: SectionMeta[];
-  activeId: string | null;
-  onSelect: (id: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  if (sections.length === 0) return null;
-  const idx = Math.max(0, sections.findIndex((s) => s.id === activeId));
-  const current = sections[idx];
-  const progress = ((idx + 1) / sections.length) * 100;
-  return (
-    <div className="wayfinder lg:hidden">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-3 px-6 py-2.5 text-left"
-      >
-        <span className="text-[10px] font-semibold tabular-nums text-[#15735F]">
-          {current.numeral}
-        </span>
-        <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-foreground">
-          {current.label}
-        </span>
-        <span className="text-[11px] tabular-nums text-muted-foreground">
-          {idx + 1} / {sections.length}
-        </span>
-        <ChevronDown
-          className={`h-3.5 w-3.5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-      <div className="h-[2px] bg-[#ECEAE4]">
-        <div
-          className="h-full bg-[#2ECDB0] transition-[width] duration-300"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      {open && (
-        <div className="max-h-[60vh] overflow-y-auto border-t border-border bg-[#FAF9F7]">
-          {sections.map((s) => (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => {
-                onSelect(s.id);
-                setOpen(false);
-              }}
-              className={`flex w-full items-baseline gap-3 border-b border-border/60 px-6 py-3 text-left ${
-                s.id === activeId ? "bg-surface-mint-tint" : ""
-              }`}
-            >
-              <span className="text-[10px] font-semibold tabular-nums text-[#15735F]">
-                {s.numeral}
-              </span>
-              <span className="flex-1 text-[13px] font-medium text-foreground">{s.label}</span>
-              <span className="text-[10.5px] text-muted-foreground">{s.readTime}</span>
-            </button>
-          ))}
-        </div>
       )}
     </div>
   );
@@ -775,13 +715,10 @@ function DarkSection({
     >
       <SectionHead meta={meta} tone="dark" />
       {/*
-       * Internal sample-report sections render in their own colours; for the
-       * dark wrapper to read as dark we'd need to either rewrite the
-       * AIImpactSection internal styling (deferred to Phase 2 per the scope
-       * decision) or override colours here. For Pass 1 we wrap the existing
-       * component as-is; the section header + panel background carry the
-       * dark moment, and the internal content reads in its existing chrome.
-       * Phase 2 will reskin AIImpactSection for the dark variant.
+       * Sprint 3: AIImpactSection is now dark-native (ivory on ink,
+       * hairlines at reduced opacity, serif step numerals), so the band
+       * finally reads as one composed exhibit rather than light cards
+       * floating on a dark panel.
        */}
       <div className="prose-serif text-[#FAF9F7]">
         {children}

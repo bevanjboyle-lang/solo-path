@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, useCallback, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import TopBar from "@/components/TopBar";
+import EditorialLoading from "@/components/EditorialLoading";
 import AreaSidebar, { type SidebarItem } from "@/components/AreaSidebar";
 import CheckinHistoryList, {
   type CheckinTimelineEntry,
@@ -242,11 +242,11 @@ export default function CheckinHistory() {
       <div className="relative min-h-screen text-foreground">
         <TopBar />
         <main className="pt-6">
-          <div className="flex items-center justify-center min-h-[60vh] px-6">
-            <div className="flex flex-col items-center gap-4 text-muted-foreground">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-sm">Loading your check-ins…</p>
-            </div>
+          <div className="min-h-[60vh] px-6 pt-8">
+            <EditorialLoading
+              label="Check-in history"
+              line="Fetching the record. Every day you showed up is in here."
+            />
           </div>
         </main>
       </div>

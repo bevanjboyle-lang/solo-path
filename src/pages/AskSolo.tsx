@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AskSoloInfoPopover from "@/components/AskSoloInfoPopover";
 import RehearsalRoom from "@/components/RehearsalRoom";
 import TopBar from "@/components/TopBar";
+import EditorialLoading from "@/components/EditorialLoading";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 /*
@@ -351,11 +352,11 @@ export default function AskSolo() {
       <div className="relative min-h-screen text-foreground">
         <TopBar />
         <main>
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <div className="flex flex-col items-center gap-4 text-muted-foreground">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <p className="text-sm">Loading…</p>
-            </div>
+          <div className="min-h-[60vh] pt-8">
+            <EditorialLoading
+              label="Ask Solo"
+              line="Loading your context. Answers here know your plan."
+            />
           </div>
         </main>
       </div>
