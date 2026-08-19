@@ -87,7 +87,7 @@ export default function ProgressHeader({
                       className={`text-[10px] font-semibold tabular-nums tracking-[0.1em] ${
                         isActive || isCompleted
                           ? "text-[#15735F]"
-                          : "text-muted-foreground/60"
+                          : "text-muted-foreground"
                       }`}
                     >
                       {String(stepNum).padStart(2, "0")}
@@ -98,7 +98,7 @@ export default function ProgressHeader({
                           ? "text-foreground border-b-[1.5px] border-primary pb-0.5"
                           : isCompleted
                           ? "text-muted-foreground"
-                          : "text-muted-foreground/60"
+                          : "text-muted-foreground"
                       }`}
                     >
                       {label}

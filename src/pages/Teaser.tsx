@@ -607,7 +607,7 @@ function HeroStrip({ firstName, optionsCount }: { firstName: string | null; opti
               { l: "Plan length", v: "30 days" },
             ].map((item) => (
               <div key={item.l}>
-                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+                <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   {item.l}
                 </div>
                 <div className="mt-1 text-[13.5px] font-semibold text-foreground">
@@ -759,7 +759,7 @@ function LockedArea({ preview }: { preview: LockedPreview | null }) {
                   <span className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{y.label}</span>
                 </div>
               ))}
-              <div className="flex flex-col justify-between h-[96px] text-[10px] tabular-nums text-muted-foreground/70 select-none">
+              <div className="flex flex-col justify-between h-[96px] text-[10px] tabular-nums text-muted-foreground select-none">
                 <span>£██,███</span>
                 <span>£██,███</span>
                 <span>£█,███</span>
@@ -956,7 +956,7 @@ function TrustStrip() {
           { l: "Email", v: "Already in checkout" },
         ].map((item, i, arr) => (
           <span key={item.l} className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               {item.l}
             </span>
             <span className="text-foreground">{item.v}</span>

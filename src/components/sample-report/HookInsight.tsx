@@ -23,7 +23,7 @@ export default function HookInsight({ hook_insight }: Props) {
           {paragraph}
         </p>
         <div className="absolute inset-0 flex items-center justify-center gap-2">
-          <Lock className="h-4 w-4 text-muted-foreground/50" />
+          <Lock className="h-4 w-4 text-muted-foreground" />
           <span className="text-xs font-medium text-muted-foreground">Full insight in your report</span>
         </div>
       </div>

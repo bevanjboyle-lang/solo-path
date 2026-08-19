@@ -42,7 +42,7 @@
 /* Text */
 --text-heading: 225 9% 13%; /* #1D2025 */
 --text-body: 228 5% 26%; /* #3D4048 */
---text-muted: 220 5% 46%; /* #6B7280 */
+--text-muted: 37 8% 38%; /* #6A645A — Sprint 4: warmed + darkened for AA contrast on ivory (5.6:1; old cool #6B7280 sat at 4.6 on ivory and failed on panels) */
 --text-faint: 220 5% 46%; /* #6B7280 */
 
 /* Ink — the editorial dark band colour */

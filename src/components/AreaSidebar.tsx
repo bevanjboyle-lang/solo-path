@@ -94,7 +94,7 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
             return (
               <li
                 key={item.id}
-                className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70 first:mt-0"
+                className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground first:mt-0"
               >
                 {item.label}
               </li>
@@ -112,7 +112,7 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
                   item.isActive
                     ? "border-[#15735F] font-bold text-foreground"
                     : isUtility
-                    ? "border-transparent text-muted-foreground/80 hover:text-foreground"
+                    ? "border-transparent text-muted-foreground hover:text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -120,7 +120,7 @@ export default function AreaSidebar({ items, className, head, footer }: AreaSide
                   <span
                     className={cn(
                       "shrink-0 text-[10px] font-semibold tabular-nums tracking-[0.1em] transition-colors",
-                      item.isActive ? "text-[#15735F]" : "text-muted-foreground/60",
+                      item.isActive ? "text-[#15735F]" : "text-muted-foreground",
                     )}
                   >
                     {item.numeral}

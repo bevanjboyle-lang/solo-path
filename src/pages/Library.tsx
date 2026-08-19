@@ -379,7 +379,7 @@ export default function Library() {
 
   const sidebarFooter: ReactNode = (
     <>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         Curriculum
       </div>
       <div className="mt-1 text-[12px] text-foreground">
@@ -608,8 +608,8 @@ function TodayTab({
                   {item.description}
                 </p>
                 <div className="mt-2 flex items-center gap-2">
-                  <Clock className="h-3 w-3 text-muted-foreground/60" />
-                  <span className="text-[10px] text-muted-foreground/60">{item.estimated_minutes} min</span>
+                  <Clock className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground">{item.estimated_minutes} min</span>
                 </div>
               </div>
             </div>
@@ -714,8 +714,8 @@ function BrowseTab({
                             {mod.description}
                           </p>
                           <div className="mt-2 flex items-center gap-2">
-                            <Clock className="h-3 w-3 text-muted-foreground/60" />
-                            <span className="text-[10px] text-muted-foreground/60">{mod.estimated_minutes} min</span>
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-[10px] text-muted-foreground">{mod.estimated_minutes} min</span>
                           </div>
                         </div>
                       </div>
@@ -806,7 +806,7 @@ function ModulesTab({
                 <h3 className="text-sm font-semibold text-foreground leading-snug">{mod.title}</h3>
                 <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{mod.description}</p>
               </div>
-              <div className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground/60">
+              <div className="shrink-0 flex items-center gap-1 text-[10px] text-muted-foreground">
                 <Clock className="h-3 w-3" />
                 {mod.estimated_minutes} min
               </div>
@@ -1004,7 +1004,7 @@ function QuestionForm({
           {data.questions.map((q) => {
             const value = answers[q.id] || "";
             const labelSuffix = q.optional ? (
-              <span className="ml-1 text-[11px] font-normal text-muted-foreground/70">(optional)</span>
+              <span className="ml-1 text-[11px] font-normal text-muted-foreground">(optional)</span>
             ) : null;
             if (q.type === "choice" && q.options && q.options.length > 0) {
               return (
@@ -1052,7 +1052,7 @@ function QuestionForm({
                   disabled={submitting}
                   className="resize-none"
                 />
-                <p className="text-right text-[10px] text-muted-foreground/50 mt-1">
+                <p className="text-right text-[10px] text-muted-foreground mt-1">
                   {value.length}/500
                 </p>
               </div>

@@ -133,7 +133,7 @@ export default function SampleReport() {
         ref={stripRef}
         className="sticky top-0 z-50 border-b border-border bg-[#FAF9F7] px-6 py-1.5 grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] gap-x-4 items-baseline"
       >
-        <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: "#A37500" }}>
+        <div className="flex items-center gap-2.5 text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: "#8A6300" }}>
           <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#D4940A" }} />
           <span>Sample</span>
         </div>
@@ -174,7 +174,7 @@ export default function SampleReport() {
                 <span className="text-muted-foreground/40">·</span>
                 <span className="eyebrow eyebrow--muted">Sarah Okafor</span>
                 <span className="text-muted-foreground/40">·</span>
-                <span className="text-muted-foreground/70 text-[11px]">example profile</span>
+                <span className="text-muted-foreground text-[11px]">example profile</span>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 lg:gap-10 items-end">
@@ -188,13 +188,13 @@ export default function SampleReport() {
                 </div>
                 <div className="lg:text-right flex lg:flex-col gap-6 lg:gap-3">
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-1">
                       Generated
                     </div>
                     <div className="text-[13px] font-medium text-foreground tabular-nums">17 May 2026</div>
                   </div>
                   <div>
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-1">
                       Profile
                     </div>
                     <div className="text-[13px] font-medium text-foreground">FP&amp;A · 11 yrs</div>
@@ -227,7 +227,7 @@ export default function SampleReport() {
                             >
                               <span
                                 className={`shrink-0 text-[10px] font-bold tabular-nums tracking-[0.08em] ${
-                                  isActive ? "text-[#15735F]" : "text-muted-foreground/60"
+                                  isActive ? "text-[#15735F]" : "text-muted-foreground"
                                 }`}
                               >
                                 {s.numeral}
@@ -240,7 +240,7 @@ export default function SampleReport() {
                     </ul>
                   </nav>
                   <div className="pt-4 mt-1">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                       Sample
                     </div>
                     <div className="mt-1 text-[12px] text-foreground">9 sections</div>
@@ -308,7 +308,7 @@ export default function SampleReport() {
                   <button onClick={handleStartTest} className="cta-block">
                     Find what works
                   </button>
-                  <div className="mt-4 text-[11px] text-muted-foreground/70 tracking-[0.04em]">
+                  <div className="mt-4 text-[11px] text-muted-foreground tracking-[0.04em]">
                     One-time payment · No subscription required · Free preview before you pay
                   </div>
                 </section>
@@ -376,7 +376,7 @@ function SectionHead({
   tone?: "default" | "dark";
 }) {
   const labelColour = tone === "dark" ? "text-[#FAF9F7]" : "text-foreground";
-  const metaColour = tone === "dark" ? "text-[rgba(250,249,247,0.55)]" : "text-muted-foreground/80";
+  const metaColour = tone === "dark" ? "text-[rgba(250,249,247,0.55)]" : "text-muted-foreground";
   const ruleColour = tone === "dark" ? "border-white/10" : "border-border";
   const numeralColour = tone === "dark" ? "text-[#2ECDB0]" : "text-[#15735F]";
   return (
@@ -459,7 +459,7 @@ function BriefSection({
             {preview}
           </span>
         </div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 tabular-nums shrink-0 flex items-center gap-3">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground tabular-nums shrink-0 flex items-center gap-3">
           {meta.readTime}
           <span aria-hidden className="text-muted-foreground">→</span>
         </span>

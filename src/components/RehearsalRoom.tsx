@@ -135,7 +135,7 @@ export default function RehearsalRoom({ onClose }: { onClose: () => void }) {
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
           <span className="text-foreground">Rehearsal Room</span>
           {scenario && !debrief && (
-            <span className="normal-case tracking-normal font-normal text-muted-foreground/80">
+            <span className="normal-case tracking-normal font-normal text-muted-foreground">
               · {SCENARIOS.find((s) => s.id === scenario)?.title}
             </span>
           )}
@@ -273,19 +273,19 @@ export default function RehearsalRoom({ onClose }: { onClose: () => void }) {
               placeholder={busy ? "The buyer is thinking…" : "Say it like you would on the call."}
               rows={1}
               disabled={busy}
-              className="resize-none border-none outline-none bg-transparent text-[14.5px] leading-[1.5] text-foreground placeholder:text-muted-foreground/60 min-h-[40px] py-1 disabled:cursor-not-allowed"
+              className="resize-none border-none outline-none bg-transparent text-[14.5px] leading-[1.5] text-foreground placeholder:text-muted-foreground min-h-[40px] py-1 disabled:cursor-not-allowed"
               style={{ fontFamily: "Inter, sans-serif" }}
             />
             <button
               type="button"
               onClick={handleSend}
               disabled={!input.trim() || busy}
-              className="cta-block inline-flex items-center justify-center px-4 py-2 text-[13px] disabled:bg-[#ECEAE4] disabled:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-100"
+              className="cta-block inline-flex items-center justify-center px-4 py-2 text-[13px] disabled:bg-[#ECEAE4] disabled:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-100"
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send"}
             </button>
           </div>
-          <div className="mt-2 flex justify-between items-baseline text-[11px] text-muted-foreground/70">
+          <div className="mt-2 flex justify-between items-baseline text-[11px] text-muted-foreground">
             <span className="italic">This rehearsal doesn't use your Ask Solo questions.</span>
             <button
               type="button"

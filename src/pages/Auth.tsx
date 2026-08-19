@@ -272,7 +272,7 @@ function FormBody({
             placeholder="you@work-or-personal.com"
             autoComplete="email"
             autoFocus
-            className="w-full bg-white border border-border px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+            className="w-full bg-white border border-border px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 

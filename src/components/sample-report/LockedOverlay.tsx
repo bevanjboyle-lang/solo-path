@@ -47,7 +47,7 @@ export default function LockedOverlay({ label = "Get the full report - £19.99" 
       }}
     >
       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-inset/80">
-        <Lock className="h-5 w-5 text-muted-foreground/60" />
+        <Lock className="h-5 w-5 text-muted-foreground" />
       </div>
       <Button
         size="sm"

@@ -361,7 +361,7 @@ function GeneratingBody({
       {/* Estimate row: framing on the left, elapsed counter on the right */}
       <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-3">
         <div className="flex items-baseline gap-3 text-[13.5px] text-muted-foreground leading-relaxed">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80 shrink-0">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground shrink-0">
             Usually
           </span>
           <span>Usually 2-3 minutes. We'll move you on the moment it's done.</span>

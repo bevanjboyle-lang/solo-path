@@ -351,10 +351,10 @@ export default function Landing() {
             <div className="grid gap-9 lg:grid-cols-3 lg:gap-0">
               {STEPS.map((step, i) => (
                 <div key={step.num} className={i === 0 ? "lg:pr-8" : "lg:border-l lg:border-border lg:px-8"}>
-                  <div className="font-display text-[2.6rem] font-semibold leading-none text-[#2ECDB0] tabular-nums">{step.num}</div>
+                  <div className="font-display text-[2.6rem] font-semibold leading-none text-[#15735F] tabular-nums">{step.num}</div>
                   <h3 className="mt-4 font-display text-[18px] font-bold leading-[1.25] tracking-tight">{step.title}</h3>
                   <p className="standfirst mt-2.5 text-[14px]">{step.body}</p>
-                  <div className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">{step.meta}</div>
+                  <div className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{step.meta}</div>
                 </div>
               ))}
             </div>

@@ -252,7 +252,7 @@ export default function Account() {
 
   const sidebarFooter: ReactNode = (
     <>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         Plan
       </div>
       <div className="mt-1 text-[12px] text-foreground">
@@ -498,7 +498,7 @@ function AccountPageHeader({ memberSince }: { memberSince: string | null }) {
         </div>
         {memberSince && (
           <div className="lg:col-span-3 lg:text-right">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-1">
               Member since
             </div>
             <div className="text-[13px] font-medium text-foreground/80 tabular-nums">
@@ -519,7 +519,7 @@ function SectionHead({ numeral, eyebrow, meta }: { numeral: string; eyebrow: str
         <span className="text-[#15735F] tabular-nums">{numeral}</span>
         <span>{eyebrow}</span>
       </span>
-      <span className="normal-case font-normal text-[11px] text-muted-foreground/70 tracking-[0.04em]">
+      <span className="normal-case font-normal text-[11px] text-muted-foreground tracking-[0.04em]">
         {meta}
       </span>
     </div>
@@ -595,7 +595,7 @@ function ProfileSection({
           <div className="font-display text-[15px] font-medium text-muted-foreground tracking-tight break-all">
             {email}
           </div>
-          <p className="mt-1.5 text-[12px] text-muted-foreground/80 leading-snug">
+          <p className="mt-1.5 text-[12px] text-muted-foreground leading-snug">
             This is where we'll send your magic link. Contact us to change it.
           </p>
         </div>
@@ -628,7 +628,7 @@ function SubscriptionSection({
         {/* Plan-row */}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center pt-1 pb-5 border-t border-border">
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1.5">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-1.5">
               Current plan
             </div>
             <div className="font-display text-[18px] font-bold text-foreground tracking-tight">
@@ -636,7 +636,7 @@ function SubscriptionSection({
             </div>
             <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
               <span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60 mr-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground mr-2">
                   Access until
                 </span>
                 {accessEndDate}
@@ -672,7 +672,7 @@ function SubscriptionSection({
     <div>
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-5 items-center pt-1 pb-1 border-t border-border">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1.5">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-1.5">
             Current plan
           </div>
           <div className="font-display text-[18px] font-bold text-foreground tracking-tight">
@@ -681,21 +681,21 @@ function SubscriptionSection({
           <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
             {isCancelPending ? (
               <span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60 mr-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground mr-2">
                   Access ends
                 </span>
                 {accessEndDate}
               </span>
             ) : paymentFailed ? (
               <span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60 mr-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground mr-2">
                   Next retry
                 </span>
                 in a few days
               </span>
             ) : (
               <span>
-                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60 mr-2">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground mr-2">
                   Renews
                 </span>
                 {renewDate}
@@ -738,7 +738,7 @@ function BillingSection({ onOpenPortal }: { onOpenPortal: () => void }) {
        * Renders the Stripe deferral footnote as the section's primary content. */}
       <div className="bg-[#F3F1ED] border border-border px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex-1">
-          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80 mb-1">
+          <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-1">
             Source
           </div>
           <p className="text-[13px] text-foreground leading-snug">
@@ -815,7 +815,7 @@ function PrivacySection({
           <span className="text-[11px] font-bold uppercase tracking-[0.2em]" style={{ color: "#8E2424" }}>
             Danger zone
           </span>
-          <span className="ml-auto text-[11px] text-muted-foreground/80 tracking-[0.04em]">
+          <span className="ml-auto text-[11px] text-muted-foreground tracking-[0.04em]">
             irreversible
           </span>
         </div>

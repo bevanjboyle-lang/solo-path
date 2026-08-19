@@ -406,8 +406,8 @@ export default function CVUploadZone({
                 <span>Uploaded just now</span>
                 <span className="text-muted-foreground/40">·</span>
                 <span className="text-[#15735F]">
-                  Encrypted <span className="text-muted-foreground/60">·</span> EU storage{" "}
-                  <span className="text-muted-foreground/60">·</span> deletable from /account
+                  Encrypted <span className="text-muted-foreground">·</span> EU storage{" "}
+                  <span className="text-muted-foreground">·</span> deletable from /account
                 </span>
               </div>
             </div>

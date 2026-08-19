@@ -167,7 +167,7 @@ export default function AccountDropdown({ isActive }: AccountDropdownProps) {
                 <button
                   type="button"
                   onClick={handleManageAccount}
-                  className="text-xs font-medium text-[#2ECDB0] hover:text-[#22a98e]"
+                  className="text-xs font-medium text-[#15735F] hover:text-[#0F5748]"
                 >
                   Manage account &rarr;
                 </button>

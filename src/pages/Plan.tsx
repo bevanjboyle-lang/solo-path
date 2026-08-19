@@ -776,7 +776,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     if (planState === "day31_nosub") {
       return (
         <>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Plan
           </div>
           <div className="mt-1 text-[12px] text-foreground">One-time · 30 days complete</div>
@@ -786,7 +786,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     if (isSubscriber) {
       return (
         <>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Plan
           </div>
           <div className="mt-1 text-[12px] text-foreground">
@@ -797,7 +797,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
     }
     return (
       <>
-        <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Plan
         </div>
         <div className="mt-1 text-[12px] text-foreground">
@@ -919,7 +919,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                         <span className="inline-block w-1.5 h-1.5 bg-primary" />
                         <span className="text-foreground">Your plan</span>
                         <span className="text-muted-foreground/40">·</span>
-                        <span className="text-muted-foreground/70">{tierLabel}</span>
+                        <span className="text-muted-foreground">{tierLabel}</span>
                       </div>
                       {/* H1 + sub on left, right-meta block stacked on right */}
                       <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 lg:gap-10 items-end">
@@ -935,12 +935,12 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                         </div>
                         <div className="text-right space-y-3 shrink-0">
                           <div>
-                            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">{dayMeta.label}</div>
+                            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">{dayMeta.label}</div>
                             <div className="mt-1 text-[14px] font-medium text-foreground tabular-nums">{dayMeta.value}</div>
                           </div>
                           {startedDate && (
                             <div>
-                              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">STARTED</div>
+                              <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">STARTED</div>
                               <div className="mt-1 text-[14px] font-medium text-foreground">{startedDate}</div>
                             </div>
                           )}
@@ -951,7 +951,7 @@ export default function Plan({ initialSessionId }: PlanPageProps) {
                               disabled={exportingPdf}
                               className={`px-4 py-2 text-[12.5px] font-semibold transition-colors border ${
                                 exportingPdf
-                                  ? "bg-[#E5E2DC] text-muted-foreground/70 border-border cursor-not-allowed"
+                                  ? "bg-[#E5E2DC] text-muted-foreground border-border cursor-not-allowed"
                                   : "bg-transparent text-foreground border-border hover:bg-[#F3F1ED]"
                               }`}
                             >
@@ -1340,7 +1340,7 @@ function PanelSection({
           {label}
         </div>
         {meta && (
-          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 tabular-nums">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground tabular-nums">
             {meta}
           </div>
         )}
@@ -1603,7 +1603,7 @@ function DayRow({
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         <span className="inline-block w-1.5 h-1.5" style={{ border: "1px solid #A09A92" }} />
         Future
       </span>
@@ -1632,12 +1632,12 @@ function DayRow({
             isToday ? "text-[#15735F]"
               : isCompleted ? "text-foreground"
               : isMissed ? "text-muted-foreground"
-              : "text-muted-foreground/70"
+              : "text-muted-foreground"
           }`}
         >
           <span
             className={`mr-1 ${
-              isToday || isCompleted ? "text-[#15735F]" : "text-muted-foreground/60"
+              isToday || isCompleted ? "text-[#15735F]" : "text-muted-foreground"
             }`}
           >
             Day
@@ -1647,13 +1647,13 @@ function DayRow({
         <span
           className={`min-w-0 truncate font-display text-[14.5px] sm:text-[15.5px] ${
             isExpanded ? "font-semibold" : "font-medium"
-          } ${isFuture || isMissed ? "text-muted-foreground/70" : "text-foreground"}`}
+          } ${isFuture || isMissed ? "text-muted-foreground" : "text-foreground"}`}
           style={{ letterSpacing: "-0.012em" }}
         >
-          {dayDetail?.label ?? <span className="italic text-muted-foreground/60">No detail yet</span>}
+          {dayDetail?.label ?? <span className="italic text-muted-foreground">No detail yet</span>}
         </span>
         <span className="shrink-0">{pill}</span>
-        <span className="shrink-0 text-[20px] text-muted-foreground/60 font-light leading-none select-none">
+        <span className="shrink-0 text-[20px] text-muted-foreground font-light leading-none select-none">
           {isExpanded ? "–" : "+"}
         </span>
       </button>
@@ -1671,7 +1671,7 @@ function DayRow({
               responseInFlightTaskId={responseInFlightTaskId}
             />
           ) : (
-            <p className="text-[13.5px] italic text-muted-foreground/70 leading-relaxed">
+            <p className="text-[13.5px] italic text-muted-foreground leading-relaxed">
               No specific tasks logged for this day. Your activation plan's day-by-day detail may be lighter for certain days, your overall plan structure still applies.
             </p>
           )}
@@ -1702,7 +1702,7 @@ function DayRow({
                     : "View this check-in →"}
               </button>
               {isMissed && (
-                <span className="text-[11px] text-muted-foreground/70 leading-snug">
+                <span className="text-[11px] text-muted-foreground leading-snug">
                   A retroactive note won't change today's tracker, just fills the gap.
                 </span>
               )}
@@ -1845,7 +1845,7 @@ function DayBody({
           <div className="flex items-baseline gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-3">
             <span className="inline-block w-1.5 h-1.5 bg-primary translate-y-[-1px]" aria-hidden="true" />
             <span className="text-[#15735F]">{labels.tasks}</span>
-            <span className="ml-auto tabular-nums text-muted-foreground/70">{dayDetail.tasks.length}</span>
+            <span className="ml-auto tabular-nums text-muted-foreground">{dayDetail.tasks.length}</span>
           </div>
           <ul className="space-y-4">
             {dayDetail.tasks.map((task, i) => (

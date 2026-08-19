@@ -37,7 +37,7 @@ export default function TrackerGrid({ days, variant = "thirty-day", onDayClick }
                 ? "bg-primary/15 text-[#15735F] border border-primary/20 cursor-pointer hover:bg-primary/25"
                 : day.isToday
                   ? "bg-transparent text-foreground border-2 border-primary"
-                  : "bg-[hsl(var(--surface-inset))] text-muted-foreground/50 border border-transparent cursor-default"
+                  : "bg-[hsl(var(--surface-inset))] text-muted-foreground border border-transparent cursor-default"
               }
             `}
             aria-label={`Day ${day.day}${day.completed ? " completed" : day.isToday ? " today" : ""}`}
@@ -60,7 +60,7 @@ export default function TrackerGrid({ days, variant = "thirty-day", onDayClick }
                 ? "bg-primary/15 text-[#15735F] border border-primary/20"
                 : day.isToday
                   ? "bg-transparent text-foreground border-2 border-primary"
-                  : "bg-[hsl(var(--surface-inset))] text-muted-foreground/50 border border-transparent"
+                  : "bg-[hsl(var(--surface-inset))] text-muted-foreground border border-transparent"
               }
             `}
           >

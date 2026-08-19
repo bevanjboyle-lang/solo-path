@@ -18,7 +18,7 @@ function YearCard({ year, label }: { year: YearProjection; label: string }) {
       </div>
       <p className="text-sm text-secondary-foreground mb-2">{year.revenue_build}</p>
       <p className="text-xs text-muted-foreground mb-1">{year.revenue_sources}</p>
-      <p className="text-xs italic text-muted-foreground/70">{year.assumptions}</p>
+      <p className="text-xs italic text-muted-foreground">{year.assumptions}</p>
     </div>
   );
 }
@@ -124,7 +124,7 @@ export default function IncomeOutlookSection({ income_outlook }: Props) {
       </div>
 
       {io.income_notes && (
-        <p className="mt-4 text-xs italic text-muted-foreground/70">{io.income_notes}</p>
+        <p className="mt-4 text-xs italic text-muted-foreground">{io.income_notes}</p>
       )}
     </section>
   );

@@ -51,7 +51,7 @@ export default function Signal() {
           {!loading && (error || !editions || editions.length === 0) && (
             <section className="mt-8 border-t border-border pt-6">
               <p className="eyebrow">The Signal</p>
-              <p className="mt-3 font-display text-[2.6rem] font-semibold leading-none text-[#2ECDB0] tabular-nums">01</p>
+              <p className="mt-3 font-display text-[2.6rem] font-semibold leading-none text-[#15735F] tabular-nums">01</p>
               <p className="standfirst mt-3">The first editions are publishing soon.</p>
               <p className="mt-4">
                 <a href="#signal-subscribe" className="link-edit">Get the Monday briefing &rarr;</a>

@@ -231,7 +231,7 @@ export default function CVUpload() {
                     Optional. Skipping is fine. We'll ask about your experience in the next step
                     either way.
                   </p>
-                  <p className="mt-3 text-[12px] text-muted-foreground/80 leading-relaxed lg:text-right">
+                  <p className="mt-3 text-[12px] text-muted-foreground leading-relaxed lg:text-right">
                     Read once, then discarded. We use your CV only to fill in your answers, never
                     store it after that, never share it, and never link it to your employer.
                   </p>
@@ -292,7 +292,7 @@ export default function CVUpload() {
                       className={`transition-colors w-full sm:w-auto text-center ${
                         cvPath
                           ? "cta-block"
-                          : "px-[18px] py-[9px] text-[13px] font-semibold bg-[#E5E2DC] text-muted-foreground/70 cursor-not-allowed"
+                          : "px-[18px] py-[9px] text-[13px] font-semibold bg-[#E5E2DC] text-muted-foreground cursor-not-allowed"
                       }`}
                     >
                       Continue
@@ -304,7 +304,7 @@ export default function CVUpload() {
                       Skip this step →
                     </button>
                   </div>
-                  <div className="text-[12px] text-muted-foreground/80 leading-relaxed max-w-sm sm:text-right">
+                  <div className="text-[12px] text-muted-foreground leading-relaxed max-w-sm sm:text-right">
                     Continue enables once a file has uploaded successfully. Skip is always available.
                   </div>
                 </div>

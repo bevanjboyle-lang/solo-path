@@ -164,12 +164,12 @@ function PhaseSection({
                   task.status === "completed"
                     ? "text-foreground"
                     : task.status === "missed"
-                    ? "text-muted-foreground/50 line-through"
+                    ? "text-muted-foreground line-through"
                     : task.status === "rescheduled"
-                    ? "text-muted-foreground/60"
+                    ? "text-muted-foreground"
                     : task.status === "today"
                     ? "text-foreground font-semibold"
-                    : "text-muted-foreground/50"
+                    : "text-muted-foreground"
                 }`}
               >
                 {task.description}

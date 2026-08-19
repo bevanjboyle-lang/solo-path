@@ -144,7 +144,7 @@ function ChannelBadge({ channel }: { channel: Channel | null }) {
 }
 
 const inputClass =
-  "w-full border border-border bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-foreground focus:outline-none";
+  "w-full border border-border bg-transparent px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none";
 const labelClass =
   "block text-[10px] font-bold uppercase tracking-[0.14em] text-foreground/70 mb-1.5";
 
@@ -245,7 +245,7 @@ function ItemForm({ initial, submitLabel, busy, onSubmit, onCancel, onDelete }: 
               else setConfirmingDelete(true);
             }}
             className={`ml-auto text-[12px] font-semibold disabled:opacity-60 ${
-              confirmingDelete ? "text-[#15735F]" : "text-muted-foreground/70 hover:text-foreground"
+              confirmingDelete ? "text-[#15735F]" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {confirmingDelete ? "Click again to remove" : "Remove from pipeline"}
@@ -320,7 +320,7 @@ function PipelineRow({ item, busy, expanded, onToggle, onStatusChange, onSave, o
         <button
           type="button"
           onClick={onToggle}
-          className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground/70 hover:text-foreground"
+          className="mt-1.5 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground hover:text-foreground"
         >
           Edit
         </button>

@@ -197,7 +197,7 @@ export default function CheckinHistory() {
 
   const sidebarFooter: ReactNode = (
     <>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         Plan
       </div>
       <div className="mt-1 text-[12px] text-foreground">
@@ -311,7 +311,7 @@ export default function CheckinHistory() {
                     <span className="inline-block w-1.5 h-1.5 bg-primary" />
                     <span className="text-foreground">Your plan</span>
                     <span className="text-muted-foreground/40">·</span>
-                    <span className="text-muted-foreground/70">Check-in history</span>
+                    <span className="text-muted-foreground">Check-in history</span>
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-end">
@@ -383,7 +383,7 @@ function Stat({ value, label }: { value: number; label: string }) {
       >
         {String(value).padStart(2, "0")}
       </div>
-      <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70">
+      <div className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
         {label}
       </div>
     </div>

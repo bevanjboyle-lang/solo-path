@@ -396,7 +396,7 @@ export default function Questionnaire() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div>
                     {isGenerating ? (
-                      <span className="text-[12px] text-muted-foreground/80 uppercase tracking-[0.14em]">
+                      <span className="text-[12px] text-muted-foreground uppercase tracking-[0.14em]">
                         Page frozen · do not close
                       </span>
                     ) : current > 0 ? (
@@ -580,7 +580,7 @@ function QuestionStep({
           <h2 className="lg:col-span-8 text-[28px] sm:text-[32px] lg:text-[36px] font-semibold tracking-tight leading-[1.2] text-foreground">
             {question.text}
             {question.required === false && (
-              <span className="ml-3 align-middle inline-block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70 border border-border px-2 py-0.5">
+              <span className="ml-3 align-middle inline-block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground border border-border px-2 py-0.5">
                 Optional
               </span>
             )}
@@ -615,7 +615,7 @@ function QuestionStep({
         {question.type === "text" && (
           <div className="bg-[#F3F0EA] border border-border overflow-hidden">
             <textarea
-              className="w-full resize-y bg-transparent px-6 py-5 text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground/60 focus:outline-none min-h-[180px]"
+              className="w-full resize-y bg-transparent px-6 py-5 text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[180px]"
               placeholder={question.placeholder}
               value={textValue}
               onChange={(e) => onChange(e.target.value)}
@@ -885,7 +885,7 @@ function EmailCaptureStep({
               placeholder="e.g. Jane"
               value={firstName}
               onChange={(e) => onFirstNameChange(e.target.value)}
-              className="w-full bg-white border border-border px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+              className="w-full bg-white border border-border px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
             />
           </div>
           {!emailRefused && (
@@ -902,7 +902,7 @@ function EmailCaptureStep({
                 placeholder="you@work-or-personal.com"
                 value={email}
                 onChange={(e) => onEmailChange(e.target.value)}
-                className="w-full bg-white border border-border px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary transition-colors"
+                className="w-full bg-white border border-border px-4 py-3 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
               />
             </div>
           )}

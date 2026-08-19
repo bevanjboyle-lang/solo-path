@@ -120,7 +120,7 @@ function GroupedList({
           >
             <h3
               className={cn(
-                "mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70",
+                "mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground",
                 size === "comfortable" && "px-4 text-[11px]",
               )}
             >

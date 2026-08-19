@@ -163,7 +163,7 @@ export default function FAQ() {
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="truncate">{c.label}</span>
-              <span className="shrink-0 text-[10px] text-muted-foreground/60 tabular-nums">
+              <span className="shrink-0 text-[10px] text-muted-foreground tabular-nums">
                 {c.items.length}
               </span>
             </button>
@@ -210,7 +210,7 @@ export default function FAQ() {
                     {categoryNav()}
                   </div>
                   <div className="pt-4 mt-2 border-t border-border">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                       Total
                     </div>
                     <div className="mt-1 text-[12px] text-foreground tabular-nums">
@@ -229,7 +229,7 @@ export default function FAQ() {
                   <div className="flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
                     <span className="text-foreground">Help</span>
                     <span className="text-muted-foreground/40">·</span>
-                    <span className="text-muted-foreground/70">Common questions</span>
+                    <span className="text-muted-foreground">Common questions</span>
                   </div>
                   <div aria-hidden className="title-h1">
                     Questions, answered.
@@ -262,7 +262,7 @@ export default function FAQ() {
                             {cat.label}.
                           </h2>
                         </div>
-                        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/60">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                           {cat.items.length} questions
                         </span>
                       </div>
@@ -295,7 +295,7 @@ export default function FAQ() {
                               >
                                 {item.q}
                               </span>
-                              <span className="text-[20px] text-muted-foreground/60 font-light leading-none pt-0.5 select-none">
+                              <span className="text-[20px] text-muted-foreground font-light leading-none pt-0.5 select-none">
                                 {isOpen ? "–" : "+"}
                               </span>
                             </button>
@@ -348,7 +348,7 @@ export default function FAQ() {
                     {user ? "Open my plan" : "Find what works"}
                   </button>
                   {!user && (
-                    <div className="mt-4 text-[11px] text-muted-foreground/70 tracking-[0.04em]">
+                    <div className="mt-4 text-[11px] text-muted-foreground tracking-[0.04em]">
                       £19.99 one-time · or £19/mo with cancel any time
                     </div>
                   )}

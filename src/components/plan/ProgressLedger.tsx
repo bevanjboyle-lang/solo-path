@@ -160,7 +160,7 @@ export default function ProgressLedger() {
                 {fmtDate(e.occurred_on)}
               </span>
               <span className="min-w-0">
-                <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/70">
+                <span className="block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
                   {typeLabel(e.entry_type)}
                 </span>
                 <span className="block text-[14.5px] font-semibold text-foreground leading-snug">
@@ -177,7 +177,7 @@ export default function ProgressLedger() {
                 type="button"
                 onClick={() => handleRemove(e.id)}
                 aria-label={`Remove ledger entry: ${e.label}`}
-                className="text-[11px] text-muted-foreground/50 hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+                className="text-[11px] text-muted-foreground hover:text-foreground underline underline-offset-[3px] decoration-[#D8D4CC] opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
               >
                 Remove
               </button>
@@ -239,7 +239,7 @@ export default function ProgressLedger() {
                 maxLength={140}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder="Proposal to Hartley & Co for the Q3 pipeline review"
-                className="w-full px-3 py-2 text-[14px] text-foreground outline-none placeholder:text-muted-foreground/50"
+                className="w-full px-3 py-2 text-[14px] text-foreground outline-none placeholder:text-muted-foreground"
                 style={{ background: "#FAF9F7", border: "1px solid #D1CEC7" }}
               />
             </label>
@@ -253,7 +253,7 @@ export default function ProgressLedger() {
                 maxLength={40}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="£4,500"
-                className="w-full px-3 py-2 text-[14px] text-foreground outline-none placeholder:text-muted-foreground/50"
+                className="w-full px-3 py-2 text-[14px] text-foreground outline-none placeholder:text-muted-foreground"
                 style={{ background: "#FAF9F7", border: "1px solid #D1CEC7" }}
               />
             </label>
@@ -268,7 +268,7 @@ export default function ProgressLedger() {
               type="button"
               onClick={handleRecord}
               disabled={!label.trim() || saving}
-              className="cta-block inline-flex items-center gap-2 disabled:bg-[#ECEAE4] disabled:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-100"
+              className="cta-block inline-flex items-center gap-2 disabled:bg-[#ECEAE4] disabled:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-100"
             >
               {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               Record it

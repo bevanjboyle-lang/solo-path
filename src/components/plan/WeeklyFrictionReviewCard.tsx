@@ -135,9 +135,9 @@ export default function WeeklyFrictionReviewCard({ userId }: Props) {
         <span className="inline-block w-1.5 h-1.5 bg-primary" />
         <span className="text-foreground">This week</span>
         <span className="text-muted-foreground/40">·</span>
-        <span className="text-muted-foreground/70">Friction review</span>
+        <span className="text-muted-foreground">Friction review</span>
         <span className="text-muted-foreground/40">·</span>
-        <span className="text-muted-foreground/70 normal-case tracking-normal text-[11px] font-normal">
+        <span className="text-muted-foreground normal-case tracking-normal text-[11px] font-normal">
           {dateRange}
         </span>
       </div>
@@ -195,7 +195,7 @@ export default function WeeklyFrictionReviewCard({ userId }: Props) {
           <p className="text-[14px] sm:text-[14.5px] text-foreground/85 leading-[1.6] max-w-[60ch] italic">
             {r.cohort_pulse}
           </p>
-          <p className="mt-2 text-[10.5px] leading-[1.5] text-muted-foreground/70 max-w-[58ch]">
+          <p className="mt-2 text-[10.5px] leading-[1.5] text-muted-foreground max-w-[58ch]">
             Qualitative at launch. As Solo accumulates real cohort data, this
             line will become quantitative and specific to your archetype.
           </p>
@@ -203,7 +203,7 @@ export default function WeeklyFrictionReviewCard({ userId }: Props) {
       )}
 
       {/* Generated-at footnote — tiny, muted, for transparency */}
-      <div className="mt-6 pt-4 border-t border-border text-[10px] uppercase tracking-[0.14em] text-muted-foreground/60">
+      <div className="mt-6 pt-4 border-t border-border text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
         Generated{" "}
         {new Date(generated_at).toLocaleDateString("en-GB", {
           day: "numeric",

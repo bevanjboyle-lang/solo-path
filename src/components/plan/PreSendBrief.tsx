@@ -114,7 +114,7 @@ export default function PreSendBrief({ moveType }: Props) {
 
       {/* Honest footnote — synthetic data at launch.
           Voice rule: no em-dashes, calm and factual. */}
-      <p className="mt-3 pt-3 border-t border-border text-[10.5px] leading-[1.5] text-muted-foreground/70 max-w-[58ch]">
+      <p className="mt-3 pt-3 border-t border-border text-[10.5px] leading-[1.5] text-muted-foreground max-w-[58ch]">
         These figures are the typical pattern at launch. As Solo accumulates real
         cohort data, this brief will become specific to your archetype.
       </p>

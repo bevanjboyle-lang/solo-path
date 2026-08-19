@@ -120,7 +120,7 @@ export default function LegalPage({
                   </button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[300px] p-6 overflow-y-auto">
-                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80 mb-4">
+                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground mb-4">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
                     <span>On this page</span>
                   </div>
@@ -141,7 +141,7 @@ export default function LegalPage({
                     {tocNav()}
                   </div>
                   <div className="pt-4 mt-1 border-t border-border">
-                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                       Sections
                     </div>
                     <div className="mt-1 text-[12px] text-foreground tabular-nums">
@@ -162,7 +162,7 @@ export default function LegalPage({
                       <div className="eyebrow flex items-center gap-2.5 mb-4">
                         <span>Legal</span>
                         <span className="text-muted-foreground/40">·</span>
-                        <span className="text-muted-foreground/70">{eyebrow}</span>
+                        <span className="text-muted-foreground">{eyebrow}</span>
                       </div>
                       <div
                         aria-hidden
@@ -178,7 +178,7 @@ export default function LegalPage({
                       )}
                     </div>
                     <div className="sm:text-right">
-                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground/70 mb-1">
+                      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-1">
                         Last updated
                       </div>
                       <div className="text-[13px] font-medium text-foreground tabular-nums">

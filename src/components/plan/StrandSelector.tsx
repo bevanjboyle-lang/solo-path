@@ -160,7 +160,7 @@ function OptionRow({
 
           <p className="mt-3 text-xs text-muted-foreground">
             <span>{option.time_to_first_revenue}</span>
-            <span className="mx-2 text-muted-foreground/50">·</span>
+            <span className="mx-2 text-muted-foreground">·</span>
             <span className="capitalize">{option.difficulty_rating}</span>
           </p>
 

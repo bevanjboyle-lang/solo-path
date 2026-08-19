@@ -152,7 +152,7 @@ export default function RadarHeartbeatCard({ reportId }: Props) {
         <span className="inline-block w-1.5 h-1.5 bg-primary" />
         <span className="text-foreground">This week</span>
         <span className="text-muted-foreground/40">·</span>
-        <span className="text-muted-foreground/70">On your Radar</span>
+        <span className="text-muted-foreground">On your Radar</span>
         {updated && (
           <>
             <span className="text-muted-foreground/40">·</span>

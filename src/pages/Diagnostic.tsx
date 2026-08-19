@@ -272,7 +272,7 @@ function OptionStack({
           >
             <span
               className={`text-[11px] font-semibold tabular-nums tracking-[0.1em] pt-0.5 shrink-0 ${
-                selected ? "text-[#15735F]" : "text-muted-foreground/60 group-hover:text-muted-foreground"
+                selected ? "text-[#15735F]" : "text-muted-foreground group-hover:text-muted-foreground"
               }`}
             >
               {String.fromCharCode(65 + i)}
@@ -858,7 +858,7 @@ export default function Diagnostic() {
                       short questions instead below.
                     </p>
                   )}
-                  <p className="text-[12px] text-muted-foreground/80 leading-relaxed">
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
                     [ Read once to build your read. Deletable afterwards. Never shared, never used
                     for anything else. ]
                   </p>
@@ -927,7 +927,7 @@ export default function Diagnostic() {
                               </div>
                             )}
                             {quote && !editing && (
-                              <div className="mt-1.5 text-[12px] text-muted-foreground/80 leading-relaxed">
+                              <div className="mt-1.5 text-[12px] text-muted-foreground leading-relaxed">
                                 From your CV: “{quote}”
                               </div>
                             )}
@@ -953,7 +953,7 @@ export default function Diagnostic() {
                                     if (e.key === "Enter") setEditingRow(null);
                                   }}
                                   placeholder={q?.placeholder}
-                                  className="w-full bg-transparent px-5 py-3.5 text-[14.5px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+                                  className="w-full bg-transparent px-5 py-3.5 text-[14.5px] text-foreground placeholder:text-muted-foreground focus:outline-none"
                                 />
                               </div>
                             ) : (
@@ -979,7 +979,7 @@ export default function Diagnostic() {
                   >
                     That's me, continue
                   </button>
-                  <span className="text-[12px] text-muted-foreground/80">Three questions left</span>
+                  <span className="text-[12px] text-muted-foreground">Three questions left</span>
                 </div>
               </div>
             )}
@@ -1016,7 +1016,7 @@ export default function Diagnostic() {
                           if (e.key === "Enter") typedForward();
                         }}
                         placeholder={currentQuestion.placeholder}
-                        className="w-full bg-transparent px-6 py-5 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+                        className="w-full bg-transparent px-6 py-5 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none"
                       />
                     </div>
                   ) : currentQuestion.options ? (
@@ -1036,7 +1036,7 @@ export default function Diagnostic() {
                   >
                     Continue
                   </button>
-                  <span className="text-[12px] text-muted-foreground/80">
+                  <span className="text-[12px] text-muted-foreground">
                     {PROFILE_IDS.length - qStep - 1 === 0
                       ? "Three about you next"
                       : `${PROFILE_IDS.length - qStep - 1} more about the work`}
@@ -1099,7 +1099,7 @@ export default function Diagnostic() {
                               if (e.key === "Enter") asksForward();
                             }}
                             placeholder="What did they want your take on? One line, optional."
-                            className="w-full bg-transparent px-5 py-4 text-[14.5px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+                            className="w-full bg-transparent px-5 py-4 text-[14.5px] text-foreground placeholder:text-muted-foreground focus:outline-none"
                           />
                         </div>
                       )}
@@ -1115,7 +1115,7 @@ export default function Diagnostic() {
                   >
                     {askStep === ASKS.length - 1 ? "Finish" : "Continue"}
                   </button>
-                  <span className="text-[12px] text-muted-foreground/80">
+                  <span className="text-[12px] text-muted-foreground">
                     {ASKS.length - askStep - 1 === 0 ? "Last question" : `${ASKS.length - askStep - 1} to go`}
                   </span>
                 </div>
@@ -1147,7 +1147,7 @@ export default function Diagnostic() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@work.com"
-                      className="flex-1 bg-[#F3F0EA] border border-border px-6 py-4 text-[15px] text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary"
+                      className="flex-1 bg-[#F3F0EA] border border-border px-6 py-4 text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
                     />
                     <button
                       type="submit"
@@ -1164,7 +1164,7 @@ export default function Diagnostic() {
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                     Matching you against Solo's catalogue of 95 independent profiles…
                   </div>
-                  <p className="text-[12px] text-muted-foreground/80 leading-relaxed">
+                  <p className="text-[12px] text-muted-foreground leading-relaxed">
                     [ No spam. One-click unsubscribe. Your answers stay on this device until you
                     choose otherwise. ]
                   </p>
@@ -1258,7 +1258,7 @@ export default function Diagnostic() {
                             .filter(Boolean)
                             .join(" · ")}
                         </p>
-                        <p className="text-[12px] text-muted-foreground/80 leading-relaxed border-t border-border pt-2.5">
+                        <p className="text-[12px] text-muted-foreground leading-relaxed border-t border-border pt-2.5">
                           The full read attaches live demand like this to every route it names.
                         </p>
                       </div>
@@ -1271,7 +1271,7 @@ export default function Diagnostic() {
                         <li>A first move you could take inside 24 hours</li>
                         <li>A 30-day plan built from your actual answers</li>
                       </ul>
-                      <p className="text-[12px] text-muted-foreground/80 leading-relaxed">
+                      <p className="text-[12px] text-muted-foreground leading-relaxed">
                         Your answers carry forward, so the questionnaire starts where this left off.
                         About 15 minutes, mostly questions only you can answer.
                       </p>

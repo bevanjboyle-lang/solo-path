@@ -110,7 +110,7 @@ export function ActivationPlanTeaser() {
         {phases.map((p, i) => (
           <div key={i} className="flex-1 text-center">
             <span className="text-[10px] font-medium text-muted-foreground">Wk {i + 1}</span>
-            <span className="block text-[9px] text-muted-foreground/70">{p.label}</span>
+            <span className="block text-[9px] text-muted-foreground">{p.label}</span>
           </div>
         ))}
       </div>

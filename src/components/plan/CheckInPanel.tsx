@@ -263,7 +263,7 @@ export default function CheckInPanel({
                     Close
                   </Button>
                   {readOnlyDate && (
-                    <span className="text-[10px] tracking-[0.06em] text-muted-foreground/70">
+                    <span className="text-[10px] tracking-[0.06em] text-muted-foreground">
                       Submitted on {readOnlyDate}
                     </span>
                   )}
@@ -300,7 +300,7 @@ export default function CheckInPanel({
                   * as /questionnaire's refusal-modal warning copy. Suppressed
                   * on today mode. */}
                 {isBackfill && dayNumber && (
-                  <p className="text-[11.5px] text-muted-foreground/80 leading-snug">
+                  <p className="text-[11.5px] text-muted-foreground leading-snug">
                     Backfilling Day {dayNumber} won't change today's tracker
                     state, it just fills the gap in your record.
                   </p>

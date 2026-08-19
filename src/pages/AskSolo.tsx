@@ -441,7 +441,7 @@ export default function AskSolo() {
                     {contextId && messages.length <= 1 && (
                       <>
                         <span className="text-muted-foreground/40">·</span>
-                        <span className="normal-case tracking-normal text-[11px] font-normal text-muted-foreground/80">
+                        <span className="normal-case tracking-normal text-[11px] font-normal text-muted-foreground">
                           From the Library
                         </span>
                       </>
@@ -514,7 +514,7 @@ export default function AskSolo() {
                       <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
                       <span style={{ color: "#15735F", fontWeight: 700 }}>Solo replied</span>
                       <span
-                        className="ml-auto text-[10px] italic normal-case tracking-[0.04em] text-muted-foreground/80 font-medium inline-flex items-center gap-1.5"
+                        className="ml-auto text-[10px] italic normal-case tracking-[0.04em] text-muted-foreground font-medium inline-flex items-center gap-1.5"
                       >
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                         drafting
@@ -582,18 +582,18 @@ export default function AskSolo() {
                     }
                     rows={1}
                     disabled={sending || quotaExhausted}
-                    className="resize-none border-none outline-none bg-transparent text-[15px] leading-[1.5] text-foreground placeholder:text-muted-foreground/60 min-h-[44px] py-1.5 disabled:cursor-not-allowed"
+                    className="resize-none border-none outline-none bg-transparent text-[15px] leading-[1.5] text-foreground placeholder:text-muted-foreground min-h-[44px] py-1.5 disabled:cursor-not-allowed"
                     style={{ fontFamily: "Inter, sans-serif" }}
                   />
                   <button
                     onClick={handleSend}
                     disabled={!input.trim() || sending || quotaExhausted}
-                    className="cta-block inline-flex items-center justify-center px-4 py-2.5 text-[13px] disabled:bg-[#ECEAE4] disabled:text-muted-foreground/70 disabled:cursor-not-allowed disabled:opacity-100"
+                    className="cta-block inline-flex items-center justify-center px-4 py-2.5 text-[13px] disabled:bg-[#ECEAE4] disabled:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-100"
                   >
                     {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ask"}
                   </button>
                 </div>
-                <div className="mt-2 flex justify-between items-baseline text-[11px] text-muted-foreground/70 tracking-[0.02em]">
+                <div className="mt-2 flex justify-between items-baseline text-[11px] text-muted-foreground tracking-[0.02em]">
                   <span className="italic">
                     {quotaExhausted ? (
                       <span style={{ color: "#A09A92" }}>Past conversations stay readable. Subscribe to keep asking.</span>
@@ -655,7 +655,7 @@ function ThreadList({
 
   return (
     <div className="flex flex-col h-full py-5">
-      <div className="px-5 pb-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">
+      <div className="px-5 pb-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
         <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary" />
         <span>Your conversations</span>
       </div>
@@ -673,7 +673,7 @@ function ThreadList({
 
       <div className="flex-1 overflow-y-auto px-0">
         {totalThreads === 0 ? (
-          <p className="px-5 py-8 text-center text-[12px] italic text-muted-foreground/60 leading-[1.5]">
+          <p className="px-5 py-8 text-center text-[12px] italic text-muted-foreground leading-[1.5]">
             No conversations yet.<br />Start one to the right.
           </p>
         ) : (
@@ -682,7 +682,7 @@ function ThreadList({
             if (list.length === 0) return null;
             return (
               <div key={group as string}>
-                <div className="px-5 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60">
+                <div className="px-5 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   {group as string}
                 </div>
                 {list.map((t) => {
@@ -711,7 +711,7 @@ function ThreadList({
                       >
                         {t.title}
                       </div>
-                      <div className="mt-1 flex items-baseline gap-2 text-[11px] text-muted-foreground/70 tracking-[0.02em]">
+                      <div className="mt-1 flex items-baseline gap-2 text-[11px] text-muted-foreground tracking-[0.02em]">
                         <span>{fmtRelative(t.timestamp)}</span>
                         <span className="text-muted-foreground/30">·</span>
                         <span>{t.messages.length} messages</span>
@@ -794,7 +794,7 @@ function Message({ msg, formatTime }: { msg: ChatMessage; formatTime: (d: Date) 
         <span style={{ color: isUser ? "#1D2025" : "#15735F", fontWeight: isUser ? 600 : 700 }}>
           {isUser ? "You asked" : "Solo replied"}
         </span>
-        <span className="ml-auto text-[10px] normal-case tracking-[0.04em] text-muted-foreground/60 font-medium">
+        <span className="ml-auto text-[10px] normal-case tracking-[0.04em] text-muted-foreground font-medium">
           {formatTime(msg.timestamp)}
         </span>
       </div>
@@ -834,7 +834,7 @@ function EmptyWelcome({ onSuggest }: { onSuggest: (q: string) => void }) {
       </p>
 
       <div className="mt-12 pt-6 border-t border-border">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/60 mb-4">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
           Three places people usually start
         </div>
         <div>
@@ -853,7 +853,7 @@ function EmptyWelcome({ onSuggest }: { onSuggest: (q: string) => void }) {
               >
                 {s.q}
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/60 whitespace-nowrap">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground whitespace-nowrap">
                 {s.meta}
               </span>
             </button>

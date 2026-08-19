@@ -77,7 +77,7 @@ function RenderValue({ value }: { value: any }) {
           if (v === null || v === undefined || v === "") return null;
           return (
             <div key={k}>
-              <h4 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground/80 mb-1">
+              <h4 className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground mb-1">
                 {formatHeading(k)}
               </h4>
               <RenderValue value={v} />
@@ -283,7 +283,7 @@ function ReferenceCard({ item }: { item: ReferenceItem }) {
     <div className="border-t border-border pt-4">
       <div className="flex items-start justify-between gap-3 mb-1.5">
         <h4 className="text-sm font-semibold text-foreground leading-snug">{item.title}</h4>
-        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/70 shrink-0 mt-0.5">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground shrink-0 mt-0.5">
           {CONTENT_TYPE_LABELS[item.content_type] || item.content_type}
         </span>
       </div>
@@ -313,7 +313,7 @@ function ReferenceCard({ item }: { item: ReferenceItem }) {
           {expanded && (
             <div className="mt-4 pt-4 border-t border-border prose prose-sm max-w-none text-sm text-foreground/80 leading-relaxed">
               <ReactMarkdown>{item.inline_content || ""}</ReactMarkdown>
-              <p className="text-[10px] text-muted-foreground/60 mt-3 italic">
+              <p className="text-[10px] text-muted-foreground mt-3 italic">
                 Verified {item.verified_date}
               </p>
             </div>
@@ -386,7 +386,7 @@ export function V28Body({ output, referenceItems }: { output: any; referenceItem
                     if (!val || typeof val !== "string") return null;
                     return (
                       <div key={key}>
-                        <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/80 mb-0.5">
+                        <dt className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-0.5">
                           {label}
                         </dt>
                         <dd className="text-sm text-foreground/70 leading-relaxed">

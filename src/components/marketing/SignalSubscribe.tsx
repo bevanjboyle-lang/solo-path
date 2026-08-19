@@ -51,7 +51,7 @@ export default function SignalSubscribe({ source = "signal_page" }: { source?: s
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@work.com"
-          className="flex-1 rounded border border-stone-300 bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-primary focus:outline-none"
+          className="flex-1 rounded border border-stone-300 bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
         />
         <button
           type="submit"

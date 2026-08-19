@@ -285,7 +285,7 @@ export default function Report() {
 
   const sidebarFooter: ReactNode = (
     <>
-      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/80">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         Report
       </div>
       <div className="mt-1 text-[12px] text-foreground">
@@ -414,7 +414,7 @@ export default function Report() {
                         Updated {updatedStamp}
                       </span>
                     ) : (
-                      <span className="text-muted-foreground/70 text-[11px]">
+                      <span className="text-muted-foreground text-[11px]">
                         drafted recently
                       </span>
                     )}
@@ -577,7 +577,7 @@ function SectionHead({
   tone?: "default" | "dark";
 }) {
   const labelColour = tone === "dark" ? "text-[#FAF9F7]" : "text-foreground";
-  const metaColour = tone === "dark" ? "text-[rgba(250,249,247,0.55)]" : "text-muted-foreground/80";
+  const metaColour = tone === "dark" ? "text-[rgba(250,249,247,0.55)]" : "text-muted-foreground";
   const ruleColour = tone === "dark" ? "border-white/10" : "border-border";
   const numColour = tone === "dark" ? "text-[#2ECDB0]" : "text-[#15735F]";
   return (
@@ -690,7 +690,7 @@ function BriefSection({
             {preview}
           </span>
         </div>
-        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80 tabular-nums shrink-0 flex items-center gap-3">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground tabular-nums shrink-0 flex items-center gap-3">
           {meta.readTime}
           <span aria-hidden className="text-muted-foreground">→</span>
         </span>

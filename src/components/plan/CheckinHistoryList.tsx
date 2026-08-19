@@ -105,7 +105,7 @@ function StatusPill({ status }: { status: CheckinTimelineEntryStatus }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/60">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-[3px] text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
       <span className="inline-block w-1.5 h-1.5" style={{ border: "1px solid #A09A92" }} />
       Future
     </span>
@@ -137,12 +137,12 @@ function WeekSeparator({ bucket }: { bucket: WeekBucket }) {
 
   return (
     <div className="px-6 sm:px-8 py-3 flex items-baseline gap-3 border-t border-border">
-      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/70">
+      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
         <span className="text-[#15735F] tabular-nums mr-2">W{bucket.weekNumber}</span>
         Week {bucket.weekNumber} · {dateRange}{isAhead ? " · ahead" : ""}
       </span>
       <span className="flex-1 h-px bg-border mb-[1px]" />
-      <span className="text-[10px] text-muted-foreground/60 tabular-nums tracking-[0.04em]">
+      <span className="text-[10px] text-muted-foreground tabular-nums tracking-[0.04em]">
         {summary}
       </span>
     </div>
@@ -190,12 +190,12 @@ function TimelineRow({
       {/* Day numeral + day-of-week */}
       <span
         className={`font-display font-bold text-[13px] tabular-nums tracking-[0.04em] pt-0.5 ${
-          isFuture || isMissed ? "text-muted-foreground/70" : "text-foreground"
+          isFuture || isMissed ? "text-muted-foreground" : "text-foreground"
         }`}
       >
         <span
           className={`mr-1.5 ${
-            isToday || isCompleted ? "text-[#15735F]" : "text-muted-foreground/50"
+            isToday || isCompleted ? "text-[#15735F]" : "text-muted-foreground"
           }`}
         >
           {String(entry.day).padStart(2, "0")}
@@ -206,7 +206,7 @@ function TimelineRow({
       {/* Date (full), hidden on mobile (collapses into day col on narrow viewports) */}
       <span
         className={`hidden sm:block text-[12px] pt-1 tracking-[0.02em] ${
-          isFuture || isMissed ? "text-muted-foreground/60" : "text-muted-foreground"
+          isFuture || isMissed ? "text-muted-foreground" : "text-muted-foreground"
         }`}
       >
         {fmtFullDate(entry.date)}
@@ -228,7 +228,7 @@ function TimelineRow({
           </p>
         )}
         {isMissed && (
-          <p className="text-[13px] italic text-muted-foreground/60 pt-1">
+          <p className="text-[13px] italic text-muted-foreground pt-1">
             No check-in
           </p>
         )}
@@ -244,7 +244,7 @@ function TimelineRow({
       {/* Chevron (completed) or Today CTA */}
       <div className="self-center">
         {isCompleted && (
-          <span className="text-[18px] text-muted-foreground/50">→</span>
+          <span className="text-[18px] text-muted-foreground">→</span>
         )}
         {isToday && onOpenToday && (
           <button

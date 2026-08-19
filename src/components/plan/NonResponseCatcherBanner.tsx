@@ -315,7 +315,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
               onClick={() => handleDismiss(row.id)}
               disabled={isInFlight}
               aria-label="Dismiss this Catcher"
-              className="absolute top-4 right-4 sm:top-5 sm:right-5 inline-flex items-center justify-center w-7 h-7 text-muted-foreground/60 hover:text-foreground hover:bg-[#F3F1ED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="absolute top-4 right-4 sm:top-5 sm:right-5 inline-flex items-center justify-center w-7 h-7 text-muted-foreground hover:text-foreground hover:bg-[#F3F1ED] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span aria-hidden="true" className="text-[16px] leading-none">×</span>
             </button>
@@ -325,7 +325,7 @@ export default function NonResponseCatcherBanner({ userId }: Props) {
               <span className="inline-block w-1.5 h-1.5 bg-primary" />
               <span className="text-foreground">About that message</span>
               <span className="text-muted-foreground/40">·</span>
-              <span className="text-muted-foreground/70">Five days on</span>
+              <span className="text-muted-foreground">Five days on</span>
             </div>
 
             {/* Direct address — H3 weight, the line that lands */}

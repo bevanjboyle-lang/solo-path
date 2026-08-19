@@ -215,8 +215,8 @@ export default function Pricing() {
 
             <div className="grid grid-cols-3 gap-x-4 sm:gap-x-6 py-3 border-b border-border">
               <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Feature</div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80">One-time · £19.99</div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground/80">Subscription · £19/mo</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">One-time · £19.99</div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Subscription · £19/mo</div>
             </div>
 
             {comparisonRows.map((row, i) => (
@@ -227,7 +227,7 @@ export default function Pricing() {
                 }`}
               >
                 <div className="font-display font-semibold text-foreground tracking-tight">{row.feat}</div>
-                <div className={row.faint ? "italic text-muted-foreground/70" : "text-foreground/85"}>
+                <div className={row.faint ? "italic text-muted-foreground" : "text-foreground/85"}>
                   {row.oneTime}
                 </div>
                 <div className="text-foreground/85">{row.sub}</div>

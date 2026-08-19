@@ -129,7 +129,7 @@ function FitChip({ score }: { score: number }) {
 function TieNote({ note }: { note: string }) {
   return (
     <div className="mt-3 flex items-start gap-2 border-l-2 border-[#D1CEC7] pl-3">
-      <Scale className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+      <Scale className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
       <p className="text-[12.5px] leading-relaxed text-muted-foreground">{note}</p>
     </div>
   );
@@ -308,7 +308,7 @@ function FullOptionCard({
           <span className="text-[10px] text-muted-foreground">
             {option.pricing.cadence}
             {option.pricing.model && (
-              <span className="text-muted-foreground/70"> · {option.pricing.model}</span>
+              <span className="text-muted-foreground"> · {option.pricing.model}</span>
             )}
           </span>
           <p className="mt-0.5 text-sm font-medium text-primary">{formatPriceRange(option)}</p>
@@ -540,7 +540,7 @@ export default function BusinessPaths({
               <span className="text-[10px] text-muted-foreground">
                 {featured.pricing.cadence}
                 {featured.pricing.model && (
-                  <span className="text-muted-foreground/70"> · {featured.pricing.model}</span>
+                  <span className="text-muted-foreground"> · {featured.pricing.model}</span>
                 )}
               </span>
               <p className="mt-0.5 text-sm font-medium text-primary">
@@ -598,7 +598,7 @@ export default function BusinessPaths({
                 <span className="text-[10px] text-muted-foreground">
                   {opt.pricing.cadence}
                   {opt.pricing.model && (
-                    <span className="text-muted-foreground/70"> · {opt.pricing.model}</span>
+                    <span className="text-muted-foreground"> · {opt.pricing.model}</span>
                   )}
                 </span>
                 <p className="mt-0.5 text-sm text-foreground">{formatPriceRange(opt)}</p>
